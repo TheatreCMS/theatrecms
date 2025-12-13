@@ -1,0 +1,28 @@
+{
+    "name": "clubdeuce/theaterpress",
+    "type": "project",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Clubdeuce\\Theaterpress\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Daryl",
+            "email": "daryl@clubdeuce.net"
+        }
+    ],
+    "require": {
+        "slim/slim": "^4.15",
+        "php-di/php-di": "^7.1",
+        "slim/psr7": "^1.8",
+        "doctrine/orm": "^3.5",
+        "doctrine/dbal": "^4.4",
+        "symfony/cache": "^7.4",
+        "monolog/monolog": "^3.9"
+    },
+    "require-dev": {
+        "consolidation/robo": "^5.1"
+    }
+}
