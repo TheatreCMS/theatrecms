@@ -23,6 +23,7 @@
         "monolog/monolog": "^3.9"
     },
     "require-dev": {
-        "consolidation/robo": "^5.1"
+        "consolidation/robo": "^5.1",
+        "squizlabs/php_codesniffer": "^4.0"
     }
 }
