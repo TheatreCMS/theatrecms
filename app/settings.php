@@ -37,8 +37,8 @@ return [
             // of valid parameters: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/configuration.html
             'connection' => [
                 'driver' => 'pdo_mysql',
-                'host' => '127.0.0.1',
-                'port' => 32778,
+                'host' => 'db',
+                'port' => 3306,
                 'dbname' => 'db',
                 'user' => 'db',
                 'password' => 'db',
