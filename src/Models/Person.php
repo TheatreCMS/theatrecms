@@ -19,10 +19,15 @@ class Person
     #[Column(type: 'text', nullable: true)]
     private string $biography;
 
-    public function __construct(string $name, string $biography = "")
+    #[Column(type: 'string', nullable: true)]
+    private string $headshotUrl;
+
+
+    public function __construct(string $name, string $biography = "", string $headshotUrl = "")
     {
         $this->name = $name;
         $this->biography = $biography;
+        $this->headshotUrl = $headshotUrl;
     }
 
     public function getId(): int
@@ -38,5 +43,10 @@ class Person
     public function getBiography(): string
     {
         return $this->biography;
+    }
+
+    public function getHeadshotUrl(): string
+    {
+        return $this->headshotUrl;
     }
 }
