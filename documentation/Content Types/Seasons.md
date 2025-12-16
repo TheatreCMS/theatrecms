@@ -1,0 +1,1 @@
+Seasons are collections of [[productions]] that occur within a specific time frame, typically a year. Seasons have information such as the season name, start and end dates, and a list of productions included in the season.It also has the ability to include a free form description for the season, such as the theme for the works selected, notable guest performers, etc.

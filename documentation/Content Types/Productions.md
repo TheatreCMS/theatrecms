@@ -1,0 +1,1 @@
+Productions are specific presentations of a work during a set period of time. For example, the theatre company will perform _Hamlet_ in October. This production will be unique in that it will have a specific cast, production team, and performance dates.
