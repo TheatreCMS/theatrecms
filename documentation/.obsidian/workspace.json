@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Content Types/People.md",
+                "file": "CONTRIBUTING.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "People"
+              "title": "CONTRIBUTING"
             }
           }
         ]
@@ -78,7 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 875.5
+    "width": 219.5
   },
   "right": {
     "id": "a64bb81ab47e7a8e",
@@ -183,16 +183,18 @@
       "bases:Create new base": false
     }
   },
-  "active": "3528b80056af8629",
+  "active": "600261074e11dd9d",
   "lastOpenFiles": [
-    "Content Types/README.md",
-    "Content Types/Pages.md",
     "README.md",
+    "CONTRIBUTING.md",
+    "Content Types/README.md",
+    "Content Types/Workflow.md",
+    "Content Types/People.md",
+    "Content Types/Pages.md",
     "Content Types/Posts.md",
     "Content Types/Seasons.md",
     "Content Types/Productions.md",
     "Content Types/Works.md",
-    "Content Types/People.md",
     "Content Types"
   ]
 }
