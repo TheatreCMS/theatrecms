@@ -1,8 +1,8 @@
 <?php
 require_once "../vendor/autoload.php";
 
-use Clubdeuce\Theaterpress\Models\Season;
-use Clubdeuce\Theaterpress\Repositories\SeasonRepository;
+use Clubdeuce\theatrecms\Models\Season;
+use Clubdeuce\theatrecms\Repositories\SeasonRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
