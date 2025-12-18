@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\Theaterpress\Repositories;
+namespace ClubdeuceTheatreCMS\Repositories;
 
-use Clubdeuce\Theaterpress\Models\Person;
+use ClubdeuceTheatreCMS\Models\Person;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\ORMException;
 
