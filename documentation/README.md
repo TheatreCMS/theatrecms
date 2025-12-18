@@ -8,3 +8,11 @@ Two of those sites were built  from scratch using WordPress&trade;, the other wa
 
 **THIS IS PRE-ALPHA SOFTWARE**. At this time, it is an experiment in current technologies, consumer interest, and creating an open source software project that gains a significant user base. While the code in this repository does work _(for the most part)_, it is not ready for production.
 
+## Key Technologies
+
+Theatre CMS is built upon the works of giants:
+
+[Slim Framework](https://slimframework.com)
+[PHP-DI](https://php-di.org/)
+[Doctrine](https://www.doctrine-project.org/)
+[CoreUi](https://coreui.io)
