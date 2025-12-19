@@ -18,16 +18,25 @@
                     <use xlink:href="vendors/@coreui/icons/svg/free.svg#cil-speedometer"></use>
                 </svg> Dashboard<span class="badge badge-sm bg-info ms-auto">NEW</span></a></li>
         <li class="nav-title">Content</li>
-        <li class="nav-item"><a href="seasons.php" class="nav-link">
+        <li class="nav-group"><a class="nav-link nav-group-toggle" href="#">
                 <svg class="nav-icon">
                     <use xlink:href="vendors/@coreui/icons/svg/free.svg#cil-calendar"></use>
-                </svg>Seasons</a></li>
-        <li class="nav-item"><a href="productions.php" class="nav-link">
+                </svg> Seasons</a>
+            <ul class="nav-group-items compact">
+                <li class="nav-item"><a class="nav-link" href="add-season.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Add new Season</a></li>
+                <li class="nav-item"><a class="nav-link" href="seasons.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> View all Seasons</a></li>
+            </ul>
+        </li>
+        <li class="nav-group">
+            <a class="nav-link nav-group-toggle" href="#">
                 <svg class="nav-icon">
-                    <use xlink:href="vendors/@coreui/icons/svg/free.svg#cil-book"></use>
-                </svg>Productions</a></li>
-        <li class="nav-divider"></li>
-        <li class="nav-title">Settings</li>
+                    <use xlink:href="vendors/@coreui/icons/svg/free.svg#cil-pencil"></use>
+                </svg> Works</a>
+            <ul class="nav-group-items compact">
+                <li class="nav-item"><a class="nav-link" href="add-work.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Add new Work</a></li>
+                <li class="nav-item"><a class="nav-link" href="workss.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> View all Works</a></li>
+            </ul>
+        </li>
     </ul>
     <div class="sidebar-footer border-top d-none d-md-flex">
         <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
