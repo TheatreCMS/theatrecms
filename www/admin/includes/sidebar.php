@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * The sidebar template for the admin panel
+ */
 ?>
 <div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
     <div class="sidebar-header border-bottom">
@@ -34,7 +38,7 @@
                 </svg> Works</a>
             <ul class="nav-group-items compact">
                 <li class="nav-item"><a class="nav-link" href="add-work.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> Add new Work</a></li>
-                <li class="nav-item"><a class="nav-link" href="workss.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> View all Works</a></li>
+                <li class="nav-item"><a class="nav-link" href="works.php"><span class="nav-icon"><span class="nav-icon-bullet"></span></span> View all Works</a></li>
             </ul>
         </li>
     </ul>
