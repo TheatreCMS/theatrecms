@@ -56,4 +56,14 @@ readonly class SeasonRepository
             return false;
         }
     }
+
+    public function update(Season $season): void
+    {
+        try {
+            $this->em->persist($season);
+            $this->em->flush();
+        } catch (ORMException $e) {
+            trigger_error($e->getMessage(), E_USER_WARNING);
+        }
+    }
 }
