@@ -1,47 +1,86 @@
 <?php
 require_once "../vendor/autoload.php";
 
-use Clubdeuce\theatrecms\Models\Season;
-use Clubdeuce\theatrecms\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Models\Season;
+use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 
-AppFactory::setContainer(require __DIR__ . '/../app/bootstrap.php');
+/**
+ * @var Psr\Container\ContainerInterface $container
+ */
+$container = require __DIR__ . '/../app/bootstrap.php';
+AppFactory::setContainer($container);
 
 $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
 
 $app->get('/', function (Request $request, Response $response) {
-    $response->getBody()->write(phpinfo());
+    $response->getBody()->write("hello world");
     return $response;
 });
 
-$app->group('/api', function (RouteCollectorProxy $group) use ($app) {
-    $group->get('', function (Request $request, Response $response) use ($app) {
-        $response->getBody()->write('API up and responding');
-        return $response->withStatus(200);
-    });
-
+$app->group('/api', function (RouteCollectorProxy $group) {
     $group->group('/seasons', function (RouteCollectorProxy $group) {
-        $group->post('/', function (Request $request, Response $response) {
+        $group->post('', function (Request $request, Response $response) {
             /** @var SeasonRepository $seasonRepository */
             $seasonRepository = $this->get(SeasonRepository::class);
 
-            $data = $request->getParsedBody();
+            $data = (array)$request->getParsedBody();
 
-            if($data === null) {
-                $response->getBody()->write(json_encode(['error' => 'Empty JSON body.']));
+            if(empty($data)) {
+                // there was no JSON body in the POST request
+                $response->getBody()->write('{"error": "Empty JSON body."}');
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
 
             $season = new Season($data['slug'], $data['label']);
             $seasonRepository->create($season);
 
-            $response->getBody()->write(json_encode($season));
+            $params = json_encode($season);
+
+            if ($params)
+                $response->getBody()->write($params);
+
             return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
+        });
+
+        $group->get('', function (Request $request, Response $response) {
+            /** @var SeasonRepository $seasonRepository */
+            $seasonRepository = $this->get(SeasonRepository::class);
+            $seasons = $seasonRepository->findAll();
+
+            $data = json_encode($seasons);
+
+            if ($data)
+                $response->getBody()->write($data);
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        });
+
+        $group->delete('/{id}', function (Request $request, Response $response, array $args) {
+            $id = filter_var($args['id'], FILTER_VALIDATE_INT);
+
+            if($id === false) {
+                $response->getBody()->write('{"error": "Invalid season ID."}');
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+
+            /** @var SeasonRepository $seasonRepository */
+            $seasonRepository = $this->get(SeasonRepository::class);
+
+            $seasonRepository->deleteById($id);
+
+            $message = json_encode(['message' => "Season {$id} deleted."]);
+
+            if ($message)
+                $response->getBody()->write($message);
+
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         });
 
         $group->get('/{id}', function (Request $request, Response $response, array $args) {
