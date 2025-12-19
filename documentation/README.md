@@ -13,7 +13,11 @@ Two of those sites were built  from scratch using WordPress&trade;, the other wa
 Theatre CMS is built upon the works of giants:
 
 [Slim Framework](https://slimframework.com)
+
 [PHP-DI](https://php-di.org/)
+
 [Doctrine](https://www.doctrine-project.org/)
+
 [PHP Validator](https://github.com/BlakvGhost/PHPValidator)
+
 [CoreUi](https://coreui.io)
