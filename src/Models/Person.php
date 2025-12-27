@@ -20,7 +20,7 @@ class Person
     #[Column(type: 'text', nullable: true)]
     private string $biography;
 
-    #[Column(type: 'string', nullable: true)]
+    #[Column(name: 'headshot_url', type: 'string', nullable: true)]
     private string $headshotUrl;
 
 
