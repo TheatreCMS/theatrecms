@@ -7,9 +7,10 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
+use JsonSerializable;
 
 #[Entity, Table(name: 'people')]
-class Person
+class Person implements JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
@@ -49,5 +50,18 @@ class Person
     public function getHeadshotUrl(): string
     {
         return $this->headshotUrl;
+    }
+
+    /**
+     * @return array<int|string>
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'id'          => $this->getId(),
+            'name'        => $this->getName(),
+            'biography'   => $this->getBiography(),
+            'headshotUrl' => $this->getHeadshotUrl(),
+        ];
     }
 }
