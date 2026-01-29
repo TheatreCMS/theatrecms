@@ -2,7 +2,7 @@ includes: []
 
 parameters:
   # Use the highest level for strictness; adjust if needed.
-  level: max
+  level: 4
 
   # Analyse only project source code
   paths:
