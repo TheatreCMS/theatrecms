@@ -5,5 +5,5 @@ info:
   version: 0.0.1
 servers:
   - url: 'https://localhost/api'
-paths:
+paths: {}
   
