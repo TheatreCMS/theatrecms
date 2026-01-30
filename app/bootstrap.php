@@ -2,19 +2,21 @@
 
 // bootstrap.php
 
-if( !defined('APP_ROOT') )
-    define ('APP_ROOT', dirname(__DIR__));
-
-require_once APP_ROOT . '/vendor/autoload.php';
-
-use Clubdeuce\theatrecms\Repositories\PersonRepository;
-use Clubdeuce\theatrecms\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
+use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+
+
+if( !defined('APP_ROOT') )
+    define ('APP_ROOT', dirname(__DIR__));
+
+require_once APP_ROOT . '/vendor/autoload.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
 
@@ -40,12 +42,16 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
     return new EntityManager($connection, $config);
 });
 
-$container->set(PersonRepository::class, static function (Container $c): PersonRepository {
-    return new PersonRepository($c->get(EntityManager::class));
-});
+$repositories = [
+    PersonRepository::class,
+    SeasonRepository::class,
+    WorkRepository::class,
+];
 
-$container->set(SeasonRepository::class, static function (Container $c): SeasonRepository {
-    return new SeasonRepository($c->get(EntityManager::class));
-});
+foreach($repositories as $repository) {
+    $container->set($repository, static function (Container $c) use ($repository) {
+        return new $repository($c->get(EntityManager::class));
+    });
+}
 
 return $container;
