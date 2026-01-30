@@ -4,7 +4,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Clubdeuce\\TheatreCMS\\": "src/"
+            "Clubdeuce\\TheatreCMS\\": "src/",
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Clubdeuce\\TheatreCMS\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -27,7 +32,8 @@
     "require-dev": {
         "consolidation/robo": "^5.1",
         "squizlabs/php_codesniffer": "^4.0",
-        "phpstan/phpstan": "^2.0"
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^12.5"
     },
     "scripts": {
         "stan": "phpstan analyse -c phpstan.neon.dist --memory-limit=1G"
