@@ -28,6 +28,8 @@ $app->group('/api', function (RouteCollectorProxy $group) {
     $group->post('/people', [Clubdeuce\TheatreCMS\Controllers\People::class, 'create']);
     $group->get('/people/{id}', [Clubdeuce\TheatreCMS\Controllers\People::class, 'fetch']);
     $group->put('/people/{id}', [Clubdeuce\TheatreCMS\Controllers\People::class, 'update']);
+    $group->delete('/people/{id}', [Clubdeuce\TheatreCMS\Controllers\People::class, 'delete']);
+
     $group->group('/seasons', function (RouteCollectorProxy $group) {
         $group->post('', function (Request $request, Response $response) {
             /** @var SeasonRepository $seasonRepository */

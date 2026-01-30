@@ -69,10 +69,13 @@ class People
         $id = intval($args['id']);
 
         $person = $this->personRepository->fetch($id);
+
+        if(is_null($person))
+            return $response->withStatus(404);
+
         $data = json_encode($person);
 
-        if($data)
-            $response->getBody()->write($data);
+        $response->getBody()->write($data);
 
         return $response;
     }
@@ -106,6 +109,26 @@ class People
         return $response->withStatus(200);
     }
 
+    public function delete(Request $request, Response $response, array $args = []): Response
+    {
+        $id = intval($args['id']);
+
+        $person = $this->personRepository->fetch($id);
+
+        if(is_null($person))
+            return $response->withStatus(404);
+
+        if($this->personRepository->delete($person)) {
+            $message = json_encode(['message' => "Person {$id} deleted."]);
+
+            if ($message)
+                $response->getBody()->write($message);
+
+            return $response;
+        }
+
+        return $response->withStatus(500);
+    }
     /**
      * @param array<string, mixed> $args
      * @param array<string, mixed> $defaults
