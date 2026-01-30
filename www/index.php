@@ -24,6 +24,9 @@ $app->get('/', function (Request $request, Response $response) {
 });
 
 $app->group('/api', function (RouteCollectorProxy $group) {
+    $group->get('/people', [Clubdeuce\TheatreCMS\Controllers\People::class, 'fetchAll']);
+    $group->get('/people/{id}', [Clubdeuce\TheatreCMS\Controllers\People::class, 'fetch']);
+    $group->post('/people', [Clubdeuce\TheatreCMS\Controllers\People::class, 'create']);
     $group->group('/seasons', function (RouteCollectorProxy $group) {
         $group->post('', function (Request $request, Response $response) {
             /** @var SeasonRepository $seasonRepository */
@@ -96,7 +99,6 @@ $app->group('/api', function (RouteCollectorProxy $group) {
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         });
     });
-
 });
 
 $app->run();
