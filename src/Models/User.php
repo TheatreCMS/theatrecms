@@ -13,18 +13,17 @@ use Doctrine\ORM\Mapping\Table;
 final class User
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
-    private int $id;
+    private int $id = 0;
 
     #[Column(type: 'string', unique: true, nullable: false)]
     private string $email;
 
     #[Column(name: 'registered_at', type: 'datetimetz_immutable', nullable: false)]
-    private DateTimeImmutable $registeredAt;
+    private DateTimeImmutable $registeredDtm;
 
     public function __construct(string $email)
     {
         $this->email = $email;
-        $this->registeredAt = new DateTimeImmutable('now');
     }
 
     public function getId(): int
@@ -32,13 +31,32 @@ final class User
         return $this->id;
     }
 
+    public function setRegisteredDtm(DateTimeImmutable $registeredDtm): self
+    {
+        $this->registeredDtm = $registeredDtm;
+        return $this;
+    }
+
     public function getEmail(): string
     {
         return $this->email;
     }
 
-    public function getRegisteredAt(): DateTimeImmutable
+    public function getRegisteredDtm(): DateTimeImmutable
     {
-        return $this->registeredAt;
+        return $this->registeredDtm;
+    }
+
+    public function setEmail(string $string): self
+    {
+        $address = filter_var($string, FILTER_VALIDATE_EMAIL);
+
+        if ($address)
+            $this->email = $string;
+
+        if (!$address)
+            throw new \InvalidArgumentException('Invalid email address provided.');
+
+        return $this;
     }
 }
