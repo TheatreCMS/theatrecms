@@ -4,6 +4,7 @@
         colors="true"
         displayDetailsOnTestsThatTriggerDeprecations="true"
         displayDetailsOnPhpunitDeprecations="true"
+        displayDetailsOnPhpunitNotices="true"
 >
     <source>
         <include>
