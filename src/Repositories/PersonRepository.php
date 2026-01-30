@@ -43,4 +43,16 @@ final readonly class PersonRepository
     {
         return $this->em->getRepository(Person::class)->find($id);
     }
+
+    public function delete(Person $person): bool
+    {
+        try {
+            $this->em->remove($person);
+            $this->em->flush();
+            return true;
+        } catch (ORMException $e) {
+            trigger_error($e->getMessage(), E_USER_WARNING);
+            return false;
+        }
+    }
 }
