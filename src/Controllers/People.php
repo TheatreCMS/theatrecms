@@ -4,6 +4,7 @@
  */
 namespace Clubdeuce\TheatreCMS\Controllers;
 
+use Clubdeuce\TheatreCMS\Models\Person;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -74,6 +75,35 @@ class People
             $response->getBody()->write($data);
 
         return $response;
+    }
+
+    public function update(Request $request, Response $response, array $args = []): Response
+    {
+        $id = intval($args['id']);
+        $args = json_decode($request->getBody()->getContents(), true);
+
+        $args = $this->parseArgs($args, [
+            'name' => '',
+            'biography' => '',
+            'headshotUrl' => ''
+        ]);
+
+        $person = $this->personRepository->fetch($id);
+
+        if(is_null($person))
+            return $response->withStatus(404);
+
+        $person->setName($args['name'])
+            ->setBiography($args['biography'])
+            ->setHeadshotUrl(filter_var($args['headshotUrl'], FILTER_VALIDATE_URL));
+
+        if($this->personRepository->save($person)) {
+            $params = json_encode($person);
+            $response->getBody()->write($params);
+            return $response;
+        }
+
+        return $response->withStatus(200);
     }
 
     /**
