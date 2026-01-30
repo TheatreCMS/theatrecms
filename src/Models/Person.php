@@ -52,6 +52,24 @@ class Person implements JsonSerializable
         return $this->headshotUrl;
     }
 
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function setBiography(string $biography): self
+    {
+        $this->biography = $biography;
+        return $this;
+    }
+
+    public function setHeadshotUrl(string $headshotUrl): self
+    {
+        $this->headshotUrl = $headshotUrl;
+        return $this;
+    }
+
     /**
      * @return array<int|string>
      */
