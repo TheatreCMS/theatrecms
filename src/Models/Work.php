@@ -1,6 +1,7 @@
 <?php
 namespace Clubdeuce\TheatreCMS\Models;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -33,6 +34,11 @@ class Work {
     #[InverseJoinColumn(name: 'person_id', referencedColumnName: 'id', unique: true)]
     #[ManyToMany(targetEntity: Person::class)]
     private Collection $creators;
+
+    public function __construct() {
+        // Initialize the creators collection
+        $this->creators = new ArrayCollection();
+    }
 
     public function getId(): int {
         return $this->id;
@@ -68,6 +74,12 @@ class Work {
     public function setDescription(string $description): self
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function setId(int $int): self
+    {
+        $this->id = $int;
         return $this;
     }
 }
