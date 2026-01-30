@@ -4,7 +4,7 @@ info:
   description: Theatre CMS API
   version: 0.0.1
 servers:
-  - url: 'http://theatercms.ddev.site/api'
+  - url: 'http://theatrecms.ddev.site/api'
 paths:
   /people:
     get:
@@ -37,6 +37,63 @@ paths:
                 $ref: '#/components/schemas/Person'
         '500':
           description: Internal Server Error
+  /people/{id}:
+    get:
+      summary: Get Person by ID
+      description: Retrieve a specific person by their ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: A single person.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: Person not found.
+    put:
+      summary: Update Person
+      description: Update an existing person in the Theatre CMS.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '200':
+          description: Person updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '500':
+          description: Internal Server Error
+    delete:
+      summary: Delete Person
+      description: Delete a person from the Theatre CMS.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Person deleted successfully.
+        '404':
+          description: Person not found.
 components:
   schemas:
     Person:
