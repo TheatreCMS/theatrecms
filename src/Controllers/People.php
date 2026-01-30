@@ -120,6 +120,7 @@ class People
         $person = $this->personRepository->fetch($id);
 
         if (is_null($person)) {
+            $response->getBody()->write('{"error": "Person not found."}');
             return $response->withStatus(404);
         }
 
@@ -130,7 +131,7 @@ class People
                 $response->getBody()->write($message);
             }
 
-            return $response;
+            return $response->withStatus(204);
         }
 
         return $response->withStatus(500);
