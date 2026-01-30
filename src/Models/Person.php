@@ -13,7 +13,7 @@ use JsonSerializable;
 class Person implements JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
-    private int $id;
+    private int $id = 0;
 
     #[Column(type: 'string', unique: true, nullable: false)]
     private string $name;
