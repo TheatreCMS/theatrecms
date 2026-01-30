@@ -4,6 +4,70 @@ info:
   description: Theatre CMS API
   version: 0.0.1
 servers:
-  - url: 'https://localhost/api'
-paths: {}
-  
+  - url: 'http://theatercms.ddev.site/api'
+paths:
+  /people:
+    get:
+      summary: Get People
+      description: Retrieve a list of people from the Theatre CMS.
+      responses:
+        '200':
+          description: A list of people.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+    post:
+      summary: Create Person
+      description: Create a new person in the Theatre CMS.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '201':
+          description: Person created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '500':
+          description: Internal Server Error
+components:
+  schemas:
+    Person:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: John Doe
+        biography:
+          type: string
+          example: An accomplished actor known for various roles.
+        headshotUrl:
+          type: string
+          format: uri
+          example: 'https://example.com/headshot.jpg'
+    Work:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Hamlet
+        description:
+          type: string
+          example: A Shakespearean tragedy about the Prince of Denmark.
+        creators:
+          type: array
+          items:
+            $ref: '#/components/schemas/Person'
