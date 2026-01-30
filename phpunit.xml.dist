@@ -1,0 +1,21 @@
+<phpunit
+        bootstrap="tests/bootstrap.php"
+        backupGlobals="false"
+        colors="true"
+        displayDetailsOnTestsThatTriggerDeprecations="true"
+        displayDetailsOnPhpunitDeprecations="true"
+>
+    <source>
+        <include>
+            <directory>src</directory>
+        </include>
+    </source>
+    <testsuites>
+        <testsuite name="unit">
+            <directory suffix=".php">tests/Unit/</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory suffix=".php">tests/Integration/</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
