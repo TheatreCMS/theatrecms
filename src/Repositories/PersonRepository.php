@@ -5,9 +5,8 @@ namespace Clubdeuce\TheatreCMS\Repositories;
 use Clubdeuce\TheatreCMS\Models\Person;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\ORMException;
-use Doctrine\ORM\OptimisticLockException;
 
-final readonly class PersonRepository
+final class PersonRepository
 {
     public function __construct(private EntityManager $em)
     {

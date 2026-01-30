@@ -1,4 +1,5 @@
 <?php
+
 namespace Clubdeuce\TheatreCMS\Models;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,8 +15,8 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'works')]
-class Work {
-
+class Work
+{
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
@@ -35,38 +36,45 @@ class Work {
     #[ManyToMany(targetEntity: Person::class)]
     private Collection $creators;
 
-    public function __construct() {
+    public function __construct()
+    {
         // Initialize the creators collection
         $this->creators = new ArrayCollection();
     }
 
-    public function getId(): int {
+    public function getId(): int
+    {
         return $this->id;
     }
 
-    public function getTitle(): string {
+    public function getTitle(): string
+    {
         return $this->title;
     }
 
-    public function getDescription(): string {
+    public function getDescription(): string
+    {
         return $this->description;
     }
 
     /**
      * @return Collection<int, Person>
      */
-    public function getCreators(): Collection {
+    public function getCreators(): Collection
+    {
         return $this->creators;
     }
 
-    public function addCreator($creator): self {
+    public function addCreator($creator): self
+    {
         if (!$this->creators->contains($creator)) {
             $this->creators->add($creator);
         }
         return $this;
     }
 
-    public function setTitle(string $title): self {
+    public function setTitle(string $title): self
+    {
         $this->title = $title;
         return $this;
     }
