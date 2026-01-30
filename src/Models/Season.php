@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\Table;
 class Season implements \JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
-    private int $id;
+    private int $id = 0;
 
     #[Column(type: 'string', nullable: false)]
     private string $slug;
