@@ -19,10 +19,10 @@ class Person implements JsonSerializable
     private string $name;
 
     #[Column(type: 'text', nullable: true)]
-    private ?string $biography;
+    private string|null $biography;
 
     #[Column(name: 'headshot_url', type: 'string', nullable: true)]
-    private ?string $headshotUrl;
+    private string|null $headshotUrl;
 
 
     public function __construct(string $name, string $biography = null, string $headshotUrl = null)
