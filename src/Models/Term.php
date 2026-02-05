@@ -21,13 +21,6 @@ class Term
     #[Column(type: 'string', nullable: false)]
     protected string $slug;
 
-    #[Column(type: 'text', nullable: true)]
-    protected string $description;
-
-    #[ManyToOne(targetEntity: Taxonomy::class, inversedBy: 'terms')]
-    #[JoinColumn(name: 'taxonomy_id', referencedColumnName: 'id', nullable: false)]
-    protected int $taxonomyId;
-
     public function getId(): int
     {
         return $this->id;
@@ -54,16 +47,4 @@ class Term
         $this->slug = $slug;
         return $this;
     }
-
-    public function getDescription(): string
-    {
-        return $this->description ?? '';
-    }
-
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
-        return $this;
-    }
-
 }
