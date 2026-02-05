@@ -25,6 +25,7 @@ class Taxonomy
     #[Column(type: 'text', nullable: true)]
     protected ?string $description = null;
 
+    #[OneToMany(targetEntity: Term::class, mappedBy: 'taxonomyId', cascade: ['persist', 'remove'], orphanRemoval: true)]
     protected Collection $terms;
 
     public function getId(): int
