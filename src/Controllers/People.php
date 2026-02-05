@@ -33,12 +33,13 @@ class People
         $args = json_decode($args, true);
 
         $data = $this->parseArgs($args, [
-            'name' => '',
+            'firstName' => '',
+            'lastName' => '',
             'biography' => '',
             'headshotUrl' => ''
         ]);
 
-        $person = $this->personRepository->create($data['name'], $data['biography'], $data['headshotUrl']);
+        $person = $this->personRepository->create($data['firstName'], $data['lastName'], $data['biography'], $data['headshotUrl']);
         $params = json_encode($person);
 
         if ($params) {

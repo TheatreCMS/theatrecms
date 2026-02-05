@@ -12,9 +12,9 @@ final class PersonRepository
     {
     }
 
-    public function create(string $name, string $biography = '', string $headshotUrl = ''): Person
+    public function create(string $firstName, string $lastName, string $biography = '', string $headshotUrl = ''): Person
     {
-        $person = new Person($name, $biography, $headshotUrl);
+        $person = new Person($firstName, $lastName, $biography, $headshotUrl);
         return $this->save($person);
     }
 
