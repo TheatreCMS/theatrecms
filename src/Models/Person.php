@@ -15,8 +15,11 @@ class Person implements JsonSerializable
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 
-    #[Column(type: 'string', unique: true, nullable: false)]
-    private string $name;
+    #[Column(name: 'first_name', type: 'string', unique: true, nullable: false)]
+    private string $firstName;
+
+    #[Column(name: 'last_name', type: 'string', unique: true, nullable: false)]
+    private string $lastName;
 
     #[Column(type: 'text', nullable: true)]
     private string|null $biography;
@@ -25,9 +28,10 @@ class Person implements JsonSerializable
     private string|null $headshotUrl;
 
 
-    public function __construct(string $name, string $biography = null, string $headshotUrl = null)
+    public function __construct(string $firstName, string $lastName, string $biography = null, string $headshotUrl = null)
     {
-        $this->name = $name;
+        $this->firstName = $firstName;
+        $this->lastName = $lastName;
         $this->biography = $biography;
         $this->headshotUrl = $headshotUrl;
     }
@@ -39,7 +43,17 @@ class Person implements JsonSerializable
 
     public function getName(): string
     {
-        return $this->name;
+        return implode(' ', [$this->getFirstName(), $this->getLastName()]);
+    }
+
+    public function getFirstName(): string
+    {
+        return $this->firstName;
+    }
+
+    public function getLastName(): string
+    {
+        return $this->lastName;
     }
 
     public function getBiography(): string
