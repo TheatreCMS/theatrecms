@@ -63,4 +63,26 @@ class WorksController
         $response->getBody()->write('{"error": "Failed to create work."}');
         return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
     }
+
+    public function delete(Request $request, Response $response, array $args): Response
+    {
+        $id = $args['id'] ?? '';
+
+        if ($id)
+        {
+            $work = $this->repository->fetch($id);
+
+            if ($work)
+            {
+                $this->repository->delete($work);
+                return $response->withStatus(204);
+            }
+
+            $response->getBody()->write('{"error": "Work not found."}');
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+        }
+
+        $response->getBody()->write('{"error": "Missing work ID."}');
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
+    }
 }
