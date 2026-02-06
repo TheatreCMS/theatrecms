@@ -29,5 +29,4 @@ abstract class Base
     }
 
     abstract public function create(array $args);
-
 }

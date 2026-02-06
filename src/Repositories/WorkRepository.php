@@ -6,36 +6,19 @@ use Clubdeuce\TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
-readonly class WorkRepository
+class WorkRepository extends Base
 {
-    public function __construct(private EntityManagerInterface $em)
-    {
-    }
-
-    public function fetchAll(): array
-    {
-        return $this->em->getRepository(Work::class)->findAll();
-    }
-
-    public function fetch(int $id): ?Work
-    {
-        return $this->em->getRepository(Work::class)->find($id);
-    }
+    protected string $entityClass = Work::class;
 
     public function create(array $args): bool|Work
     {
         $work = new Work();
 
         $work->setTitle($args['title'])
-            ->setDescription($args['synopsis'] ?? '');
+            ->setDescription($args['description'] ?? '');
 
-        try {
-            $this->em->persist($work);
-            $this->em->flush();
-            return $work;
-        } catch (ORMException $e) {
-            trigger_error($e->getMessage(), E_USER_WARNING);
-            return false;
-        }
+        $this->em->persist($work);
+        $this->em->flush();
+        return $work;
     }
 }
