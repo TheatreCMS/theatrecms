@@ -14,7 +14,7 @@ class WorksController
 
     public function get(Request $request, Response $response): Response
     {
-        $works = $this->repository->fetchAll();
+        $works = $this->repository->query();
         $response->getBody()->write(json_encode($works));
 
         return $response->withHeader('Content-Type', 'application/json');
