@@ -92,6 +92,8 @@ class Person implements JsonSerializable
         return [
             'id'          => $this->getId(),
             'name'        => $this->getName(),
+            'firstName'   => $this->getFirstName(),
+            'lastName'    => $this->getLastName(),
             'biography'   => $this->getBiography(),
             'headshotUrl' => $this->getHeadshotUrl(),
         ];
