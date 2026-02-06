@@ -108,6 +108,7 @@ $app->group('/api', function (RouteCollectorProxy $group) {
         $group->post('', [WorksController::class, 'create']);
         $group->get( '/{id}', [WorksController::class, 'getById']);
         $group->put('/{id}', [WorksController::class, 'update']);
+        $group->delete('/{id}', [WorksController::class, 'delete']);
     });
 });
 
