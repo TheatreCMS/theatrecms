@@ -8,13 +8,13 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class WorksController
 {
-    public function __construct(private WorkRepository $workRepository)
+    public function __construct(private readonly WorkRepository $repository)
     {
     }
 
     public function get(Request $request, Response $response): Response
     {
-        $works = $this->workRepository->fetchAll();
+        $works = $this->repository->fetchAll();
         $response->getBody()->write(json_encode($works));
 
         return $response->withHeader('Content-Type', 'application/json');
@@ -26,7 +26,7 @@ class WorksController
 
         if ($id)
         {
-            $work = $this->workRepository->fetch($id);
+            $work = $this->repository->fetch($id);
 
             if ($work)
             {
@@ -53,7 +53,7 @@ class WorksController
         $result = null;
 
         if (!empty($data))
-            $result = $this->workRepository->create($data);
+            $result = $this->repository->create($data);
 
         if ($result) {
             $response->getBody()->write(json_encode($result));
