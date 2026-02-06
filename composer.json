@@ -27,7 +27,8 @@
         "symfony/cache": "^7.4",
         "monolog/monolog": "^3.9",
         "almasaeed2010/adminlte": "^3.2",
-        "blakvghost/php-validator": "^2.3"
+        "blakvghost/php-validator": "^2.3",
+        "guzzlehttp/guzzle": "^7.10"
     },
     "require-dev": {
         "consolidation/robo": "^5.1",
