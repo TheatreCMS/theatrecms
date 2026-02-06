@@ -4,6 +4,7 @@
 
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
@@ -45,6 +46,7 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 $repositories = [
     PersonRepository::class,
     SeasonRepository::class,
+    UserRepository::class,
     WorkRepository::class,
 ];
 
