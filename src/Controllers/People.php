@@ -102,6 +102,8 @@ class People
         }
 
         $person->setName($args['name'])
+            ->setFirstName($args['firstName'])
+            ->setLastName($args['lastName'])
             ->setBiography($args['biography'])
             ->setHeadshotUrl(filter_var($args['headshotUrl'], FILTER_VALIDATE_URL));
 
