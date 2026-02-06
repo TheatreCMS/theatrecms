@@ -18,6 +18,9 @@ final class User
     #[Column(type: 'string', unique: true, nullable: false)]
     private string $email;
 
+    #[Column(name: 'password_hash', type: 'string', nullable: false)]
+    private string $passwordHash;
+
     #[Column(name: 'registered_at', type: 'datetimetz_immutable', nullable: false)]
     private DateTimeImmutable $registeredDtm;
 
@@ -31,9 +34,28 @@ final class User
         return $this->id;
     }
 
+    public function setEmail(string $string): self
+    {
+        $address = filter_var($string, FILTER_VALIDATE_EMAIL);
+
+        if ($address)
+            $this->email = $string;
+
+        if (!$address)
+            throw new \InvalidArgumentException('Invalid email address provided.');
+
+        return $this;
+    }
+
     public function setRegisteredDtm(DateTimeImmutable $registeredDtm): self
     {
         $this->registeredDtm = $registeredDtm;
+        return $this;
+    }
+
+    public function setPasswordHash(string $passwordHash): self
+    {
+        $this->passwordHash = $passwordHash;
         return $this;
     }
 
@@ -47,16 +69,8 @@ final class User
         return $this->registeredDtm;
     }
 
-    public function setEmail(string $string): self
+    public function getPasswordHash(): string
     {
-        $address = filter_var($string, FILTER_VALIDATE_EMAIL);
-
-        if ($address)
-            $this->email = $string;
-
-        if (!$address)
-            throw new \InvalidArgumentException('Invalid email address provided.');
-
-        return $this;
+        return $this->passwordHash;
     }
 }
