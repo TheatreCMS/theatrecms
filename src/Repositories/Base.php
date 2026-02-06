@@ -38,6 +38,12 @@ abstract class Base
 
     abstract public function create(array $args);
 
+    public function delete($item): void
+    {
+        $this->em->remove($item);
+        $this->em->flush();
+    }
+
     protected function defaultQueryArgs(): array
     {
         return [
