@@ -133,8 +133,8 @@ include 'includes/sidebar.php';
                     <input class="form-control" name="firstName" id="firstName" type="text">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="lastName">Last Name</label>
-                    <input class="form-control" name="lastName" id="lastName" type="text">
+                    <label class="form-label" for="lastName">Last Name*</label>
+                    <input class="form-control" name="lastName" id="lastName" type="text" required>
                 </div>
                 <div class="mb-3">
                     <label class="form-label" for="biography">Biography</label>
