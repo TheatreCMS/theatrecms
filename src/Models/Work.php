@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'works')]
-class Work
+class Work implements \JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
@@ -25,6 +25,9 @@ class Work
 
     #[Column(type: 'text', nullable: true)]
     private string $description;
+
+    #[Column(type: 'text', nullable: true)]
+    private string $synopsis;
 
     /**
      * Many works have many creators.
@@ -65,6 +68,11 @@ class Work
         return $this->creators;
     }
 
+    public function getSynopsis(): string
+    {
+        return $this->synopsis;
+    }
+
     public function addCreator($creator): self
     {
         if (!$this->creators->contains($creator)) {
@@ -89,5 +97,16 @@ class Work
     {
         $this->id = $int;
         return $this;
+    }
+
+    public function setSynopsis(string $synopsis): self
+    {
+        $this->synopsis = $synopsis;
+        return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return get_object_vars($this);
     }
 }
