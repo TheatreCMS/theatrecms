@@ -58,7 +58,7 @@ $app->group('/api', function (RouteCollectorProxy $group) {
         $group->get('', function (Request $request, Response $response) {
             /** @var SeasonRepository $seasonRepository */
             $seasonRepository = $this->get(SeasonRepository::class);
-            $seasons = $seasonRepository->findAll();
+            $seasons = $seasonRepository->fetchAll();
 
             $data = json_encode($seasons);
 

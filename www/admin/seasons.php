@@ -20,7 +20,7 @@ try{
      * @var SeasonRepository $repository
      */
     $repository = $container->get(SeasonRepository::class);
-    $seasons = $repository->findAll();
+    $seasons = $repository->fetchAll();
 } catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
     $seasons = [];
 }
