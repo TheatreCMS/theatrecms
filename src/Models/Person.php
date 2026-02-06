@@ -98,4 +98,16 @@ class Person implements JsonSerializable
             'headshotUrl' => $this->getHeadshotUrl(),
         ];
     }
+
+    public function setFirstName(mixed $firstName): self
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+    public function setLastName(mixed $lastName): self
+    {
+        $this->lastName = $lastName;
+        return $this;
+    }
 }
