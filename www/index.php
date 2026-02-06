@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
+use Clubdeuce\TheatreCMS\Controllers\WorksController;
 use Clubdeuce\TheatreCMS\Models\Season;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -101,6 +102,12 @@ $app->group('/api', function (RouteCollectorProxy $group) {
             $response->getBody()->write(json_encode($season));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         });
+    });
+    $group->group( '/works', function (RouteCollectorProxy $group) {
+        $group->get('', [WorksController::class, 'get']);
+        $group->post('', [WorksController::class, 'create']);
+        $group->get( '/{id}', [WorksController::class, 'getById']);
+        $group->put('/{id}', [WorksController::class, 'update']);
     });
 });
 
