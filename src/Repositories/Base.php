@@ -15,7 +15,15 @@ abstract class Base
 
     public function query(array $args = []): array
     {
-        return $this->em->getRepository($this->entityClass)->findBy($args, ['title' => 'ASC'], 10, null);
+        $args = array_merge($this->defaultQueryArgs(), $args);
+
+        $builder = $this->em->createQueryBuilder()
+            ->select('e')
+            ->from($this->entityClass, 'e')
+            ->setMaxResults($args['limit'])
+            ->setFirstResult($args['offset']);
+
+        return $builder->getQuery()->getArrayResult();
     }
 
     public function fetchAll(): array
@@ -29,4 +37,13 @@ abstract class Base
     }
 
     abstract public function create(array $args);
+
+    protected function defaultQueryArgs(): array
+    {
+        return [
+            'orderBy' => ['id' => 'ASC'],
+            'limit'   => 10,
+            'offset'  => 0,
+        ];
+    }
 }
