@@ -44,6 +44,12 @@ abstract class Base
         $this->em->flush();
     }
 
+    public function update($item): void
+    {
+        $this->em->persist($item);
+        $this->em->flush();
+    }
+
     protected function defaultQueryArgs(): array
     {
         return [
