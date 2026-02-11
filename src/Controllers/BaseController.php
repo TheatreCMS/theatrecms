@@ -3,13 +3,17 @@
 namespace Clubdeuce\TheatreCMS\Controllers;
 
 use Clubdeuce\TheatreCMS\Repositories\BaseRepository as BaseRepository;
+use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
+use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class BaseController
 {
 
-    protected BaseRepository $repository;
+    protected PersonRepository|SeasonRepository|UserRepository|WorkRepository $repository;
 
     public function create(Request $request, Response $response): Response
     {
