@@ -6,7 +6,7 @@ use Clubdeuce\TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
-class WorkRepository extends Base
+class WorkRepository extends BaseRepository
 {
     protected string $entityClass = Work::class;
 

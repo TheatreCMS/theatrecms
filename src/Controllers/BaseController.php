@@ -2,7 +2,7 @@
 
 namespace Clubdeuce\TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Repositories\Base as BaseRepository;
+use Clubdeuce\TheatreCMS\Repositories\BaseRepository as BaseRepository;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 

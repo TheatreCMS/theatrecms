@@ -7,7 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 
-class SeasonRepository extends Base
+class SeasonRepository extends BaseRepository
 {
      protected string $entityClass = Season::class;
 

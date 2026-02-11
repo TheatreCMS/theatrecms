@@ -4,7 +4,7 @@ namespace Clubdeuce\TheatreCMS\Repositories;
 
 use Clubdeuce\TheatreCMS\Models\User;
 
-class UserRepository extends Base
+class UserRepository extends BaseRepository
 {
     protected string $entityClass = User::class;
 

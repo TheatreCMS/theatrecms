@@ -5,7 +5,7 @@ namespace Clubdeuce\TheatreCMS\Repositories;
 use Clubdeuce\TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 
-abstract class Base
+abstract class BaseRepository
 {
     protected string $entityClass;
 
