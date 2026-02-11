@@ -3,55 +3,31 @@
 namespace Clubdeuce\TheatreCMS\Repositories;
 
 use Clubdeuce\TheatreCMS\Models\Person;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\EntityManagerInterface;
 
-final class PersonRepository
+final class PersonRepository extends BaseRepository
 {
-    public function __construct(private EntityManager $em)
-    {
-    }
+    protected string $entityClass = Person::class;
 
-    public function create(string $firstName, string $lastName, string $biography = '', string $headshotUrl = ''): Person
+    public function create(array $args): Person
     {
-        $person = new Person($firstName, $lastName, $biography, $headshotUrl);
-        return $this->save($person);
-    }
+        $args = array_merge([
+            'firstName' => null,
+            'lastName' => null,
+            'biography' => null,
+            'headshotUrl' => null,
+        ], $args);
 
-    public function save(Person $person): bool|Person
-    {
-        try {
-            $this->em->persist($person);
-            $this->em->flush();
-            return $person;
-        } catch (ORMException $e) {
-            trigger_error($e->getMessage(), E_USER_WARNING);
-            return false;
-        }
-    }
+        $person = new Person();
 
-    /**
-     * @return array<Person>
-     */
-    public function fetchAll(): array
-    {
-        return $this->em->getRepository(Person::class)->findAll();
-    }
+        $person->setFirstName($args['firstName'])
+            ->setLastName($args['lastName'])
+            ->setBiography($args['biography'])
+            ->setHeadshotUrl($args['headshotUrl']);
 
-    public function fetch(int $id): ?Person
-    {
-        return $this->em->getRepository(Person::class)->find($id);
-    }
+        $this->em->persist($person);
+        $this->em->flush();
 
-    public function delete(Person $person): bool
-    {
-        try {
-            $this->em->remove($person);
-            $this->em->flush();
-            return true;
-        } catch (ORMException $e) {
-            trigger_error($e->getMessage(), E_USER_WARNING);
-            return false;
-        }
+        return $person;
     }
 }

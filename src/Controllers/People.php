@@ -12,8 +12,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 class People extends BaseController
 {
-    public function __construct(private PersonRepository $personRepository)
+    public function __construct(PersonRepository $personRepository)
     {
+        $this->repository = $personRepository;
     }
 
     public function update(Request $request, Response $response, array $args = []): Response

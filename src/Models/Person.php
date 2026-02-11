@@ -28,14 +28,6 @@ class Person implements JsonSerializable
     private string|null $headshotUrl;
 
 
-    public function __construct(string $firstName, string $lastName, string $biography = null, string $headshotUrl = null)
-    {
-        $this->firstName = $firstName;
-        $this->lastName = $lastName;
-        $this->biography = $biography;
-        $this->headshotUrl = $headshotUrl;
-    }
-
     public function getId(): int
     {
         return $this->id;
