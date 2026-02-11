@@ -3,8 +3,12 @@
 namespace Clubdeuce\TheatreCMS\Repositories;
 
 use Clubdeuce\TheatreCMS\Models\Person;
-use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @method Person[] query(array $args = [])
+ * @method Person[] fetchAll()
+ * @method Person|null fetch(int $id)
+ */
 final class PersonRepository extends BaseRepository
 {
     protected string $entityClass = Person::class;

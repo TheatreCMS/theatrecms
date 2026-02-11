@@ -2,6 +2,9 @@
 
 namespace Clubdeuce\TheatreCMS\Repositories;
 
+use Clubdeuce\TheatreCMS\Models\Person;
+use Clubdeuce\TheatreCMS\Models\Season;
+use Clubdeuce\TheatreCMS\Models\User;
 use Clubdeuce\TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -12,6 +15,8 @@ abstract class BaseRepository
     public function __construct(protected EntityManagerInterface $em)
     {
     }
+
+    abstract public function create(array $args);
 
     public function query(array $args = []): array
     {
@@ -26,17 +31,19 @@ abstract class BaseRepository
         return $builder->getQuery()->getArrayResult();
     }
 
+    /**
+     * @return array<Person|Season|User|Work>
+     */
     public function fetchAll(): array
     {
         return $this->em->getRepository($this->entityClass)->findAll();
     }
 
-    public function fetch(int $id): ?Work
+    public function fetch(int $id): Person|Season|User|Work
     {
         return $this->em->getRepository(Work::class)->find($id);
     }
 
-    abstract public function create(array $args);
 
     public function delete($item): void
     {
