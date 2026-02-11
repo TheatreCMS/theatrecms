@@ -10,11 +10,17 @@ use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Psr\Http\Message\RequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
+/**
+ * Class People
+ * @package Clubdeuce\TheatreCMS\Controllers
+ *
+ * @property PersonRepository $repository
+ */
 class People extends BaseController
 {
-    public function __construct(PersonRepository $personRepository)
+    public function __construct(PersonRepository $repository)
     {
-        $this->repository = $personRepository;
+        $this->repository = $repository;
     }
 
     public function update(Request $request, Response $response, array $args = []): Response
@@ -28,7 +34,7 @@ class People extends BaseController
             'headshotUrl' => ''
         ]);
 
-        $person = $this->personRepository->fetch($id);
+        $person = $this->repository->fetch($id);
 
         if (is_null($person)) {
             return $response->withStatus(404);
@@ -40,12 +46,10 @@ class People extends BaseController
             ->setBiography($args['biography'])
             ->setHeadshotUrl(filter_var($args['headshotUrl'], FILTER_VALIDATE_URL));
 
-        if ($this->personRepository->save($person)) {
-            $params = json_encode($person);
-            $response->getBody()->write($params);
-            return $response;
-        }
+        $this->repository->update($person);
+        $params = json_encode($person);
+        $response->getBody()->write($params);
+        return $response;
 
-        return $response->withStatus(200);
     }
 }
