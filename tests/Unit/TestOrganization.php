@@ -13,6 +13,19 @@ use PHPUnit\Framework\TestCase;
  */
 class TestOrganization extends TestCase
 {
+    public function testConstructor(): void
+    {
+        $organization = new Organization('Test Theatre', 'test-theatre');
+        
+        $this->assertEquals('Test Theatre', $organization->getName());
+        $this->assertEquals('test-theatre', $organization->getSlug());
+        
+        // Test with defaults
+        $emptyOrg = new Organization();
+        $this->assertEquals('', $emptyOrg->getName());
+        $this->assertEquals('', $emptyOrg->getSlug());
+    }
+
     public function testGettersAndSetters(): void
     {
         $organization = new Organization();

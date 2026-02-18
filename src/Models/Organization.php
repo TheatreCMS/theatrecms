@@ -39,6 +39,12 @@ class Organization implements JsonSerializable
     #[Column(type: 'string', nullable: true)]
     private ?string $address = null;
 
+    public function __construct(string $name = '', string $slug = '')
+    {
+        $this->name = $name;
+        $this->slug = $slug;
+    }
+
     public function getId(): int
     {
         return $this->id;
