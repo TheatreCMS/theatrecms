@@ -2,6 +2,7 @@
 
 namespace Clubdeuce\TheatreCMS\Models;
 
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -23,8 +24,16 @@ class Season implements \JsonSerializable
     #[Column(type: 'text', nullable: true)]
     private ?string $overview = null;
 
+    #[Column(name: 'hero_image_url', type: 'string', nullable: false)]
+    private string $heroImageUrl = '';
+    
     #[Column(name: 'start_date', type: 'datetime', nullable: false)]
     private ?\DateTime $startDate = null;
+
+    #[Column(name: 'end_date', type: 'datetime', nullable: false)]
+    private ?\DateTime $endDate = null;
+
+    private Collection $productions;
 
     public function __construct(string $slug, string $label)
     {
@@ -57,6 +66,16 @@ class Season implements \JsonSerializable
         return $this->startDate;
     }
 
+    public function getEndDate(): ?\DateTime
+    {
+        return $this->endDate;
+    }
+
+    public function getHeroImageUrl(): string
+    {
+        return $this->heroImageUrl;
+    }
+
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
@@ -85,6 +104,20 @@ class Season implements \JsonSerializable
         return $this;
     }
 
+    public function setEndDate(\DateTime $endDate): self
+    {
+        $this->endDate = $endDate;
+
+        return $this;
+    }
+
+    public function setHeroImageUrl(string $heroImageUrl): self
+    {
+        $this->heroImageUrl = $heroImageUrl;
+
+        return $this;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -95,7 +128,9 @@ class Season implements \JsonSerializable
             'slug' => $this->getSlug(),
             'label' => $this->getLabel(),
             'startDate' => $this->getStartDate()?->format('Y-m-d'),
+            'endDate' => $this->getEndDate()?->format('Y-m-d'),
             'overview' => $this->getOverview(),
+            'heroImageUrl' => $this->getHeroImageUrl(),
         ];
     }
 }
