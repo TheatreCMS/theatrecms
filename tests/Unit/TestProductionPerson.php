@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class TestProductionPerson
- * @package Clubdeuce\TheaterCMS\Tests\Unit
+ * @package Clubdeuce\TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass ProductionPerson
  */

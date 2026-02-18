@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Class TestRoleType
- * @package Clubdeuce\TheaterCMS\Tests\Unit
+ * @package Clubdeuce\TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass RoleType
  */
