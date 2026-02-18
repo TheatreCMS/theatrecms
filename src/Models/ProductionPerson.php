@@ -13,7 +13,7 @@ use Doctrine\ORM\Mapping\Table;
 class ProductionPerson
 {
     #[Id]
-    #[ManyToOne(targetEntity: Production::class)]
+    #[ManyToOne(targetEntity: Production::class, inversedBy: 'people')]
     #[JoinColumn(name: 'production_id', referencedColumnName: 'id', nullable: false)]
     private Production $production;
 
