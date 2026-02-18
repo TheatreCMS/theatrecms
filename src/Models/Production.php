@@ -19,7 +19,7 @@ class Production
     #[Column(type: 'string', nullable: false)]
     private string $name;
 
-    #[ManyToOne(targetEntity: Season::class)]
+    #[ManyToOne(targetEntity: Season::class, inversedBy: 'productions')]
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
     private Season $season;
 

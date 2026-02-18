@@ -2,11 +2,14 @@
 
 namespace Clubdeuce\TheatreCMS\Models;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'seasons')]
@@ -32,13 +35,15 @@ class Season implements \JsonSerializable
 
     #[Column(name: 'end_date', type: 'datetime', nullable: false)]
     private ?\DateTime $endDate = null;
-
+    
+    #[OneToMany(mappedBy: 'season', targetEntity: Production::class, cascade: ['persist', 'remove'])]
     private Collection $productions;
 
     public function __construct(string $slug, string $label)
     {
-        $this->slug = $slug;
-        $this->label = $label;
+        $this->slug        = $slug;
+        $this->label       = $label;
+        $this->productions = new ArrayCollection();
     }
 
     public function getId(): int
