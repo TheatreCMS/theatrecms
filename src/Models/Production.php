@@ -40,16 +40,17 @@ class Production
     #[Column(name: 'content_advisory', type: 'text', nullable: true)]
     private string $contentAdvisory;
 
+    #[OneToMany(mappedBy: 'production', targetEntity: ProductionPerson::class)]
     private Collection $people;
-    private Collection $creativeTeam;
-    private Collection $performers;
+
+    #[OneToMany(mappedBy: 'production', targetEntity: Sponsor::class)]
+    private Collection $sponsors;
 
     #[Column(name: 'promo_video_url', type: 'string', nullable: true)]
     private string $promoVideoUrl;
 
     #[Column(name: 'ticket_purchase_url', type: 'string', nullable: true)]
     private string $ticketPurchaseUrl;
-
 
     #[ManyToOne(targetEntity: Season::class, inversedBy: 'productions')]
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
@@ -60,6 +61,7 @@ class Production
         $this->name   = $name;
         $this->season = $season;
         $this->people = new ArrayCollection();
+        $this->sponsors = new ArrayCollection();
     }
 
     public function getId(): int
@@ -120,6 +122,20 @@ class Production
     public function getTicketPurchaseUrl(): string
     {
         return $this->ticketPurchaseUrl;
+    }
+
+    public function getSponsors(): Collection
+    {
+        return $this->sponsors;
+    }
+
+    public function addSponsor(Sponsor $sponsor): self
+    {
+        if (!$this->sponsors->contains($sponsor)) {
+            $this->sponsors[] = $sponsor;
+        }
+
+        return $this;
     }
 
     public function setName(string $name): self
