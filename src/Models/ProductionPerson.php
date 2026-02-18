@@ -24,10 +24,10 @@ class ProductionPerson
 
     /**
      * The type of role (e.g., 'cast', 'production team', etc.)
-     * @var string|null
+     * @var RoleType|null
      */
-    #[Column(name: 'role_type', type: 'text', nullable: true)]
-    private ?string $roleType = null;
+    #[Column(name: 'role_type', type: 'string', nullable: true, enumType: RoleType::class)]
+    private ?RoleType $roleType = null;
 
     /**
      * The specific role (e.g., 'Hamlet', 'Director', etc.)
@@ -53,7 +53,7 @@ class ProductionPerson
     }
 
 
-    public function getRoleType(): ?string
+    public function getRoleType(): ?RoleType
     {
         return $this->roleType;
     }
@@ -63,7 +63,7 @@ class ProductionPerson
         return $this->role;
     }
 
-    public function setRoleType(?string $roleType): self
+    public function setRoleType(?RoleType $roleType): self
     {
         $this->roleType = $roleType;
 
