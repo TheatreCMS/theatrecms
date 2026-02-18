@@ -76,6 +76,11 @@ class Season implements \JsonSerializable
         return $this->heroImageUrl;
     }
 
+    public function getProductions(): Collection
+    {
+        return $this->productions;
+    }
+
     public function setSlug(string $slug): self
     {
         $this->slug = $slug;
@@ -114,6 +119,15 @@ class Season implements \JsonSerializable
     public function setHeroImageUrl(string $heroImageUrl): self
     {
         $this->heroImageUrl = $heroImageUrl;
+
+        return $this;
+    }
+
+    public function addProduction(Production $production): self
+    {
+        if (!$this->productions->contains($production)) {
+            $this->productions->add($production);
+        }
 
         return $this;
     }
