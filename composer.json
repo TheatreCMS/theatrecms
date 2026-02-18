@@ -25,9 +25,9 @@
         "doctrine/orm": "^3.5",
         "doctrine/dbal": "^4.4",
         "symfony/cache": "^7.4",
+        "symfony/validator": "^7.4",
         "monolog/monolog": "^3.9",
         "almasaeed2010/adminlte": "^3.2",
-        "blakvghost/php-validator": "^2.3",
         "guzzlehttp/guzzle": "^7.10"
     },
     "require-dev": {
