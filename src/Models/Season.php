@@ -4,7 +4,6 @@ namespace Clubdeuce\TheatreCMS\Models;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -150,6 +149,7 @@ class Season implements \JsonSerializable
             'endDate' => $this->getEndDate()?->format('Y-m-d'),
             'overview' => $this->getOverview(),
             'heroImageUrl' => $this->getHeroImageUrl(),
+            'productions' => $this->getProductions()->toArray(),
         ];
     }
 }
