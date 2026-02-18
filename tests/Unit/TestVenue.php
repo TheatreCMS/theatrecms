@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
  * Class TestVenue
  * @package Clubdeuce\TheatreCMS\Tests\Unit
  *
- * @coversDefaultClass Venue
+ * @coversDefaultClass \Clubdeuce\TheatreCMS\Models\Venue
  */
 class TestVenue extends TestCase
 {
