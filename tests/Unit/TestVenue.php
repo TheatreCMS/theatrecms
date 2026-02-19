@@ -12,9 +12,21 @@ use PHPUnit\Framework\TestCase;
  */
 class TestVenue extends TestCase
 {
+    private function makeVenue(): Venue
+    {
+        return new Venue(
+            'The Grand Theatre',
+            '123 Main Street',
+            'Portland',
+            'Oregon',
+            '97201',
+            'USA'
+        );
+    }
+
     public function testSetAndGetName(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $name = 'The Grand Theatre';
         $venue->setName($name);
         $this->assertEquals($name, $venue->getName());
@@ -22,7 +34,7 @@ class TestVenue extends TestCase
 
     public function testSetAndGetAddress(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $address = '123 Main Street';
         $venue->setAddress($address);
         $this->assertEquals($address, $venue->getAddress());
@@ -30,7 +42,7 @@ class TestVenue extends TestCase
 
     public function testSetAndGetCity(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $city = 'Portland';
         $venue->setCity($city);
         $this->assertEquals($city, $venue->getCity());
@@ -38,7 +50,7 @@ class TestVenue extends TestCase
 
     public function testSetAndGetState(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $state = 'Oregon';
         $venue->setState($state);
         $this->assertEquals($state, $venue->getState());
@@ -46,7 +58,7 @@ class TestVenue extends TestCase
 
     public function testSetAndGetPostcode(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $postcode = '97201';
         $venue->setPostcode($postcode);
         $this->assertEquals($postcode, $venue->getPostcode());
@@ -54,7 +66,7 @@ class TestVenue extends TestCase
 
     public function testSetAndGetCountry(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $country = 'USA';
         $venue->setCountry($country);
         $this->assertEquals($country, $venue->getCountry());
@@ -62,7 +74,7 @@ class TestVenue extends TestCase
 
     public function testSetAndGetCapacity(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $capacity = 500;
         $venue->setCapacity($capacity);
         $this->assertEquals($capacity, $venue->getCapacity());
@@ -70,14 +82,14 @@ class TestVenue extends TestCase
 
     public function testCapacityCanBeNull(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $venue->setCapacity(null);
         $this->assertNull($venue->getCapacity());
     }
 
     public function testSetAndGetDescription(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $description = 'A historic theatre in the heart of downtown.';
         $venue->setDescription($description);
         $this->assertEquals($description, $venue->getDescription());
@@ -85,14 +97,14 @@ class TestVenue extends TestCase
 
     public function testDescriptionCanBeNull(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $venue->setDescription(null);
         $this->assertNull($venue->getDescription());
     }
 
     public function testSetAndGetAccessibilityInfo(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $accessibilityInfo = 'Wheelchair accessible with elevator access to all levels.';
         $venue->setAccessibilityInfo($accessibilityInfo);
         $this->assertEquals($accessibilityInfo, $venue->getAccessibilityInfo());
@@ -100,14 +112,14 @@ class TestVenue extends TestCase
 
     public function testAccessibilityInfoCanBeNull(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $venue->setAccessibilityInfo(null);
         $this->assertNull($venue->getAccessibilityInfo());
     }
 
     public function testSetAndGetWebsiteUrl(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $websiteUrl = 'https://grandtheatre.com';
         $venue->setWebsiteUrl($websiteUrl);
         $this->assertEquals($websiteUrl, $venue->getWebsiteUrl());
@@ -115,14 +127,14 @@ class TestVenue extends TestCase
 
     public function testWebsiteUrlCanBeNull(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $venue->setWebsiteUrl(null);
         $this->assertNull($venue->getWebsiteUrl());
     }
 
     public function testSetAndGetMapUrl(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $mapUrl = 'https://maps.google.com/place/grandtheatre';
         $venue->setMapUrl($mapUrl);
         $this->assertEquals($mapUrl, $venue->getMapUrl());
@@ -130,15 +142,15 @@ class TestVenue extends TestCase
 
     public function testMapUrlCanBeNull(): void
     {
-        $venue = new Venue();
+        $venue = $this->makeVenue();
         $venue->setMapUrl(null);
         $this->assertNull($venue->getMapUrl());
     }
 
     public function testAllFieldsTogether(): void
     {
-        $venue = new Venue();
-        
+        $venue = $this->makeVenue();
+
         $venue->setName('The Grand Theatre')
               ->setAddress('123 Main Street')
               ->setCity('Portland')
