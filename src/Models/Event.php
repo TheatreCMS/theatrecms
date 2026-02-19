@@ -17,8 +17,8 @@ class Event
     private int $id;
 
     #[ManyToOne(targetEntity: Production::class)]
-    #[JoinColumn(name: 'production_id', referencedColumnName: 'id', nullable: false)]
-    private Production $production;
+    #[JoinColumn(name: 'production_id', referencedColumnName: 'id', nullable: true)]
+    private ?Production $production = null;
 
     #[Column(name: 'starts_at', type: 'datetime_immutable', nullable: false)]
     private \DateTimeImmutable $startsAt;
@@ -35,11 +35,11 @@ class Event
     #[Column(type: 'text', nullable: true)]
     private ?string $notes = null;
 
-    public function __construct(Production $production, \DateTimeImmutable $startsAt, string $status)
+    public function __construct(\DateTimeImmutable $startsAt, string $status, ?Production $production = null)
     {
-        $this->production = $production;
         $this->startsAt = $startsAt;
         $this->status = $status;
+        $this->production = $production;
     }
 
     public function getId(): int
@@ -47,7 +47,7 @@ class Event
         return $this->id;
     }
 
-    public function getProduction(): Production
+    public function getProduction(): ?Production
     {
         return $this->production;
     }
@@ -77,7 +77,7 @@ class Event
         return $this->notes;
     }
 
-    public function setProduction(Production $production): self
+    public function setProduction(?Production $production): self
     {
         $this->production = $production;
 

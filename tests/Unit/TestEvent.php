@@ -27,7 +27,7 @@ class TestEvent extends TestCase
 
     public function testConstructor()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
 
         $this->assertEquals($this->production, $event->getProduction());
         $this->assertEquals($this->startsAt, $event->getStartsAt());
@@ -39,7 +39,7 @@ class TestEvent extends TestCase
 
     public function testSetProduction()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
         $season2 = new Season('2027-2028', '2027-2028 Season');
         $newProduction = new Production('Macbeth', $season2);
         $event->setProduction($newProduction);
@@ -49,7 +49,7 @@ class TestEvent extends TestCase
 
     public function testSetStartsAt()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
         $newStartsAt = new \DateTimeImmutable('2026-10-16 19:00:00');
         $event->setStartsAt($newStartsAt);
 
@@ -58,7 +58,7 @@ class TestEvent extends TestCase
 
     public function testSetEndsAt()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
         $endsAt = new \DateTimeImmutable('2026-10-15 22:30:00');
         $event->setEndsAt($endsAt);
 
@@ -67,7 +67,7 @@ class TestEvent extends TestCase
 
     public function testSetStatus()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
         $event->setStatus('sold_out');
 
         $this->assertEquals('sold_out', $event->getStatus());
@@ -75,7 +75,7 @@ class TestEvent extends TestCase
 
     public function testSetTicketUrl()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
         $ticketUrl = 'https://tickets.example.com/event/12345';
         $event->setTicketUrl($ticketUrl);
 
@@ -84,7 +84,7 @@ class TestEvent extends TestCase
 
     public function testSetNotes()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
         $notes = 'Post-show discussion with the director';
         $event->setNotes($notes);
 
@@ -93,7 +93,7 @@ class TestEvent extends TestCase
 
     public function testMultipleStatusValues()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
 
         $event->setStatus('cancelled');
         $this->assertEquals('cancelled', $event->getStatus());
@@ -104,7 +104,7 @@ class TestEvent extends TestCase
 
     public function testNullableFields()
     {
-        $event = new Event($this->production, $this->startsAt, 'scheduled');
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
 
         $event->setEndsAt(null);
         $this->assertNull($event->getEndsAt());
@@ -123,7 +123,7 @@ class TestEvent extends TestCase
         $ticketUrl = 'https://tickets.example.com/event/12345';
         $notes = 'Sensory-friendly performance';
 
-        $event = new Event($this->production, $startsAt, 'scheduled');
+        $event = new Event($startsAt, 'scheduled', $this->production);
         $event->setEndsAt($endsAt);
         $event->setTicketUrl($ticketUrl);
         $event->setNotes($notes);
@@ -134,5 +134,50 @@ class TestEvent extends TestCase
         $this->assertEquals('scheduled', $event->getStatus());
         $this->assertEquals($ticketUrl, $event->getTicketUrl());
         $this->assertEquals($notes, $event->getNotes());
+    }
+
+    public function testConstructorWithoutProduction()
+    {
+        $startsAt = new \DateTimeImmutable('2026-11-20 19:00:00');
+        $event = new Event($startsAt, 'scheduled');
+
+        $this->assertNull($event->getProduction());
+        $this->assertEquals($startsAt, $event->getStartsAt());
+        $this->assertEquals('scheduled', $event->getStatus());
+    }
+
+    public function testStandaloneEventLikeGala()
+    {
+        $startsAt = new \DateTimeImmutable('2026-12-15 18:00:00');
+        $endsAt = new \DateTimeImmutable('2026-12-15 22:00:00');
+        $galaEvent = new Event($startsAt, 'scheduled');
+        $galaEvent->setEndsAt($endsAt);
+        $galaEvent->setTicketUrl('https://tickets.example.com/gala');
+        $galaEvent->setNotes('Annual fundraising gala');
+
+        $this->assertNull($galaEvent->getProduction());
+        $this->assertEquals($startsAt, $galaEvent->getStartsAt());
+        $this->assertEquals($endsAt, $galaEvent->getEndsAt());
+        $this->assertEquals('scheduled', $galaEvent->getStatus());
+        $this->assertEquals('https://tickets.example.com/gala', $galaEvent->getTicketUrl());
+        $this->assertEquals('Annual fundraising gala', $galaEvent->getNotes());
+    }
+
+    public function testSetProductionToNull()
+    {
+        $event = new Event($this->startsAt, 'scheduled', $this->production);
+        $this->assertEquals($this->production, $event->getProduction());
+
+        $event->setProduction(null);
+        $this->assertNull($event->getProduction());
+    }
+
+    public function testSetProductionFromNullToProduction()
+    {
+        $event = new Event($this->startsAt, 'scheduled');
+        $this->assertNull($event->getProduction());
+
+        $event->setProduction($this->production);
+        $this->assertEquals($this->production, $event->getProduction());
     }
 }
