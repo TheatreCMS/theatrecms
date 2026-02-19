@@ -61,7 +61,9 @@ class TestSeason extends TestCase
         $season = new Season('2026-2027', '2026-2027 Season');
         $season->setOverview('This is the overview for the 2026-2027 season.');
         $startDate = new \DateTime('2026-09-01');
+        $endDate = new \DateTime('2027-05-31');
         $season->setStartDate($startDate);
+        $season->setEndDate($endDate);
 
         $expected = [
             'id' => 0,
@@ -69,6 +71,9 @@ class TestSeason extends TestCase
             'label' => '2026-2027 Season',
             'overview' => 'This is the overview for the 2026-2027 season.',
             'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'heroImageUrl' => '',
+            'productions' => [],
         ];
 
         $this->assertEquals($expected, $season->jsonSerialize());
