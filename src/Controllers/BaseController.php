@@ -2,7 +2,6 @@
 
 namespace Clubdeuce\TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Repositories\BaseRepository as BaseRepository;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
