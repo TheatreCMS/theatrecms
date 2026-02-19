@@ -44,6 +44,21 @@ return [
                 'password' => 'db',
                 'charset' => 'utf8mb4'
             ]
-        ]
+        ],
+
+        // Twig view settings. Template path and cache may be customized per-environment.
+        'view' => [
+            // Path (or array of paths) where Twig will look for templates
+            'template_path' => APP_ROOT . '/templates',
+
+            // Path for twig cache. Set to false or leave empty to disable caching in dev.
+            'cache' => APP_ROOT . '/var/twig',
+
+            // Whether Twig caching should be enabled. You can tie this to 'doctrine.dev_mode' if desired.
+            'cache_enabled' => false,
+
+            // Enable Twig debug mode (adds debug extension)
+            'debug' => true,
+        ],
     ]
 ];

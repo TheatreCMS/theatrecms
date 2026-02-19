@@ -10,8 +10,11 @@ use DI\Container;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
+use Slim\App;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Slim\Views\Twig;
+use Slim\Views\TwigMiddleware;
 
 
 if( !defined('APP_ROOT') )
@@ -41,6 +44,30 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
     $connection = DriverManager::getConnection($settings['doctrine']['connection']);
 
     return new EntityManager($connection, $config);
+});
+
+// Register Slim\Views\Twig in the container
+$container->set(Twig::class, static function (Container $c): Twig {
+    /** @var array $settings */
+    $settings = $c->get('settings');
+    $viewSettings = $settings['view'] ?? [];
+
+    $templatePath = $viewSettings['template_path'] ?? APP_ROOT . '/templates';
+    $cache = ($viewSettings['cache_enabled'] ?? false) ? ($viewSettings['cache'] ?? APP_ROOT . '/var/twig') : false;
+    $debug = $viewSettings['debug'] ?? false;
+
+    return Twig::create($templatePath, [
+        'cache' => $cache,
+        'debug' => $debug,
+        'auto_reload' => $debug,
+    ]);
+});
+
+// Register a callable factory for TwigMiddleware that can be invoked with the Slim\App
+$container->set(TwigMiddleware::class, static function (Container $c): callable {
+    return function (App $app, string $containerKey = 'view') {
+        return TwigMiddleware::createFromContainer($app, $containerKey);
+    };
 });
 
 $repositories = [
