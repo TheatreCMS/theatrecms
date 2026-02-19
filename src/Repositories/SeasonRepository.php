@@ -13,13 +13,24 @@ class SeasonRepository extends BaseRepository
 
      public function create(array $args): Season
      {
-        $season = new Season($args['slug'], $args['label']);
+         $args = array_merge($args, [
+            'slug' => null,
+            'label' => null,
+            'startDate' => null,
+            'endDate' => null,
+            'overview' => null,
+         ]);
 
-        $season->setStartDate($args['startDate'])
-            ->setOverview($args['overview']);
+         $season = new Season($args['slug'], $args['label']);
 
-        $this->em->persist($season);
-        $this->em->flush();
+         $season->setSlug($args['slug'])
+             ->setLabel($args['label'])
+             ->setStartDate($args['startDate'])
+             ->setEndDate($args['endDate'])
+             ->setOverview($args['overview']);
+
+         $this->em->persist($season);
+         $this->em->flush();
 
         return $season;
      }
