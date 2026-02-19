@@ -22,11 +22,10 @@ class Person implements JsonSerializable
     private string $lastName;
 
     #[Column(type: 'text', nullable: true)]
-    private string|null $biography;
+    private string|null $biography = null;
 
     #[Column(name: 'headshot_url', type: 'string', nullable: true)]
-    private string|null $headshotUrl;
-
+    private string|null $headshotUrl = null;
 
     public function getId(): int
     {
@@ -56,12 +55,6 @@ class Person implements JsonSerializable
     public function getHeadshotUrl(): string
     {
         return $this->headshotUrl ?? '';
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-        return $this;
     }
 
     public function setBiography(string $biography): self
