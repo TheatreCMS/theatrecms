@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
+use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -22,15 +23,17 @@ $app->get('/', function (Request $request, Response $response) {
 });
 
 $app->get('/admin', function (Request $request, Response $response) use ($container) {
-    if (!$container->has(Twig::class)) {
-        $response->getBody()->write('Twig not available');
-        return $response->withStatus(500);
-    }
-
     /** @var Twig $twig */
     $twig = $container->get(Twig::class);
 
     return $twig->render($response, 'layouts/admin.html.twig');
-});
+})->add(new RequireTwigMiddleware($container));
+
+$app->get('/admin/seasons/create', function (Request $request, Response $response) use ($container) {
+    /** @var Twig $twig */
+    $twig = $container->get(Twig::class);
+
+    return $twig->render($response, 'admin/dashboard.html.twig');
+})->add(new RequireTwigMiddleware($container));
 
 $app->run();
