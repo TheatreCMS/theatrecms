@@ -27,8 +27,8 @@
         "symfony/cache": "^7.4",
         "symfony/validator": "^7.4",
         "monolog/monolog": "^3.9",
-        "almasaeed2010/adminlte": "^3.2",
-        "guzzlehttp/guzzle": "^7.10"
+        "guzzlehttp/guzzle": "^7.10",
+        "slim/twig-view": "^3.4"
     },
     "require-dev": {
         "consolidation/robo": "^5.1",
