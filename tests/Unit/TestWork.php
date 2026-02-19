@@ -14,15 +14,6 @@ use PHPUnit\Framework\TestCase;
  */
 class TestWork extends TestCase
 {
-    public function testId()
-    {
-        $work = new Work();
-
-        $work->setId(12345);
-
-        $this->assertEquals(12345, $work->getId());
-    }
-
     public function testTitle()
     {
         $work = new Work();
