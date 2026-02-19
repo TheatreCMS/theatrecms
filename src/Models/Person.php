@@ -49,7 +49,7 @@ class Person implements JsonSerializable
 
     public function getBiography(): string
     {
-        return $this->biography;
+        return $this->biography ?? '';
     }
 
     public function getHeadshotUrl(): string
