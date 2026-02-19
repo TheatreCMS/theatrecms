@@ -2,10 +2,13 @@
 
 namespace Clubdeuce\TheatreCMS\Models;
     
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
     
 #[Entity, Table(name: 'sponsors')]
@@ -22,6 +25,14 @@ class Sponsor
 
     #[Column(name: 'website_url', type: 'string', nullable: true)]
     private string $websiteUrl;
+
+    #[OneToMany(mappedBy: 'sponsor', targetEntity: Sponsorship::class)]
+    private Collection $sponsorships;
+
+    public function __construct()
+    {
+        $this->sponsorships = new ArrayCollection();
+    }
 
     public function getId(): int
     {
@@ -60,6 +71,20 @@ class Sponsor
     public function setWebsiteUrl(string $websiteUrl): self
     {
         $this->websiteUrl = $websiteUrl;
+
+        return $this;
+    }
+
+    public function getSponsorships(): Collection
+    {
+        return $this->sponsorships;
+    }
+
+    public function addSponsorship(Sponsorship $sponsorship): self
+    {
+        if (!$this->sponsorships->contains($sponsorship)) {
+            $this->sponsorships->add($sponsorship);
+        }
 
         return $this;
     }

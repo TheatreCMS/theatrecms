@@ -43,8 +43,8 @@ class Production
     #[OneToMany(mappedBy: 'production', targetEntity: ProductionPerson::class)]
     private Collection $people;
 
-    #[OneToMany(mappedBy: 'production', targetEntity: Sponsor::class)]
-    private Collection $sponsors;
+    #[OneToMany(mappedBy: 'production', targetEntity: Sponsorship::class)]
+    private Collection $sponsorships;
 
     #[Column(name: 'promo_video_url', type: 'string', nullable: true)]
     private string $promoVideoUrl;
@@ -61,7 +61,7 @@ class Production
         $this->name   = $name;
         $this->season = $season;
         $this->people = new ArrayCollection();
-        $this->sponsors = new ArrayCollection();
+        $this->sponsorships = new ArrayCollection();
     }
 
     public function getId(): int
@@ -124,15 +124,15 @@ class Production
         return $this->ticketPurchaseUrl;
     }
 
-    public function getSponsors(): Collection
+    public function getSponsorships(): Collection
     {
-        return $this->sponsors;
+        return $this->sponsorships;
     }
 
-    public function addSponsor(Sponsor $sponsor): self
+    public function addSponsorship(Sponsorship $sponsorship): self
     {
-        if (!$this->sponsors->contains($sponsor)) {
-            $this->sponsors[] = $sponsor;
+        if (!$this->sponsorships->contains($sponsorship)) {
+            $this->sponsorships[] = $sponsorship;
         }
 
         return $this;

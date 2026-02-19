@@ -35,14 +35,19 @@ class Season implements \JsonSerializable
     #[Column(name: 'end_date', type: 'datetime', nullable: false)]
     private ?\DateTime $endDate = null;
     
-    #[OneToMany(mappedBy: 'season', targetEntity: Production::class, cascade: ['persist', 'remove'])]
+    #[OneToMany(targetEntity: Production::class, mappedBy: 'season_id', cascade: ['persist', 'remove'])]
     private Collection $productions;
+
+    #[OneToMany(mappedBy: 'season', targetEntity: Sponsorship::class)]
+    private Collection $sponsorships;
+
 
     public function __construct(string $slug, string $label)
     {
         $this->slug        = $slug;
         $this->label       = $label;
         $this->productions = new ArrayCollection();
+        $this->sponsorships = new ArrayCollection();
     }
 
     public function getId(): int
@@ -83,6 +88,11 @@ class Season implements \JsonSerializable
     public function getProductions(): Collection
     {
         return $this->productions;
+    }
+
+    public function getSponsorships(): Collection
+    {
+        return $this->sponsorships;
     }
 
     public function setSlug(string $slug): self
@@ -131,6 +141,15 @@ class Season implements \JsonSerializable
     {
         if (!$this->productions->contains($production)) {
             $this->productions->add($production);
+        }
+
+        return $this;
+    }
+
+    public function addSponsorship(Sponsorship $sponsorship): self
+    {
+        if (!$this->sponsorships->contains($sponsorship)) {
+            $this->sponsorships->add($sponsorship);
         }
 
         return $this;
