@@ -38,8 +38,7 @@ final class VenueRepository extends BaseRepository
             $args['country']
         );
 
-        $venue
-            ->setCapacity($args['capacity'])
+        $venue->setCapacity($args['capacity'])
             ->setDescription($args['description'])
             ->setAccessibilityInfo($args['accessibilityInfo'])
             ->setWebsiteUrl($args['websiteUrl'])
@@ -51,4 +50,3 @@ final class VenueRepository extends BaseRepository
         return $venue;
     }
 }
-
