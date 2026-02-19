@@ -93,12 +93,6 @@ class Work implements \JsonSerializable
         return $this;
     }
 
-    public function setId(int $int): self
-    {
-        $this->id = $int;
-        return $this;
-    }
-
     public function setSynopsis(string $synopsis): self
     {
         $this->synopsis = $synopsis;
