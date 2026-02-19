@@ -35,7 +35,7 @@ class Season implements \JsonSerializable
     #[Column(name: 'end_date', type: 'datetime', nullable: false)]
     private ?\DateTime $endDate = null;
     
-    #[OneToMany(targetEntity: Production::class, mappedBy: 'season_id', cascade: ['persist', 'remove'])]
+    #[OneToMany(targetEntity: Production::class, mappedBy: 'season', cascade: ['persist', 'remove'])]
     private Collection $productions;
 
     #[OneToMany(mappedBy: 'season', targetEntity: Sponsorship::class)]

@@ -6,83 +6,78 @@ use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Models\Season;
 use Clubdeuce\TheatreCMS\Models\Sponsor;
 use Clubdeuce\TheatreCMS\Models\Sponsorship;
+use Clubdeuce\TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 class TestSponsorship extends TestCase
 {
-    public function testConstructor()
-    {
-        $sponsor = new Sponsor();
-        $sponsorship = new Sponsorship($sponsor);
+    private Sponsor $sponsor;
+    private Sponsorship $sponsorship;
+    private Season $season;
+    private Production $production;
+    private Work $work;
 
-        $this->assertSame($sponsor, $sponsorship->getSponsor());
-        $this->assertNull($sponsorship->getSeason());
-        $this->assertNull($sponsorship->getProduction());
+    protected function setUp(): void
+    {
+        $this->sponsor = new Sponsor();
+        $this->sponsorship = new Sponsorship($this->sponsor);
+        $this->season = new Season('2026-2027', '2026 Season');
+        $this->work = new Work();
+        $this->production = new Production('Hamlet', $this->season, $this->work);
     }
 
-    public function testSetSponsor()
+    public function testConstructor(): void
     {
-        $sponsor1 = new Sponsor();
+        $this->assertSame($this->sponsor, $this->sponsorship->getSponsor());
+        $this->assertNull($this->sponsorship->getSeason());
+        $this->assertNull($this->sponsorship->getProduction());
+    }
+
+    public function testSetSponsor(): void
+    {
         $sponsor2 = new Sponsor();
-        $sponsorship = new Sponsorship($sponsor1);
-        $sponsorship->setSponsor($sponsor2);
+        $this->sponsorship->setSponsor($sponsor2);
 
-        $this->assertSame($sponsor2, $sponsorship->getSponsor());
+        $this->assertSame($sponsor2, $this->sponsorship->getSponsor());
     }
 
-    public function testSetSeason()
+    public function testSetSeason(): void
     {
-        $sponsor = new Sponsor();
-        $season = new Season('2026-2027', '2026 Season');
-        $sponsorship = new Sponsorship($sponsor);
-        $sponsorship->setSeason($season);
+        $this->sponsorship->setSeason($this->season);
 
-        $this->assertSame($season, $sponsorship->getSeason());
+        $this->assertSame($this->season, $this->sponsorship->getSeason());
     }
 
-    public function testSetProduction()
+    public function testSetProduction(): void
     {
-        $sponsor = new Sponsor();
-        $season = new Season('2026-2027', '2026 Season');
-        $production = new Production('Hamlet', $season);
-        $sponsorship = new Sponsorship($sponsor);
-        $sponsorship->setProduction($production);
+        $this->sponsorship->setProduction($this->production);
 
-        $this->assertSame($production, $sponsorship->getProduction());
+        $this->assertSame($this->production, $this->sponsorship->getProduction());
     }
 
-    public function testSponsorSponsorships()
+    public function testSponsorSponsorships(): void
     {
-        $sponsor = new Sponsor();
-        $sponsorship = new Sponsorship($sponsor);
-        $sponsor->addSponsorship($sponsorship);
+        $this->sponsor->addSponsorship($this->sponsorship);
 
-        $this->assertCount(1, $sponsor->getSponsorships());
-        $this->assertSame($sponsorship, $sponsor->getSponsorships()->first());
+        $this->assertCount(1, $this->sponsor->getSponsorships());
+        $this->assertSame($this->sponsorship, $this->sponsor->getSponsorships()->first());
     }
 
-    public function testSeasonSponsorships()
+    public function testSeasonSponsorships(): void
     {
-        $sponsor = new Sponsor();
-        $season = new Season('2026-2027', '2026 Season');
-        $sponsorship = new Sponsorship($sponsor);
-        $sponsorship->setSeason($season);
-        $season->addSponsorship($sponsorship);
+        $this->sponsorship->setSeason($this->season);
+        $this->season->addSponsorship($this->sponsorship);
 
-        $this->assertCount(1, $season->getSponsorships());
-        $this->assertSame($sponsorship, $season->getSponsorships()->first());
+        $this->assertCount(1, $this->season->getSponsorships());
+        $this->assertSame($this->sponsorship, $this->season->getSponsorships()->first());
     }
 
-    public function testProductionSponsorships()
+    public function testProductionSponsorships(): void
     {
-        $sponsor = new Sponsor();
-        $season = new Season('2026-2027', '2026 Season');
-        $production = new Production('Hamlet', $season);
-        $sponsorship = new Sponsorship($sponsor);
-        $sponsorship->setProduction($production);
-        $production->addSponsorship($sponsorship);
+        $this->sponsorship->setProduction($this->production);
+        $this->production->addSponsorship($this->sponsorship);
 
-        $this->assertCount(1, $production->getSponsorships());
-        $this->assertSame($sponsorship, $production->getSponsorships()->first());
+        $this->assertCount(1, $this->production->getSponsorships());
+        $this->assertSame($this->sponsorship, $this->production->getSponsorships()->first());
     }
 }

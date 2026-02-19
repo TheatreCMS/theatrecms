@@ -7,6 +7,7 @@ use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Models\ProductionPerson;
 use Clubdeuce\TheatreCMS\Models\RoleType;
 use Clubdeuce\TheatreCMS\Models\Season;
+use Clubdeuce\TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -17,89 +18,79 @@ use PHPUnit\Framework\TestCase;
  */
 class TestProductionPerson extends TestCase
 {
+    private Season $season;
+    private Work $work;
+    private Production $production;
+    private Person $person;
+    private ProductionPerson $productionPerson;
+
+    protected function setUp(): void
+    {
+        $this->season = new Season('2024', '2024 Season');
+        $this->work = (new Work())->setTitle('Hamlet');
+        $this->production = new Production('Hamlet', $this->season, $this->work);
+        $this->person = (new Person())->setFirstName('John')->setLastName('Doe');
+        $this->productionPerson = new ProductionPerson($this->production, $this->person);
+    }
+
     public function testConstructor(): void
     {
-        $season = new Season('2024', '2024 Season');
-        $production = new Production('Hamlet', $season);
-        $person = new Person();
-        $person->setFirstName('John')->setLastName('Doe');
-
-        $productionPerson = new ProductionPerson($production, $person);
-
-        $this->assertEquals($production, $productionPerson->getProduction());
-        $this->assertEquals($person, $productionPerson->getPerson());
-        $this->assertNull($productionPerson->getRoleType());
+        $this->assertEquals($this->production, $this->productionPerson->getProduction());
+        $this->assertEquals($this->person, $this->productionPerson->getPerson());
+        $this->assertNull($this->productionPerson->getRoleType());
     }
 
     public function testSetRoleType(): void
     {
-        $season = new Season('2024', '2024 Season');
-        $production = new Production('Hamlet', $season);
-        $person = new Person();
-        $person->setFirstName('Jane')->setLastName('Smith');
+        $this->person->setFirstName('Jane')->setLastName('Smith');
+        $this->productionPerson->setRoleType(RoleType::Cast);
 
-        $productionPerson = new ProductionPerson($production, $person);
-        $productionPerson->setRoleType(RoleType::Cast);
-
-        $this->assertEquals(RoleType::Cast, $productionPerson->getRoleType());
+        $this->assertEquals(RoleType::Cast, $this->productionPerson->getRoleType());
     }
 
     public function testSetRoleTypeToNull(): void
     {
-        $season = new Season('2024', '2024 Season');
-        $production = new Production('Hamlet', $season);
-        $person = new Person();
-        $person->setFirstName('Bob')->setLastName('Jones');
+        $this->person->setFirstName('Bob')->setLastName('Jones');
 
-        $productionPerson = new ProductionPerson($production, $person);
-        $productionPerson->setRoleType(RoleType::ProductionTeam);
-        $productionPerson->setRoleType(null);
+        $this->productionPerson->setRoleType(RoleType::ProductionTeam);
+        $this->productionPerson->setRoleType(null);
 
-        $this->assertNull($productionPerson->getRoleType());
+        $this->assertNull($this->productionPerson->getRoleType());
     }
 
     public function testAllRoleTypes(): void
     {
-        $season = new Season('2024', '2024 Season');
-        $production = new Production('Hamlet', $season);
-        $person = new Person();
-        $person->setFirstName('Alice')->setLastName('Brown');
-
-        $productionPerson = new ProductionPerson($production, $person);
+        $this->person->setFirstName('Alice')->setLastName('Brown');
 
         // Test Cast
-        $productionPerson->setRoleType(RoleType::Cast);
-        $this->assertEquals(RoleType::Cast, $productionPerson->getRoleType());
-        $this->assertEquals('cast', $productionPerson->getRoleType()->value);
+        $this->productionPerson->setRoleType(RoleType::Cast);
+        $this->assertEquals(RoleType::Cast, $this->productionPerson->getRoleType());
+        $this->assertEquals('cast', $this->productionPerson->getRoleType()->value);
 
         // Test ProductionTeam
-        $productionPerson->setRoleType(RoleType::ProductionTeam);
-        $this->assertEquals(RoleType::ProductionTeam, $productionPerson->getRoleType());
-        $this->assertEquals('production_team', $productionPerson->getRoleType()->value);
+        $this->productionPerson->setRoleType(RoleType::ProductionTeam);
+        $this->assertEquals(RoleType::ProductionTeam, $this->productionPerson->getRoleType());
+        $this->assertEquals('production_team', $this->productionPerson->getRoleType()->value);
 
         // Test Orchestra
-        $productionPerson->setRoleType(RoleType::Orchestra);
-        $this->assertEquals(RoleType::Orchestra, $productionPerson->getRoleType());
-        $this->assertEquals('orchestra', $productionPerson->getRoleType()->value);
+        $this->productionPerson->setRoleType(RoleType::Orchestra);
+        $this->assertEquals(RoleType::Orchestra, $this->productionPerson->getRoleType());
+        $this->assertEquals('orchestra', $this->productionPerson->getRoleType()->value);
 
         // Test Creative
-        $productionPerson->setRoleType(RoleType::Creative);
-        $this->assertEquals(RoleType::Creative, $productionPerson->getRoleType());
-        $this->assertEquals('creative', $productionPerson->getRoleType()->value);
+        $this->productionPerson->setRoleType(RoleType::Creative);
+        $this->assertEquals(RoleType::Creative, $this->productionPerson->getRoleType());
+        $this->assertEquals('creative', $this->productionPerson->getRoleType()->value);
     }
 
     public function testSetRole(): void
     {
-        $season = new Season('2024', '2024 Season');
-        $production = new Production('Hamlet', $season);
-        $person = new Person();
-        $person->setFirstName('Tom')->setLastName('Hardy');
+        $this->person->setFirstName('Tom')->setLastName('Hardy');
 
-        $productionPerson = new ProductionPerson($production, $person);
-        $productionPerson->setRoleType(RoleType::Cast);
-        $productionPerson->setRole('Prince Hamlet');
+        $this->productionPerson->setRoleType(RoleType::Cast);
+        $this->productionPerson->setRole('Prince Hamlet');
 
-        $this->assertEquals('Prince Hamlet', $productionPerson->getRole());
-        $this->assertEquals(RoleType::Cast, $productionPerson->getRoleType());
+        $this->assertEquals('Prince Hamlet', $this->productionPerson->getRole());
+        $this->assertEquals(RoleType::Cast, $this->productionPerson->getRoleType());
     }
 }

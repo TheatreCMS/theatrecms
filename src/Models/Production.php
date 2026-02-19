@@ -40,11 +40,8 @@ class Production
     #[Column(name: 'content_advisory', type: 'text', nullable: true)]
     private string $contentAdvisory;
 
-    #[OneToMany(mappedBy: 'production', targetEntity: ProductionPerson::class)]
+    #[OneToMany(mappedBy: 'production', targetEntity: ProductionPerson::class, cascade: ['persist', 'remove'])]
     private Collection $people;
-
-    #[OneToMany(mappedBy: 'production', targetEntity: Sponsorship::class)]
-    private Collection $sponsorships;
 
     #[Column(name: 'promo_video_url', type: 'string', nullable: true)]
     private string $promoVideoUrl;
@@ -52,15 +49,23 @@ class Production
     #[Column(name: 'ticket_purchase_url', type: 'string', nullable: true)]
     private string $ticketPurchaseUrl;
 
+    #[ManyToOne(targetEntity: Work::class)]
+    #[JoinColumn(name: 'work_id', referencedColumnName: 'id', nullable: false)]
+    private Work $work;
+
     #[ManyToOne(targetEntity: Season::class, inversedBy: 'productions')]
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
     private Season $season;
 
-    public function __construct(string $name, Season $season)
+    #[OneToMany(targetEntity: Sponsorship::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
+    private Collection $sponsorships;
+    
+    public function __construct(string $name, Season $season, Work $work)
     {
-        $this->name   = $name;
-        $this->season = $season;
-        $this->people = new ArrayCollection();
+        $this->name         = $name;
+        $this->season       = $season;
+        $this->work         = $work;
+        $this->people       = new ArrayCollection();
         $this->sponsorships = new ArrayCollection();
     }
 
@@ -106,12 +111,12 @@ class Production
 
     public function getCreativeTeam(): Collection
     {
-        return new ArrayCollection();
+        return $this->people->filter(fn(ProductionPerson $productionPerson) => $productionPerson->getRoleType() === RoleType::Creative);
     }
 
     public function getPerformers(): Collection
     {
-        return new ArrayCollection();
+        return $this->people->filter(fn(ProductionPerson $productionPerson) => $productionPerson->getRoleType() === RoleType::Cast);
     }
 
     public function getPromoVideoUrl(): string
@@ -122,6 +127,11 @@ class Production
     public function getTicketPurchaseUrl(): string
     {
         return $this->ticketPurchaseUrl;
+    }
+
+    public function getPeople(): Collection
+    {
+        return $this->people;
     }
 
     public function getSponsorships(): Collection
@@ -200,4 +210,37 @@ class Production
 
         return $this;
     }
+
+    public function getWork(): Work
+    {
+        return $this->work;
+    }
+
+    public function setWork(Work $work): self
+    {
+        $this->work = $work;
+
+        return $this;
+    }
+    
+    public function addToCreativeTeam(Person $person, string $role = null): self
+    {
+        $productionPerson = new ProductionPerson($this, $person);
+        $productionPerson->setRoleType(RoleType::Creative);
+        $productionPerson->setRole($role);
+        $this->people->add($productionPerson);
+
+        return $this;
+    }
+
+    public function addPerformer(Person $person, string $role = null): self
+    {
+        $productionPerson = new ProductionPerson($this, $person);
+        $productionPerson->setRoleType(RoleType::Cast);
+        $productionPerson->setRole($role);
+        $this->people->add($productionPerson);
+
+        return $this;
+    }
+    
 }
