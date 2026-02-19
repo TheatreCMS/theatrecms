@@ -15,10 +15,10 @@ class Person implements JsonSerializable
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 
-    #[Column(name: 'first_name', type: 'string', unique: true, nullable: false)]
+    #[Column(name: 'first_name', type: 'string', nullable: false)]
     private string $firstName;
 
-    #[Column(name: 'last_name', type: 'string', unique: true, nullable: false)]
+    #[Column(name: 'last_name', type: 'string', nullable: false)]
     private string $lastName;
 
     #[Column(type: 'text', nullable: true)]
