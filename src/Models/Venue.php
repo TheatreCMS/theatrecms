@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\Table;
 class Venue
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
-    private int $id;
+    private int $id = 0;
 
     #[Column(type: 'string', nullable: false)]
     private string $name;
@@ -46,6 +46,23 @@ class Venue
 
     #[Column(name: 'map_url', type: 'string', nullable: true)]
     private ?string $mapUrl;
+
+    public function __construct(string $name, string $address, string $city, string $state, string $postcode, string $country)
+    {
+        $this->name = $name;
+        $this->address = $address;
+        $this->city = $city;
+        $this->state = $state;
+        $this->postcode = $postcode;
+        $this->country = $country;
+
+        // Initialize nullable fields to null
+        $this->capacity = null;
+        $this->description = null;
+        $this->accessibilityInfo = null;
+        $this->websiteUrl = null;
+        $this->mapUrl = null;
+    }
 
     public function getId(): int
     {
