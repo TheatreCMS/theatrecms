@@ -1,6 +1,7 @@
 <?php
 require_once dirname(__DIR__) . "/vendor/autoload.php";
 
+use Clubdeuce\TheatreCMS\Controllers\SeasonController;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -33,7 +34,7 @@ $app->get('/admin/seasons/create', function (Request $request, Response $respons
     /** @var Twig $twig */
     $twig = $container->get(Twig::class);
 
-    return $twig->render($response, 'admin/dashboard.html.twig');
+    return $twig->render($response, 'admin/seasons/create.html.twig');
 })->add(new RequireTwigMiddleware($container));
 
 $app->run();

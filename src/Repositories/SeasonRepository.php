@@ -13,25 +13,43 @@ class SeasonRepository extends BaseRepository
 
      public function create(array $args): Season
      {
-         $args = array_merge($args, [
-            'slug' => null,
-            'label' => null,
+         $args = array_merge([
+            'label'     => null,
             'startDate' => null,
-            'endDate' => null,
-            'overview' => null,
-         ]);
+            'endDate'   => null,
+            'overview'  => null,
+         ], $args);
 
-         $season = new Season($args['slug'], $args['label']);
+         $label = (string)($args['label'] ?? '');
+         $slug  = (string)preg_replace('/[^A-Za-z0-9-]+/', '-', $label);
+         $slug  = strtolower(trim($slug, '-'));
 
-         $season->setSlug($args['slug'])
-             ->setLabel($args['label'])
-             ->setStartDate($args['startDate'])
-             ->setEndDate($args['endDate'])
-             ->setOverview($args['overview']);
+         try {
+             $startDate = $args['startDate'] ? new \DateTime($args['startDate']) : null;
+             $endDate   = $args['endDate']   ? new \DateTime($args['endDate'])   : null;
+         } catch (\Exception $e) {
+                throw new \InvalidArgumentException('Invalid date format. Use YYYY-MM-DD.');
+         }
+
+         if ($startDate && $endDate && $endDate <= $startDate) {
+             throw new \InvalidArgumentException('End date must be after start date.');
+         }
+
+         $season = new Season($slug, $label);
+
+         if ($startDate) {
+             $season->setStartDate($startDate);
+         }
+
+         if ($endDate) {
+             $season->setEndDate($endDate);
+         }
+
+         $season->setOverview($args['overview']);
 
          $this->em->persist($season);
          $this->em->flush();
 
-        return $season;
+         return $season;
      }
 }
