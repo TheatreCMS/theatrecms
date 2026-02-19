@@ -57,6 +57,19 @@ class Person implements JsonSerializable
         return $this->headshotUrl ?? '';
     }
 
+
+    public function setFirstName(mixed $firstName): self
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
+
+    public function setLastName(mixed $lastName): self
+    {
+        $this->lastName = $lastName;
+        return $this;
+    }
+
     public function setBiography(string $biography): self
     {
         $this->biography = $biography;
@@ -82,17 +95,5 @@ class Person implements JsonSerializable
             'biography'   => $this->getBiography(),
             'headshotUrl' => $this->getHeadshotUrl(),
         ];
-    }
-
-    public function setFirstName(mixed $firstName): self
-    {
-        $this->firstName = $firstName;
-        return $this;
-    }
-
-    public function setLastName(mixed $lastName): self
-    {
-        $this->lastName = $lastName;
-        return $this;
     }
 }
