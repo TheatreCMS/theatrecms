@@ -30,10 +30,10 @@ class Production
     private string $excerpt;
  
     #[Column(type: 'date', nullable: true)]
-    private DateTime $opening;
+    private ?DateTime $opening = null;
     
     #[Column(type: 'date', nullable: true)]
-    private DateTime $closing;
+    private ?DateTime $closing = null;
     
     /**
      * @var int Runtime in minutes

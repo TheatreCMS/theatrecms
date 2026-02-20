@@ -6,8 +6,10 @@ use Clubdeuce\TheatreCMS\Controllers\SeasonController;
 use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
+use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
+use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -88,11 +90,18 @@ $app->group('/admin/productions', function ($group) use ($container) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
 
-        // Provide seasons to the create template so the select is populated
         $seasonRepo = $container->get(SeasonRepository::class);
-        $seasons = $seasonRepo->fetchAll();
+        $personRepo = $container->get(PersonRepository::class);
+        $worksRepo  = $container->get(WorkRepository::class);
 
-        return $twig->render($response, 'admin/productions/create.html.twig', ['seasons' => $seasons]);
+        $vars = [
+            'seasons' => $seasonRepo->fetchAll(),
+            'people'  => $personRepo->fetchAll(),
+            'works'   => $worksRepo->fetchAll(),
+        ];
+
+
+        return $twig->render($response, 'admin/productions/create.html.twig', $vars);
     })->add(new RequireTwigMiddleware($container));
 
     $group->get('/delete/{id}', function (Request $request, Response $response) use ($container) {

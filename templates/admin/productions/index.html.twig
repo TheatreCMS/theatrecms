@@ -23,6 +23,12 @@
                 Season
             </th>
             <th scope="col" class="px-6 py-3 font-medium">
+                Opens
+            </th>
+            <th scope="col" class="px-6 py-3 font-medium">
+                Closes
+            </th>
+            <th scope="col" class="px-6 py-3 font-medium">
                 Actions
             </th>
         </tr>
@@ -35,6 +41,12 @@
             </th>
             <td class="px-6 py-4">
                 {{ p.season.label|default(p.season.slug|default(p.season.id)) }}
+            </td>
+            <td class="px-6 py-4">
+                {{ p.opening|default('Not yet specified') }}
+            </td>
+            <td class="px-6 py-4">
+                {{ p.closing|default('Not yet specified') }}
             </td>
             <td class="px-6 py-4">
                 <a href="/admin/productions/edit/{{ p.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
