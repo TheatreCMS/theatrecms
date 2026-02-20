@@ -10,16 +10,18 @@ class UserRepository extends BaseRepository
 
     public function create(array $args): User
     {
-        $args = array_merge($args, [
-            'email' => null,
-        ]);
-
         $user = new User($args['email']);
-        $user->setPasswordHash($args['password']);
+        $user->setPasswordHash(password_hash($args['password'], PASSWORD_DEFAULT));
+        $user->setRegisteredDtm(new \DateTimeImmutable());
 
         $this->em->persist($user);
         $this->em->flush();
 
         return $user;
+    }
+
+    public function findByEmail(string $email): ?object
+    {
+        return $this->em->getRepository($this->entityClass)->findOneBy(['email' => $email]);
     }
 }
