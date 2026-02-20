@@ -14,6 +14,11 @@ class BaseController
 
     protected PersonRepository|SeasonRepository|UserRepository|WorkRepository $repository;
 
+    public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository
+    {
+        return $this->repository;
+    }
+
     public function create(Request $request, Response $response): Response
     {
         $body = $request->getBody()->getContents();
