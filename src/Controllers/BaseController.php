@@ -3,6 +3,7 @@
 namespace Clubdeuce\TheatreCMS\Controllers;
 
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
+use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
@@ -12,7 +13,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 class BaseController
 {
 
-    protected PersonRepository|SeasonRepository|UserRepository|WorkRepository $repository;
+    protected PersonRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository $repository;
 
     public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository
     {
