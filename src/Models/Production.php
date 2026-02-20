@@ -49,22 +49,20 @@ class Production
     #[Column(name: 'ticket_purchase_url', type: 'string', nullable: true)]
     private string $ticketPurchaseUrl;
 
-    #[ManyToOne(targetEntity: Work::class)]
-    #[JoinColumn(name: 'work_id', referencedColumnName: 'id', nullable: false)]
-    private Work $work;
-
     #[ManyToOne(targetEntity: Season::class, inversedBy: 'productions')]
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
     private Season $season;
 
+    private Collection $works;
+
     #[OneToMany(targetEntity: Sponsorship::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $sponsorships;
     
-    public function __construct(string $name, Season $season, Work $work)
+    public function __construct(string $name, Season $season, array $works = [])
     {
         $this->name         = $name;
         $this->season       = $season;
-        $this->work         = $work;
+        $this->works        = $works;
         $this->people       = new ArrayCollection();
         $this->sponsorships = new ArrayCollection();
     }
@@ -242,5 +240,18 @@ class Production
 
         return $this;
     }
-    
+
+    public function getWorks(): Collection
+    {
+        return $this->works;
+    }
+
+     public function addWork(Work $work): self
+     {
+         if (!$this->works->contains($work)) {
+             $this->works[] = $work;
+         }
+
+         return $this;
+     }
 }
