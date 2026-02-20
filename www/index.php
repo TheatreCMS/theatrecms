@@ -34,6 +34,9 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 })->add(new RequireTwigMiddleware($container));
 
 $app->group('/admin/seasons', function ($group) use ($container) {
+    $group->get('/delete/{id}', [SeasonController::class, 'delete']);
+
+    $group->post('/create', [SeasonController::class, 'store']);
     $group->get('/create', function (Request $request, Response $response) use ($container) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
@@ -41,6 +44,7 @@ $app->group('/admin/seasons', function ($group) use ($container) {
         return $twig->render($response, 'admin/seasons/create.html.twig');
     })->add(new RequireTwigMiddleware($container));
 
+    $group->post('/edit', [SeasonController::class, 'update']);
     $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
         $repository = $container->get(SeasonRepository::class);
         /** @var SeasonRepository $repository */
@@ -74,9 +78,6 @@ $app->group('/admin/seasons', function ($group) use ($container) {
         return $twig->render($response, 'admin/seasons/index.html.twig', ['seasons' => $seasons]);
     })->add(new RequireTwigMiddleware($container));
 })->add(new AuthMiddleware());
-
-$app->post('/admin/seasons/edit', [SeasonController::class, 'update']);
-$app->post('/admin/seasons', [SeasonController::class, 'store']);
 
 $app->get('/', function (Request $request, Response $response) {
     $response->getBody()->write("hello world");
