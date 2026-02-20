@@ -82,7 +82,7 @@ class BaseController
             if ($item)
             {
                 $this->repository->delete($item);
-                return $response->withStatus(204);
+                return $response->withHeader('Location', '/admin/seasons');
             }
 
             $response->getBody()->write('{"error": "Item not found."}');
