@@ -30,7 +30,7 @@ class SeasonController extends BaseController
 
         $this->repository->create($data);
 
-        return $response->withHeader('Location', '/admin/seasons')->withStatus(201);
+        return $response->withHeader('Location', '/admin/seasons');
     }
 
     public function update(Request $request, Response $response): Response
@@ -61,10 +61,9 @@ class SeasonController extends BaseController
             $item->setOverview($data['overview']);
             $this->repository()->update($item);
 
-            return $response->withHeader('Location', '/admin/seasons')->withStatus(201);
-        } catch (\DateMalformedStringException $e) {
+            return $response->withHeader('Location', '/admin/seasons');
+        } catch (\InvalidArgumentException $e) {
             return $response->withStatus(403)->withHeader('Location', '/admin/seasons/edit/' . $seasonId);
         }
-
     }
 }
