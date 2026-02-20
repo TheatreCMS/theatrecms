@@ -1,0 +1,298 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{# Allow controllers to pass variables; if not present, set to empty arrays #}
+{% set seasons = seasons|default([]) %}
+{% set people = people|default([]) %}
+{% set works = works|default([]) %}
+
+{% block title %}Edit {{ production.name }} - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Edit Production</h1>
+    </div>
+    {# Show a flash/warning for empty collections #}
+    {% if seasons is empty %}
+        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <!-- exclamation icon -->
+                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                         fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                              d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">No seasons available</h3>
+                    <div class="mt-1 text-sm text-yellow-700">
+                        There are no seasons in the system. A production should belong to a season — create a season
+                        from the Seasons section first.
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if works is empty %}
+        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <!-- exclamation icon -->
+                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                         fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                              d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">No works available</h3>
+                    <div class="mt-1 text-sm text-yellow-700">
+                        There are no works in the system to attach to this production. You can add works from the Works
+                        section before creating a production.
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if people is empty %}
+        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <!-- exclamation icon -->
+                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                         fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd"
+                              d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
+                              clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">No people available</h3>
+                    <div class="mt-1 text-sm text-yellow-700">
+                        There are no people in the system to attach to this production. You can add people from the People
+                        section before creating a production.
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <form action="/{{ base_path|default('') }}admin/productions/edit" method="POST" enctype="multipart/form-data"
+          class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Production Name <span
+                            class="text-red-500">*</span></label>
+                <input type="text" name="name" id="name" required
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="e.g. Hamlet" value="{{ production.name }}">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="seasonId" class="block text-sm font-medium text-gray-700 mb-1">Season <span
+                            class="text-red-500">*</span></label>
+                {% if seasons is not empty %}
+                    <select name="seasonId" id="seasonId" required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select a season</option>
+                        {% for s in seasons %}
+                            <option value="{{ s.id }}">{{ s.label|default(s.slug|default(s.id)) }}</option>
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    <div class="text-xs text-gray-500 mt-1">No seasons!! — you can create a season first from the
+                        Seasons section.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="md:col-span-2">
+                <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="opening" class="block text-sm font-medium text-gray-700 mb-1">Opening <span
+                                    class="text-red-500">*</span></label>
+                        <input type="date" name="opening" id="opening" required
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               value="{{ production.opening }}">
+                    </div>
+                    <div>
+                        <label for="closing" class="block text-sm font-medium text-gray-700 mb-1">Closing <span
+                                    class="text-red-500">*</span></label>
+                        <input type="date" name="closing" id="closing" required
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                               value="{{ production.closing }}">
+                    </div>
+                </fieldset>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea name="description" id="description" rows="6"
+                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Full description for the production...">{{ production.description }}</textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                <textarea name="excerpt" id="excerpt" rows="3"
+                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Short teaser or summary...">{{ production.excerpt }}</textarea>
+            </div>
+
+            <div>
+                <label for="runtime" class="block text-sm font-medium text-gray-700 mb-1">Runtime (minutes)</label>
+                <input type="number" name="runtime" id="runtime" min="0"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="e.g. 120" value="{{ production.runtime > 0 ? production.runtime : '' }}">
+            </div>
+
+            <div>
+                <label for="ageRecommendation" class="block text-sm font-medium text-gray-700 mb-1">Age
+                    Recommendation</label>
+                <input type="text" name="ageRecommendation" id="ageRecommendation"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="e.g. PG-13, All Ages" value="{{ production.ageRecommendation }}">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="contentAdvisory" class="block text-sm font-medium text-gray-700 mb-1">Content
+                    Advisory</label>
+                <textarea name="contentAdvisory" id="contentAdvisory" rows="3"
+                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Notes about sensitive content...">{{ production.contentAdvisory }}</textarea>
+            </div>
+
+            <div>
+                <label for="promoVideoUrl" class="block text-sm font-medium text-gray-700 mb-1">Promo Video URL</label>
+                <input type="url" name="promoVideoUrl" id="promoVideoUrl"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="https://example.com/video" value="{{ production.promoVideoUrl }}">
+            </div>
+
+            <div>
+                <label for="ticketPurchaseUrl" class="block text-sm font-medium text-gray-700 mb-1">Ticket Purchase
+                    URL</label>
+                <input type="url" name="ticketPurchaseUrl" id="ticketPurchaseUrl"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="https://example.com/tickets" value="{{ production.ticketPurchaseUrl }}">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="works" class="block text-sm font-medium text-gray-700 mb-1">Works</label>
+                <select multiple="multiple" name="works" id="works" class="w-full rounded-md border-gray-300 shadow-sm">
+                    {% for w in works %}
+                        <option value="{{ w.id }}">{{ w.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-2 relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
+                {% if people is empty %}
+                    <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <!-- exclamation icon -->
+                                <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg"
+                                     viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                          d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
+                                          clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-yellow-800">No people available</h3>
+                                <div class="mt-1 text-sm text-yellow-700">
+                                    There are no people in the system to add to the creative team. Add people from the
+                                    People section before assigning creatives.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <table class="w-full text-sm text-left rtl:text-right text-body">
+                    <thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 font-medium">
+                            Creative Team
+                        </th>
+                        <th scope="col" class="px-6 py-3 font-medium">
+                            Role
+                        </th>
+                        <th>
+                            <button type="button" id="add-creative">Add Creative</button>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="bg-neutral-primary-soft border-b  border-default">
+                        <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                            <select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm"
+                                    name="creatives[][personId]">
+                                <option value="">Select a person</option>
+                                {% for p in people %}
+                                    <option value="{{ p.id }}" {{ p.id in production.creatives ? 'selected' : '' }}>{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <td class="px-6 py-4">
+                            <label class="sr-only" for="creatives[][role]">Role</label>
+                            <input class="w-full rounded-md border-gray-300 shadow-sm" type="text"
+                                   id="creatives[][role]" name="creatives[][role]" placeholder="e.g. Director">
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="#" class="font-medium text-fg-brand hover:underline">Delete</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div class="md:col-span-2">
+                <label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Poster / Image</label>
+                <input type="file" name="poster" id="poster" accept="image/*"
+                       class="w-full">
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+            <a href="/{{ base_path|default('') }}admin/productions"
+               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Save Changes
+            </button>
+        </div>
+    </form>
+
+    {% block scripts %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('form');
+                const nameInput = document.getElementById('name');
+                const seasonInput = document.getElementById('seasonId');
+
+                form.addEventListener('submit', function (e) {
+                    if (!nameInput.value.trim()) {
+                        e.preventDefault();
+                        alert('Please provide a production name.');
+                        nameInput.focus();
+                    }
+
+                    if (!seasonInput || !seasonInput.value) {
+                        e.preventDefault();
+                        alert('Please select or enter a season for the production.');
+                        if (seasonInput) seasonInput.focus();
+                    }
+                });
+            });
+        </script>
+    {% endblock %}
+
+{% endblock %}

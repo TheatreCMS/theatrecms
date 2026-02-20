@@ -112,6 +112,26 @@ $app->group('/admin/productions', function ($group) use ($container) {
         return $response->withHeader('Location', '/admin/productions');
     });
 
+    $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
+
+        $productionRepo = $container->get(ProductionRepository::class);
+        $seasonRepo     = $container->get(SeasonRepository::class);
+        $personRepo     = $container->get(PersonRepository::class);
+        $worksRepo      = $container->get(WorkRepository::class);
+
+        $vars = [
+            'production' => $productionRepo->fetch($request->getAttribute('id')),
+            'seasons'    => $seasonRepo->fetchAll(),
+            'people'     => $personRepo->fetchAll(),
+            'works'      => $worksRepo->fetchAll(),
+        ];
+
+        /** @var Twig $twig */
+        $twig = $container->get(Twig::class);
+
+        return $twig->render($response, 'admin/productions/edit.html.twig', $vars);
+    })->add(new RequireTwigMiddleware($container));
+
     $group->get('', function (Request $request, Response $response) use ($container) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
