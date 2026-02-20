@@ -3,9 +3,11 @@ require_once dirname(__DIR__) . "/vendor/autoload.php";
 
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
 use Clubdeuce\TheatreCMS\Controllers\SeasonController;
+use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -76,6 +78,39 @@ $app->group('/admin/seasons', function ($group) use ($container) {
         $seasons = $seasonController->repository()->fetchAll();
 
         return $twig->render($response, 'admin/seasons/index.html.twig', ['seasons' => $seasons]);
+    })->add(new RequireTwigMiddleware($container));
+})->add(new AuthMiddleware());
+
+$app->group('/admin/productions', function ($group) use ($container) {
+    $group->post('/create', [ProductionController::class, 'store']);
+
+    $group->get('/create', function (Request $request, Response $response) use ($container) {
+        /** @var Twig $twig */
+        $twig = $container->get(Twig::class);
+
+        // Provide seasons to the create template so the select is populated
+        $seasonRepo = $container->get(SeasonRepository::class);
+        $seasons = $seasonRepo->fetchAll();
+
+        return $twig->render($response, 'admin/productions/create.html.twig', ['seasons' => $seasons]);
+    })->add(new RequireTwigMiddleware($container));
+
+    $group->get('/delete/{id}', function (Request $request, Response $response) use ($container) {
+        $repository = $container->get(ProductionRepository::class);
+        /** @var ProductionRepository $repository */
+        $repository->delete($repository->fetch($request->getAttribute('id')));
+
+        return $response->withHeader('Location', '/admin/productions');
+    });
+
+    $group->get('', function (Request $request, Response $response) use ($container) {
+        /** @var Twig $twig */
+        $twig = $container->get(Twig::class);
+
+        $prodRepo = $container->get(ProductionRepository::class);
+        $productions = $prodRepo->fetchAll();
+
+        return $twig->render($response, 'admin/productions/index.html.twig', ['productions' => $productions]);
     })->add(new RequireTwigMiddleware($container));
 })->add(new AuthMiddleware());
 

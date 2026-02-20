@@ -58,13 +58,31 @@ class Production
     #[OneToMany(targetEntity: Sponsorship::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $sponsorships;
     
-    public function __construct(string $name, Season $season, array $works = [])
+    /**
+     * Accept either a single Work instance, an array of Work instances, or null for $works.
+     * This keeps compatibility with existing unit tests which pass a Work as the third arg.
+     *
+     * @param string $name
+     * @param Season $season
+     * @param Work|Work[]|null $works
+     */
+    public function __construct(string $name, Season $season, $works = null)
     {
         $this->name         = $name;
         $this->season       = $season;
-        $this->works        = $works;
+        $this->works        = new ArrayCollection();
         $this->people       = new ArrayCollection();
         $this->sponsorships = new ArrayCollection();
+
+        if ($works instanceof Work) {
+            $this->addWork($works);
+        } elseif (is_array($works)) {
+            foreach ($works as $w) {
+                if ($w instanceof Work) {
+                    $this->addWork($w);
+                }
+            }
+        }
     }
 
     public function getId(): int

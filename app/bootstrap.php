@@ -3,7 +3,9 @@
 // bootstrap.php
 
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
+use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
+use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
@@ -76,6 +78,7 @@ $repositories = [
     SeasonRepository::class,
     UserRepository::class,
     WorkRepository::class,
+    ProductionRepository::class,
 ];
 
 foreach($repositories as $repository) {
@@ -86,6 +89,11 @@ foreach($repositories as $repository) {
 
 $container->set(LoginController::class, static function (Container $c) {
     return new LoginController($c->get(UserRepository::class), $c->get(Twig::class));
+});
+
+// Register ProductionController
+$container->set(ProductionController::class, static function (Container $c) {
+    return new ProductionController($c->get(ProductionRepository::class));
 });
 
 return $container;

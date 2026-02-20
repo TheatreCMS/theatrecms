@@ -1,0 +1,51 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Productions - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Productions</h1>
+        <p class="text-gray-600">Manage theatrical productions.</p>
+    </div>
+    <div>
+        <a href="/admin/productions/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Production</a>
+    </div>
+</div>
+
+<table class="w-full text-sm text-left rtl:text-right text-body">
+    <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+        <tr>
+            <th scope="col" class="px-6 py-3 font-medium">
+                Name
+            </th>
+            <th scope="col" class="px-6 py-3 font-medium">
+                Season
+            </th>
+            <th scope="col" class="px-6 py-3 font-medium">
+                Actions
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in productions %}
+        <tr class="bg-neutral-primary border-b border-default">
+            <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                {{ p.name }}
+            </th>
+            <td class="px-6 py-4">
+                {{ p.season.label|default(p.season.slug|default(p.season.id)) }}
+            </td>
+            <td class="px-6 py-4">
+                <a href="/admin/productions/edit/{{ p.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+                <a href="/admin/productions/delete/{{ p.id }}" class="text-red-600 hover:text-red-900">Delete</a>
+            </td>
+        </tr>
+    {% else %}
+        <tr class="bg-neutral-primary border-b border-default">
+            <td class="px-6 py-4">No productions found.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

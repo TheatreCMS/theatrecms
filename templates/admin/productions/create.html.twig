@@ -1,0 +1,147 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Create Production - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Create New Production</h1>
+    <p class="text-gray-600">Enter the details for the new production.</p>
+</div>
+
+{# Allow controllers to pass a `seasons` array; if not present, render a number input for season id #}
+{% set seasons = seasons|default([]) %}
+
+<form action="/{{ base_path|default('') }}admin/productions/create" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="md:col-span-2">
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Production Name</label>
+            <input type="text" name="name" id="name" required
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="e.g. Hamlet">
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="seasonId" class="block text-sm font-medium text-gray-700 mb-1">Season</label>
+            {% if seasons is not empty %}
+                <select name="seasonId" id="seasonId" required
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Select a season</option>
+                    {% for s in seasons %}
+                        <option value="{{ s.id }}">{{ s.label|default(s.slug|default(s.id)) }}</option>
+                    {% endfor %}
+                </select>
+            {% else %}
+                <input type="number" name="seasonId" id="seasonId" required min="1"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="Enter season id (or create a season first)">
+                <div class="text-xs text-gray-500 mt-1">No seasons provided to the template — you can create a season first from the Seasons section.</div>
+            {% endif %}
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea name="description" id="description" rows="6"
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Full description for the production..."></textarea>
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+            <textarea name="excerpt" id="excerpt" rows="3"
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Short teaser or summary..."></textarea>
+        </div>
+
+        <div>
+            <label for="runtime" class="block text-sm font-medium text-gray-700 mb-1">Runtime (minutes)</label>
+            <input type="number" name="runtime" id="runtime" min="0"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="e.g. 120">
+        </div>
+
+        <div>
+            <label for="ageRecommendation" class="block text-sm font-medium text-gray-700 mb-1">Age Recommendation</label>
+            <input type="text" name="ageRecommendation" id="ageRecommendation"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="e.g. PG-13, All Ages">
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="contentAdvisory" class="block text-sm font-medium text-gray-700 mb-1">Content Advisory</label>
+            <textarea name="contentAdvisory" id="contentAdvisory" rows="3"
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="Notes about sensitive content..."></textarea>
+        </div>
+
+        <div>
+            <label for="promoVideoUrl" class="block text-sm font-medium text-gray-700 mb-1">Promo Video URL</label>
+            <input type="url" name="promoVideoUrl" id="promoVideoUrl"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="https://example.com/video">
+        </div>
+
+        <div>
+            <label for="ticketPurchaseUrl" class="block text-sm font-medium text-gray-700 mb-1">Ticket Purchase URL</label>
+            <input type="url" name="ticketPurchaseUrl" id="ticketPurchaseUrl"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="https://example.com/tickets">
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="works" class="block text-sm font-medium text-gray-700 mb-1">Works (comma-separated work ids or titles)</label>
+            <input type="text" name="works" id="works"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="e.g. 1,2 or Hamlet,Ophelia">
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="people" class="block text-sm font-medium text-gray-700 mb-1">Creative Team / Cast (one per line: person id or name | role)</label>
+            <textarea name="people" id="people" rows="4"
+                      class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      placeholder="e.g. 10 | Director\n25 | Hamlet"></textarea>
+        </div>
+
+        <div class="md:col-span-2">
+            <label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Poster / Image</label>
+            <input type="file" name="poster" id="poster" accept="image/*"
+                   class="w-full">
+        </div>
+    </div>
+
+    <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+        <a href="/{{ base_path|default('') }}admin/productions"
+           class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+            Cancel
+        </a>
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            Create Production
+        </button>
+    </div>
+</form>
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const nameInput = document.getElementById('name');
+            const seasonInput = document.getElementById('seasonId');
+
+            form.addEventListener('submit', function (e) {
+                if (!nameInput.value.trim()) {
+                    e.preventDefault();
+                    alert('Please provide a production name.');
+                    nameInput.focus();
+                }
+
+                if (!seasonInput || !seasonInput.value) {
+                    e.preventDefault();
+                    alert('Please select or enter a season for the production.');
+                    if (seasonInput) seasonInput.focus();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% endblock %}
