@@ -2,6 +2,7 @@
 
 // bootstrap.php
 
+use Clubdeuce\TheatreCMS\Controllers\LoginController;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
@@ -82,5 +83,9 @@ foreach($repositories as $repository) {
         return new $repository($c->get(EntityManager::class));
     });
 }
+
+$container->set(LoginController::class, static function (Container $c) {
+    return new LoginController($c->get(UserRepository::class), $c->get(Twig::class));
+});
 
 return $container;

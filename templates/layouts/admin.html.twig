@@ -75,7 +75,7 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="text-sm text-gray-600">Signed in as <strong>{{ current_user.name|default('Admin') }}</strong></div>
-                        <a href="/{{ base_path|default('') }}logout" class="text-sm text-red-600">Logout</a>
+                        <a href="/{{ base_path|default('') }}admin/logout" class="text-sm text-red-600">Logout</a>
                     </div>
                 </div>
             </div>
