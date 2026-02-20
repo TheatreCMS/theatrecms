@@ -24,10 +24,10 @@ class Production
     private string $name;
 
     #[Column(type: 'text', nullable: true)]
-    private string $description;
+    private ?string $description = null;
 
     #[Column(type: 'string', nullable: true)]
-    private string $excerpt;
+    private ?string $excerpt = null;
  
     #[Column(type: 'date', nullable: true)]
     private ?DateTime $opening = null;
@@ -39,13 +39,13 @@ class Production
      * @var int Runtime in minutes
      */
     #[Column(type: 'integer', nullable: true)]
-    private int $runtime;
+    private ?int $runtime = null;
 
     #[Column(name: 'age_recommendation', type: 'string', nullable: true)]
-    private string $ageRecommendation;
+    private ?string $ageRecommendation = null;
 
     #[Column(name: 'content_advisory', type: 'text', nullable: true)]
-    private string $contentAdvisory;
+    private ?string $contentAdvisory = null;
 
     #[OneToMany(targetEntity: ProductionPerson::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $people;
@@ -133,27 +133,27 @@ class Production
 
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->description ?? '';
     }
 
     public function getExcerpt(): string
     {
-        return $this->excerpt;
+        return $this->excerpt ?? '';
     }
 
     public function getRuntime(): int
     {
-        return $this->runtime;
+        return $this->runtime ?? 0;
     }
 
     public function getAgeRecommendation(): string
     {
-        return $this->ageRecommendation;
+        return $this->ageRecommendation ?? '';
     }
 
     public function getContentAdvisory(): string
     {
-        return $this->contentAdvisory;
+        return $this->contentAdvisory ?? '';
     }
 
     public function getCreativeTeam(): Collection
@@ -168,12 +168,12 @@ class Production
 
     public function getPromoVideoUrl(): string
     {
-        return $this->promoVideoUrl;
+        return $this->promoVideoUrl ?? '';
     }
 
     public function getTicketPurchaseUrl(): string
     {
-        return $this->ticketPurchaseUrl;
+        return $this->ticketPurchaseUrl ?? '';
     }
 
     public function getPeople(): Collection
