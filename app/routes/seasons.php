@@ -15,7 +15,6 @@ use Slim\Views\Twig;
 if (isset($app)) {
     $app->group('/admin/seasons', function ($group) {
         $container = $group->getContainer();
-        $group->get('/delete/{id}', [SeasonController::class, 'delete']);
 
         $group->post('/create', [SeasonController::class, 'store']);
         $group->get('/create', function (Request $request, Response $response) use ($container) {
@@ -46,6 +45,34 @@ if (isset($app)) {
             $twig = $container->get(Twig::class);
 
             return $twig->render($response, 'seasons/show.html.twig', ['season' => $season]);
+        })->add(new RequireTwigMiddleware($container));
+
+        $group->delete('/{id}', function (Request $request, Response $response) use ($container) {
+            /** @var SeasonRepository $repository */
+            $repository = $container->get(SeasonRepository::class);
+            $season     = $repository->fetch($request->getAttribute('id'));
+
+            try {
+                if ($season) {
+                    $repository->delete($season);
+                }
+            } catch (Exception $e) {
+                trigger_error("Unable to delete production: {$e->getMessage()}");
+            }
+
+            $data = [
+                'seasons'  => $repository->fetchAll()
+            ];
+
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            if ($request->getHeaderLine('HX-Request'))
+                return $twig->render($response, 'admin/seasons/_table.html.twig', $data);
+
+
+            return $twig->render($response, 'admin/seasons/index.html.twig', $data);
+
         })->add(new RequireTwigMiddleware($container));
 
         $group->get('', function (Request $request, Response $response) use ($container) {

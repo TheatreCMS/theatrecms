@@ -20,7 +20,7 @@
                     <th class="text-left pr-8 font-bold text-gray-600 uppercase text-sm tracking-normal">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="prodList">
                 {% for season in seasons %}
                     <tr class="h-24 border-gray-300 border-b">
                         <td class="text-sm pr-6 whitespace-no-wrap text-gray-800 tracking-normal leading-4 pl-8">
@@ -36,7 +36,13 @@
                             <div class="flex items-center space-x-2">
                                 <a href="/admin/seasons/edit/{{ season.id }}" class="text-blue-600 hover:text-blue-900">Edit</a>
                                 <span class="text-gray-300">|</span>
-                                <a href="/admin/seasons/delete/{{ season.id }}" class="text-red-600 hover:text-red-900">Delete</a>
+                                <button
+                                        type="button"
+                                        class="text-red-600 hover:text-red-900"
+                                        hx-delete="/admin/seasons/{{ season.id }}"
+                                        hx-target="#prodList">
+                                    Delete
+                                </button>
                             </div>
                         </td>
                     </tr>
