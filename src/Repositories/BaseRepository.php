@@ -39,9 +39,9 @@ abstract class BaseRepository
         return $this->em->getRepository($this->entityClass)->findAll();
     }
 
-    public function fetch(int $id): Person|Season|User|Work
+    public function fetch(int $id)
     {
-        return $this->em->getRepository(Work::class)->find($id);
+        return $this->em->getRepository($this->entityClass)->findOneBy(['id' => $id]);
     }
 
 
