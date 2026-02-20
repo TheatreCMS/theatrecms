@@ -30,7 +30,7 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
     /** @var Twig $twig */
     $twig = $container->get(Twig::class);
 
-    return $twig->render($response, 'layouts/admin.html.twig');
+    return $twig->render($response, 'admin/index.html.twig');
 })->add(new RequireTwigMiddleware($container));
 
 $app->group('/admin/seasons', function ($group) use ($container) {
