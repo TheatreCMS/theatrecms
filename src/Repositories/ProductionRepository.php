@@ -6,6 +6,7 @@ use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Models\Season;
 use Clubdeuce\TheatreCMS\Models\Work;
 use Clubdeuce\TheatreCMS\Models\Person;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
 class ProductionRepository extends BaseRepository
@@ -22,6 +23,8 @@ class ProductionRepository extends BaseRepository
         $args = array_merge([
             'name' => null,
             'seasonId' => null,
+            'opening' => null,
+            'closing' => null,
             'description' => null,
             'excerpt' => null,
             'runtime' => null,
@@ -78,61 +81,28 @@ class ProductionRepository extends BaseRepository
             $production->setTicketPurchaseUrl($args['ticketPurchaseUrl']);
         }
 
+        if (!empty($args['opening'])) {
+            try {
+                $opening = new DateTime($args['opening']);
+                $production->setOpening($opening);
+            } catch (\Exception $e) {
+                throw new \InvalidArgumentException('Invalid opening date format.');
+            }
+        }
+
+        if (!empty($args['closing'])) {
+            try {
+                $closing = new DateTime($args['closing']);
+                $production->setClosing($args['closing']);
+            } catch (\Exception $e) {
+                throw new \InvalidArgumentException('Invalid closing date format.');
+            }
+        }
+
         // Persist production first so relations can reference it
         $this->em->persist($production);
 
-        // Handle works: comma separated list of ids or titles
-        if (!empty($args['works'])) {
-            $works = array_map('trim', explode(',', (string)$args['works']));
-            foreach ($works as $w) {
-                if (is_numeric($w)) {
-                    $work = $this->em->getRepository(Work::class)->find((int)$w);
-                    if ($work) {
-                        $production->addWork($work);
-                    }
-                } elseif (!empty($w)) {
-                    // Create new work with title
-                    $work = new Work();
-                    $work->setTitle($w);
-                    $this->em->persist($work);
-                    $production->addWork($work);
-                }
-            }
-        }
-
-        // Handle people: each line "id|role" or "Name|role". We'll default to cast role type.
-        if (!empty($args['people'])) {
-            $lines = preg_split('/\r?\n/', (string)$args['people']);
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if ($line === '') continue;
-
-                $parts = array_map('trim', explode('|', $line));
-                $identifier = $parts[0] ?? '';
-                $role = $parts[1] ?? null;
-
-                if (is_numeric($identifier)) {
-                    $person = $this->em->getRepository(Person::class)->find((int)$identifier);
-                    if ($person) {
-                        $production->addPerformer($person, $role);
-                    }
-                } else {
-                    // Try to create a person from a name (split into first/last)
-                    $names = preg_split('/\s+/', $identifier);
-                    $first = $names[0] ?? '';
-                    $last = count($names) > 1 ? implode(' ', array_slice($names, 1)) : '';
-
-                    $person = new Person();
-                    $person->setFirstName($first)
-                        ->setLastName($last)
-                        ->setBiography('')
-                        ->setHeadshotUrl('');
-
-                    $this->em->persist($person);
-                    $production->addPerformer($person, $role);
-                }
-            }
-        }
+        // @todo update people and works if provided
 
         $this->em->flush();
 

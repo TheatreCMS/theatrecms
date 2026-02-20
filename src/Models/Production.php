@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
+use \DateTime;
 
 #[Entity, Table(name: 'productions')]
 class Production
@@ -27,7 +28,13 @@ class Production
 
     #[Column(type: 'string', nullable: true)]
     private string $excerpt;
-
+ 
+    #[Column(type: 'date', nullable: true)]
+    private DateTime $opening;
+    
+    #[Column(type: 'date', nullable: true)]
+    private DateTime $closing;
+    
     /**
      * @var int Runtime in minutes
      */
@@ -40,7 +47,7 @@ class Production
     #[Column(name: 'content_advisory', type: 'text', nullable: true)]
     private string $contentAdvisory;
 
-    #[OneToMany(mappedBy: 'production', targetEntity: ProductionPerson::class, cascade: ['persist', 'remove'])]
+    #[OneToMany(targetEntity: ProductionPerson::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $people;
 
     #[Column(name: 'promo_video_url', type: 'string', nullable: true)]
@@ -83,6 +90,30 @@ class Production
                 }
             }
         }
+    }
+
+    public function getOpening(): ?DateTime
+    {
+        return $this->opening;
+    }
+
+    public function setOpening(?DateTime $opening): self
+    {
+        $this->opening = $opening;
+
+        return $this;
+    }
+
+    public function getClosing(): ?DateTime
+    {
+        return $this->closing;
+    }
+
+    public function setClosing(?DateTime $closing): self
+    {
+        $this->closing = $closing;
+
+        return $this;
     }
 
     public function getId(): int
