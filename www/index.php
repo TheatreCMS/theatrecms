@@ -1,8 +1,9 @@
 <?php
-require_once dirname(__DIR__) . "/vendor/autoload.php";
+define('ROOT_DIR', dirname(__DIR__));
+
+require_once ROOT_DIR . "/vendor/autoload.php";
 
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
-use Clubdeuce\TheatreCMS\Controllers\SeasonController;
 use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
@@ -14,17 +15,19 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
-use function DI\get;
 
 /**
  * @var Psr\Container\ContainerInterface $container
  */
-$container = require __DIR__ . '/../app/bootstrap.php';
+$container = require ROOT_DIR . '/app/bootstrap.php';
 AppFactory::setContainer($container);
 
 $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
+
+// Load external route files
+require ROOT_DIR . '/app/routes/seasons.php';
 
 $app->get('/admin/login', [LoginController::class, 'login']);
 $app->post('/admin/login', [LoginController::class, 'authenticate']);
@@ -36,52 +39,6 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 
     return $twig->render($response, 'admin/index.html.twig');
 })->add(new RequireTwigMiddleware($container));
-
-$app->group('/admin/seasons', function ($group) use ($container) {
-    $group->get('/delete/{id}', [SeasonController::class, 'delete']);
-
-    $group->post('/create', [SeasonController::class, 'store']);
-    $group->get('/create', function (Request $request, Response $response) use ($container) {
-        /** @var Twig $twig */
-        $twig = $container->get(Twig::class);
-
-        return $twig->render($response, 'admin/seasons/create.html.twig');
-    })->add(new RequireTwigMiddleware($container));
-
-    $group->post('/edit', [SeasonController::class, 'update']);
-    $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
-        $repository = $container->get(SeasonRepository::class);
-        /** @var SeasonRepository $repository */
-        $season = $repository->fetch($request->getAttribute('id'));
-
-        /** @var Twig $twig */
-        $twig = $container->get(Twig::class);
-
-        return $twig->render($response, 'admin/seasons/edit.html.twig', ['season' => $season]);
-    })->add(new RequireTwigMiddleware($container));
-
-    $group->get('/{id}', function (Request $request, Response $response) use ($container) {
-        $repository = $container->get(SeasonRepository::class);
-        /** @var SeasonRepository $repository */
-        $season = $repository->fetch($request->getAttribute('id'));
-
-        /** @var Twig $twig */
-        $twig = $container->get(Twig::class);
-
-        return $twig->render($response, 'seasons/show.html.twig', ['season' => $season]);
-    })->add(new RequireTwigMiddleware($container));
-
-    $group->get('', function (Request $request, Response $response) use ($container) {
-        /** @var Twig $twig */
-        $twig = $container->get(Twig::class);
-
-        /** @var SeasonController $seasonController */
-        $seasonController = $container->get(SeasonController::class);
-        $seasons = $seasonController->repository()->fetchAll();
-
-        return $twig->render($response, 'admin/seasons/index.html.twig', ['seasons' => $seasons]);
-    })->add(new RequireTwigMiddleware($container));
-})->add(new AuthMiddleware());
 
 $app->group('/admin/productions', function ($group) use ($container) {
     $group->post('/create', [ProductionController::class, 'store']);
