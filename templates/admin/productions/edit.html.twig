@@ -117,14 +117,14 @@
                                     class="text-red-500">*</span></label>
                         <input type="date" name="opening" id="opening" required
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                               value="{{ production.opening }}">
+                               value="{{ production.opening|date('Y-m-d') }}">
                     </div>
                     <div>
                         <label for="closing" class="block text-sm font-medium text-gray-700 mb-1">Closing <span
                                     class="text-red-500">*</span></label>
                         <input type="date" name="closing" id="closing" required
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                               value="{{ production.closing }}">
+                               value="{{ production.closing|date('Y-m-d') }}">
                     </div>
                 </fieldset>
             </div>

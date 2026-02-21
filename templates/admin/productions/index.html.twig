@@ -43,10 +43,10 @@
                 {{ p.season.label|default(p.season.slug|default(p.season.id)) }}
             </td>
             <td class="px-6 py-4">
-                {{ p.opening|default('Not yet specified') }}
+                {{ p.opening|date('m/d/Y')|default('Not yet specified') }}
             </td>
             <td class="px-6 py-4">
-                {{ p.closing|default('Not yet specified') }}
+                {{ p.closing|date('m/d/Y')|default('Not yet specified') }}
             </td>
             <td class="px-6 py-4">
                 <a href="/admin/productions/edit/{{ p.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
