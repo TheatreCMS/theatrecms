@@ -93,7 +93,7 @@ class ProductionRepository extends BaseRepository
         if (!empty($args['closing'])) {
             try {
                 $closing = new DateTime($args['closing']);
-                $production->setClosing($args['closing']);
+                $production->setClosing($closing);
             } catch (\Exception $e) {
                 throw new \InvalidArgumentException('Invalid closing date format.');
             }
