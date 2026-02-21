@@ -100,7 +100,11 @@
                             class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Select a season</option>
                         {% for s in seasons %}
-                            <option value="{{ s.id }}">{{ s.label|default(s.slug|default(s.id)) }}</option>
+                            {% set selected = '' %}
+                            {% if s.id == production.season.id %}
+                                {% set selected = 'selected' %}
+                            {% endif %}
+                            <option value="{{ s.id }}" {{ selected }}>{{ s.label|default(s.slug|default(s.id)) }}</option>
                         {% endfor %}
                     </select>
                 {% else %}
