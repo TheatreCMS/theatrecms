@@ -25,6 +25,7 @@ $app->addBodyParsingMiddleware();
 // Load external route files
 require ROUTES_DIR . '/seasons.php';
 require ROUTES_DIR . '/admin/productions.php';
+require ROUTES_DIR . '/admin/works.php';
 
 $app->get('/admin/login', [LoginController::class, 'login']);
 $app->post('/admin/login', [LoginController::class, 'authenticate']);

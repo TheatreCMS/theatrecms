@@ -1,0 +1,98 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{# Allow controllers to pass variables; if not present, set to empty arrays #}
+{% set people = people|default([]) %}
+
+{% block title %}Create Work - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Create New Work</h1>
+        <p class="text-gray-600">Enter the bibliographic details for the new work.</p>
+    </div>
+
+    {% if people is empty %}
+        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <!-- exclamation icon -->
+                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-yellow-800">No people available</h3>
+                    <div class="mt-1 text-sm text-yellow-700">
+                        There are no people in the system to attach as creators. You can add people from the People
+                        section before assigning creators.
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <form action="/{{ base_path|default('') }}admin/works/create" method="POST" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
+                <input type="text" name="title" id="title" required
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="e.g. The Importance of Being Earnest">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea name="description" id="description" rows="4"
+                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="A short description or notes about the work..."></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="synopsis" class="block text-sm font-medium text-gray-700 mb-1">Synopsis</label>
+                <textarea name="synopsis" id="synopsis" rows="6"
+                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="A longer synopsis or summary..."></textarea>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="creators" class="block text-sm font-medium text-gray-700 mb-1">Creators</label>
+                <select multiple name="creators[]" id="creators" class="w-full rounded-md border-gray-300 shadow-sm">
+                    {% for p in people %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple creators.</p>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+            <a href="/{{ base_path|default('') }}admin/works"
+               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Create Work
+            </button>
+        </div>
+    </form>
+
+    {% block scripts %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('form');
+                const titleInput = document.getElementById('title');
+
+                form.addEventListener('submit', function (e) {
+                    if (!titleInput.value.trim()) {
+                        e.preventDefault();
+                        alert('Please provide a title for the work.');
+                        titleInput.focus();
+                    }
+                });
+            });
+        </script>
+    {% endblock %}
+
+{% endblock %}
+

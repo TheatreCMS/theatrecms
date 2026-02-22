@@ -1,0 +1,53 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Works - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-800">All Works</h1>
+        <a href="/admin/works/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Add New Work
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded my-6 overflow-x-auto">
+        <table class="min-w-full bg-white">
+            <thead>
+            <tr class="bg-neutral-primary border-b border-default">
+                <th scope="col" class="px-6 py-3 font-medium">Title</th>
+                <th scope="col" class="px-6 py-3 font-medium">Author</th>
+                <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+            </tr>
+            </thead>
+            <tbody id="workList">
+            {% for work in works %}
+                <tr class="bg-neutral-primary border-b border-default">
+                    <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                        {{ work.title }}
+                    </th>
+                    <td class="text-sm pr-6 whitespace-no-wrap text-gray-800 tracking-normal leading-4">
+                        {{ work.creators.map(a => a.name)|join(', ') }}
+                    </td>
+                    <td class="pr-8">
+                        <div class="flex items-center space-x-2">
+                            <a href="/admin/works/edit/{{ work.id }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                            <span class="text-gray-300">|</span>
+                            <button
+                                    type="button"
+                                    class="text-red-600 hover:text-red-900"
+                                    hx-delete="/admin/works/{{ work.id }}"
+                                    hx-target="#workList">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr class="h-24 border-gray-300 border-b">
+                    <td colspan="4" class="text-sm text-gray-600 text-center">No works found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
