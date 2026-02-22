@@ -55,13 +55,28 @@
             </div>
 
             <div class="md:col-span-2">
-                <label for="creators" class="block text-sm font-medium text-gray-700 mb-1">Creators</label>
-                <select multiple name="creators[]" id="creators" class="w-full rounded-md border-gray-300 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Creators</label>
+                    <div class="space-x-2">
+                        <button type="button" id="select-all-creators" class="text-sm text-gray-600 underline">Select all</button>
+                        <button type="button" id="clear-creators" class="text-sm text-gray-600 underline">Clear</button>
+                    </div>
+                </div>
+
+                <div id="creators-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                     {% for p in people %}
-                        <option value="{{ p.id }}">{{ p.name }}</option>
+                        <div class="flex items-center space-x-2">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="creators[]" value="{{ p.id }}" class="creator-checkbox">
+                                <span class="text-sm">{{ p.name }}</span>
+                            </label>
+                            <label for="creator-role-{{ p.id }}" class="sr-only">Role for {{ p.name }}</label>
+                            <input id="creator-role-{{ p.id }}" type="text" name="creators_roles[{{ p.id }}]" placeholder="Role (optional)"
+                                   class="ml-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-2 py-1">
+                        </div>
                     {% endfor %}
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple creators.</p>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Select creators and optionally specify each creator's role.</p>
             </div>
         </div>
 
@@ -82,6 +97,9 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const form = document.querySelector('form');
                 const titleInput = document.getElementById('title');
+                const selectAllBtn = document.getElementById('select-all-creators');
+                const clearBtn = document.getElementById('clear-creators');
+                const creatorsCheckboxes = document.querySelectorAll('.creator-checkbox');
 
                 form.addEventListener('submit', function (e) {
                     if (!titleInput.value.trim()) {
@@ -90,9 +108,16 @@
                         titleInput.focus();
                     }
                 });
+
+                selectAllBtn.addEventListener('click', function () {
+                    creatorsCheckboxes.forEach(cb => cb.checked = true);
+                });
+
+                clearBtn.addEventListener('click', function () {
+                    creatorsCheckboxes.forEach(cb => cb.checked = false);
+                });
             });
         </script>
     {% endblock %}
 
 {% endblock %}
-

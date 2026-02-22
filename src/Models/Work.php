@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping\InverseJoinColumn;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'works')]
@@ -29,20 +30,13 @@ class Work implements \JsonSerializable
     #[Column(type: 'text', nullable: true)]
     private string $synopsis;
 
-    /**
-     * Many works have many creators.
-     * @var Collection<int, Person>
-     */
-    #[JoinTable(name: 'work_creators')]
-    #[JoinColumn(name: 'work_id', referencedColumnName: 'id')]
-    #[InverseJoinColumn(name: 'person_id', referencedColumnName: 'id', unique: true)]
-    #[ManyToMany(targetEntity: Person::class)]
-    private Collection $creators;
+    // OneToMany relation to WorkCreator entities which link to Person with role
+    #[OneToMany(targetEntity: WorkCreator::class, mappedBy: 'work', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $workCreators;
 
     public function __construct()
     {
-        // Initialize the creators collection
-        $this->creators = new ArrayCollection();
+        $this->workCreators = new ArrayCollection();
     }
 
     public function getId(): int
@@ -61,11 +55,32 @@ class Work implements \JsonSerializable
     }
 
     /**
+     * Return a Collection of Person objects who are creators of this Work.
+     *
      * @return Collection<int, Person>
      */
     public function getCreators(): Collection
     {
-        return $this->creators;
+        return $this->workCreators->map(fn(WorkCreator $wc) => $wc->person());
+    }
+
+    /**
+     * Return the underlying WorkCreator entities collection. Useful when you need roles.
+     *
+     * @return Collection<int, WorkCreator>
+     */
+    public function getWorkCreators(): Collection
+    {
+        return $this->workCreators;
+    }
+
+    /**
+     * Clear all WorkCreator entries from this Work.
+     */
+    public function clearWorkCreators(): self
+    {
+        $this->workCreators->clear();
+        return $this;
     }
 
     public function getSynopsis(): string
@@ -73,11 +88,24 @@ class Work implements \JsonSerializable
         return $this->synopsis;
     }
 
-    public function addCreator($creator): self
+    /**
+     * Add a creator Person to this Work. Optionally provide a role which is stored on the WorkCreator entity.
+     */
+    public function addCreator($creator, string $role = ''): self
     {
-        if (!$this->creators->contains($creator)) {
-            $this->creators->add($creator);
+        // If a Person instance is passed, create a WorkCreator wrapper
+        if ($creator instanceof Person) {
+            // ensure we don't add duplicates by person id (if available)
+            foreach ($this->workCreators as $wc) {
+                if ($wc->person()->getId() === $creator->getId()) {
+                    return $this;
+                }
+            }
+
+            $workCreator = new WorkCreator($this, $creator, $role);
+            $this->workCreators->add($workCreator);
         }
+
         return $this;
     }
 
