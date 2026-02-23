@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\ManyToMany;
+use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\Table;
 use \DateTime;
 
@@ -60,6 +62,12 @@ class Production
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
     private Season $season;
 
+    // Many productions have many works
+    #[ManyToMany(targetEntity: Work::class, cascade: ['persist'])]
+    #[JoinTable(name: 'production_works',
+        joinColumns: [new JoinColumn(name: 'production_id', referencedColumnName: 'id')],
+        inverseJoinColumns: [new JoinColumn(name: 'work_id', referencedColumnName: 'id')]
+    )]
     private Collection $works;
 
     #[OneToMany(targetEntity: Sponsorship::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
@@ -258,18 +266,6 @@ class Production
         return $this;
     }
 
-    public function getWork(): Work
-    {
-        return $this->work;
-    }
-
-    public function setWork(Work $work): self
-    {
-        $this->work = $work;
-
-        return $this;
-    }
-    
     public function addToCreativeTeam(Person $person, string $role = null): self
     {
         $productionPerson = new ProductionPerson($this, $person);
@@ -303,4 +299,13 @@ class Production
 
          return $this;
      }
+
+    public function setWorks(array $works): self
+    {
+        foreach($works as $w) {
+            $this->works->add($w);
+        }
+
+        return $this;
+    }
 }

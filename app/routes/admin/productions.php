@@ -20,6 +20,7 @@ if (isset($app)) {
         $container = $group->getContainer();
 
         $group->post('/create', [ProductionController::class, 'store']);
+        $group->post('/edit', [ProductionController::class, 'update']);
 
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */
@@ -38,25 +39,6 @@ if (isset($app)) {
 
             return $twig->render($response, 'admin/productions/create.html.twig', $vars);
         })->add(new RequireTwigMiddleware($container));
-
-        $group->delete('/{id}', function (Request $request, Response $response) use ($container) {
-            /** @var ProductionRepository $repository */
-            $repository = $container->get(ProductionRepository::class);
-            $production = $repository->fetch($request->getAttribute('id'));
-
-            $repository->delete($production);
-
-            $data = [
-                'productions' => $repository->fetchAll(),
-            ];
-
-            if ($request->getHeaderLine('HX-Request'))
-                // fetch the twig instance and render the partial for HTMX request
-                return $container->get(Twig::class)->render($response, 'admin/productions/_table.html.twig', $data);
-
-            // this is not an HTMX request, so return to the listing page
-            return $response->withHeader('Location', '/admin/productions');
-        });
 
         $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
 
@@ -77,6 +59,25 @@ if (isset($app)) {
 
             return $twig->render($response, 'admin/productions/edit.html.twig', $vars);
         })->add(new RequireTwigMiddleware($container));
+
+        $group->delete('/{id}', function (Request $request, Response $response) use ($container) {
+            /** @var ProductionRepository $repository */
+            $repository = $container->get(ProductionRepository::class);
+            $production = $repository->fetch($request->getAttribute('id'));
+
+            $repository->delete($production);
+
+            $data = [
+                'productions' => $repository->fetchAll(),
+            ];
+
+            if ($request->getHeaderLine('HX-Request'))
+                // fetch the twig instance and render the partial for HTMX request
+                return $container->get(Twig::class)->render($response, 'admin/productions/_table.html.twig', $data);
+
+            // this is not an HTMX request, so return to the listing page
+            return $response->withHeader('Location', '/admin/productions');
+        });
 
         $group->get('', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */

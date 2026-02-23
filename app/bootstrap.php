@@ -93,7 +93,7 @@ $container->set(LoginController::class, static function (Container $c) {
 
 // Register ProductionController
 $container->set(ProductionController::class, static function (Container $c) {
-    return new ProductionController($c->get(ProductionRepository::class));
+    return new ProductionController($c->get(ProductionRepository::class), $c->get(EntityManager::class));
 });
 
 return $container;
