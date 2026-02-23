@@ -1,0 +1,36 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Create Sponsor - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Create New Sponsor</h1>
+        <p class="text-gray-600">Enter information for the new sponsor.</p>
+    </div>
+
+    <form action="/admin/sponsors/create" method="POST" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
+                <input type="text" name="name" id="name" required class="w-full rounded-md border-gray-300 shadow-sm" placeholder="Sponsor name">
+            </div>
+
+            <div>
+                <label for="logoUrl" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                <input type="url" name="logoUrl" id="logoUrl" class="w-full rounded-md border-gray-300 shadow-sm" placeholder="https://example.com/logo.png">
+            </div>
+
+            <div>
+                <label for="websiteUrl" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                <input type="url" name="websiteUrl" id="websiteUrl" class="w-full rounded-md border-gray-300 shadow-sm" placeholder="https://example.com">
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+            <a href="/admin/sponsors" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Create Sponsor</button>
+        </div>
+    </form>
+
+{% endblock %}
+

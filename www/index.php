@@ -26,6 +26,7 @@ $app->addBodyParsingMiddleware();
 require ROUTES_DIR . '/seasons.php';
 require ROUTES_DIR . '/admin/people.php';
 require ROUTES_DIR . '/admin/productions.php';
+require ROUTES_DIR . '/admin/sponsors.php';
 require ROUTES_DIR . '/admin/venues.php';
 require ROUTES_DIR . '/admin/works.php';
 

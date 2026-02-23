@@ -7,6 +7,7 @@ use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
@@ -76,11 +77,12 @@ $container->set(TwigMiddleware::class, static function (Container $c): callable 
 
 $repositories = [
     PersonRepository::class,
-    SeasonRepository::class,
-    UserRepository::class,
-    WorkRepository::class,
     ProductionRepository::class,
+    SeasonRepository::class,
+    SponsorRepository::class,
+    UserRepository::class,
     VenueRepository::class,
+    WorkRepository::class,
 ];
 
 foreach($repositories as $repository) {
