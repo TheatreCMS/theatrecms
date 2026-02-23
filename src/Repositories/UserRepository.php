@@ -11,8 +11,8 @@ class UserRepository extends BaseRepository
     public function create(array $args): User
     {
         $user = new User($args['email']);
-        $user->setPasswordHash(password_hash($args['password'], PASSWORD_DEFAULT));
-        $user->setRegisteredDtm(new \DateTimeImmutable());
+        $user->setPassword(password_hash($args['password'], PASSWORD_DEFAULT));
+        $user->setRegistered(time());
 
         $this->em->persist($user);
         $this->em->flush();

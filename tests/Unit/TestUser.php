@@ -13,30 +13,69 @@ use Clubdeuce\TheatreCMS\Tests\Includes\TestCase;
  */
 class TestUser extends TestCase
 {
-    public function testId()
+    public function testUsernameGetSet(): void
     {
-        $user = new User('john@doe.com');
-        $this->assertEquals(0, $user->getId());
+        $u = new User('alice@example.com');
+        $u->setUsername('alice');
+        $this->assertSame('alice', $u->getUsername());
+
+        $u->setUsername('  bob  ');
+        $this->assertSame('bob', $u->getUsername());
     }
 
-    public function testUserEmail()
+    public function testUsernameEmptyThrows(): void
     {
-        $user = new User('john@doe.com');
-
-        $this->assertEquals('john@doe.com', $user->getEmail(), 'Error setting user email on construction');
-        $user->setEmail('jane@doe.com');
-        $this->assertEquals('jane@doe.com', $user->getEmail(), 'Error updating user email');
-
-        $this->expectException(\Exception::class);
-        $user->setEmail('john');
+        $this->expectException(\InvalidArgumentException::class);
+        $u = new User('a@b.com');
+        $u->setUsername('   ');
     }
 
-    public function testRegisteredDtm()
+    public function testEmailGetSetAndValidation(): void
     {
-        $user = new User('john@doe.com');
-        $dtm = new \DateTimeImmutable('2024-01-01 12:00:00');
-        $user->setRegisteredDtm($dtm);
-        $this->assertEquals($dtm, $user->getRegisteredDtm(), 'Error setting registered datetime');
+        $u = new User('initial@example.com');
+        $this->assertSame('initial@example.com', $u->getEmail());
 
+        $u->setEmail('john.doe@example.com');
+        $this->assertSame('john.doe@example.com', $u->getEmail());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $u->setEmail('not-an-email');
     }
+
+    public function testPasswordGetSet(): void
+    {
+        $u = new User('p@example.com');
+        $u->setPassword('s3cr3t');
+        $this->assertSame('s3cr3t', $u->getPassword());
+    }
+
+    public function testStatusVerifiedResettable(): void
+    {
+        $u = new User('s@example.com');
+        $u->setStatus(true);
+        $this->assertTrue($u->getStatus());
+
+        $u->setVerified(true);
+        $this->assertTrue($u->isVerified());
+
+        $u->setResettable(false);
+        $this->assertFalse($u->isResettable());
+    }
+
+    public function testRolesMaskRegisteredLastLoginForceLogout(): void
+    {
+        $u = new User('r@example.com');
+        $u->setRolesMask(7);
+        $this->assertSame(7, $u->getRolesMask());
+
+        $u->setRegistered(1234567890);
+        $this->assertSame(1234567890, $u->getRegistered());
+
+        $u->setLastLogin(555);
+        $this->assertSame(555, $u->getLastLogin());
+
+        $u->setForceLogout(1);
+        $this->assertSame(1, $u->getForceLogout());
+    }
+
 }
