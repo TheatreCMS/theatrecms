@@ -29,9 +29,6 @@ class Venue
     #[Column(type: 'string', nullable: false)]
     private string $postcode;
 
-    #[Column(type: 'string', nullable: false)]
-    private string $country;
-
     #[Column(type: 'integer', nullable: true)]
     private ?int $capacity;
 
@@ -47,14 +44,13 @@ class Venue
     #[Column(name: 'map_url', type: 'string', nullable: true)]
     private ?string $mapUrl;
 
-    public function __construct(string $name, string $address, string $city, string $state, string $postcode, string $country)
+    public function __construct(string $name, string $address, string $city, string $state, string $postcode)
     {
         $this->name = $name;
         $this->address = $address;
         $this->city = $city;
         $this->state = $state;
         $this->postcode = $postcode;
-        $this->country = $country;
 
         // Initialize nullable fields to null
         $this->capacity = null;
@@ -121,17 +117,6 @@ class Venue
     public function setPostcode(string $postcode): self
     {
         $this->postcode = $postcode;
-        return $this;
-    }
-
-    public function getCountry(): string
-    {
-        return $this->country;
-    }
-
-    public function setCountry(string $country): self
-    {
-        $this->country = $country;
         return $this;
     }
 

@@ -21,7 +21,6 @@ final class VenueRepository extends BaseRepository
             'city' => null,
             'state' => null,
             'postcode' => null,
-            'country' => null,
             'capacity' => null,
             'description' => null,
             'accessibilityInfo' => null,
@@ -34,11 +33,10 @@ final class VenueRepository extends BaseRepository
             $args['address'],
             $args['city'],
             $args['state'],
-            $args['postcode'],
-            $args['country']
+            $args['postcode']
         );
 
-        $venue->setCapacity($args['capacity'])
+        $venue->setCapacity(intval($args['capacity']))
             ->setDescription($args['description'])
             ->setAccessibilityInfo($args['accessibilityInfo'])
             ->setWebsiteUrl($args['websiteUrl'])

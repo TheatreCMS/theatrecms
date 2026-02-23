@@ -8,6 +8,7 @@ use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
@@ -79,6 +80,7 @@ $repositories = [
     UserRepository::class,
     WorkRepository::class,
     ProductionRepository::class,
+    VenueRepository::class,
 ];
 
 foreach($repositories as $repository) {

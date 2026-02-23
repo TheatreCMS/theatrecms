@@ -35,7 +35,6 @@ class TestVenueRepositoryInvalidInput extends TestCase
             'city' => 'City',
             'state' => 'ST',
             'postcode' => '00000',
-            'country' => 'Country',
         ]);
     }
 }

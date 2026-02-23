@@ -19,8 +19,7 @@ class TestVenue extends TestCase
             '123 Main Street',
             'Portland',
             'Oregon',
-            '97201',
-            'USA'
+            '97201'
         );
     }
 
@@ -62,14 +61,6 @@ class TestVenue extends TestCase
         $postcode = '97201';
         $venue->setPostcode($postcode);
         $this->assertEquals($postcode, $venue->getPostcode());
-    }
-
-    public function testSetAndGetCountry(): void
-    {
-        $venue = $this->makeVenue();
-        $country = 'USA';
-        $venue->setCountry($country);
-        $this->assertEquals($country, $venue->getCountry());
     }
 
     public function testSetAndGetCapacity(): void
@@ -156,7 +147,6 @@ class TestVenue extends TestCase
               ->setCity('Portland')
               ->setState('Oregon')
               ->setPostcode('97201')
-              ->setCountry('USA')
               ->setCapacity(500)
               ->setDescription('A historic theatre in the heart of downtown.')
               ->setAccessibilityInfo('Wheelchair accessible with elevator access to all levels.')
@@ -168,7 +158,6 @@ class TestVenue extends TestCase
         $this->assertEquals('Portland', $venue->getCity());
         $this->assertEquals('Oregon', $venue->getState());
         $this->assertEquals('97201', $venue->getPostcode());
-        $this->assertEquals('USA', $venue->getCountry());
         $this->assertEquals(500, $venue->getCapacity());
         $this->assertEquals('A historic theatre in the heart of downtown.', $venue->getDescription());
         $this->assertEquals('Wheelchair accessible with elevator access to all levels.', $venue->getAccessibilityInfo());

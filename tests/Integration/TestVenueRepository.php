@@ -54,7 +54,6 @@ class TestVenueRepository extends TestCase
             'city' => 'Testville',
             'state' => 'TS',
             'postcode' => '00000',
-            'country' => 'Testland',
             'capacity' => 123,
             'description' => 'Integration test venue',
             'accessibilityInfo' => 'Accessible',
@@ -74,7 +73,6 @@ class TestVenueRepository extends TestCase
         $this->assertEquals($data['city'], $venue->getCity());
         $this->assertEquals($data['state'], $venue->getState());
         $this->assertEquals($data['postcode'], $venue->getPostcode());
-        $this->assertEquals($data['country'], $venue->getCountry());
         $this->assertEquals($data['capacity'], $venue->getCapacity());
         $this->assertEquals($data['description'], $venue->getDescription());
         $this->assertEquals($data['accessibilityInfo'], $venue->getAccessibilityInfo());
@@ -92,7 +90,6 @@ class TestVenueRepository extends TestCase
         $this->assertEquals($data['city'], $fetched->getCity());
         $this->assertEquals($data['state'], $fetched->getState());
         $this->assertEquals($data['postcode'], $fetched->getPostcode());
-        $this->assertEquals($data['country'], $fetched->getCountry());
         $this->assertEquals($data['capacity'], $fetched->getCapacity());
         $this->assertEquals($data['description'], $fetched->getDescription());
         $this->assertEquals($data['accessibilityInfo'], $fetched->getAccessibilityInfo());
@@ -110,7 +107,6 @@ class TestVenueRepository extends TestCase
             'city' => 'Oldcity',
             'state' => 'OC',
             'postcode' => '11111',
-            'country' => 'Oldland',
         ]);
 
         $this->assertEquals('Oldcity', $venue->getCity());
@@ -140,7 +136,6 @@ class TestVenueRepository extends TestCase
             'city' => 'Deletecity',
             'state' => 'DC',
             'postcode' => '22222',
-            'country' => 'Deleteland',
         ]);
 
         $id = $venue->getId();
@@ -164,7 +159,6 @@ class TestVenueRepository extends TestCase
             'city' => 'C1',
             'state' => 'S1',
             'postcode' => 'P1',
-            'country' => 'Country1',
         ]);
 
         $repo->create([
@@ -173,7 +167,6 @@ class TestVenueRepository extends TestCase
             'city' => 'C2',
             'state' => 'S2',
             'postcode' => 'P2',
-            'country' => 'Country2',
         ]);
 
         $all = $repo->fetchAll();

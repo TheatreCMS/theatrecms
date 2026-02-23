@@ -1,0 +1,14 @@
+{% for v in venues %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">{{ v.name }}</th>
+        <td class="px-6 py-4">{{ v.city }}, {{ v.state }}</td>
+        <td class="px-6 py-4">
+            <a href="/admin/venues/edit/{{ v.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/venues/delete/{{ v.id }}" hx-target="#venueList">Delete</button>
+        </td>
+    </tr>
+{% else %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4">No venues found.</td>
+    </tr>
+{% endfor %}

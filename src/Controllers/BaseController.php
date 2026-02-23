@@ -6,6 +6,7 @@ use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,7 +16,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 class BaseController
 {
     protected EntityManagerInterface $entityManager;
-    protected PersonRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository $repository;
+    protected PersonRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository $repository;
 
     public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository
     {
