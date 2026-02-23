@@ -45,7 +45,7 @@ if (isset($app)) {
                 $venueRepo = $container->get(VenueRepository::class);
 
                 $vars = [
-                    'venue' => $venueRepo->fetch($args['id']),
+                    'venues' => $venueRepo->fetchAll(),
                 ];
 
                 return $container->get(Twig::class)->render($response, 'admin/venues/_table.html.twig', $vars);
