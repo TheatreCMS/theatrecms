@@ -40,7 +40,7 @@ class People extends BaseController
             return $response->withStatus(404);
         }
 
-        $person->setName($args['name'])
+        $person
             ->setFirstName($args['firstName'])
             ->setLastName($args['lastName'])
             ->setBiography($args['biography'])

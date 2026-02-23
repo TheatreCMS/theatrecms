@@ -24,6 +24,7 @@ $app->addBodyParsingMiddleware();
 
 // Load external route files
 require ROUTES_DIR . '/seasons.php';
+require ROUTES_DIR . '/admin/people.php';
 require ROUTES_DIR . '/admin/productions.php';
 require ROUTES_DIR . '/admin/works.php';
 
