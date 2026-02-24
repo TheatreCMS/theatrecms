@@ -7,12 +7,15 @@ use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
 /**
  * The productions route group
+ *
+ * @var ContainerInterface $container
  */
 
 if (isset($app)) {
@@ -38,7 +41,7 @@ if (isset($app)) {
 
 
             return $twig->render($response, 'admin/productions/create.html.twig', $vars);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
 
@@ -58,7 +61,7 @@ if (isset($app)) {
             $twig = $container->get(Twig::class);
 
             return $twig->render($response, 'admin/productions/edit.html.twig', $vars);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->delete('/{id}', function (Request $request, Response $response) use ($container) {
             /** @var ProductionRepository $repository */
@@ -87,6 +90,6 @@ if (isset($app)) {
             $productions = $prodRepo->fetchAll();
 
             return $twig->render($response, 'admin/productions/index.html.twig', ['productions' => $productions]);
-        })->add(new RequireTwigMiddleware($container));
-    })->add(new AuthMiddleware());
+        });
+    })->add(new RequireTwigMiddleware($container))->add($container->get(AuthMiddleware::class));
 }

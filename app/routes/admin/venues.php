@@ -4,9 +4,16 @@ use Clubdeuce\TheatreCMS\Controllers\VenueController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+
+/**
+ * The venues route group
+ *
+ * @var ContainerInterface $container
+ */
 
 if (isset($app)) {
     $app->group('/admin/venues', function ($group) {
@@ -20,7 +27,7 @@ if (isset($app)) {
             $twig = $container->get(Twig::class);
 
             return $twig->render($response, 'admin/venues/create.html.twig');
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->get('/edit/{id}', function (Request $request, Response $response, array $args) use ($container) {
             /** @var Twig $twig */
@@ -32,7 +39,7 @@ if (isset($app)) {
             ];
 
             return $twig->render($response, 'admin/venues/edit.html.twig', $vars);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->delete('/{id}', function (Request $request, Response $response, array $args) use ($container) {
             $repo  = $container->get(VenueRepository::class);
@@ -62,7 +69,7 @@ if (isset($app)) {
             return $twig->render($response, 'admin/venues/index.html.twig', [
                 'venues' => $venueRepo->fetchAll(),
             ]);
-        })->add(new AuthMiddleware());
-    });
+        });
+    })->add(new RequireTwigMiddleware($container))->add($container->get(AuthMiddleware::class));
 }
 

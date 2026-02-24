@@ -5,13 +5,15 @@ use Clubdeuce\TheatreCMS\Controllers\WorksController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
-use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
 /**
  * The works route group
+ *
+ * @var ContainerInterface $container
  */
 
 if (isset($app)) {
@@ -29,7 +31,7 @@ if (isset($app)) {
             return $twig->render($response, 'admin/works/create.html.twig', [
                 'people' => $personRepo->fetchAll(),
             ]);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->get('/edit/{id}', function (Request $request, Response $response, array $args) use ($container) {
             /** @var Twig $twig */
@@ -54,7 +56,7 @@ if (isset($app)) {
                 'creatorIds' => $creatorIds,
                 'creatorRoles' => $creatorRoles,
             ]);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->get('', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */
@@ -65,5 +67,5 @@ if (isset($app)) {
                 'works' => $worksRepository->fetchAll(),
             ]);
         });
-    })->add(new AuthMiddleware());
+    })->add(new RequireTwigMiddleware($container))->add($container->get(AuthMiddleware::class));
 }

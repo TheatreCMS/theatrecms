@@ -4,10 +4,18 @@ use Clubdeuce\TheatreCMS\Controllers\SponsorController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
+use Delight\Auth\Auth;
+use Doctrine\ORM\EntityManager;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
+/**
+ * The sponsors route group
+ *
+ * @var ContainerInterface $container
+ */
 if (isset($app)) {
     $app->group('/admin/sponsors', function ($group) {
         $container = $group->getContainer();
@@ -32,7 +40,7 @@ if (isset($app)) {
             ];
 
             return $twig->render($response, 'admin/sponsors/edit.html.twig', $vars);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->delete('/{id}', function (Request $request, Response $response, array $args) use ($container) {
             $repo = $container->get(SponsorRepository::class);
@@ -62,7 +70,7 @@ if (isset($app)) {
             return $twig->render($response, 'admin/sponsors/index.html.twig', [
                 'sponsors' => $repo->fetchAll(),
             ]);
-        })->add(new AuthMiddleware());
-    });
+        });
+    })->add(new RequireTwigMiddleware($container))->add($container->get(AuthMiddleware::class));
 }
 

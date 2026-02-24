@@ -85,5 +85,5 @@ if (isset($app)) {
 
             return $twig->render($response, 'admin/seasons/index.html.twig', ['seasons' => $seasons]);
         })->add(new RequireTwigMiddleware($container));
-    })->add(new AuthMiddleware());
+    })->add($app->getContainer()->get(AuthMiddleware::class));
 }

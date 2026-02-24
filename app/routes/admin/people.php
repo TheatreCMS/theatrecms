@@ -4,10 +4,16 @@ use Clubdeuce\TheatreCMS\Controllers\PeopleController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
+/**
+ * The people route group
+ *
+ * @var ContainerInterface $container
+ */
 if (isset($app)) {
     $app->group('/admin/people', function ($group) {
         $container = $group->getContainer();
@@ -20,7 +26,7 @@ if (isset($app)) {
             $twig = $container->get(Twig::class);
 
             return $twig->render($response, 'admin/people/create.html.twig');
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->get('/edit/{id}', function (Request $request, Response $response, array $args) use ($container) {
             /** @var Twig $twig */
@@ -32,7 +38,7 @@ if (isset($app)) {
             ];
 
             return $twig->render($response, 'admin/people/edit.html.twig', $vars);
-        })->add(new RequireTwigMiddleware($container));
+        });
 
         $group->delete('/{id}', function (Request $request, Response $response, array $args) use ($container) {
             $repo = $container->get(PersonRepository::class);
@@ -52,7 +58,7 @@ if (isset($app)) {
             return $twig->render($response, 'admin/people/index.html.twig', [
                 'people' => $personRepo->fetchAll(),
             ]);
-        })->add(new AuthMiddleware());
-    });
+        });
+    })->add(new RequireTwigMiddleware($container))->add($container->get(AuthMiddleware::class));
 }
 

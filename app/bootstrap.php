@@ -11,6 +11,7 @@ use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
+use Delight\Auth\Auth;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
@@ -91,8 +92,12 @@ foreach($repositories as $repository) {
     });
 }
 
+$container->set(Auth::class, static function (Container $c) {
+    return new Auth($c->get(EntityManager::class)->getConnection()->getNativeConnection());
+});
+
 $container->set(LoginController::class, static function (Container $c) {
-    return new LoginController($c->get(UserRepository::class), $c->get(Twig::class));
+    return new LoginController($c->get(UserRepository::class), $c->get(Twig::class), $c->get(Auth::class));
 });
 
 // Register ProductionController
