@@ -3,7 +3,6 @@
 namespace Clubdeuce\TheatreCMS\Controllers;
 
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
-use Delight\Auth\AttemptCancelledException;
 use Delight\Auth\Auth;
 use Delight\Auth\AuthError;
 use Delight\Auth\EmailNotVerifiedException;

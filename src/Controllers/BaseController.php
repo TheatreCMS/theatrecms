@@ -9,9 +9,8 @@ use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Http\Message\RequestInterface as Request;
+use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
 class BaseController
@@ -22,6 +21,20 @@ class BaseController
     public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository|SponsorRepository
     {
         return $this->repository;
+    }
+
+    public function store(Request $request, Response $response): Response
+    {
+        $body = $request->getBody()->getContents();
+
+        if (empty($body))
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+
+        $data = json_decode($body, true);
+
+        $this->repository->create($data);
+
+        return $response->withHeader('Location', '/admin/productions');
     }
 
     public function create(Request $request, Response $response): Response

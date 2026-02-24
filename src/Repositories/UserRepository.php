@@ -3,21 +3,33 @@
 namespace Clubdeuce\TheatreCMS\Repositories;
 
 use Clubdeuce\TheatreCMS\Models\User;
+use Delight\Auth\Auth;
+use Delight\Auth\InvalidEmailException;
+use Delight\Auth\InvalidPasswordException;
+use Delight\Auth\TooManyRequestsException;
+use Delight\Auth\UserAlreadyExistsException;
+use Delight\Auth\AuthError;
+
 
 class UserRepository extends BaseRepository
 {
     protected string $entityClass = User::class;
 
-    public function create(array $args): User
+    protected Auth $auth;
+
+    public function setAuth(Auth $auth): void
     {
-        $user = new User($args['email']);
-        $user->setPassword(password_hash($args['password'], PASSWORD_DEFAULT));
-        $user->setRegistered(time());
+        $this->auth = $auth;
+    }
 
-        $this->em->persist($user);
-        $this->em->flush();
+    public function create(array $args): void
+    {
+        try {
+            $this->auth->register($args['email'], $args['password'], $args['username']);
 
-        return $user;
+        } catch (InvalidEmailException|AuthError|InvalidPasswordException|UserAlreadyExistsException|TooManyRequestsException $e) {
+            trigger_error('Failed to create user: ' . $e->getMessage());
+        }
     }
 
     public function findByEmail(string $email): ?object

@@ -47,7 +47,7 @@ final class User
 
     public function __construct(string $email)
     {
-        $this->email = $email;
+        $this->email    = $email;
     }
 
     public function getId(): int
@@ -162,7 +162,7 @@ final class User
 
     public function getLastLogin(): int
     {
-        return $this->lastLogin;
+        return $this->lastLogin ?? 0;
     }
 
     public function setLastLogin(int $lastLogin): self

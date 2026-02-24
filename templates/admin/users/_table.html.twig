@@ -1,0 +1,20 @@
+{% for u in users %}
+<tr class="bg-neutral-primary border-b border-default">
+    <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+        {{ u.email }}
+    </th>
+    <td class="px-6 py-4">
+        {{ u.lastLogin ? u.lastLogin|date('m/d/Y H:i:s') : 'Never' }}
+    </td>
+    <td class="px-6 py-4">
+        <a href="/admin/users/edit/{{ u.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+        {% if users|length > 1 %}
+        <button type="button" class="text-red-600 hover:text-red-900" hx-delete="admin/users/{{ u.id }}">Delete</button>
+        {% endif %}
+    </td>
+</tr>
+{% else %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4">No users found.</td>
+    </tr>
+{% endfor %}

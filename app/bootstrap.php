@@ -96,6 +96,9 @@ $container->set(Auth::class, static function (Container $c) {
     return new Auth($c->get(EntityManager::class)->getConnection()->getNativeConnection());
 });
 
+// Add the Auth
+$container->get(UserRepository::class)->setAuth($container->get(Auth::class));
+
 $container->set(LoginController::class, static function (Container $c) {
     return new LoginController($c->get(UserRepository::class), $c->get(Twig::class), $c->get(Auth::class));
 });
