@@ -33,6 +33,7 @@ require ROUTES_DIR . '/admin/works.php';
 $app->get('/admin/login', [LoginController::class, 'login']);
 $app->post('/admin/login', [LoginController::class, 'authenticate']);
 $app->get('/admin/logout', [LoginController::class, 'logout']);
+$app->post('/admin/register', [LoginController::class, 'register']);
 
 $app->get('/admin', function (Request $request, Response $response) use ($container) {
     $twig = $container->get(Twig::class);
