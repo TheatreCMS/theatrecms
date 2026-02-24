@@ -26,7 +26,6 @@ class UserRepository extends BaseRepository
     {
         try {
             $this->auth->register($args['email'], $args['password'], $args['username']);
-
         } catch (InvalidEmailException|AuthError|InvalidPasswordException|UserAlreadyExistsException|TooManyRequestsException $e) {
             trigger_error('Failed to create user: ' . $e->getMessage());
         }
@@ -35,5 +34,10 @@ class UserRepository extends BaseRepository
     public function findByEmail(string $email): ?object
     {
         return $this->em->getRepository($this->entityClass)->findOneBy(['email' => $email]);
+    }
+
+    public function findByUsername(string $username): ?object
+    {
+        return $this->em->getRepository($this->entityClass)->findOneBy(['username' => $username]);
     }
 }
