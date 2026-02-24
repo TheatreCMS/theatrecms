@@ -44,45 +44,14 @@ class LoginController extends BaseController
     public function authenticate(Request $request, Response $response): Response
     {
         $data = $request->getParsedBody();
-//        $email = $data['email'] ?? '';
-//        $password = $data['password'] ?? '';
-//
-//        /** @var UserRepository $repository */
-//        $repository = $this->repository();
-//        $user = $repository->findByEmail($email);
-//
-//        if ($user && password_verify($password, $user->getPasswordHash())) {
-//            if (session_status() !== PHP_SESSION_ACTIVE) {
-//                session_start();
-//            }
-//            $_SESSION['user_id'] = $user->getId();
-//            return $response->withHeader('Location', '/admin')->withStatus(302);
-//        }
-//
-//        return $this->twig->render($response, 'admin/login.html.twig', [
-//            'error' => 'Invalid email or password',
-//            'email' => $email
-//        ]);
 
         try {
             $this->auth->login($data['email'], $data['password']);
 
             return $response->withHeader('Location', '/admin')->withStatus(302);
         }
-        catch (InvalidEmailException $e) {
-            die('Wrong email address');
-        }
-        catch (InvalidPasswordException $e) {
-            die('Wrong password');
-        }
-        catch (EmailNotVerifiedException $e) {
-            die('Email not verified');
-        }
-        catch (\Delight\Auth\TooManyRequestsException $e) {
-            die('Too many requests');
-        } catch (AttemptCancelledException $e) {
-        } catch (AuthError $e) {
-        } catch (SecondFactorRequiredException $e) {
+        catch (InvalidEmailException|AuthError|InvalidPasswordException|EmailNotVerifiedException|TooManyRequestsException|SecondFactorRequiredException $e) {
+            return $response->withHeader('Location', '/admin/login')->withStatus(302);
         }
     }
 
@@ -93,5 +62,21 @@ class LoginController extends BaseController
         }
         session_destroy();
         return $response->withHeader('Location', '/admin/login')->withStatus(302);
+    }
+
+    public function register(Request $request, Response $response): Response
+    {
+        $data = $this->parseArgs($request->getParsedBody(), [
+            'email' => '',
+            'password' => '',
+        ]);
+
+        try {
+            $this->auth->register($data['email'], $data['password']);
+            return $response->withHeader('Location', '/admin/users');
+        }
+        catch (UserAlreadyExistsException|InvalidEmailException|AuthError|InvalidPasswordException|TooManyRequestsException $e) {
+            return $response->withHeader('Location', '/admin/register');
+        }
     }
 }
