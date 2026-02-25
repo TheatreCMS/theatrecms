@@ -2,6 +2,7 @@
 
 namespace Clubdeuce\TheatreCMS\Controllers;
 
+use Clubdeuce\TheatreCMS\Repositories\EventRepository;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
@@ -16,9 +17,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 class BaseController
 {
     protected EntityManagerInterface $entityManager;
-    protected PersonRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository $repository;
+    protected PersonRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository $repository;
 
-    public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository|SponsorRepository
+    public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository|SponsorRepository|EventRepository
     {
         return $this->repository;
     }

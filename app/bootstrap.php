@@ -2,8 +2,11 @@
 
 // bootstrap.php
 
+use Clubdeuce\TheatreCMS\Controllers\EventController;
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
 use Clubdeuce\TheatreCMS\Controllers\ProductionController;
+use Clubdeuce\TheatreCMS\Controllers\UsersController;
+use Clubdeuce\TheatreCMS\Repositories\EventRepository;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
@@ -77,6 +80,7 @@ $container->set(TwigMiddleware::class, static function (Container $c): callable 
 });
 
 $repositories = [
+    EventRepository::class,
     PersonRepository::class,
     ProductionRepository::class,
     SeasonRepository::class,
@@ -84,6 +88,7 @@ $repositories = [
     UserRepository::class,
     VenueRepository::class,
     WorkRepository::class,
+    \Clubdeuce\TheatreCMS\Repositories\EventRepository::class,
 ];
 
 foreach($repositories as $repository) {
@@ -104,13 +109,18 @@ $container->set(LoginController::class, static function (Container $c) {
 });
 
 // Register UsersController
-$container->set(\Clubdeuce\TheatreCMS\Controllers\UsersController::class, static function (Container $c) {
-    return new \Clubdeuce\TheatreCMS\Controllers\UsersController($c->get(UserRepository::class), $c->get(Twig::class));
+$container->set(UsersController::class, static function (Container $c) {
+    return new UsersController($c->get(UserRepository::class), $c->get(Twig::class));
 });
 
 // Register ProductionController
 $container->set(ProductionController::class, static function (Container $c) {
     return new ProductionController($c->get(ProductionRepository::class), $c->get(EntityManager::class));
+});
+
+// Register EventController
+$container->set(\Clubdeuce\TheatreCMS\Controllers\EventController::class, static function (Container $c) {
+    return new \Clubdeuce\TheatreCMS\Controllers\EventController($c->get(\Clubdeuce\TheatreCMS\Repositories\EventRepository::class), $c->get(EntityManager::class));
 });
 
 return $container;

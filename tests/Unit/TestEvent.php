@@ -38,6 +38,7 @@ class TestEvent extends TestCase
         $this->assertNull($this->event->getEndsAt());
         $this->assertNull($this->event->getTicketUrl());
         $this->assertNull($this->event->getNotes());
+        $this->assertNull($this->event->getTitle());
     }
 
     public function testSetProduction()
@@ -89,6 +90,14 @@ class TestEvent extends TestCase
         $this->assertEquals($notes, $this->event->getNotes());
     }
 
+    public function testSetTitle()
+    {
+        $title = 'Opening Night';
+        $this->event->setTitle($title);
+
+        $this->assertEquals($title, $this->event->getTitle());
+    }
+
     public function testMultipleStatusValues()
     {
         $this->event->setStatus('cancelled');
@@ -108,6 +117,9 @@ class TestEvent extends TestCase
 
         $this->event->setNotes(null);
         $this->assertNull($this->event->getNotes());
+
+        $this->event->setTitle(null);
+        $this->assertNull($this->event->getTitle());
     }
 
     public function testEventWithAllFields()
@@ -121,6 +133,7 @@ class TestEvent extends TestCase
         $event->setEndsAt($endsAt);
         $event->setTicketUrl($ticketUrl);
         $event->setNotes($notes);
+        $event->setTitle('Opening Night');
 
         $this->assertEquals($this->production, $event->getProduction());
         $this->assertEquals($startsAt, $event->getStartsAt());
@@ -128,6 +141,7 @@ class TestEvent extends TestCase
         $this->assertEquals('scheduled', $event->getStatus());
         $this->assertEquals($ticketUrl, $event->getTicketUrl());
         $this->assertEquals($notes, $event->getNotes());
+        $this->assertEquals('Opening Night', $event->getTitle());
     }
 
     public function testConstructorWithoutProduction()

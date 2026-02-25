@@ -23,9 +23,6 @@ class Event
     #[Column(name: 'starts_at', type: 'datetime_immutable', nullable: false)]
     private \DateTimeImmutable $startsAt;
 
-    #[Column(name: 'ends_at', type: 'datetime_immutable', nullable: true)]
-    private ?\DateTimeImmutable $endsAt = null;
-
     #[Column(type: 'string', nullable: false)]
     private string $status;
 
@@ -35,11 +32,19 @@ class Event
     #[Column(type: 'text', nullable: true)]
     private ?string $notes = null;
 
-    public function __construct(\DateTimeImmutable $startsAt, string $status, ?Production $production = null)
+    #[ManyToOne(targetEntity: Venue::class)]
+    #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable:true)]
+    private ?Venue $venue = null;
+
+    #[Column(type: 'string', nullable: true)]
+    private ?string $title = null;
+
+    public function __construct(\DateTimeImmutable $startsAt, string $status, ?Production $production = null, ?string $title = null)
     {
         $this->startsAt = $startsAt;
         $this->status = $status;
         $this->production = $production;
+        $this->title = $title;
     }
 
     public function getId(): int
@@ -57,11 +62,6 @@ class Event
         return $this->startsAt;
     }
 
-    public function getEndsAt(): ?\DateTimeImmutable
-    {
-        return $this->endsAt;
-    }
-
     public function getStatus(): string
     {
         return $this->status;
@@ -77,6 +77,16 @@ class Event
         return $this->notes;
     }
 
+    public function getTitle(): ?string
+    {
+        return $this->title;
+    }
+
+    public function getVenue(): ?Venue
+    {
+        return $this->venue;
+    }
+
     public function setProduction(?Production $production): self
     {
         $this->production = $production;
@@ -87,13 +97,6 @@ class Event
     public function setStartsAt(\DateTimeImmutable $startsAt): self
     {
         $this->startsAt = $startsAt;
-
-        return $this;
-    }
-
-    public function setEndsAt(?\DateTimeImmutable $endsAt): self
-    {
-        $this->endsAt = $endsAt;
 
         return $this;
     }
@@ -115,6 +118,20 @@ class Event
     public function setNotes(?string $notes): self
     {
         $this->notes = $notes;
+
+        return $this;
+    }
+
+    public function setTitle(?string $title): self
+    {
+        $this->title = $title;
+
+        return $this;
+    }
+
+    public function setVenue(?Venue $venue): self
+    {
+        $this->venue = $venue;
 
         return $this;
     }

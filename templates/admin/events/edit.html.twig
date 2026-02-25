@@ -1,0 +1,86 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% set productions = productions|default([]) %}
+{% set venues = venues|default([]) %}
+
+{% block title %}Edit Event - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Edit Event</h1>
+        <p class="text-gray-600">Update the details for the event.</p>
+    </div>
+
+    <form action="/admin/events/edit" method="POST" class="space-y-6">
+        <input type="hidden" name="eventId" value="{{ event.id }}" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="productionId" class="block text-sm font-medium text-gray-700 mb-1">Production</label>
+                <select name="productionId" id="productionId" class="w-full rounded-md border-gray-300 shadow-sm">
+                    <option value="">None</option>
+                    {% for p in productions %}
+                        <option value="{{ p.id }}" {% if event.production and p.id == event.production.id %}selected{% endif %}>{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="venueId" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                <select name="venueId" id="venueId" class="w-full rounded-md border-gray-300 shadow-sm">
+                    <option value="">None</option>
+                    {% for v in venues %}
+                        <option value="{{ v.id }}" {% if event.venue and v.id == event.venue.id %}selected{% endif %}>{{ v.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="startsAt" class="block text-sm font-medium text-gray-700 mb-1">Starts At <span class="text-red-500">*</span></label>
+                <input type="datetime-local" name="startsAt" id="startsAt" required
+                       value="{{ event.startsAt ? event.startsAt|date('Y-m-d\\TH:i') : '' }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+
+            <div>
+                <label for="endsAt" class="block text-sm font-medium text-gray-700 mb-1">Ends At</label>
+                <input type="datetime-local" name="endsAt" id="endsAt"
+                       value="{{ event.endsAt ? event.endsAt|date('Y-m-d\\TH:i') : '' }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" id="status" class="w-full rounded-md border-gray-300 shadow-sm">
+                    <option value="scheduled" {% if event.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                    <option value="cancelled" {% if event.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    <option value="postponed" {% if event.status == 'postponed' %}selected{% endif %}>Postponed</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" id="title" maxlength="255"
+                       value="{{ event.title }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="ticketUrl" class="block text-sm font-medium text-gray-700 mb-1">Ticket URL</label>
+                <input type="url" name="ticketUrl" id="ticketUrl" placeholder="https://example.com/tickets"
+                       value="{{ event.ticketUrl }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea name="notes" id="notes" rows="4" class="w-full rounded-md border-gray-300 shadow-sm">{{ event.notes }}</textarea>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+            <a href="/admin/events" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Update Event</button>
+        </div>
+    </form>
+
+{% endblock %}

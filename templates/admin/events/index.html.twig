@@ -1,0 +1,45 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Events - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Events</h1>
+        <p class="text-gray-600">Manage event records.</p>
+    </div>
+    <div>
+        <a href="/admin/events/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add New Event</a>
+    </div>
+</div>
+
+<table class="w-full text-sm text-left rtl:text-right text-body">
+    <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+        <tr>
+            <th scope="col" class="px-6 py-3 font-medium">Starts</th>
+            <th scope="col" class="px-6 py-3 font-medium">Production</th>
+            <th scope="col" class="px-6 py-3 font-medium">Title</th>
+            <th scope="col" class="px-6 py-3 font-medium">Status</th>
+            <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="eventList">
+    {% for e in events %}
+        <tr class="bg-neutral-primary border-b border-default">
+            <td class="px-6 py-4">{{ e.startsAt|date('Y-m-d H:i') }}</td>
+            <td class="px-6 py-4">{{ e.production ? e.production.name : '' }}</td>
+            <td class="px-6 py-4">{{ e.title }}</td>
+            <td class="px-6 py-4">{{ e.status }}</td>
+            <td class="px-6 py-4">
+                <a href="/admin/events/edit/{{ e.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+                <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/events/{{ e.id }}" hx-target="#eventList">Delete</button>
+            </td>
+        </tr>
+    {% else %}
+        <tr class="bg-neutral-primary border-b border-default">
+            <td class="px-6 py-4" colspan="5">No events found.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
