@@ -15,7 +15,7 @@
               "state": {
                 "file": "README.md",
                 "mode": "source",
-                "source": false
+                "source": true
               },
               "icon": "lucide-file",
               "title": "README"
@@ -183,8 +183,9 @@
       "bases:Create new base": false
     }
   },
-  "active": "600261074e11dd9d",
+  "active": "3528b80056af8629",
   "lastOpenFiles": [
+    "theatre-cms-erd.mermaid",
     "schema.dbml~",
     "schema.dbml",
     "README.md~",
