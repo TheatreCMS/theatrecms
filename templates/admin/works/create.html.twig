@@ -92,32 +92,56 @@
         </div>
     </form>
 
-    {% block scripts %}
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form');
-                const titleInput = document.getElementById('title');
-                const selectAllBtn = document.getElementById('select-all-creators');
-                const clearBtn = document.getElementById('clear-creators');
-                const creatorsCheckboxes = document.querySelectorAll('.creator-checkbox');
+{% endblock %}
+{% block scripts %}
+    <link rel="stylesheet" href="../../assets/js/ckeditor5/ckeditor5.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const titleInput = document.getElementById('title');
+            const selectAllBtn = document.getElementById('select-all-creators');
+            const clearBtn = document.getElementById('clear-creators');
+            const creatorsCheckboxes = document.querySelectorAll('.creator-checkbox');
 
-                form.addEventListener('submit', function (e) {
-                    if (!titleInput.value.trim()) {
-                        e.preventDefault();
-                        alert('Please provide a title for the work.');
-                        titleInput.focus();
-                    }
-                });
-
-                selectAllBtn.addEventListener('click', function () {
-                    creatorsCheckboxes.forEach(cb => cb.checked = true);
-                });
-
-                clearBtn.addEventListener('click', function () {
-                    creatorsCheckboxes.forEach(cb => cb.checked = false);
-                });
+            form.addEventListener('submit', function (e) {
+                if (!titleInput.value.trim()) {
+                    e.preventDefault();
+                    alert('Please provide a title for the work.');
+                    titleInput.focus();
+                }
             });
-        </script>
-    {% endblock %}
+
+            selectAllBtn.addEventListener('click', function () {
+                creatorsCheckboxes.forEach(cb => cb.checked = true);
+            });
+
+            clearBtn.addEventListener('click', function () {
+                creatorsCheckboxes.forEach(cb => cb.checked = false);
+            });
+        });
+    </script>
+    <script type="importmap">
+        {
+            "imports": {
+                "ckeditor5": "../../assets/js/ckeditor5/ckeditor5.js",
+                "ckeditor5/": "../../assets/js/ckeditor5/"
+            }
+        }
+    </script>
+    <script type="module">
+        import { ClassicEditor, Essentials, Bold, Italic, Paragraph, Font } from 'ckeditor5';
+
+        ClassicEditor
+            .create( document.querySelector( '#description' ), {
+                licenseKey: 'GPL',
+                plugins: [ Essentials, Bold, Italic, Paragraph, Font ],
+                toolbar: [
+                    'undo', 'redo', '|', 'bold', 'italic', '|',
+                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
+                ]
+            } )
+            .then( /* ... */ )
+            .catch( /* ... */ );
+    </script>
 
 {% endblock %}
