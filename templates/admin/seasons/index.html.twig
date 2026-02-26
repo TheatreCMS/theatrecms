@@ -3,55 +3,27 @@
 {% block title %}Seasons - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="mb-6 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-gray-800">All seasons</h1>
-        <a href="/admin/seasons/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Add New Season
-        </a>
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">Seasons</h1>
+        <p class="text-gray-600">Manage theatrical seasons.</p>
     </div>
+    <div>
+        <a href="/admin/seasons/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add New Season</a>
+    </div>
+</div>
 
-    <div class="bg-white shadow-md rounded my-6 overflow-x-auto">
-        <table class="min-w-full bg-white">
-            <thead>
-                <tr class="w-full h-16 border-gray-300 border-b py-8">
-                    <th class="text-left pl-8 font-bold text-gray-600 uppercase text-sm tracking-normal">Name</th>
-                    <th class="text-left font-bold text-gray-600 uppercase text-sm tracking-normal">Start Date</th>
-                    <th class="text-left font-bold text-gray-600 uppercase text-sm tracking-normal">End Date</th>
-                    <th class="text-left pr-8 font-bold text-gray-600 uppercase text-sm tracking-normal">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="prodList">
-                {% for season in seasons %}
-                    <tr class="h-24 border-gray-300 border-b">
-                        <td class="text-sm pr-6 whitespace-no-wrap text-gray-800 tracking-normal leading-4 pl-8">
-                            {{ season.label }}
-                        </td>
-                        <td class="text-sm pr-6 whitespace-no-wrap text-gray-800 tracking-normal leading-4">
-                            {{ season.startDate ? season.startDate|date('M d, Y') : 'N/A' }}
-                        </td>
-                        <td class="text-sm pr-6 whitespace-no-wrap text-gray-800 tracking-normal leading-4">
-                            {{ season.endDate ? season.endDate|date('M d, Y') : 'N/A' }}
-                        </td>
-                        <td class="pr-8">
-                            <div class="flex items-center space-x-2">
-                                <a href="/admin/seasons/edit/{{ season.id }}" class="text-blue-600 hover:text-blue-900">Edit</a>
-                                <span class="text-gray-300">|</span>
-                                <button
-                                        type="button"
-                                        class="text-red-600 hover:text-red-900"
-                                        hx-delete="/admin/seasons/{{ season.id }}"
-                                        hx-target="#prodList">
-                                    Delete
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr class="h-24 border-gray-300 border-b">
-                        <td colspan="4" class="text-sm text-gray-600 text-center">No seasons found.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<table class="w-full text-sm text-left rtl:text-right text-body">
+    <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+        <tr>
+            <th scope="col" class="px-6 py-3 font-medium">Name</th>
+            <th scope="col" class="px-6 py-3 font-medium">Start Date</th>
+            <th scope="col" class="px-6 py-3 font-medium">End Date</th>
+            <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="prodList">
+        {% include 'admin/seasons/_table.html.twig' %}
+    </tbody>
+</table>
 {% endblock %}
