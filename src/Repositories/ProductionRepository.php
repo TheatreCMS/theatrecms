@@ -14,10 +14,6 @@ class ProductionRepository extends BaseRepository
 
     protected string $entityClass = Production::class;
 
-    public function __construct(protected EntityManagerInterface $em)
-    {
-    }
-
     public function create(array $args): Production
     {
         $args = array_merge([
