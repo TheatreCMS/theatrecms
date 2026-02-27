@@ -127,6 +127,21 @@
                 });
             });
         </script>
+        <script type="module">
+            import { ClassicEditor, Essentials, Bold, Italic, Paragraph, Font } from 'ckeditor5';
+
+            ClassicEditor
+                .create( document.querySelector( '#description' ), {
+                    licenseKey: 'GPL',
+                    plugins: [ Essentials, Bold, Italic, Paragraph, Font ],
+                    toolbar: [
+                        'undo', 'redo', '|', 'bold', 'italic', '|',
+                        'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
+                    ]
+                } )
+                .then( /* ... */ )
+                .catch( /* ... */ );
+        </script>
     {% endblock %}
 
 {% endblock %}

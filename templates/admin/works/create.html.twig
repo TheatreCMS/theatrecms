@@ -94,7 +94,6 @@
 
 {% endblock %}
 {% block scripts %}
-    <link rel="stylesheet" href="../../assets/js/ckeditor5/ckeditor5.css">
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form');
@@ -119,29 +118,6 @@
                 creatorsCheckboxes.forEach(cb => cb.checked = false);
             });
         });
-    </script>
-    <script type="importmap">
-        {
-            "imports": {
-                "ckeditor5": "../../assets/js/ckeditor5/ckeditor5.js",
-                "ckeditor5/": "../../assets/js/ckeditor5/"
-            }
-        }
-    </script>
-    <script type="module">
-        import { ClassicEditor, Essentials, Bold, Italic, Paragraph, Font } from 'ckeditor5';
-
-        ClassicEditor
-            .create( document.querySelector( '#description' ), {
-                licenseKey: 'GPL',
-                plugins: [ Essentials, Bold, Italic, Paragraph, Font ],
-                toolbar: [
-                    'undo', 'redo', '|', 'bold', 'italic', '|',
-                    'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-                ]
-            } )
-            .then( /* ... */ )
-            .catch( /* ... */ );
     </script>
 
 {% endblock %}

@@ -15,6 +15,15 @@
     {# HTMX for progressive enhancement #}
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 
+    <link rel="stylesheet" href="/assets/js/ckeditor5/ckeditor5.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
+                "ckeditor5/": "/assets/js/ckeditor5/"
+            }
+        }
+    </script>
     {% block head %}{% endblock %}
 </head>
 <body class="bg-gray-100 min-h-screen text-gray-900">
