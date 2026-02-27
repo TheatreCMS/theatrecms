@@ -37,7 +37,7 @@ $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
 
 // Load external route files
-require ROUTES_DIR . '/seasons.php';
+require ROUTES_DIR . '/admin/seasons.php';
 require ROUTES_DIR . '/admin/events.php';
 require ROUTES_DIR . '/admin/people.php';
 require ROUTES_DIR . '/admin/productions.php';
