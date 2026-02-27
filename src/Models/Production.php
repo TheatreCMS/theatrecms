@@ -17,7 +17,7 @@ use Doctrine\ORM\Mapping\Table;
 use \DateTime;
 
 #[Entity, Table(name: 'productions')]
-class Production
+class Production extends ModelBase
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;

@@ -39,6 +39,7 @@ class WorkRepository extends BaseRepository
             }
         }
 
+        $work->setSlug($this->generateUniqueSlug($work->getTitle()));
         $this->em->persist($work);
         $this->em->flush();
         return $work;

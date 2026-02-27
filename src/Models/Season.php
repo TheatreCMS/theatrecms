@@ -12,13 +12,10 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'seasons')]
-class Season implements \JsonSerializable
+class Season extends ModelBase implements \JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
-
-    #[Column(type: 'string', nullable: false)]
-    private string $slug;
 
     #[Column(type: 'string', nullable: false)]
     private string $label;
@@ -44,7 +41,9 @@ class Season implements \JsonSerializable
 
     public function __construct(string $slug, string $label)
     {
-        $this->slug        = $slug;
+        // ModelBase does not define a constructor; set slug via setter
+        $this->setSlug($slug);
+
         $this->label       = $label;
         $this->productions = new ArrayCollection();
         $this->sponsorships = new ArrayCollection();
@@ -53,11 +52,6 @@ class Season implements \JsonSerializable
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getSlug(): string
-    {
-        return $this->slug;
     }
 
     public function getLabel(): string
@@ -93,13 +87,6 @@ class Season implements \JsonSerializable
     public function getSponsorships(): Collection
     {
         return $this->sponsorships;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
-
-        return $this;
     }
 
     public function setLabel(string $label): self

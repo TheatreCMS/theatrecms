@@ -65,4 +65,27 @@ abstract class BaseRepository
             'offset'  => 0,
         ];
     }
+
+    protected function generateUniqueSlug(string $string): string
+    {
+        // first prepare the string by lowercasing and replacing non-alphanumeric characters with hyphens
+        $processed = strtolower($string);
+        $processed = preg_replace('/[^a-z0-9]+/i', '-', $processed);
+        $slug = $processed = trim($processed, '-');
+        $i = 0;
+
+        // if the slug already exists, append a number and increment until we find a unique slug
+        while($this->slugExists($slug)){
+            $i++;
+            $slug = $processed . '-' . $i;
+        }
+
+        return $slug;
+    }
+
+    protected function slugExists(string $slug): bool
+    {
+        $existing = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+        return $existing !== null;
+    }
 }

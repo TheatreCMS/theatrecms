@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
 
 #[Entity, Table(name: 'people')]
-class Person implements JsonSerializable
+class Person extends ModelBase implements JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;

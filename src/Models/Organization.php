@@ -10,16 +10,13 @@ use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
 
 #[Entity, Table(name: 'organizations')]
-class Organization implements JsonSerializable
+class Organization extends ModelBase implements JsonSerializable
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 
     #[Column(type: 'string', nullable: false)]
     private string $name;
-
-    #[Column(type: 'string', unique: true, nullable: false)]
-    private string $slug;
 
     #[Column(name: 'mission_statement', type: 'text', nullable: true)]
     private ?string $missionStatement = null;
@@ -42,7 +39,8 @@ class Organization implements JsonSerializable
     public function __construct(string $name = '', string $slug = '')
     {
         $this->name = $name;
-        $this->slug = $slug;
+        // use ModelBase setter to ensure consistent return type and behavior
+        $this->setSlug($slug);
     }
 
     public function getId(): int
@@ -58,17 +56,6 @@ class Organization implements JsonSerializable
     public function setName(string $name): self
     {
         $this->name = $name;
-        return $this;
-    }
-
-    public function getSlug(): string
-    {
-        return $this->slug;
-    }
-
-    public function setSlug(string $slug): self
-    {
-        $this->slug = $slug;
         return $this;
     }
 

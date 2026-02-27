@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
     
 #[Entity, Table(name: 'sponsors')]
-class Sponsor
+class Sponsor extends ModelBase
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
