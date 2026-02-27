@@ -9,40 +9,28 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
-#[Entity, Table(name: 'users')]
 final class User
 {
-    #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 
-    #[Column(type: 'string', length: 249, unique: true, nullable: false)]
     private string $email;
 
-    #[Column(name: 'password', type: 'string', length: 255, nullable: false)]
     private string $password;
 
-    #[Column(type: 'string', length: 100, nullable: false)]
     private string $username;
 
-    #[Column(type: 'boolean', nullable: false, options: ['default' => 0])]
     private bool $status;
 
-    #[Column(type: 'boolean', nullable: false, options: ['default' => 0])]
     private bool $verified;
 
-    #[Column(type: 'boolean', nullable: false, options: ['default' => 1])]
     private bool $resettable;
 
-    #[Column(name: 'roles_mask', type: 'integer', nullable: false, options: ['default' => 0])]
     private int $rolesMask;
 
-    #[Column(type: 'integer', nullable: false)]
     private int $registered;
 
-    #[Column(name: 'last_login', type: 'integer', nullable: false)]
     private int $lastLogin;
 
-    #[Column(name: 'force_logout', type: 'integer', nullable: false, options: ['default' => 0])]
     private int $forceLogout;
 
     public function __construct(string $email)
