@@ -28,6 +28,7 @@ use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use Delight\Auth\Auth;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Slim\App;
@@ -63,6 +64,14 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 
     $connection = DriverManager::getConnection($settings['doctrine']['connection']);
 
+    // ignore the users and users_? tables for schema updates since it's managed by the Auth library
+    // and we don't want Doctrine trying to modify it
+    $connection->getConfiguration()->setSchemaAssetsFilter(static function (string|AbstractAsset $assetName): bool {
+        if ($assetName instanceof AbstractAsset) {
+            $assetName = $assetName->getName();
+        }
+        return (bool) preg_match("~^(?!user|users_)~", $assetName);
+    });
     return new EntityManager($connection, $config);
 });
 
