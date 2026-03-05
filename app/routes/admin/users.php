@@ -1,10 +1,8 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\PeopleController;
 use Clubdeuce\TheatreCMS\Controllers\UsersController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\UserRepository;
 use Delight\Auth\Auth;
 use Delight\Auth\UnknownIdException;
@@ -29,7 +27,10 @@ if (isset($app)) {
             $repository = $container->get(UserRepository::class);
 
             try {
-                $auth->admin()->deleteUserById($_POST['id']);
+                // Use the route parameter provided by the DELETE request rather than relying on $_POST
+                $id = (int) ($args['id'] ?? 0);
+
+                $auth->admin()->deleteUserById($id);
 
                 if ($request->getHeaderLine('HX-Request')) {
                     $vars = [
@@ -53,10 +54,11 @@ if (isset($app)) {
             return $twig->render($response, 'admin/users/create.html.twig');
         });
 
-        $group->get('edit/{id}', function (Request $request, Response $response) use ($container) {
+        // Add leading slash to route and accept $args so we can read the id consistently
+        $group->get('/edit/{id}', function (Request $request, Response $response, array $args) use ($container) {
             $twig       = $container->get(Twig::class);
             $repository = $container->get(UserRepository::class);
-            $user       = $repository->fetch($request->getAttribute('id'));
+            $user       = $repository->fetch($args['id']);
 
             return $twig->render($response, 'admin/users/edit.html.twig', ['user' => $user]);
         });
