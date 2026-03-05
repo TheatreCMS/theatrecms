@@ -14,6 +14,7 @@
  * GNU General Public License for more details.
  */
 
+use Clubdeuce\TheatreCMS\Controllers\EventController;
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
 use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Controllers\UsersController;
@@ -108,7 +109,7 @@ $repositories = [
     UserRepository::class,
     VenueRepository::class,
     WorkRepository::class,
-    \Clubdeuce\TheatreCMS\Repositories\EventRepository::class,
+    EventRepository::class,
 ];
 
 foreach($repositories as $repository) {
@@ -139,8 +140,8 @@ $container->set(ProductionController::class, static function (Container $c) {
 });
 
 // Register EventController
-$container->set(\Clubdeuce\TheatreCMS\Controllers\EventController::class, static function (Container $c) {
-    return new \Clubdeuce\TheatreCMS\Controllers\EventController($c->get(\Clubdeuce\TheatreCMS\Repositories\EventRepository::class), $c->get(EntityManager::class));
+$container->set(EventController::class, static function (Container $c) {
+    return new EventController($c->get(EventRepository::class), $c->get(EntityManager::class));
 });
 
 return $container;
