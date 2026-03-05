@@ -40,7 +40,8 @@ if (isset($app)) {
                     return $container->get(Twig::class)->render($response, 'admin/users/_table.html.twig', $vars);
                 }
 
-                return $response->withHeader('Location', '/admin/sponsors');
+                // Redirect back to the users index (was incorrectly pointing to sponsors)
+                return $response->withHeader('Location', '/admin/users')->withStatus(302);
             }
             catch (UnknownIdException $e) {
                 $response->getBody()->write($e->getMessage());
