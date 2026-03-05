@@ -2,12 +2,15 @@
 
 ## Build, test, and lint commands
 
-- `composer install` to install project dependencies before running anything else.
+- `composer install` to install backend dependencies before running anything else.
+- `npm install` to download Playwright and its TypeScript tooling for the e2e suite.
 - Unit tests: `./vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit`.  
   *Run a single test using the class/file path (e.g., `./vendor/bin/phpunit tests/Unit/UsersControllerTest.php`) or `--filter` with the test case name.*
 - Static analysis: `composer stan` (runs `phpstan analyse -c phpstan.neon.dist --memory-limit=1G`). You can also run the same command directly with `./vendor/bin/phpstan`.
 - Coding standard: `./vendor/bin/phpcs` (uses `phpcs.xml`, which enforces PSR-12 plus `Generic.Arrays.DisallowLongArraySyntax` and targets the `src` directory). Point it at a specific file when needed.
 - Robo helpers (optional shortcuts): `./vendor/bin/robo tests` (phpunit via Robo) and `./vendor/bin/robo phpstan` (runs the same phpstan configuration).
+- Playwright e2e: start a local server (e.g., `php -S 127.0.0.1:8080 -t www`) before running `npm run test:e2e`.  
+  Use `npx playwright test --project=chrome tests/e2e/home.spec.ts` or `--project=firefox` to target a specific browser, or point at another spec file to run a single scenario.
 
 ## High-level architecture
 
@@ -29,4 +32,5 @@
 - Twig templates live in `templates/admin`, so keep routes in sync with existing Twig names and reuse common themes (e.g., `layouts/test.twig`).
 - Doctrine uses the settings in `app/settings.php` (dev_mode toggles caching, `doctrine.connection` describes the DB). Keep `APP_ROOT` constants in sync with `www/index.php`/`bootstrap`.
 - HTMX is supported for deletion/list updates: check the `HX-Request` header and render `_table.html.twig` partials instead of redirecting for AJAX flows.
+- Playwright end-to-end tests live in `tests/e2e` with `playwright.config.ts` targeting Chrome (via the `chrome` channel) and Firefox; start the app at `http://127.0.0.1:8080` (e.g., `php -S 127.0.0.1:8080 -t www`) before running them and use `tests/e2e/home.spec.ts` as the reference pattern.
 - There are no additional AI assistant configs (CLAUDE.md, AGENTS.md, etc.) in this repo, so this file is the source of truth for Copilot sessions.
