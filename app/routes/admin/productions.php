@@ -45,6 +45,7 @@ if (isset($app)) {
 
         $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
 
+            /** @var ProductionRepository $productionRepo */
             $productionRepo = $container->get(ProductionRepository::class);
             $seasonRepo     = $container->get(SeasonRepository::class);
             $personRepo     = $container->get(PersonRepository::class);

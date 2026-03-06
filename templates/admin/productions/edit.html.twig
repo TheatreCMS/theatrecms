@@ -134,12 +134,10 @@
                 </fieldset>
             </div>
 
-            <div class="md:col-span-2">
-                <div id="editorjs"></div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="description" id="description" rows="6"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="Full description for the production...">{{ production.description }}</textarea>
+            <div class="md:col-span-2 space-y-3">
+                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <textarea name="description" id="description" rows="6" class="hidden" aria-hidden="true">{{ production.description|default('') }}</textarea>
             </div>
 
             <div class="md:col-span-2">
@@ -277,57 +275,93 @@
         </div>
     </form>
 
+    {% endblock %}
     {% block scripts %}
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const form = document.querySelector('form');
-                        const nameInput = document.getElementById('name');
-                        const seasonInput = document.getElementById('seasonId');
+        <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const form = document.querySelector('form');
+                const nameInput = document.getElementById('name');
+                const seasonInput = document.getElementById('seasonId');
+                const descriptionField = document.getElementById('description');
 
-                        form.addEventListener('submit', function (e) {
-                            if (!nameInput.value.trim()) {
-                                e.preventDefault();
-                                alert('Please provide a production name.');
-                                nameInput.focus();
+                const editorData = {{ production.description|raw }};
+
+                let isSaving = false;
+                const handleSubmit = function (event) {
+                    event.preventDefault();
+
+                    if (!nameInput.value.trim()) {
+                        alert('Please provide a production name.');
+                        nameInput.focus();
+                        return;
+                    }
+
+                    if (!seasonInput || !seasonInput.value) {
+                        alert('Please select or enter a season for the production.');
+                        if (seasonInput) seasonInput.focus();
+                        return;
+                    }
+
+                    if (isSaving) {
+                        return;
+                    }
+
+                    isSaving = true;
+                    editor.save().then((outputData) => {
+                        descriptionField.value = JSON.stringify(outputData);
+                        form.removeEventListener('submit', handleSubmit);
+                        form.submit();
+                    }).catch((error) => {
+                        console.error('EditorJS save failed:', error);
+                        alert('Unable to save the description. Please try again.');
+                        isSaving = false;
+                    });
+                };
+
+                form.addEventListener('submit', handleSubmit);
+
+                const editorConfig = {
+                    holder: 'editorjs',
+                    tools: {
+                        paragraph: {
+                            inlineToolbar: ['bold', 'italic', 'underline', 'link'],
+                            config: {
+                                preserveBlank: true,
                             }
-
-                            if (!seasonInput || !seasonInput.value) {
-                                e.preventDefault();
-                                alert('Please select or enter a season for the production.');
-                                if (seasonInput) seasonInput.focus();
-                            }
-                        });
-
-                        const editor = new EditorJS({
-                            /**
-                             * Id of Element that should contain Editor instance
-                             */
-                            holder: 'editorjs',
-                            /**
-                             * Available Tools list.
-                             * Pass Tool's class or Settings object for each Tool you want to use
-                             */
-                            tools: {
-                                paragraph: {
-                                    inlineToolbar: ['bold', 'italic', 'underline', 'link'],
-                                },
-                                underline: {
-                                    class: Underline,
-                                },
-                                header: {
-                                    class: Header,
-                                    inlineToolbar: true,
-                                },
-                                list: {
-                                    class: EditorjsList,
-                                    inlineToolbar: true
+                        },
+                        quote: {
+                            class: Quote,
+                            inlineToolbar: true,
+                        },
+                        underline: {
+                            class: Underline,
+                        },
+                        header: {
+                            class: Header,
+                            inlineToolbar: true,
+                        },
+                        list: {
+                            class: EditorjsList,
+                            inlineToolbar: true
+                        },
+                        image: {
+                            class: ImageTool,
+                            config: {
+                                endpoints: {
+                                    byFile: '/admin/productions/images/upload', // adjust if a different route is used
+                                    byUrl: '/admin/productions/images/fetch'
                                 }
                             }
-                        });
+                        }
+                    }
+                };
 
-                        window.editor = editor;
-                    });
-                </script>
-    {% endblock %}
+                if (editorData) {
+                    editorConfig.data = editorData;
+                }
 
+                const editor = new EditorJS(editorConfig);
+            });
+    </script>
 {% endblock %}
