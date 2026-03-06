@@ -6,7 +6,7 @@ use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class PeopleController extends BaseController
+class PersonController extends BaseController
 {
     public function __construct(PersonRepository $repository)
     {
