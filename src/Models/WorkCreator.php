@@ -12,7 +12,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'work_creators')]
-class WorkCreator extends ModelBase
+class WorkCreator
 {
     #[Id, Column(name: 'work_creator_id', type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;

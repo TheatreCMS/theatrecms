@@ -19,6 +19,8 @@ class WorkRepository extends BaseRepository
             ->setDescription($args['description'] ?? '')
             ->setSynopsis($args['synopsis'] ?? '');
 
+        $work->setSlug($this->generateUniqueSlug($work->getTitle()));
+
         // Attach creators if provided. Each creator may be either:
         // - a numeric person ID
         // - an array/object with keys: personId | person_id | id and optional 'role'
@@ -39,7 +41,6 @@ class WorkRepository extends BaseRepository
             }
         }
 
-        $work->setSlug($this->generateUniqueSlug($work->getTitle()));
         $this->em->persist($work);
         $this->em->flush();
         return $work;
