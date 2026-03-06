@@ -3,6 +3,7 @@
 use Clubdeuce\TheatreCMS\Controllers\ProductionController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
+use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
@@ -50,12 +51,15 @@ if (isset($app)) {
             $seasonRepo     = $container->get(SeasonRepository::class);
             $personRepo     = $container->get(PersonRepository::class);
             $worksRepo      = $container->get(WorkRepository::class);
+            /** @var Production $production */
+            $production     = $productionRepo->fetch($request->getAttribute('id'));
 
             $vars = [
-                'production' => $productionRepo->fetch($request->getAttribute('id')),
+                'production' => $production,
                 'seasons'    => $seasonRepo->fetchAll(),
                 'people'     => $personRepo->fetchAll(),
                 'works'      => $worksRepo->fetchAll(),
+                'creatives'  => $production->getCreativeTeam()->toArray()
             ];
 
             /** @var Twig $twig */
