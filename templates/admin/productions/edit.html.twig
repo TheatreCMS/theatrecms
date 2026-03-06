@@ -135,6 +135,7 @@
             </div>
 
             <div class="md:col-span-2">
+                <div id="editorjs"></div>
                 <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                 <textarea name="description" id="description" rows="6"
                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -277,49 +278,56 @@
     </form>
 
     {% block scripts %}
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form');
-                const nameInput = document.getElementById('name');
-                const seasonInput = document.getElementById('seasonId');
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const form = document.querySelector('form');
+                        const nameInput = document.getElementById('name');
+                        const seasonInput = document.getElementById('seasonId');
 
-                form.addEventListener('submit', function (e) {
-                    if (!nameInput.value.trim()) {
-                        e.preventDefault();
-                        alert('Please provide a production name.');
-                        nameInput.focus();
-                    }
+                        form.addEventListener('submit', function (e) {
+                            if (!nameInput.value.trim()) {
+                                e.preventDefault();
+                                alert('Please provide a production name.');
+                                nameInput.focus();
+                            }
 
-                    if (!seasonInput || !seasonInput.value) {
-                        e.preventDefault();
-                        alert('Please select or enter a season for the production.');
-                        if (seasonInput) seasonInput.focus();
-                    }
-                });
-            });
-        </script>
-        <script src="https://cdn.tiny.cloud/1/xocxnxq7j1wu6amabw6n4aa3fcsdhs60sytxolec5xzia8nz/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-        <script>
-            tinymce.init({
-                selector: 'textarea#description',
-                plugins: [
-                    // Core editing features
-                    'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-                    // Your account includes a free trial of TinyMCE premium features
-                    // Try the most popular premium features until Mar 11, 2026:
-                    //'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-                ],
-                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-                tinycomments_mode: 'embedded',
-                tinycomments_author: 'Author name',
-                mergetags_list: [
-                    { value: 'First.Name', title: 'First Name' },
-                    { value: 'Email', title: 'Email' },
-                ],
-                ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-                uploadcare_public_key: '8bc3e59e0cdbc0678a94',
-            });
-        </script>
+                            if (!seasonInput || !seasonInput.value) {
+                                e.preventDefault();
+                                alert('Please select or enter a season for the production.');
+                                if (seasonInput) seasonInput.focus();
+                            }
+                        });
+
+                        const editor = new EditorJS({
+                            /**
+                             * Id of Element that should contain Editor instance
+                             */
+                            holder: 'editorjs',
+                            /**
+                             * Available Tools list.
+                             * Pass Tool's class or Settings object for each Tool you want to use
+                             */
+                            tools: {
+                                paragraph: {
+                                    inlineToolbar: ['bold', 'italic', 'underline', 'link'],
+                                },
+                                underline: {
+                                    class: Underline,
+                                },
+                                header: {
+                                    class: Header,
+                                    inlineToolbar: true,
+                                },
+                                list: {
+                                    class: EditorjsList,
+                                    inlineToolbar: true
+                                }
+                            }
+                        });
+
+                        window.editor = editor;
+                    });
+                </script>
     {% endblock %}
 
 {% endblock %}
