@@ -13,6 +13,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+if( !defined('APP_ROOT') )
+    define ('APP_ROOT', dirname(__DIR__));
+
 return [
     'settings' => [
         'slim' => [
@@ -73,5 +76,12 @@ return [
             // Enable Twig debug mode (adds debug extension)
             'debug' => true,
         ],
+        'themes' => [
+            // Directory where themes are stored. Each theme should be in its own subdirectory.
+            'dir' => APP_ROOT . '/themes',
+
+            // The active theme to use. Should correspond to a subdirectory in the themes dir.
+            'active' => 'avlt'
+        ]
     ]
 ];
