@@ -233,20 +233,66 @@
                     </tr>
                     </thead>
                     <tbody data-creative-rows>
-                    <tr class="bg-neutral-primary-soft border-b border-default" data-creative-template>
+                    {% if creatives is empty %}
+                        <tr class="bg-neutral-primary-soft border-b border-default" data-creative-row>
+                            <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                                <select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm"
+                                        name="creativeIds[]">
+                                    <option value="">Select a person</option>
+                                    {% for p in people %}
+                                        <option value="{{ p.id }}">{{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <td class="px-6 py-4">
+                                <label class="sr-only" for="creative-role-empty">Role</label>
+                                <input class="w-full rounded-md border-gray-300 shadow-sm" type="text"
+                                       id="creative-role-empty" name="creativeRoles[]" placeholder="e.g. Director">
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        {% for c in creatives %}
+                            <tr class="bg-neutral-primary-soft border-b border-default" data-creative-row>
+                                <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+                                    <select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm"
+                                            name="creativeIds[]">
+                                        <option value="">Select a person</option>
+                                        {% for p in people %}
+                                            <option value="{{ p.id }}" {% if p.id == c.person.id %}selected{% endif %}>
+                                                {{ p.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </th>
+                                <td class="px-6 py-4">
+                                    <label class="sr-only" for="creative-role-{{ loop.index0 }}">Role</label>
+                                    <input class="w-full rounded-md border-gray-300 shadow-sm" type="text"
+                                           id="creative-role-{{ loop.index0 }}" name="creativeRoles[]"
+                                           placeholder="e.g. Director" value="{{ c.role }}">
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                    <tr class="hidden bg-neutral-primary-soft border-b border-default" data-creative-template>
                         <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
                             <select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm"
                                     name="creativeIds[]">
                                 <option value="">Select a person</option>
                                 {% for p in people %}
-                                    <option value="{{ p.id }}" {{ p.id in production.creatives ? 'selected' : '' }}>{{ p.name }}</option>
+                                    <option value="{{ p.id }}">{{ p.name }}</option>
                                 {% endfor %}
                             </select>
                         </th>
                         <td class="px-6 py-4">
-                            <label class="sr-only" for="creative-role-0">Role</label>
+                            <label class="sr-only" for="creative-role-template">Role</label>
                             <input class="w-full rounded-md border-gray-300 shadow-sm" type="text"
-                                   id="creative-role-0" name="creativeRoles[]" placeholder="e.g. Director">
+                                   id="creative-role-template" name="creativeRoles[]" placeholder="e.g. Director">
                         </td>
                         <td class="px-6 py-4 text-right">
                             <a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
@@ -291,6 +337,12 @@
                 const creativeTemplateRow = creativeRowsBody ? creativeRowsBody.querySelector('tr[data-creative-template]') : null;
                 const addCreativeButton = document.getElementById('add-creative');
 
+                const getVisibleCreativeRows = () => {
+                    return creativeRowsBody
+                        ? Array.from(creativeRowsBody.querySelectorAll('tr:not([data-creative-template])'))
+                        : [];
+                };
+
                 const attachDeleteHandler = (row) => {
                     const deleteLink = row.querySelector('.delete-creative');
                     if (!deleteLink) {
@@ -302,8 +354,9 @@
                         if (!creativeRowsBody) {
                             return;
                         }
-                        const rowCount = creativeRowsBody.querySelectorAll('tr').length;
-                        if (rowCount <= 1) {
+
+                        const visibleRows = getVisibleCreativeRows();
+                        if (visibleRows.length <= 1) {
                             const select = row.querySelector('select');
                             if (select) {
                                 select.value = '';
@@ -325,7 +378,10 @@
                     }
 
                     const newRow = creativeTemplateRow.cloneNode(true);
-                    const rowCount = creativeRowsBody.querySelectorAll('tr').length;
+                    newRow.removeAttribute('data-creative-template');
+                    newRow.classList.remove('hidden');
+                    newRow.setAttribute('data-creative-row', '');
+
                     const select = newRow.querySelector('select');
                     if (select) {
                         select.value = '';
@@ -333,7 +389,7 @@
 
                     const input = newRow.querySelector('input[type="text"]');
                     if (input) {
-                        const newId = `creative-role-${rowCount}`;
+                        const newId = `creative-role-${getVisibleCreativeRows().length}`;
                         input.id = newId;
                         input.value = '';
                         const label = newRow.querySelector('label');
@@ -342,21 +398,34 @@
                         }
                     }
 
-                    newRow.removeAttribute('data-creative-template');
                     return newRow;
                 };
 
-                if (creativeTemplateRow) {
-                    attachDeleteHandler(creativeTemplateRow);
-                }
+                getVisibleCreativeRows().forEach((row) => attachDeleteHandler(row));
+
+                const ensureRowPresent = () => {
+                    if (!creativeRowsBody || !creativeTemplateRow) {
+                        return;
+                    }
+
+                    if (getVisibleCreativeRows().length === 0) {
+                        const row = createCreativeRow();
+                        if (row) {
+                            attachDeleteHandler(row);
+                            creativeRowsBody.insertBefore(row, creativeTemplateRow);
+                        }
+                    }
+                };
+
+                ensureRowPresent();
 
                 if (addCreativeButton) {
                     addCreativeButton.addEventListener('click', function (event) {
                         event.preventDefault();
                         const row = createCreativeRow();
-                        if (row && creativeRowsBody) {
+                        if (row && creativeRowsBody && creativeTemplateRow) {
                             attachDeleteHandler(row);
-                            creativeRowsBody.appendChild(row);
+                            creativeRowsBody.insertBefore(row, creativeTemplateRow);
                         }
                     });
                 }
