@@ -21,6 +21,7 @@ require_once ROOT_DIR . "/vendor/autoload.php";
 
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
+use Clubdeuce\TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
@@ -35,6 +36,8 @@ AppFactory::setContainer($container);
 $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
+
+$resolver = new TemplateResolver();
 
 // Load external route files
 require ROUTES_DIR . '/admin/seasons.php';
@@ -57,6 +60,7 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 
     return $twig->render($response, 'admin/index.html.twig');
 })->add(new RequireTwigMiddleware($container));
+
 
 
 $app->get('/', function (Request $request, Response $response) use ($container) {
