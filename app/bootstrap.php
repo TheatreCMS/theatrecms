@@ -77,23 +77,6 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
     return new EntityManager($connection, $config);
 });
 
-// Register Slim\Views\Twig in the container
-$container->set(Twig::class, static function (Container $c): Twig {
-    /** @var array $settings */
-    $settings = $c->get('settings');
-    $viewSettings = $settings['view'] ?? [];
-
-    $templatePath = $viewSettings['template_path'] ?? APP_ROOT . '/templates';
-    $cache = ($viewSettings['cache_enabled'] ?? false) ? ($viewSettings['cache'] ?? APP_ROOT . '/var/twig') : false;
-    $debug = $viewSettings['debug'] ?? false;
-
-    return Twig::create($templatePath, [
-        'cache' => $cache,
-        'debug' => $debug,
-        'auto_reload' => $debug,
-    ]);
-});
-
 // Register a callable factory for TwigMiddleware that can be invoked with the Slim\App
 $container->set(TwigMiddleware::class, static function (Container $c): callable {
     return function (App $app, string $containerKey = 'view') {
@@ -147,6 +130,42 @@ $container->set(SeasonController::class, static function (Container $c) {
 // Register EventController
 $container->set(EventController::class, static function (Container $c) {
     return new EventController($c->get(EventRepository::class), $c->get(EntityManager::class));
+});
+
+use Clubdeuce\TheatreCMS\Theme\ThemeManager;
+
+// Register ThemeManager
+$container->set(ThemeManager::class, static function (Container $c): ThemeManager {
+    $settings = $c->get('settings');
+    $themesDir = $settings['themes']['dir'] ?? APP_ROOT . '/themes';
+    $activeTheme = $settings['themes']['active'] ?? 'default';
+    return new ThemeManager($themesDir, $activeTheme);
+});
+
+// Update Twig registration to use ThemeManager
+$container->set(Twig::class, static function (Container $c): Twig {
+    $settings = $c->get('settings');
+    $viewSettings = $settings['view'] ?? [];
+
+    $coreTemplatesDir = $viewSettings['template_path'] ?? APP_ROOT . '/templates';
+    $cache = ($viewSettings['cache_enabled'] ?? false) ? $viewSettings['cache'] : false;
+
+    // Start Twig with core templates
+    $twig = Twig::create($coreTemplatesDir, [
+        'cache'       => $cache,
+        'debug'       => $viewSettings['debug'] ?? false,
+        'auto_reload' => $viewSettings['debug'] ?? false,
+    ]);
+
+    // Layer the active theme on top
+    $themeManager = $c->get(ThemeManager::class);
+    $themeManager->configureTwig($twig, $coreTemplatesDir);
+    $themeManager->loadFunctions();
+
+    // Inject theme metadata as global Twig variable
+    $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
+
+    return $twig;
 });
 
 return $container;
