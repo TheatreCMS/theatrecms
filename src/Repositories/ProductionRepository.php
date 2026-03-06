@@ -4,6 +4,7 @@ namespace Clubdeuce\TheatreCMS\Repositories;
 
 use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Models\Season;
+use Clubdeuce\TheatreCMS\Models\Venue;
 use Clubdeuce\TheatreCMS\Models\Work;
 use Clubdeuce\TheatreCMS\Models\Person;
 use DateTime;
@@ -47,7 +48,18 @@ class ProductionRepository extends BaseRepository
             throw new \InvalidArgumentException('Season not found.');
         }
 
+        $venueId = (int)($args['venueId'] ?? 0);
+        if (!$venueId) {
+            throw new \InvalidArgumentException('Venue ID is required.');
+        }
+
+        $venue = $this->em->getRepository(Venue::class)->find($venueId);
+        if (!$venue) {
+            throw new \InvalidArgumentException('Venue not found.');
+        }
+
         $production = new Production($name, $season);
+        $production->setVenue($venue);
 
         $production->setSlug($this->generateUniqueSlug($name));
 

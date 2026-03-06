@@ -5,6 +5,7 @@
 {% set people = people|default([]) %}
 {% set works = works|default([]) %}
 {% set sponsorsList = sponsors|default([]) %}
+{% set venues = venues|default([]) %}
 
 {% block title %}Create Production - {{ parent() }}{% endblock %}
 
@@ -113,6 +114,21 @@
             </div>
 
             <div class="md:col-span-2">
+                <label for="venueId" class="block text-sm font-medium text-gray-700 mb-1">Venue <span class="text-red-500">*</span></label>
+                {% if venues is empty %}
+                    <div class="text-xs text-gray-500 mt-1">No venues yet — add a venue from the Venues section before scheduling productions.</div>
+                {% else %}
+                    <select name="venueId" id="venueId" required
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Select a venue</option>
+                        {% for v in venues %}
+                            <option value="{{ v.id }}">{{ v.name }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+
+            <div class="md:col-span-2">
                 <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="opening" class="block text-sm font-medium text-gray-700 mb-1">Opening <span
@@ -129,11 +145,11 @@
                 </fieldset>
             </div>
 
-            <div class="md:col-span-2">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <div class="md:col-span-2 space-y-3">
+                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
                 <textarea name="description" id="description" rows="6"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="Full description for the production..."></textarea>
+                          class="hidden" aria-hidden="true"></textarea>
             </div>
 
             <div class="md:col-span-2">
@@ -330,143 +346,187 @@
         </div>
     </form>
 
-    {% block scripts %}
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form');
-                const nameInput = document.getElementById('name');
-                const seasonInput = document.getElementById('seasonId');
+{% endblock %}
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const nameInput = document.getElementById('name');
+            const seasonInput = document.getElementById('seasonId');
+            const descriptionField = document.getElementById('description');
 
-                form.addEventListener('submit', function (e) {
-                    if (!nameInput.value.trim()) {
-                        e.preventDefault();
-                        alert('Please provide a production name.');
-                        nameInput.focus();
+            const editorData = null;
+
+            const setupDynamicRows = (namespace) => {
+                const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);
+                const templateRow = rowsBody ? rowsBody.querySelector(`tr[data-${namespace}-template]`) : null;
+                const addButton = document.getElementById(`add-${namespace}`);
+
+                if (!rowsBody || !templateRow) {
+                    return;
+                }
+
+                const getVisibleRows = () => Array.from(rowsBody.querySelectorAll(`tr[data-${namespace}-row]`));
+
+                const resetRowInputs = (row) => {
+                    const select = row.querySelector('select');
+                    if (select) {
+                        select.value = '';
                     }
-
-                    if (!seasonInput || !seasonInput.value) {
-                        e.preventDefault();
-                        alert('Please select or enter a season for the production.');
-                        if (seasonInput) seasonInput.focus();
-                    }
-                });
-
-                const setupDynamicRows = (namespace) => {
-                    const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);
-                    const templateRow = rowsBody ? rowsBody.querySelector(`tr[data-${namespace}-template]`) : null;
-                    const addButton = document.getElementById(`add-${namespace}`);
-
-                    if (!rowsBody || !templateRow) {
-                        return;
-                    }
-
-                    const getVisibleRows = () => Array.from(rowsBody.querySelectorAll(`tr[data-${namespace}-row]`));
-
-                    const resetRowInputs = (row) => {
-                        const select = row.querySelector('select');
-                        if (select) {
-                            select.value = '';
-                        }
-                        const input = row.querySelector('input[type="text"]');
-                        if (input) {
-                            input.value = '';
-                        }
-                    };
-
-                    const attachDeleteHandler = (row) => {
-                        const deleteLink = row.querySelector(`.delete-${namespace}`);
-                        if (!deleteLink) {
-                            return;
-                        }
-
-                        deleteLink.addEventListener('click', function(event) {
-                            event.preventDefault();
-                            const visibleRows = getVisibleRows();
-                            if (visibleRows.length <= 1) {
-                                resetRowInputs(row);
-                                return;
-                            }
-
-                            row.remove();
-                        });
-                    };
-
-                    const createRow = () => {
-                        const newRow = templateRow.cloneNode(true);
-                        newRow.removeAttribute(`data-${namespace}-template`);
-                        newRow.setAttribute(`data-${namespace}-row`, '');
-                        newRow.classList.remove('hidden');
-
-                        const select = newRow.querySelector('select');
-                        if (select) {
-                            select.value = '';
-                        }
-
-                        const input = newRow.querySelector('input[type="text"]');
-                        if (input) {
-                            const newId = `${namespace}-role-${getVisibleRows().length}`;
-                            input.id = newId;
-                            input.value = '';
-                            const label = newRow.querySelector('label');
-                            if (label) {
-                                label.setAttribute('for', newId);
-                            }
-                        }
-
-                        return newRow;
-                    };
-
-                    getVisibleRows().forEach((row) => attachDeleteHandler(row));
-
-                    const ensureRowPresent = () => {
-                        if (getVisibleRows().length === 0) {
-                            const row = createRow();
-                            if (row) {
-                                attachDeleteHandler(row);
-                                rowsBody.insertBefore(row, templateRow);
-                            }
-                        }
-                    };
-
-                    ensureRowPresent();
-
-                    if (addButton) {
-                        addButton.addEventListener('click', function(event) {
-                            event.preventDefault();
-                            const row = createRow();
-                            if (row) {
-                                attachDeleteHandler(row);
-                                rowsBody.insertBefore(row, templateRow);
-                            }
-                        });
+                    const input = row.querySelector('input[type="text"]');
+                    if (input) {
+                        input.value = '';
                     }
                 };
 
-                setupDynamicRows('sponsorship');
-            });
-        </script>
-        <script src="https://cdn.tiny.cloud/1/xocxnxq7j1wu6amabw6n4aa3fcsdhs60sytxolec5xzia8nz/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
-        <script>
-            tinymce.init({
-                selector: 'textarea#description',
-                plugins: [
-                    // Core editing features
-                    'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-                    // Your account includes a free trial of TinyMCE premium features
-                    // Try the most popular premium features until Mar 11, 2026:
-                    //'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-                ],
-                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-                tinycomments_mode: 'embedded',
-                tinycomments_author: 'Author name',
-                mergetags_list: [
-                    { value: 'First.Name', title: 'First Name' },
-                    { value: 'Email', title: 'Email' },
-                ],
-                ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-                uploadcare_public_key: '8bc3e59e0cdbc0678a94',
-            });
-        </script>
-    {% endblock %}
+                const attachDeleteHandler = (row) => {
+                    const deleteLink = row.querySelector(`.delete-${namespace}`);
+                    if (!deleteLink) {
+                        return;
+                    }
 
+                    deleteLink.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const visibleRows = getVisibleRows();
+                        if (visibleRows.length <= 1) {
+                            resetRowInputs(row);
+                            return;
+                        }
+
+                        row.remove();
+                    });
+                };
+
+                const createRow = () => {
+                    const newRow = templateRow.cloneNode(true);
+                    newRow.removeAttribute(`data-${namespace}-template`);
+                    newRow.setAttribute(`data-${namespace}-row`, '');
+                    newRow.classList.remove('hidden');
+
+                    const select = newRow.querySelector('select');
+                    if (select) {
+                        select.value = '';
+                    }
+
+                    const input = newRow.querySelector('input[type="text"]');
+                    if (input) {
+                        const newId = `${namespace}-role-${getVisibleRows().length}`;
+                        input.id = newId;
+                        input.value = '';
+                        const label = newRow.querySelector('label');
+                        if (label) {
+                            label.setAttribute('for', newId);
+                        }
+                    }
+
+                    return newRow;
+                };
+
+                getVisibleRows().forEach((row) => attachDeleteHandler(row));
+
+                const ensureRowPresent = () => {
+                    if (getVisibleRows().length === 0) {
+                        const row = createRow();
+                        if (row) {
+                            attachDeleteHandler(row);
+                            rowsBody.insertBefore(row, templateRow);
+                        }
+                    }
+                };
+
+                ensureRowPresent();
+
+                if (addButton) {
+                    addButton.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        const row = createRow();
+                        if (row) {
+                            attachDeleteHandler(row);
+                            rowsBody.insertBefore(row, templateRow);
+                        }
+                    });
+                }
+            };
+
+            setupDynamicRows('creative');
+            setupDynamicRows('performer');
+            setupDynamicRows('sponsorship');
+
+            let isSaving = false;
+            const handleSubmit = function(event) {
+                event.preventDefault();
+
+                if (!nameInput.value.trim()) {
+                    alert('Please provide a production name.');
+                    nameInput.focus();
+                    return;
+                }
+
+                if (!seasonInput || !seasonInput.value) {
+                    alert('Please select or enter a season for the production.');
+                    if (seasonInput) seasonInput.focus();
+                    return;
+                }
+
+                if (isSaving) {
+                    return;
+                }
+
+                isSaving = true;
+                editor.save().then((outputData) => {
+                    descriptionField.value = JSON.stringify(outputData);
+                    form.removeEventListener('submit', handleSubmit);
+                    form.submit();
+                }).catch((error) => {
+                    console.error('EditorJS save failed:', error);
+                    alert('Unable to save the description. Please try again.');
+                    isSaving = false;
+                });
+            };
+
+            form.addEventListener('submit', handleSubmit);
+
+            const editorConfig = {
+                holder: 'editorjs',
+                tools: {
+                    paragraph: {
+                        inlineToolbar: ['bold', 'italic', 'underline', 'link'],
+                        config: {
+                            preserveBlank: true,
+                        }
+                    },
+                    quote: {
+                        class: Quote,
+                        inlineToolbar: true,
+                    },
+                    underline: {
+                        class: Underline,
+                    },
+                    header: {
+                        class: Header,
+                        inlineToolbar: true,
+                    },
+                    list: {
+                        class: EditorjsList,
+                        inlineToolbar: true
+                    },
+                    image: {
+                        class: ImageTool,
+                        config: {
+                            endpoints: {
+                                byFile: '/admin/productions/images/upload',
+                                byUrl: '/admin/productions/images/fetch'
+                            }
+                        }
+                    }
+                }
+            };
+
+            if (editorData) {
+                editorConfig.data = editorData;
+            }
+
+            const editor = new EditorJS(editorConfig);
+        });
+    </script>
 {% endblock %}

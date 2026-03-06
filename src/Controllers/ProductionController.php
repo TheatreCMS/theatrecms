@@ -9,6 +9,7 @@ use Clubdeuce\TheatreCMS\Models\Sponsorship;
 use Clubdeuce\TheatreCMS\Models\Work;
 use Clubdeuce\TheatreCMS\Models\Person;
 use Clubdeuce\TheatreCMS\Models\RoleType;
+use Clubdeuce\TheatreCMS\Models\Venue;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -41,6 +42,7 @@ class ProductionController extends BaseController
 
         $data = $this->parseArgs($data, [
             'sponsorshipSponsorIds' => [],
+            'venueId' => null,
         ]);
 
         $production = $this->repository->create($data);
@@ -75,6 +77,7 @@ class ProductionController extends BaseController
             'performerIds' => [],
             'performerRoles' => [],
             'sponsorshipSponsorIds' => [],
+            'venueId' => 0,
         ]);
 
         /**
@@ -82,6 +85,10 @@ class ProductionController extends BaseController
          */
         $item = $this->repository->fetch($data['productionId']);
         $season = $this->entityManager->getRepository(Season::class)->find($data['seasonId']);
+        $venue = $this->entityManager->getRepository(Venue::class)->find($data['venueId']);
+        if (!$venue) {
+            return $response->withStatus(400);
+        }
         $worksRepository = $this->entityManager->getRepository(Work::class);
 
         $works = is_array($data['works']) ? $data['works'] : explode(',', $data['works']);
@@ -100,6 +107,7 @@ class ProductionController extends BaseController
         $item
             ->setName($data['name'])
             ->setSeason($season)
+            ->setVenue($venue)
             ->setOpening($opening)
             ->setClosing($closing)
             ->setDescription($data['description'])

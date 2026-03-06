@@ -8,6 +8,7 @@ use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
 use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -35,12 +36,14 @@ if (isset($app)) {
             $personRepo = $container->get(PersonRepository::class);
             $worksRepo  = $container->get(WorkRepository::class);
             $sponsorRepo = $container->get(SponsorRepository::class);
+            $venueRepo = $container->get(VenueRepository::class);
 
             $vars = [
                 'seasons' => $seasonRepo->fetchAll(),
                 'people'  => $personRepo->fetchAll(),
                 'works'   => $worksRepo->fetchAll(),
                 'sponsors' => $sponsorRepo->fetchAll(),
+                'venues' => $venueRepo->fetchAll(),
             ];
 
             return $twig->render($response, 'admin/productions/create.html.twig', $vars);
@@ -54,6 +57,7 @@ if (isset($app)) {
             $personRepo     = $container->get(PersonRepository::class);
             $worksRepo      = $container->get(WorkRepository::class);
             $sponsorRepo    = $container->get(SponsorRepository::class);
+            $venueRepo      = $container->get(VenueRepository::class);
             /** @var Production $production */
             $production     = $productionRepo->fetch($request->getAttribute('id'));
 
@@ -65,6 +69,7 @@ if (isset($app)) {
                 'creatives'  => $production->getCreativeTeam()->toArray(),
                 'performers' => $production->getPerformers()->toArray(),
                 'sponsors'   => $sponsorRepo->fetchAll(),
+                'venues'     => $venueRepo->fetchAll(),
             ];
 
             /** @var Twig $twig */

@@ -36,4 +36,9 @@ final class PersonRepository extends BaseRepository
 
         return $person;
     }
+
+    public function fetchAll(): array
+    {
+        return $this->em->getRepository(Person::class)->findBy([], ['lastName' => 'ASC', 'firstName' => 'ASC']);
+    }
 }

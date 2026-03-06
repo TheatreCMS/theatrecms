@@ -62,6 +62,10 @@ class Production extends ModelBase
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
     private Season $season;
 
+    #[ManyToOne(targetEntity: Venue::class, inversedBy: 'productions')]
+    #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable: false)]
+    private Venue $venue;
+
     // Many productions have many works
     #[ManyToMany(targetEntity: Work::class, cascade: ['persist'])]
     #[JoinTable(name: 'production_works',
@@ -213,6 +217,18 @@ class Production extends ModelBase
     public function setSeason(Season $season): self
     {
         $this->season = $season;
+
+        return $this;
+    }
+
+    public function getVenue(): Venue
+    {
+        return $this->venue;
+    }
+
+    public function setVenue(Venue $venue): self
+    {
+        $this->venue = $venue;
 
         return $this;
     }
