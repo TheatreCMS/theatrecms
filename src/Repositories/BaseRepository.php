@@ -44,6 +44,10 @@ abstract class BaseRepository
         return $this->em->getRepository($this->entityClass)->findOneBy(['id' => $id]);
     }
 
+    public function fetchBySlug(string $slug)
+    {
+        return $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+    }
 
     public function delete($item): void
     {
