@@ -1,6 +1,6 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\PeopleController;
+use Clubdeuce\TheatreCMS\Controllers\PersonController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
@@ -18,8 +18,8 @@ if (isset($app)) {
     $app->group('/admin/people', function ($group) {
         $container = $group->getContainer();
 
-        $group->post('/create', [PeopleController::class, 'store']);
-        $group->post('/edit', [PeopleController::class, 'update']);
+        $group->post('/create', [PersonController::class, 'store']);
+        $group->post('/edit', [PersonController::class, 'update']);
 
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */
