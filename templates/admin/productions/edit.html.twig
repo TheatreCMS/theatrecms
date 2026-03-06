@@ -231,11 +231,11 @@
                         </th>
                     </tr>
                     </thead>
-                    <tbody>
-                    <tr class="bg-neutral-primary-soft border-b  border-default">
+                    <tbody data-creative-rows>
+                    <tr class="bg-neutral-primary-soft border-b border-default" data-creative-template>
                         <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
                             <select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm"
-                                    name="creatives[][personId]">
+                                    name="creativeIds[]">
                                 <option value="">Select a person</option>
                                 {% for p in people %}
                                     <option value="{{ p.id }}" {{ p.id in production.creatives ? 'selected' : '' }}>{{ p.name }}</option>
@@ -243,12 +243,12 @@
                             </select>
                         </th>
                         <td class="px-6 py-4">
-                            <label class="sr-only" for="creatives[][role]">Role</label>
+                            <label class="sr-only" for="creative-role-0">Role</label>
                             <input class="w-full rounded-md border-gray-300 shadow-sm" type="text"
-                                   id="creatives[][role]" name="creatives[][role]" placeholder="e.g. Director">
+                                   id="creative-role-0" name="creativeRoles[]" placeholder="e.g. Director">
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <a href="#" class="font-medium text-fg-brand hover:underline">Delete</a>
+                            <a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
                         </td>
                     </tr>
                     </tbody>
@@ -286,6 +286,79 @@
                 const descriptionField = document.getElementById('description');
 
                 const editorData = {{ production.description|raw }};
+                const creativeRowsBody = document.querySelector('tbody[data-creative-rows]');
+                const creativeTemplateRow = creativeRowsBody ? creativeRowsBody.querySelector('tr[data-creative-template]') : null;
+                const addCreativeButton = document.getElementById('add-creative');
+
+                const attachDeleteHandler = (row) => {
+                    const deleteLink = row.querySelector('.delete-creative');
+                    if (!deleteLink) {
+                        return;
+                    }
+
+                    deleteLink.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        if (!creativeRowsBody) {
+                            return;
+                        }
+                        const rowCount = creativeRowsBody.querySelectorAll('tr').length;
+                        if (rowCount <= 1) {
+                            const select = row.querySelector('select');
+                            if (select) {
+                                select.value = '';
+                            }
+                            const input = row.querySelector('input[type="text"]');
+                            if (input) {
+                                input.value = '';
+                            }
+                            return;
+                        }
+
+                        row.remove();
+                    });
+                };
+
+                const createCreativeRow = () => {
+                    if (!creativeRowsBody || !creativeTemplateRow) {
+                        return null;
+                    }
+
+                    const newRow = creativeTemplateRow.cloneNode(true);
+                    const rowCount = creativeRowsBody.querySelectorAll('tr').length;
+                    const select = newRow.querySelector('select');
+                    if (select) {
+                        select.value = '';
+                    }
+
+                    const input = newRow.querySelector('input[type="text"]');
+                    if (input) {
+                        const newId = `creative-role-${rowCount}`;
+                        input.id = newId;
+                        input.value = '';
+                        const label = newRow.querySelector('label');
+                        if (label) {
+                            label.setAttribute('for', newId);
+                        }
+                    }
+
+                    newRow.removeAttribute('data-creative-template');
+                    return newRow;
+                };
+
+                if (creativeTemplateRow) {
+                    attachDeleteHandler(creativeTemplateRow);
+                }
+
+                if (addCreativeButton) {
+                    addCreativeButton.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const row = createCreativeRow();
+                        if (row && creativeRowsBody) {
+                            attachDeleteHandler(row);
+                            creativeRowsBody.appendChild(row);
+                        }
+                    });
+                }
 
                 let isSaving = false;
                 const handleSubmit = function (event) {

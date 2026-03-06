@@ -5,9 +5,9 @@ namespace Clubdeuce\TheatreCMS\Controllers;
 use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Models\Season;
 use Clubdeuce\TheatreCMS\Models\Work;
+use Clubdeuce\TheatreCMS\Models\Person;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\TextUI\XmlConfiguration\Validator;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Symfony\Component\Validator\Constraints\Date;
@@ -60,6 +60,7 @@ class ProductionController extends BaseController
             'ticketPurchaseUrl' => null,
             'works' => [],
             'people' => [],
+            'creatives' => [],
         ]);
 
         /**
@@ -91,6 +92,16 @@ class ProductionController extends BaseController
             ->setPromoVideoUrl($data['promoVideoUrl'])
             ->setTicketPurchaseUrl($data['ticketPurchaseUrl'])
             ->setWorks($works);
+
+        $creativeIds = $data['creativeIds'];
+        $creativeRoles = $data['creativeRoles'];
+
+        foreach($creativeIds as $idx => $creativeId) {
+            $person = $this->entityManager->getRepository(Person::class)->find($creativeId);
+
+            if ($person)
+                $item->addToCreativeTeam($person, $creativeRoles[$idx]);
+        }
 
         $this->repository->update($item);
 
