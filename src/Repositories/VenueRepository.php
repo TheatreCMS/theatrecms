@@ -40,7 +40,8 @@ final class VenueRepository extends BaseRepository
             ->setDescription($args['description'])
             ->setAccessibilityInfo($args['accessibilityInfo'])
             ->setWebsiteUrl($args['websiteUrl'])
-            ->setMapUrl($args['mapUrl']);
+            ->setMapUrl($args['mapUrl'])
+            ->setSlug($this->generateUniqueSlug($venue->getName()));
 
         $this->em->persist($venue);
         $this->em->flush();

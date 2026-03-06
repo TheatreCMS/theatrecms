@@ -27,7 +27,9 @@ final class PersonRepository extends BaseRepository
         $person->setFirstName($args['firstName'])
             ->setLastName($args['lastName'])
             ->setBiography($args['biography'])
-            ->setHeadshotUrl($args['headshotUrl']);
+            ->setHeadshotUrl($args['headshotUrl'])
+            ->setSlug($this->generateUniqueSlug($person->getFirstName() . ' ' . $person->getLastName()));
+
 
         $this->em->persist($person);
         $this->em->flush();

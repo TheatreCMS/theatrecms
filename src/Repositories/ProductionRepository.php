@@ -49,6 +49,8 @@ class ProductionRepository extends BaseRepository
 
         $production = new Production($name, $season);
 
+        $production->setSlug($this->generateUniqueSlug($name));
+
         if (!empty($args['description'])) {
             $production->setDescription($args['description']);
         }
