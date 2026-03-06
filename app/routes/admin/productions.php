@@ -59,7 +59,8 @@ if (isset($app)) {
                 'seasons'    => $seasonRepo->fetchAll(),
                 'people'     => $personRepo->fetchAll(),
                 'works'      => $worksRepo->fetchAll(),
-                'creatives'  => $production->getCreativeTeam()->toArray()
+                'creatives'  => $production->getCreativeTeam()->toArray(),
+                'performers' => $production->getPerformers()->toArray(),
             ];
 
             /** @var Twig $twig */

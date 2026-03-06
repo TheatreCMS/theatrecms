@@ -26,6 +26,7 @@ class ProductionPerson
      * The type of role (e.g., 'cast', 'production team', etc.)
      * @var RoleType|null
      */
+    #[Id]
     #[Column(name: 'role_type', type: 'string', nullable: true, enumType: RoleType::class)]
     private ?RoleType $roleType = null;
 

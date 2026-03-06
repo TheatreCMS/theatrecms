@@ -6,6 +6,7 @@ use Clubdeuce\TheatreCMS\Models\Production;
 use Clubdeuce\TheatreCMS\Models\Season;
 use Clubdeuce\TheatreCMS\Models\Work;
 use Clubdeuce\TheatreCMS\Models\Person;
+use Clubdeuce\TheatreCMS\Models\RoleType;
 use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -60,7 +61,10 @@ class ProductionController extends BaseController
             'ticketPurchaseUrl' => null,
             'works' => [],
             'people' => [],
-            'creatives' => [],
+            'creativeIds' => [],
+            'creativeRoles' => [],
+            'performerIds' => [],
+            'performerRoles' => [],
         ]);
 
         /**
@@ -93,14 +97,77 @@ class ProductionController extends BaseController
             ->setTicketPurchaseUrl($data['ticketPurchaseUrl'])
             ->setWorks($works);
 
-        $creativeIds = $data['creativeIds'];
-        $creativeRoles = $data['creativeRoles'];
+        $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
+        $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
+        $performerIds = is_array($data['performerIds']) ? $data['performerIds'] : [];
+        $performerRoles = is_array($data['performerRoles']) ? $data['performerRoles'] : [];
 
-        foreach($creativeIds as $idx => $creativeId) {
-            $person = $this->entityManager->getRepository(Person::class)->find($creativeId);
+        $existingCreatives = [];
+        $existingPerformers = [];
 
-            if ($person)
-                $item->addToCreativeTeam($person, $creativeRoles[$idx]);
+        foreach ($item->getPeople() as $productionPerson) {
+            $personId = $productionPerson->getPerson()->getId();
+            $roleType = $productionPerson->getRoleType();
+
+            if ($roleType === RoleType::Creative) {
+                $existingCreatives[$personId] = $productionPerson;
+            } elseif ($roleType === RoleType::Cast) {
+                $existingPerformers[$personId] = $productionPerson;
+            }
+        }
+
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        foreach ($creativeIds as $idx => $creativeId) {
+            if (empty($creativeId)) {
+                continue;
+            }
+
+            $role = $creativeRoles[$idx] ?? null;
+
+            if (isset($existingCreatives[$creativeId])) {
+                $existingCreatives[$creativeId]->setRole($role);
+                unset($existingCreatives[$creativeId]);
+                continue;
+            }
+
+            $person = $personRepository->find($creativeId);
+            if (!$person) {
+                continue;
+            }
+
+            $item->addToCreativeTeam($person, $role);
+        }
+
+        foreach ($performerIds as $idx => $performerId) {
+            if (empty($performerId)) {
+                continue;
+            }
+
+            $role = $performerRoles[$idx] ?? null;
+
+            if (isset($existingPerformers[$performerId])) {
+                $existingPerformers[$performerId]->setRole($role);
+                unset($existingPerformers[$performerId]);
+                continue;
+            }
+
+            $person = $personRepository->find($performerId);
+            if (!$person) {
+                continue;
+            }
+
+            $item->addPerformer($person, $role);
+        }
+
+        foreach ($existingCreatives as $staleCreative) {
+            $item->getPeople()->removeElement($staleCreative);
+            $this->entityManager->remove($staleCreative);
+        }
+
+        foreach ($existingPerformers as $stalePerformer) {
+            $item->getPeople()->removeElement($stalePerformer);
+            $this->entityManager->remove($stalePerformer);
         }
 
         $this->repository->update($item);
