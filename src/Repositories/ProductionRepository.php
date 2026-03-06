@@ -118,4 +118,9 @@ class ProductionRepository extends BaseRepository
 
         return $production;
     }
+
+    public function getBySlug(string $slug): object
+    {
+        return $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+    }
 }
