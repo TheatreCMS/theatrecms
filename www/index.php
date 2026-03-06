@@ -59,8 +59,9 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 })->add(new RequireTwigMiddleware($container));
 
 
-$app->get('/', function (Request $request, Response $response) {
-    $response->getBody()->write("hello world");
-    return $response;
+$app->get('/', function (Request $request, Response $response) use ($container) {
+    $twig = $container->get(Twig::class);
+
+    return $twig->render($response, 'index.html.twig');
 });
 $app->run();

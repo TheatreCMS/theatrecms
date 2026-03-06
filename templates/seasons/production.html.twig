@@ -1,0 +1,7 @@
+{% extends 'layouts/frontend.html.twig' %}
+
+{% block title %}{{ production.name }} - {{ parent() }}{% endblock %}
+
+{% block content %}
+<h1>{{ production.name }}</h1>
+{% endblock %}

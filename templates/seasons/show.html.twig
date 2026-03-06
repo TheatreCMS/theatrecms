@@ -1,0 +1,21 @@
+{% extends 'layouts/frontend.html.twig' %}
+
+{% block title %}Season {{ season.label }} - {{ parent() }}{% endblock %}
+
+{% block content %}
+
+    <h2 id="this-season-{{ season.slug }}">THIS SEASON ({{ season.label }})</h2>
+
+    {% for production in season.productions %}
+        <article id="production-{{ production.id }}" class="production production-{{ production.slug }}">
+            <header>
+                <a href="{{ season.slug }}/{{ production.slug }}">
+                    <h3 class="entry-title">{{ production.name }}</h3>
+                </a>
+                <div class="excerpt">
+                    {{ production.excerpt }}
+                </div>
+            </header>
+        </article>
+    {% endfor %}
+{% endblock %}
