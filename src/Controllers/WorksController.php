@@ -22,22 +22,8 @@ class WorksController extends BaseController
             return $response->withStatus(400);
         }
 
-        // Normalize creators and roles into structured entries
-        if (!empty($data['creators']) && is_array($data['creators'])) {
-            $roles = $data['creators_roles'] ?? [];
-            $structured = [];
-            foreach ($data['creators'] as $id) {
-                $id = intval($id);
-                if (!$id) {
-                    continue;
-                }
-                $role = '';
-                if (isset($roles[$id])) {
-                    $role = trim(strval($roles[$id]));
-                }
-                $structured[] = ['id' => $id, 'role' => $role];
-            }
-            $data['creators'] = $structured;
+        if (($creatorEntries = $this->collectCreatorEntries($data)) !== null) {
+            $data['creators'] = $creatorEntries;
         }
 
         $this->repository->create($data);
@@ -69,22 +55,8 @@ class WorksController extends BaseController
             return $response->withStatus(404);
         }
 
-        // Normalize creators and roles into structured entries if provided
-        if (!empty($data['creators']) && is_array($data['creators'])) {
-            $roles = $data['creators_roles'] ?? [];
-            $structured = [];
-            foreach ($data['creators'] as $id) {
-                $id = intval($id);
-                if (!$id) {
-                    continue;
-                }
-                $role = '';
-                if (isset($roles[$id])) {
-                    $role = trim(strval($roles[$id]));
-                }
-                $structured[] = ['id' => $id, 'role' => $role];
-            }
-            $data['creators'] = $structured;
+        if (($creatorEntries = $this->collectCreatorEntries($data)) !== null) {
+            $data['creators'] = $creatorEntries;
         }
 
         // Help static analyzer: create a typed local variable
@@ -95,5 +67,62 @@ class WorksController extends BaseController
         $this->repository->updateFromArgs($workEntity, $data);
 
         return $response->withHeader('Location', '/admin/works');
+    }
+
+    private function collectCreatorEntries(array $data): ?array
+    {
+        if (array_key_exists('creatorIds', $data) && is_array($data['creatorIds'])) {
+            $roles = $data['creatorRoles'] ?? [];
+            return $this->normalizeCreatorRows($data['creatorIds'], $roles);
+        }
+
+        if (!empty($data['creators']) && is_array($data['creators'])) {
+            $roles = $data['creators_roles'] ?? [];
+            return $this->normalizeLegacyCreatorEntries($data['creators'], $roles);
+        }
+
+        return null;
+    }
+
+    private function normalizeCreatorRows(array $ids, array $roles): array
+    {
+        $entries = [];
+
+        foreach ($ids as $index => $rawId) {
+            $creatorId = intval($rawId);
+            if (!$creatorId) {
+                continue;
+            }
+
+            $role = '';
+            if (isset($roles[$index])) {
+                $role = trim(strval($roles[$index]));
+            }
+
+            $entries[] = ['id' => $creatorId, 'role' => $role];
+        }
+
+        return $entries;
+    }
+
+    private function normalizeLegacyCreatorEntries(array $creatorIds, array $roles): array
+    {
+        $entries = [];
+
+        foreach ($creatorIds as $rawId) {
+            $creatorId = intval($rawId);
+            if (!$creatorId) {
+                continue;
+            }
+
+            $role = '';
+            if (isset($roles[$creatorId])) {
+                $role = trim(strval($roles[$creatorId]));
+            }
+
+            $entries[] = ['id' => $creatorId, 'role' => $role];
+        }
+
+        return $entries;
     }
 }

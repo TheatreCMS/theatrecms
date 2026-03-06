@@ -2,6 +2,7 @@
 
 {# Allow controllers to pass variables; if not present, set to empty arrays #}
 {% set people = people|default([]) %}
+{% set creatorEntries = creatorEntries|default([]) %}
 
 {% block title %}Create Work - {{ parent() }}{% endblock %}
 
@@ -54,29 +55,71 @@
                           placeholder="A longer synopsis or summary..."></textarea>
             </div>
 
-            <div class="md:col-span-2">
-                <div class="flex items-center justify-between">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Creators</label>
-                    <div class="space-x-2">
-                        <button type="button" id="select-all-creators" class="text-sm text-gray-600 underline">Select all</button>
-                        <button type="button" id="clear-creators" class="text-sm text-gray-600 underline">Clear</button>
+            <div class="md:col-span-2 space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900 mb-1">Creators</h2>
+                        <p class="text-sm text-gray-600">Assign people to the work and define their role when needed.</p>
                     </div>
+                    <button type="button"
+                            id="add-creator"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if people is empty %}opacity-50 cursor-not-allowed{% endif %}"
+                            {% if people is empty %}disabled{% endif %}>
+                        Add Creator
+                    </button>
                 </div>
 
-                <div id="creators-list" class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
-                    {% for p in people %}
-                        <div class="flex items-center space-x-2">
-                            <label class="flex items-center space-x-2">
-                                <input type="checkbox" name="creators[]" value="{{ p.id }}" class="creator-checkbox">
-                                <span class="text-sm">{{ p.name }}</span>
-                            </label>
-                            <label for="creator-role-{{ p.id }}" class="sr-only">Role for {{ p.name }}</label>
-                            <input id="creator-role-{{ p.id }}" type="text" name="creators_roles[{{ p.id }}]" placeholder="Role (optional)"
-                                   class="ml-2 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm px-2 py-1">
-                        </div>
-                    {% endfor %}
+                <div class="relative overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-md">
+                    <table class="w-full text-sm text-left text-gray-700">
+                        <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+                        <tr>
+                            <th class="px-4 py-3 font-medium">Person</th>
+                            <th class="px-4 py-3 font-medium">Role</th>
+                            <th class="px-4 py-3 font-medium text-right">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody data-creator-rows>
+                        <tr class="bg-white border-b border-gray-100" data-creator-row>
+                            <th scope="row" class="px-4 py-3 font-medium text-gray-900">
+                                <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select a person</option>
+                                    {% for p in people %}
+                                        <option value="{{ p.id }}">{{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <td class="px-4 py-3">
+                                <label class="sr-only" for="creator-role-empty">Role</label>
+                                <input type="text" name="creatorRoles[]" id="creator-role-empty"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       placeholder="Role (optional)">
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <a href="#" class="delete-creator font-medium text-blue-600 hover:underline">Delete</a>
+                            </td>
+                        </tr>
+                        <tr class="hidden bg-white border-b border-gray-100" data-creator-template>
+                            <th scope="row" class="px-4 py-3 font-medium text-gray-900">
+                                <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select a person</option>
+                                    {% for p in people %}
+                                        <option value="{{ p.id }}">{{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <td class="px-4 py-3">
+                                <label class="sr-only" for="creator-role-template">Role</label>
+                                <input type="text" name="creatorRoles[]" id="creator-role-template"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       placeholder="Role (optional)">
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <a href="#" class="delete-creator font-medium text-blue-600 hover:underline">Delete</a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Select creators and optionally specify each creator's role.</p>
             </div>
         </div>
 
@@ -98,9 +141,99 @@
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form');
             const titleInput = document.getElementById('title');
-            const selectAllBtn = document.getElementById('select-all-creators');
-            const clearBtn = document.getElementById('clear-creators');
-            const creatorsCheckboxes = document.querySelectorAll('.creator-checkbox');
+
+            const setupDynamicRows = (namespace) => {
+                const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);
+                const templateRow = rowsBody ? rowsBody.querySelector(`tr[data-${namespace}-template]`) : null;
+                const addButton = document.getElementById(`add-${namespace}`);
+
+                if (!rowsBody || !templateRow) {
+                    return;
+                }
+
+                const getVisibleRows = () => Array.from(rowsBody.querySelectorAll(`tr[data-${namespace}-row]`));
+
+                const resetRowInputs = (row) => {
+                    const select = row.querySelector('select');
+                    if (select) {
+                        select.value = '';
+                    }
+                    const input = row.querySelector('input[type="text"]');
+                    if (input) {
+                        input.value = '';
+                    }
+                };
+
+                const attachDeleteHandler = (row) => {
+                    const deleteLink = row.querySelector(`.delete-${namespace}`);
+                    if (!deleteLink) {
+                        return;
+                    }
+
+                    deleteLink.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const visibleRows = getVisibleRows();
+                        if (visibleRows.length <= 1) {
+                            resetRowInputs(row);
+                            return;
+                        }
+
+                        row.remove();
+                    });
+                };
+
+                const createRow = () => {
+                    const newRow = templateRow.cloneNode(true);
+                    newRow.removeAttribute(`data-${namespace}-template`);
+                    newRow.setAttribute(`data-${namespace}-row`, '');
+                    newRow.classList.remove('hidden');
+
+                    const select = newRow.querySelector('select');
+                    if (select) {
+                        select.value = '';
+                    }
+
+                    const input = newRow.querySelector('input[type="text"]');
+                    if (input) {
+                        const newId = `${namespace}-role-${getVisibleRows().length}`;
+                        input.id = newId;
+                        input.value = '';
+                        const label = newRow.querySelector('label');
+                        if (label) {
+                            label.setAttribute('for', newId);
+                        }
+                    }
+
+                    return newRow;
+                };
+
+                getVisibleRows().forEach((row) => attachDeleteHandler(row));
+
+                const ensureRowPresent = () => {
+                    if (getVisibleRows().length === 0) {
+                        const row = createRow();
+                        if (row) {
+                            attachDeleteHandler(row);
+                            rowsBody.insertBefore(row, templateRow);
+                        }
+                    }
+                };
+
+                ensureRowPresent();
+
+                if (addButton) {
+                    addButton.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const row = createRow();
+                        if (row) {
+                            attachDeleteHandler(row);
+                            rowsBody.insertBefore(row, templateRow);
+                        }
+                    });
+                }
+            };
+
+            setupDynamicRows('creator');
 
             form.addEventListener('submit', function (e) {
                 if (!titleInput.value.trim()) {
@@ -108,14 +241,6 @@
                     alert('Please provide a title for the work.');
                     titleInput.focus();
                 }
-            });
-
-            selectAllBtn.addEventListener('click', function () {
-                creatorsCheckboxes.forEach(cb => cb.checked = true);
-            });
-
-            clearBtn.addEventListener('click', function () {
-                creatorsCheckboxes.forEach(cb => cb.checked = false);
             });
         });
     </script>

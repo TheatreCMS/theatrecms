@@ -40,21 +40,20 @@ if (isset($app)) {
             $personRepo = $container->get(PersonRepository::class);
 
             $work = $worksRepository->fetch($args['id']);
-            $creatorIds = [];
-            $creatorRoles = [];
+            $creatorEntries = [];
             if ($work) {
                 foreach ($work->getWorkCreators() as $wc) {
-                    $pid = $wc->person()->getId();
-                    $creatorIds[] = $pid;
-                    $creatorRoles[$pid] = $wc->role();
+                    $creatorEntries[] = [
+                        'personId' => $wc->person()->getId(),
+                        'role' => $wc->role(),
+                    ];
                 }
             }
 
             return $twig->render($response, 'admin/works/edit.html.twig', [
                 'work' => $work,
                 'people' => $personRepo->fetchAll(),
-                'creatorIds' => $creatorIds,
-                'creatorRoles' => $creatorRoles,
+                'creatorEntries' => $creatorEntries,
             ]);
         });
 
