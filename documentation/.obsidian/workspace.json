@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "README.md",
+                "file": "Theme/Architecture.md",
                 "mode": "source",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "Architecture"
             }
           }
         ]
@@ -183,8 +183,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "3528b80056af8629",
+  "active": "600261074e11dd9d",
   "lastOpenFiles": [
+    "Theme/TemplateResolver.md",
+    "Theme/Architecture.md",
+    "Theme/ThemeManager.md",
+    "README.md",
     "theatre-cms-erd.mermaid",
     "schema.dbml~",
     "schema.dbml",
@@ -192,7 +196,6 @@
     "Content Types/Seasons.md",
     "Technology.md",
     "CONTRIBUTING.md",
-    "README.md",
     "Content Types/README.md",
     "Content Types/Workflow.md",
     "Content Types/People.md",
