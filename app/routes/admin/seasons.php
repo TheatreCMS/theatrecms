@@ -4,6 +4,7 @@ use Clubdeuce\TheatreCMS\Controllers\SeasonController;
 use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
 use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
 use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -18,22 +19,29 @@ if (isset($app)) {
 
         $group->post('/create', [SeasonController::class, 'store']);
         $group->get('/create', function (Request $request, Response $response) use ($container) {
+            $sponsorsRepository = $container->get(SponsorRepository::class);
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $twig->render($response, 'admin/seasons/create.html.twig');
+            return $twig->render($response, 'admin/seasons/create.html.twig', [
+                'sponsors' => $sponsorsRepository->fetchAll(),
+            ]);
         })->add(new RequireTwigMiddleware($container));
 
         $group->post('/edit', [SeasonController::class, 'update']);
         $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
             $repository = $container->get(SeasonRepository::class);
+            $sponsorsRepository = $container->get(SponsorRepository::class);
             /** @var SeasonRepository $repository */
             $season = $repository->fetch($request->getAttribute('id'));
 
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $twig->render($response, 'admin/seasons/edit.html.twig', ['season' => $season]);
+            return $twig->render($response, 'admin/seasons/edit.html.twig', [
+                'season' => $season,
+                'sponsors' => $sponsorsRepository->fetchAll(),
+            ]);
         })->add(new RequireTwigMiddleware($container));
 
         $group->get('/{id}', function (Request $request, Response $response) use ($container) {

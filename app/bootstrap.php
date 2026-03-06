@@ -17,6 +17,7 @@
 use Clubdeuce\TheatreCMS\Controllers\EventController;
 use Clubdeuce\TheatreCMS\Controllers\LoginController;
 use Clubdeuce\TheatreCMS\Controllers\ProductionController;
+use Clubdeuce\TheatreCMS\Controllers\SeasonController;
 use Clubdeuce\TheatreCMS\Controllers\UsersController;
 use Clubdeuce\TheatreCMS\Repositories\EventRepository;
 use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
@@ -137,6 +138,10 @@ $container->set(UsersController::class, static function (Container $c) {
 // Register ProductionController
 $container->set(ProductionController::class, static function (Container $c) {
     return new ProductionController($c->get(ProductionRepository::class), $c->get(EntityManager::class));
+});
+
+$container->set(SeasonController::class, static function (Container $c) {
+    return new SeasonController($c->get(SeasonRepository::class), $c->get(EntityManager::class));
 });
 
 // Register EventController

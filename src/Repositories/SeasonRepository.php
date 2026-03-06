@@ -20,10 +20,6 @@ class SeasonRepository extends BaseRepository
             'overview'  => null,
          ], $args);
 
-         $label = (string)($args['label'] ?? '');
-         $slug  = (string)preg_replace('/[^A-Za-z0-9-]+/', '-', $label);
-         $slug  = strtolower(trim($slug, '-'));
-
          try {
              $startDate = $args['startDate'] ? new \DateTime($args['startDate']) : null;
              $endDate   = $args['endDate']   ? new \DateTime($args['endDate'])   : null;
@@ -35,7 +31,8 @@ class SeasonRepository extends BaseRepository
              throw new \InvalidArgumentException('End date must be after start date.');
          }
 
-         $season = new Season($slug, $label);
+
+         $season = new Season($this->generateUniqueSlug($args['label']), $args['label']);
 
          if ($startDate) {
              $season->setStartDate($startDate);

@@ -16,8 +16,8 @@ final class SponsorRepository extends BaseRepository
     public function create(array $args): Sponsor
     {
         $args = array_merge([
-            'name' => null,
-            'logoUrl' => null,
+            'name'       => null,
+            'logoUrl'    => null,
             'websiteUrl' => null,
         ], $args);
 
@@ -26,6 +26,7 @@ final class SponsorRepository extends BaseRepository
             ->setLogoUrl($args['logoUrl'])
             ->setWebsiteUrl($args['websiteUrl']);
 
+        $sponsor->setSlug($this->generateUniqueSlug($args['name']));
         $this->em->persist($sponsor);
         $this->em->flush();
 
