@@ -78,7 +78,7 @@ return [
         ],
         'themes' => [
             // Directory where themes are stored. Each theme should be in its own subdirectory.
-            'dir' => APP_ROOT . '/themes',
+            'dir' => APP_ROOT . '/www/themes',
 
             // The active theme to use. Should correspond to a subdirectory in the themes dir.
             'active' => 'avlt'
