@@ -25,6 +25,8 @@ if (isset($app)) {
                 return $response->withStatus(404)->write('Production not found in this season');
             }
 
+            $production = apply_filters('theatrecms/production', $production, $request, $args);
+
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
@@ -35,6 +37,7 @@ if (isset($app)) {
             $repository = $container->get(SeasonRepository::class);
             /** @var SeasonRepository $repository */
             $season = $repository->fetchBySlug($request->getAttribute('slug'));
+            $season = apply_filters('theatrecms/season', $season, $request, $args);
 
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
@@ -52,6 +55,7 @@ if (isset($app)) {
             $repository = $container->get(SeasonRepository::class);
             /** @var SeasonRepository $repository */
             $seasons = $repository->fetchAll();
+            $seasons = apply_filters('theatrecms/seasons', $seasons, $request);
 
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
