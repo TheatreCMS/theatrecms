@@ -14,6 +14,7 @@ use TheatreCMS\Repositories\ProductionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\UploadedFileInterface;
 use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -46,6 +47,7 @@ class ProductionController extends BaseController
         ]);
 
         $production = $this->repository->create($data);
+        $this->handleFeaturedImageUpload($request, $production);
 
         $this->syncSponsorships($production, $data['sponsorshipSponsorIds']);
         $this->entityManager->flush();
@@ -114,6 +116,8 @@ class ProductionController extends BaseController
             ->setPromoVideoUrl($data['promoVideoUrl'])
             ->setTicketPurchaseUrl($data['ticketPurchaseUrl'])
             ->setWorks($works);
+
+        $this->handleFeaturedImageUpload($request, $item);
 
         $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
@@ -244,5 +248,31 @@ class ProductionController extends BaseController
             $production->addSponsorship($newSponsorship);
             $this->entityManager->persist($newSponsorship);
         }
+    }
+
+    private function handleFeaturedImageUpload(Request $request, Production $production): void
+    {
+        $uploadedFiles = $request->getUploadedFiles();
+        $poster = $uploadedFiles['poster'] ?? null;
+
+        if (!$poster instanceof UploadedFileInterface || $poster->getError() !== UPLOAD_ERR_OK) {
+            return;
+        }
+
+        if (!$this->isImageUpload($poster)) {
+            return;
+        }
+
+        try {
+            $production->saveFeaturedImageFromUpload($poster);
+        } catch (\InvalidArgumentException|\RuntimeException) {
+            // Ignore invalid uploads; let other validation flow handle feedback.
+        }
+    }
+
+    private function isImageUpload(UploadedFileInterface $file): bool
+    {
+        $mediaType = $file->getClientMediaType();
+        return is_string($mediaType) && str_starts_with($mediaType, 'image/');
     }
 }
