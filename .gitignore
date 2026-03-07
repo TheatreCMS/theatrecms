@@ -21,6 +21,7 @@ Thumbs.db
 *~
 
 /www/themes
+/www/uploads/*
 node_modules/
 
 /.idea/
