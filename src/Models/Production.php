@@ -14,11 +14,14 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\Table;
+use Clubdeuce\TheatreCMS\Traits\SupportsFeaturedImage;
 use \DateTime;
 
 #[Entity, Table(name: 'productions')]
 class Production extends ModelBase
 {
+    use SupportsFeaturedImage;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
