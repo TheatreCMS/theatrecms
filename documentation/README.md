@@ -18,4 +18,7 @@ TheatreCMS is built upon the works of giants:
 - [PHP-DI](https://php-di.org/)
 - [Doctrine](https://www.doctrine-project.org/)
 
+## Twig helpers
+
+- `editorjs_to_html` – Converts stored EditorJS block data into sanitized HTML markup. Theme and template authors can pipe `production.description` (or other block-based properties) through this filter to render rich content created in the admin editor.
 

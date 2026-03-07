@@ -3,79 +3,34 @@
 {% block title %}{{ production.name }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <article class="gh-article post featured">
+    <article class="max-w-4xl mx-auto space-y-6">
+        <header class="space-y-2 border-b border-gray-200 pb-4">
+            <p class="text-xs uppercase tracking-wide text-gray-500">
+                {{ production.season.label }}
+            </p>
+            <h1 class="text-4xl font-semibold text-gray-900">{{ production.name }}</h1>
+            {% set dateRange = null %}
+            {% if production.opening and production.closing %}
+                {% set dateRange = production.opening|date('F j, Y') ~ ' – ' ~ production.closing|date('F j, Y') %}
+            {% elseif production.opening %}
+                {% set dateRange = 'Opens ' ~ production.opening|date('F j, Y') %}
+            {% elseif production.closing %}
+                {% set dateRange = 'Closes ' ~ production.closing|date('F j, Y') %}
+            {% endif %}
+            {% if dateRange %}
+                <p class="text-lg text-gray-600">{{ dateRange }}</p>
+            {% endif %}
+            {% if production.venue %}
+                <p class="text-sm text-gray-500">{{ production.venue.name }}</p>
+            {% endif %}
+        </header>
 
-
-        <section class="gh-content gh-canvas is-body">
-            <figure class="kg-card kg-image-card kg-width-wide"><img src="https://www.avlt.info/content/images/2025/12/WEB-JC101-1200x628-w-1.jpg" class="kg-image" alt="" loading="lazy" width="2000" height="1047" srcset="https://www.avlt.info/content/images/size/w600/2025/12/WEB-JC101-1200x628-w-1.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/12/WEB-JC101-1200x628-w-1.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2025/12/WEB-JC101-1200x628-w-1.jpg 1600w, https://www.avlt.info/content/images/2025/12/WEB-JC101-1200x628-w-1.jpg 2400w" sizes="(min-width: 1200px) 1200px"></figure><h1 id="john-cage-101">John Cage 101</h1><p>Written and directed by Matt Slaybaugh</p><p><strong>January 30th - February 1st, 2026</strong><br>Wexner Center for the Arts<br>1871 North High St</p><div class="kg-card kg-header-card kg-v2 kg-width-regular kg-style-accent" data-background-color="accent">
-
-                <div class="kg-header-card-content">
-
-                    <div class="kg-header-card-text kg-align-center">
-                        <h2 id="sponsored-by-leigh-householder" class="kg-header-card-heading" style="color: #FFFFFF;" data-text-color="#FFFFFF"><span style="white-space: pre-wrap;">Sponsored by </span><br><span style="white-space: pre-wrap;">Leigh Householder</span></h2>
-
-
-                    </div>
-                </div>
-            </div><h3 id="featuring">Featuring: </h3><p><strong>Acacia Duncan</strong> –&nbsp;prepared piano, claves, vintage meat grinder<br><strong>Drew Eberly</strong> –&nbsp;toy piano, harmonica, trash cans full of water<br><strong>Ian Short</strong> –&nbsp;wooden flute, tambourine, paper scroll, sheet metal<br><strong>Meghan Durham Wall</strong> –&nbsp;&nbsp;tin flute, rattle can, caxixi shaker, wood waterfall</p><p><strong>Dave Wallingford</strong> –&nbsp;Production Manager / Sound<br><strong>Jaylene Jennings</strong> –&nbsp;Stage Manager / Costumes<br><strong>Meghan Durham Wall</strong> –&nbsp;Movement<br><strong>Carrie Cox</strong> –&nbsp;Lighting<br><strong>Lonelle Yoder</strong> –&nbsp;Properties<br><strong>J V. Uhlman</strong> –&nbsp;Assistant Director<br><strong>Whitney Thomas Eads</strong>&nbsp;– Graphics</p><h3 id="schedule"><strong>Schedule:</strong></h3><p>Friday, January 30th @ 7:00pm<br>Saturday, January 31st @ 7:00pm<br>Sunday, February 1st @ 3:00pm</p><p><strong>Pay What You Want</strong>&nbsp;available at the door on Friday, January 30.</p><div class="kg-card kg-cta-card kg-cta-bg-blue kg-cta-minimal    " data-layout="minimal">
-
-                <div class="kg-cta-content">
-
-
-                    <div class="kg-cta-content-inner">
-
-                        <div class="kg-cta-text">
-                            <p><b><strong style="white-space: pre-wrap;">Get tickets and more info from the Wexner Center for the Arts →</strong></b></p>
-                        </div>
-
-
-                        <a href="https://wexarts.org/performing-arts/available-light-theatre?ref=avlt.info" class="kg-cta-button kg-style-accent" style="color: #FFFFFF;">
-                            Tickets &amp; More Info
-                        </a>
-
-                    </div>
-
-                </div>
-            </div><h2 id="about-this-play">ABOUT THIS PLAY</h2><div class="kg-card kg-callout-card kg-callout-card-blue"><div class="kg-callout-text"><b><strong style="white-space: pre-wrap;">"It’s hard to imagine a better fit between subject and style than Available Light Theatre’s&nbsp;sweet and insightful </strong></b><i><b><strong class="italic" style="white-space: pre-wrap;">John Cage 101</strong></b></i><b><strong style="white-space: pre-wrap;">."</strong></b><br><br><i><em class="italic" style="white-space: pre-wrap;">– </em></i>Margaret Quamme,<i><em class="italic" style="white-space: pre-wrap;"> Columbus Dispatch</em></i></div></div><div class="kg-card kg-callout-card kg-callout-card-pink"><div class="kg-callout-text"><b><strong style="white-space: pre-wrap;">“[R]eaches in a way you’re lucky to see a theatre company even attempt once in its day.”</strong></b><br><br><i><em class="italic" style="white-space: pre-wrap;">– </em></i>Richard Sanford, <a href="https://sanfordspeaks.blogspot.com/2013/03/john-cage-101-available-light.html?ref=avlt.info" rel="noreferrer"><i><em class="italic" style="white-space: pre-wrap;">Screen of Distance</em></i></a></div></div><p>If there was a rule about music in place, John Cage found a way to break or at least tease it, posing fundamental questions about the relationships between art and “real life.”</p><p>AVLT celebrates the Cage era with a theatrical mixtape – just think of it as 38 Short Plays About John Cage –&nbsp;reflecting the renegade life and controversial ideas&nbsp;of the 20th century’s most influential experimental composer.</p><div class="kg-card kg-callout-card kg-callout-card-grey"><div class="kg-callout-emoji">💡</div><div class="kg-callout-text"><b><strong style="white-space: pre-wrap;">Recommended if You Like</strong></b>: rolling the dice,&nbsp;<i><em class="italic" style="white-space: pre-wrap;">Bootleg Radio</em></i>, David Byrne, foraging, “The Rest is Noise,” Gibi ASMR, sitting in silence</div></div><hr><h2 id="read-more">READ MORE</h2><figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="https://myfox28columbus.com/good-day-columbus/performance-art-theater-available-light-theatre-john-cage-wexner-center-arts-music-sound?ref=avlt.info"><div class="kg-bookmark-content"><div class="kg-bookmark-title">‘John Cage 101’ returns after 13 years to Available Light Theatre</div><div class="kg-bookmark-description">The Wex’s Available Light Theatre is bringing back a show 13 years after its original run.</div><div class="kg-bookmark-metadata"><img class="kg-bookmark-icon" src="https://www.avlt.info/content/images/icon/favicon-42.ico" alt=""><span class="kg-bookmark-author">WTTE</span><span class="kg-bookmark-publisher">WSYX Staff</span></div></div><div class="kg-bookmark-thumbnail"><img src="https://www.avlt.info/content/images/thumbnail/4b044ebd-5437-4e2c-9531-19044404ed21-c5b8b56b5bb9418f9e7f8e63bdd050b5.png" alt="" onerror="this.style.display = 'none'"></div></a></figure><div class="kg-card kg-cta-card kg-cta-bg-grey kg-cta-minimal    " data-layout="minimal">
-
-                <div class="kg-cta-content">
-
-
-                    <div class="kg-cta-content-inner">
-
-                        <div class="kg-cta-text">
-                            <p><b><strong style="white-space: pre-wrap;">Columbus Underground: </strong></b><i><em class="italic" style="white-space: pre-wrap;">Available Light Revives ‘John Cage 101′ for the Wexner Center of the Arts’ Robert Rauschenberg Centenary Celebration</em></i></p>
-                        </div>
-
-
-                        <a href="https://columbusunderground.com/available-light-revives-john-cage-101-for-the-wexner-center-of-the-arts-robert-rauschenberg-centenary-celebration-rs1/?ref=avlt.info" class="kg-cta-button kg-style-accent" style="color: #FFFFFF;">
-                            Read it here.
-                        </a>
-
-                    </div>
-
-                </div>
-            </div><div class="kg-card kg-cta-card kg-cta-bg-grey kg-cta-minimal    " data-layout="minimal">
-
-                <div class="kg-cta-content">
-
-
-                    <div class="kg-cta-content-inner">
-
-                        <div class="kg-cta-text">
-                            <p><b><strong style="white-space: pre-wrap;">Columbus Underground: </strong></b><i><em class="italic" style="white-space: pre-wrap;">Columbus Makes Art Presents&nbsp;– Matt Slaybaugh on Devising and Experimenting with New Theater Works</em></i></p>
-                        </div>
-
-
-                        <a href="https://columbusunderground.com/columbus-makes-art-presents-matt-slaybaugh-on-devising-and-experimenting-with-new-theater-works-gc26/?ref=avlt.info" class="kg-cta-button kg-style-accent" style="color: #FFFFFF;">
-                            Read it here.
-                        </a>
-
-                    </div>
-
-                </div>
-            </div><hr><figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-3-w.jpg" width="2000" height="1458" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-3-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-3-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-3-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-3-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-16-w.jpg" width="2000" height="1333" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-16-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-16-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-16-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-16-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-10-w.jpg" width="2000" height="1381" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-10-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-10-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-10-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-10-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-14-w.jpg" width="2000" height="1333" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-14-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-14-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-14-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-14-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-7-w.jpg" width="2000" height="1333" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-7-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-7-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-7-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-7-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-2-w.jpg" width="1866" height="2800" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-2-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-2-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-2-w.jpg 1600w, https://www.avlt.info/content/images/2026/01/JC101-2-w.jpg 1866w" sizes="(min-width: 720px) 720px"></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-15-w.jpg" width="2000" height="1333" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-15-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-15-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-15-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-15-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-1-w.jpg" width="2000" height="2792" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-1-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-1-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-1-w.jpg 1600w, https://www.avlt.info/content/images/2026/01/JC101-1-w.jpg 2006w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2026/01/JC101-17-w.jpg" width="2000" height="1333" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2026/01/JC101-17-w.jpg 600w, https://www.avlt.info/content/images/size/w1000/2026/01/JC101-17-w.jpg 1000w, https://www.avlt.info/content/images/size/w1600/2026/01/JC101-17-w.jpg 1600w, https://www.avlt.info/content/images/size/w2400/2026/01/JC101-17-w.jpg 2400w" sizes="(min-width: 720px) 720px"></div></div></div><figcaption><p><span style="white-space: pre-wrap;">Photos from 2026 by Kyle Long.</span></p></figcaption></figure><p></p><figure class="kg-card kg-gallery-card kg-width-wide kg-card-hascaption"><div class="kg-gallery-container"><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6015.jpg" width="852" height="682" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6015.jpg 600w, https://www.avlt.info/content/images/2025/08/DSC_6015.jpg 852w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6230-1.jpg" width="1024" height="683" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6230-1.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/08/DSC_6230-1.jpg 1000w, https://www.avlt.info/content/images/2025/08/DSC_6230-1.jpg 1024w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6239-1.jpg" width="1024" height="683" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6239-1.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/08/DSC_6239-1.jpg 1000w, https://www.avlt.info/content/images/2025/08/DSC_6239-1.jpg 1024w" sizes="(min-width: 720px) 720px"></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6446-1.jpg" width="1024" height="791" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6446-1.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/08/DSC_6446-1.jpg 1000w, https://www.avlt.info/content/images/2025/08/DSC_6446-1.jpg 1024w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6034.jpg" width="910" height="683" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6034.jpg 600w, https://www.avlt.info/content/images/2025/08/DSC_6034.jpg 910w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6492-1.jpg" width="1024" height="791" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6492-1.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/08/DSC_6492-1.jpg 1000w, https://www.avlt.info/content/images/2025/08/DSC_6492-1.jpg 1024w" sizes="(min-width: 720px) 720px"></div></div><div class="kg-gallery-row"><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6479-1.jpg" width="1024" height="678" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6479-1.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/08/DSC_6479-1.jpg 1000w, https://www.avlt.info/content/images/2025/08/DSC_6479-1.jpg 1024w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6142.jpg" width="909" height="682" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6142.jpg 600w, https://www.avlt.info/content/images/2025/08/DSC_6142.jpg 909w" sizes="(min-width: 720px) 720px"></div><div class="kg-gallery-image"><img src="https://www.avlt.info/content/images/2025/08/DSC_6501.jpg" width="1024" height="682" loading="lazy" alt="" srcset="https://www.avlt.info/content/images/size/w600/2025/08/DSC_6501.jpg 600w, https://www.avlt.info/content/images/size/w1000/2025/08/DSC_6501.jpg 1000w, https://www.avlt.info/content/images/2025/08/DSC_6501.jpg 1024w" sizes="(min-width: 720px) 720px"></div></div></div><figcaption><p><span style="white-space: pre-wrap;">Photos from 2013, by Matt Slaybaugh and Dave Wallingford.</span></p></figcaption></figure><p></p>
+        <section class="space-y-6 leading-relaxed text-gray-700">
+            {% if production.description %}
+                {{ production.description|editorjs_to_html }}
+            {% else %}
+                <p class="italic text-gray-500">Description coming soon.</p>
+            {% endif %}
         </section>
-
     </article>
 {% endblock %}

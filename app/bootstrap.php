@@ -27,6 +27,8 @@ use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Twig\EditorJsExtension;
 use Delight\Auth\Auth;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
@@ -161,6 +163,7 @@ $container->set(Twig::class, static function (Container $c): Twig {
     $themeManager = $c->get(ThemeManager::class);
     $themeManager->configureTwig($twig, $coreTemplatesDir);
     $themeManager->loadFunctions();
+    $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
 
     // Inject theme metadata as global Twig variable
     $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
