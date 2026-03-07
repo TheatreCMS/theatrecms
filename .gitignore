@@ -20,7 +20,7 @@ Thumbs.db
 *.swo
 *~
 
-/themes
+/www/themes
 node_modules/
 
 /.idea/
