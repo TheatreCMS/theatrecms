@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\ValueObjects;
+namespace TheatreCMS\ValueObjects;
 
 readonly class DateRange
 {

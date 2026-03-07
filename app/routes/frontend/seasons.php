@@ -1,9 +1,9 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
-use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
-use Clubdeuce\TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;

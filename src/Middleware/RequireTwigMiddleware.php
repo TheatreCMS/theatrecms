@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Middleware;
+namespace TheatreCMS\Middleware;
 
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;

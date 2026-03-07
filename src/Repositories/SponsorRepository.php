@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Sponsor;
 
 /**
  * @method Sponsor[] query(array $args = [])

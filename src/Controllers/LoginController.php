@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Repositories\UserRepository;
 use Delight\Auth\Auth;
 use Delight\Auth\AuthError;
 use Delight\Auth\EmailNotVerifiedException;

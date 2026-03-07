@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Traits;
+namespace TheatreCMS\Traits;
 
 use Doctrine\ORM\Mapping\Column;
 

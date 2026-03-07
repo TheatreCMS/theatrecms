@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Repositories\UserRepository;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;

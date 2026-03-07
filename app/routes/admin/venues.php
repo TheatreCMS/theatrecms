@@ -1,9 +1,9 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\VenueController;
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Controllers\VenueController;
+use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\VenueRepository;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

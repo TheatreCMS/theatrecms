@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Middleware;
+namespace TheatreCMS\Middleware;
 
 use Delight\Auth\Auth;
 use Psr\Http\Message\ResponseInterface;

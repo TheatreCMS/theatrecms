@@ -1,9 +1,9 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\UsersController;
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Controllers\UsersController;
+use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\UserRepository;
 use Delight\Auth\Auth;
 use Delight\Auth\UnknownIdException;
 use Psr\Container\ContainerInterface;

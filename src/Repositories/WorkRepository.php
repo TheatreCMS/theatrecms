@@ -1,9 +1,9 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Person;
-use Clubdeuce\TheatreCMS\Models\Work;
+use TheatreCMS\Models\Person;
+use TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\User;
+use TheatreCMS\Models\User;
 use Delight\Auth\Auth;
 use Delight\Auth\InvalidEmailException;
 use Delight\Auth\InvalidPasswordException;

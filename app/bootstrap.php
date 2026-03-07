@@ -14,19 +14,19 @@
  * GNU General Public License for more details.
  */
 
-use Clubdeuce\TheatreCMS\Controllers\EventController;
-use Clubdeuce\TheatreCMS\Controllers\LoginController;
-use Clubdeuce\TheatreCMS\Controllers\ProductionController;
-use Clubdeuce\TheatreCMS\Controllers\SeasonController;
-use Clubdeuce\TheatreCMS\Controllers\UsersController;
-use Clubdeuce\TheatreCMS\Repositories\EventRepository;
-use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
-use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
-use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
-use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
-use Clubdeuce\TheatreCMS\Repositories\UserRepository;
-use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
-use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Controllers\EventController;
+use TheatreCMS\Controllers\LoginController;
+use TheatreCMS\Controllers\ProductionController;
+use TheatreCMS\Controllers\SeasonController;
+use TheatreCMS\Controllers\UsersController;
+use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\PersonRepository;
+use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Repositories\WorkRepository;
 use Delight\Auth\Auth;
 use DI\Container;
 use Doctrine\DBAL\DriverManager;
@@ -132,7 +132,7 @@ $container->set(EventController::class, static function (Container $c) {
     return new EventController($c->get(EventRepository::class), $c->get(EntityManager::class));
 });
 
-use Clubdeuce\TheatreCMS\Theme\ThemeManager;
+use TheatreCMS\Theme\ThemeManager;
 
 // Register ThemeManager
 $container->set(ThemeManager::class, static function (Container $c): ThemeManager {

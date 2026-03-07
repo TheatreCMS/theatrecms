@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Person;
+use TheatreCMS\Models\Person;
 
 /**
  * @method Person[] query(array $args = [])

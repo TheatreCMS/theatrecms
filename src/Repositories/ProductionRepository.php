@@ -1,12 +1,12 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Models\Season;
-use Clubdeuce\TheatreCMS\Models\Venue;
-use Clubdeuce\TheatreCMS\Models\Work;
-use Clubdeuce\TheatreCMS\Models\Person;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Venue;
+use TheatreCMS\Models\Work;
+use TheatreCMS\Models\Person;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 

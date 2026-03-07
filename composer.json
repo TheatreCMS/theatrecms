@@ -4,12 +4,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Clubdeuce\\TheatreCMS\\": "src/"
+            "TheatreCMS\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Clubdeuce\\TheatreCMS\\Tests\\": "tests/"
+            "TheatreCMS\\Tests\\": "tests/"
         }
     },
     "authors": [

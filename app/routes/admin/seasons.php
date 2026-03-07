@@ -1,10 +1,10 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\SeasonController;
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
-use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Controllers\SeasonController;
+use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Repositories\SponsorRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;

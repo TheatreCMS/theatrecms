@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Repositories\SponsorRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 

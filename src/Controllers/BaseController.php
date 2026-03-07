@@ -1,15 +1,15 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Repositories\EventRepository;
-use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
-use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
-use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
-use Clubdeuce\TheatreCMS\Repositories\UserRepository;
-use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
-use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
-use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\PersonRepository;
+use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Repositories\SponsorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Models;
+namespace TheatreCMS\Models;
 
 enum RoleType: string
 {

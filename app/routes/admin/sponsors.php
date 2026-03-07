@@ -1,9 +1,9 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\SponsorController;
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Controllers\SponsorController;
+use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\SponsorRepository;
 use Delight\Auth\Auth;
 use Doctrine\ORM\EntityManager;
 use Psr\Container\ContainerInterface;

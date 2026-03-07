@@ -1,15 +1,15 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\ProductionController;
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Repositories\PersonRepository;
-use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
-use Clubdeuce\TheatreCMS\Repositories\SponsorRepository;
-use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
-use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
-use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Controllers\ProductionController;
+use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Repositories\PersonRepository;
+use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Repositories\WorkRepository;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

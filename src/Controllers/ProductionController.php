@@ -1,16 +1,16 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Models\Season;
-use Clubdeuce\TheatreCMS\Models\Sponsor;
-use Clubdeuce\TheatreCMS\Models\Sponsorship;
-use Clubdeuce\TheatreCMS\Models\Work;
-use Clubdeuce\TheatreCMS\Models\Person;
-use Clubdeuce\TheatreCMS\Models\RoleType;
-use Clubdeuce\TheatreCMS\Models\Venue;
-use Clubdeuce\TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Sponsorship;
+use TheatreCMS\Models\Work;
+use TheatreCMS\Models\Person;
+use TheatreCMS\Models\RoleType;
+use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ProductionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
 
 /**
  * Class ProductionController
- * @package Clubdeuce\TheatreCMS\Controllers
+ * @package TheatreCMS\Controllers
  *
  * @method ProductionRepository repository()
  */

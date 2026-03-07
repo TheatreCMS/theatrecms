@@ -1,11 +1,11 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Models\Event;
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Models\Venue;
-use Clubdeuce\TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Models\Event;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\EventRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Venue;
+use TheatreCMS\Models\Venue;
 
 /**
  * @method Venue[] query(array $args = [])

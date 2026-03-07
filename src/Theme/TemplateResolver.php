@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Theme;
+namespace TheatreCMS\Theme;
 
 use Slim\Views\Twig;
 

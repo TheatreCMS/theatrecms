@@ -1,18 +1,18 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Models\Season;
-use Clubdeuce\TheatreCMS\Models\Sponsor;
-use Clubdeuce\TheatreCMS\Models\Sponsorship;
-use Clubdeuce\TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Sponsorship;
+use TheatreCMS\Repositories\SeasonRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 /**
  * Class SeasonController
- * @package Clubdeuce\TheatreCMS\Controllers
+ * @package TheatreCMS\Controllers
  *
  * @method SeasonRepository repository()
  */

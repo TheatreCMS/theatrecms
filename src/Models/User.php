@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Models;
+namespace TheatreCMS\Models;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping\Column;

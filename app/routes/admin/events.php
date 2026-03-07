@@ -1,9 +1,9 @@
 <?php
 
-use Clubdeuce\TheatreCMS\Controllers\EventController;
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Controllers\EventController;
+use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\EventRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -16,8 +16,8 @@ if (isset($app)) {
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
-            $productions = $container->get(\Clubdeuce\TheatreCMS\Repositories\ProductionRepository::class)->fetchAll();
-            $venues = $container->get(\Clubdeuce\TheatreCMS\Repositories\VenueRepository::class)->fetchAll();
+            $productions = $container->get(\TheatreCMS\Repositories\ProductionRepository::class)->fetchAll();
+            $venues = $container->get(\TheatreCMS\Repositories\VenueRepository::class)->fetchAll();
 
             return $twig->render($response, 'admin/events/create.html.twig', ['productions' => $productions, 'venues' => $venues]);
         })->add(new RequireTwigMiddleware($container));
@@ -30,8 +30,8 @@ if (isset($app)) {
 
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
-            $productions = $container->get(\Clubdeuce\TheatreCMS\Repositories\ProductionRepository::class)->fetchAll();
-            $venues = $container->get(\Clubdeuce\TheatreCMS\Repositories\VenueRepository::class)->fetchAll();
+            $productions = $container->get(\TheatreCMS\Repositories\ProductionRepository::class)->fetchAll();
+            $venues = $container->get(\TheatreCMS\Repositories\VenueRepository::class)->fetchAll();
 
             return $twig->render($response, 'admin/events/edit.html.twig', ['event' => $event, 'productions' => $productions, 'venues' => $venues]);
         })->add(new RequireTwigMiddleware($container));

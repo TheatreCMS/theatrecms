@@ -1,10 +1,10 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Event;
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Models\Venue;
+use TheatreCMS\Models\Event;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Models\Venue;
 use Doctrine\ORM\EntityManagerInterface;
 
 class EventRepository extends BaseRepository

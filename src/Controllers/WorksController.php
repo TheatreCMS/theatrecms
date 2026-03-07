@@ -1,9 +1,9 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Controllers;
+namespace TheatreCMS\Controllers;
 
-use Clubdeuce\TheatreCMS\Models\Work;
-use Clubdeuce\TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Models\Work;
+use TheatreCMS\Repositories\WorkRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 

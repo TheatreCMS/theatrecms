@@ -1,6 +1,6 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Models;
+namespace TheatreCMS\Models;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\Table;
-use Clubdeuce\TheatreCMS\Traits\SupportsFeaturedImage;
+use TheatreCMS\Traits\SupportsFeaturedImage;
 use \DateTime;
 
 #[Entity, Table(name: 'productions')]

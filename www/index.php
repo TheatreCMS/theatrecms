@@ -19,9 +19,9 @@ const ROUTES_DIR = APP_DIR . '/routes';
 
 require_once ROOT_DIR . "/vendor/autoload.php";
 
-use Clubdeuce\TheatreCMS\Controllers\LoginController;
-use Clubdeuce\TheatreCMS\Middleware\RequireTwigMiddleware;
-use Clubdeuce\TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Controllers\LoginController;
+use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;

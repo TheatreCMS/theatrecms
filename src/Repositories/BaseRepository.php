@@ -1,11 +1,11 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Repositories;
+namespace TheatreCMS\Repositories;
 
-use Clubdeuce\TheatreCMS\Models\Person;
-use Clubdeuce\TheatreCMS\Models\Season;
-use Clubdeuce\TheatreCMS\Models\User;
-use Clubdeuce\TheatreCMS\Models\Work;
+use TheatreCMS\Models\Person;
+use TheatreCMS\Models\Season;
+use TheatreCMS\Models\User;
+use TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 
 abstract class BaseRepository
