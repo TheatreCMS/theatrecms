@@ -28,6 +28,8 @@ use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\EditorJsExtension;
 use Delight\Auth\Auth;
 use DI\Container;
@@ -46,6 +48,7 @@ if( !defined('APP_ROOT') )
     define ('APP_ROOT', dirname(__DIR__));
 
 require_once APP_ROOT . '/vendor/autoload.php';
+require_once APP_ROOT . '/app/hooks.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
 
@@ -134,7 +137,10 @@ $container->set(EventController::class, static function (Container $c) {
     return new EventController($c->get(EventRepository::class), $c->get(EntityManager::class));
 });
 
-use TheatreCMS\Theme\ThemeManager;
+// Register HookManager
+$container->set(HookManager::class, static function (): HookManager {
+    return new HookManager();
+});
 
 // Register ThemeManager
 $container->set(ThemeManager::class, static function (Container $c): ThemeManager {
@@ -170,5 +176,8 @@ $container->set(Twig::class, static function (Container $c): Twig {
 
     return $twig;
 });
+
+$hookManager = $container->get(HookManager::class);
+HookManager::setInstance($hookManager);
 
 return $container;
