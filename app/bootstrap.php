@@ -14,34 +14,17 @@
  * GNU General Public License for more details.
  */
 
-use TheatreCMS\Controllers\EventController;
-use TheatreCMS\Controllers\LoginController;
-use TheatreCMS\Controllers\ProductionController;
-use TheatreCMS\Controllers\SeasonController;
-use TheatreCMS\Controllers\UsersController;
-use TheatreCMS\Repositories\EventRepository;
-use TheatreCMS\Repositories\PersonRepository;
-use TheatreCMS\Repositories\ProductionRepository;
-use TheatreCMS\Repositories\SeasonRepository;
-use TheatreCMS\Repositories\SponsorRepository;
-use TheatreCMS\Repositories\UserRepository;
-use TheatreCMS\Repositories\VenueRepository;
-use TheatreCMS\Repositories\WorkRepository;
-use TheatreCMS\Text\EditorJsHtmlConverter;
-use TheatreCMS\Theme\HookManager;
-use TheatreCMS\Theme\ThemeManager;
-use TheatreCMS\Twig\EditorJsExtension;
-use Delight\Auth\Auth;
 use DI\Container;
+use Delight\Auth\Auth;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
-use Slim\App;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
-use Slim\Views\Twig;
-use Slim\Views\TwigMiddleware;
+use TheatreCMS\DI\ServiceRegistrar;
+use TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Theme\HookManager;
 
 
 if( !defined('APP_ROOT') )
@@ -82,100 +65,10 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
     return new EntityManager($connection, $config);
 });
 
-// Register a callable factory for TwigMiddleware that can be invoked with the Slim\App
-$container->set(TwigMiddleware::class, static function (Container $c): callable {
-    return function (App $app, string $containerKey = 'view') {
-        return TwigMiddleware::createFromContainer($app, $containerKey);
-    };
-});
-
-$repositories = [
-    EventRepository::class,
-    PersonRepository::class,
-    ProductionRepository::class,
-    SeasonRepository::class,
-    SponsorRepository::class,
-    UserRepository::class,
-    VenueRepository::class,
-    WorkRepository::class,
-    EventRepository::class,
-];
-
-foreach($repositories as $repository) {
-    $container->set($repository, static function (Container $c) use ($repository) {
-        return new $repository($c->get(EntityManager::class));
-    });
-}
-
-$container->set(Auth::class, static function (Container $c) {
-    return new Auth($c->get(EntityManager::class)->getConnection()->getNativeConnection());
-});
+ServiceRegistrar::register($container);
 
 // Add the Auth
 $container->get(UserRepository::class)->setAuth($container->get(Auth::class));
-
-$container->set(LoginController::class, static function (Container $c) {
-    return new LoginController($c->get(UserRepository::class), $c->get(Twig::class), $c->get(Auth::class));
-});
-
-// Register UsersController
-$container->set(UsersController::class, static function (Container $c) {
-    return new UsersController($c->get(UserRepository::class), $c->get(Twig::class));
-});
-
-// Register ProductionController
-$container->set(ProductionController::class, static function (Container $c) {
-    return new ProductionController($c->get(ProductionRepository::class), $c->get(EntityManager::class));
-});
-
-$container->set(SeasonController::class, static function (Container $c) {
-    return new SeasonController($c->get(SeasonRepository::class), $c->get(EntityManager::class));
-});
-
-// Register EventController
-$container->set(EventController::class, static function (Container $c) {
-    return new EventController($c->get(EventRepository::class), $c->get(EntityManager::class));
-});
-
-// Register HookManager
-$container->set(HookManager::class, static function (): HookManager {
-    return new HookManager();
-});
-
-// Register ThemeManager
-$container->set(ThemeManager::class, static function (Container $c): ThemeManager {
-    $settings = $c->get('settings');
-    $themesDir = $settings['themes']['dir'] ?? APP_ROOT . '/themes';
-    $activeTheme = $settings['themes']['active'] ?? 'default';
-    return new ThemeManager($themesDir, $activeTheme);
-});
-
-// Update Twig registration to use ThemeManager
-$container->set(Twig::class, static function (Container $c): Twig {
-    $settings = $c->get('settings');
-    $viewSettings = $settings['view'] ?? [];
-
-    $coreTemplatesDir = $viewSettings['template_path'] ?? APP_ROOT . '/templates';
-    $cache = ($viewSettings['cache_enabled'] ?? false) ? $viewSettings['cache'] : false;
-
-    // Start Twig with core templates
-    $twig = Twig::create($coreTemplatesDir, [
-        'cache'       => $cache,
-        'debug'       => $viewSettings['debug'] ?? false,
-        'auto_reload' => $viewSettings['debug'] ?? false,
-    ]);
-
-    // Layer the active theme on top
-    $themeManager = $c->get(ThemeManager::class);
-    $themeManager->configureTwig($twig, $coreTemplatesDir);
-    $themeManager->loadFunctions();
-    $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
-
-    // Inject theme metadata as global Twig variable
-    $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
-
-    return $twig;
-});
 
 $hookManager = $container->get(HookManager::class);
 HookManager::setInstance($hookManager);
