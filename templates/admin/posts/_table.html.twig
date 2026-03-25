@@ -1,8 +1,17 @@
 {% for post in posts %}
     <tr class="bg-neutral-primary border-b border-default">
-        <td class="px-6 py-4">{{ post.title }}</td>
-        <td class="px-6 py-4">{{ status_labels[post.status] ?? post.status }}</td>
-        <td class="px-6 py-4">{{ post.slug }}</td>
+        <td class="px-6 py-4">
+            <div class="text-sm font-medium text-gray-900">{{ post.title }}</div>
+            <div class="text-xs text-gray-500">Slug: {{ post.slug }}</div>
+        </td>
+        <td class="px-6 py-4">{{ status_labels[post.status.value] ?? post.status.label }}</td>
+        <td class="px-6 py-4">
+            {% if post.publishedAt %}
+                {{ post.publishedAt|date('Y-m-d H:i') }}
+            {% else %}
+                <span class="text-gray-500">Not published</span>
+            {% endif %}
+        </td>
         <td class="px-6 py-4 text-right space-x-2">
             <a href="/admin/posts/edit/{{ post.id }}" class="text-blue-600 hover:text-blue-900">Edit</a>
             <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/posts/{{ post.id }}" hx-target="#postList">Delete</button>
@@ -10,6 +19,6 @@
     </tr>
 {% else %}
     <tr class="bg-neutral-primary border-b border-default">
-        <td class="px-6 py-4" colspan="4">No posts found.</td>
+        <td class="px-6 py-4" colspan="6">No posts found.</td>
     </tr>
 {% endfor %}
