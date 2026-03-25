@@ -151,15 +151,15 @@ class ServiceRegistrar
             EventController::class => static function (ContainerInterface $c): EventController {
                 return new EventController(
                     $c->get(EventRepository::class),
-                    $c->get(EntityManagerInterface::class)
+                    $c->get(EntityManager::class)
                 );
             },
-            PostController::class => static function (ContainerInterface $c): PostController {
-                return new PostController(
-                    $c->get(PostRepository::class),
-                    $c->get(EntityManagerInterface::class)
-                );
-            },
+        PostController::class => static function (ContainerInterface $c): PostController {
+            return new PostController(
+                $c->get(PostRepository::class),
+                $c->get(EntityManager::class)
+            );
+        },
             VenueController::class => static function (ContainerInterface $c): VenueController {
                 return new VenueController(
                     $c->get(VenueRepository::class)
