@@ -48,6 +48,7 @@ require ROUTES_DIR . '/admin/sponsors.php';
 require ROUTES_DIR . '/admin/users.php';
 require ROUTES_DIR . '/admin/venues.php';
 require ROUTES_DIR . '/admin/works.php';
+require ROUTES_DIR . '/admin/posts.php';
 require ROUTES_DIR . '/frontend/seasons.php';
 
 $app->get('/admin/login', [LoginController::class, 'login']);
