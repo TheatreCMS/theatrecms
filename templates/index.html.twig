@@ -3,5 +3,7 @@
 {% block title %}WEBSITE - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <h2>FOO</h2>
+    {% for p in posts %}
+        {% include 'posts/_post.html.twig' with { post: p } %}
+    {% endfor %}
 {% endblock %}
