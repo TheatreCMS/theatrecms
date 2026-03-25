@@ -12,11 +12,17 @@
         <input type="hidden" name="postId" value="{{ post.id }}">
 
         <div class="grid grid-cols-1 gap-6">
-            <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input type="text" name="title" id="title" required maxlength="255" value="{{ post.title }}"
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-            </div>
+        <div>
+            <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <input type="text" name="title" id="title" required maxlength="255" value="{{ post.title }}"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+        </div>
+
+        <div>
+            <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+            <input type="text" name="slug" id="slug" maxlength="255" value="{{ post.slug }}"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+        </div>
 
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>

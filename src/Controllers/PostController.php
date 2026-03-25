@@ -55,6 +55,7 @@ class PostController extends BaseController
             'title' => null,
             'status' => PostStatus::DRAFT->value,
             'content' => null,
+            'slug' => null,
         ]);
 
         $post = $this->repository->fetch($data['postId']);
@@ -83,6 +84,10 @@ class PostController extends BaseController
             }
         } else {
             $post->setPublishedAt(null);
+        }
+
+        if (!empty($data['slug'])) {
+            $this->repository->updateSlug($post, $data['slug']);
         }
 
         $this->repository->update($post);

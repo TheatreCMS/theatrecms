@@ -40,4 +40,19 @@ class PostRepository extends BaseRepository
 
         return $post;
     }
+
+    public function updateSlug(Post $post, string $slug): void
+    {
+        $slug = trim($slug);
+        if ($slug === '') {
+            return;
+        }
+
+        $current = $post->getSlug();
+        if ($current !== null && strcasecmp($current, $slug) === 0) {
+            return;
+        }
+
+        $post->setSlug($this->generateUniqueSlug($slug));
+    }
 }
