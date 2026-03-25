@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Controllers;
 
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -74,6 +75,15 @@ class PostController extends BaseController
         $post->setTitle($data['title']);
         $post->setStatus($status);
         $post->setContent($data['content']);
+        $post->touchModified();
+
+        if ($status === PostStatus::PUBLISHED) {
+            if ($post->getPublishedAt() === null) {
+                $post->setPublishedAt(new DateTimeImmutable());
+            }
+        } else {
+            $post->setPublishedAt(null);
+        }
 
         $this->repository->update($post);
 
