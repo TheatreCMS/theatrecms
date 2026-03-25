@@ -4,6 +4,7 @@ namespace TheatreCMS\Controllers;
 
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\PersonRepository;
+use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\UserRepository;
@@ -17,9 +18,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 class BaseController
 {
     protected EntityManagerInterface $entityManager;
-    protected PersonRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository $repository;
+    protected PersonRepository|PostRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository $repository;
 
-    public function repository(): SeasonRepository|UserRepository|WorkRepository|PersonRepository|SponsorRepository|EventRepository
+    public function repository(): PersonRepository|PostRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository
     {
         return $this->repository;
     }
