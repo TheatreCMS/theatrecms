@@ -4,7 +4,6 @@ namespace TheatreCMS\DI;
 
 use DI\Container;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Views\Twig;
@@ -139,13 +138,13 @@ class ServiceRegistrar
             ProductionController::class => static function (ContainerInterface $c): ProductionController {
                 return new ProductionController(
                     $c->get(ProductionRepository::class),
-                    $c->get(EntityManagerInterface::class)
+                    $c->get(EntityManager::class)
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
                 return new SeasonController(
                     $c->get(SeasonRepository::class),
-                    $c->get(EntityManagerInterface::class)
+                    $c->get(EntityManager::class)
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
