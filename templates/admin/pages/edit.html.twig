@@ -27,7 +27,7 @@
 			<div class="md:col-span-2 space-y-3">
 				<label for="content" class="block text-sm font-medium text-gray-700">Content</label>
 				<div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
-				<textarea name="content" id="content" rows="10" data-editor="page-content" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ page.content|default('') }}</textarea>
+				<textarea name="content" id="content" rows="10" class="hidden" aria-hidden="true">{{ page.content|default('') }}</textarea>
 			</div>
 		</div>
 
@@ -41,7 +41,31 @@
 {% block scripts %}
 	{{ parent() }}
 	<script type="module">
-		const editorConfig = {
+		document.addEventListener('DOMContentLoaded', function () {
+const form = document.querySelector('form[action="/admin/pages/edit"]');
+const contentField = document.getElementById('content');
+
+if (! form || ! contentField) {
+return;
+}
+
+const rawContent = {{ page.content|default('')|json_encode|raw }};
+let editorData = null;
+
+if (rawContent && typeof rawContent === 'string') {
+try {
+const parsed = JSON.parse(rawContent);
+if (parsed && typeof parsed === 'object' && Array.isArray(parsed.blocks)) {
+editorData = parsed;
+}
+} catch (error) {
+console.warn('Existing page content is not valid EditorJS JSON; opening with empty editor.', error);
+}
+}
+
+let isSaving = false;
+
+const editorConfig = {
 holder: 'editorjs',
 tools: {
 paragraph: {
@@ -71,20 +95,40 @@ image: {
 class: ImageTool,
 config: {
 endpoints : {
-byFile: '/admin/pages/images/upload', // adjust if a different route is used
+byFile: '/admin/pages/images/upload',
 byUrl: '/admin/pages/images/fetch'
 }
 }
 }
 }
-}
-
-const editorData = {{ editorDescription is not null ? editorDescription|json_encode|raw : 'null' }};
+};
 
 if (editorData) {
 editorConfig.data = editorData;
 }
 
 const editor = new EditorJS(editorConfig);
+
+const handleSubmit = function (event) {
+if (isSaving) {
+return;
+}
+
+event.preventDefault();
+isSaving = true;
+
+editor.save().then((outputData) => {
+contentField.value = JSON.stringify(outputData);
+form.removeEventListener('submit', handleSubmit);
+form.submit();
+}).catch((error) => {
+console.error('EditorJS save failed:', error);
+alert('Unable to save the content. Please try again.');
+isSaving = false;
+});
+};
+
+form.addEventListener('submit', handleSubmit);
+});
 	</script>
 {% endblock %}
