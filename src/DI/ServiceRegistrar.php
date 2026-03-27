@@ -9,6 +9,7 @@ use Slim\App;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use TheatreCMS\Controllers\EventController;
+use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Controllers\PostController;
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Controllers\PersonController;
@@ -19,6 +20,7 @@ use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
@@ -153,12 +155,18 @@ class ServiceRegistrar
                     $c->get(EntityManager::class)
                 );
             },
-        PostController::class => static function (ContainerInterface $c): PostController {
-            return new PostController(
-                $c->get(PostRepository::class),
-                $c->get(EntityManager::class)
-            );
-        },
+            PostController::class => static function (ContainerInterface $c): PostController {
+                return new PostController(
+                    $c->get(PostRepository::class),
+                    $c->get(EntityManager::class)
+                );
+            },
+            PageController::class => static function (ContainerInterface $c): PageController {
+                return new PageController(
+                    $c->get(PageRepository::class),
+                    $c->get(EntityManager::class)
+                );
+            },
             VenueController::class => static function (ContainerInterface $c): VenueController {
                 return new VenueController(
                     $c->get(VenueRepository::class)
