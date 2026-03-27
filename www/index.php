@@ -52,7 +52,6 @@ require ROUTES_DIR . '/admin/works.php';
 require ROUTES_DIR . '/admin/posts.php';
 require ROUTES_DIR . '/admin/pages.php';
 require ROUTES_DIR . '/frontend/seasons.php';
-require ROUTES_DIR . '/frontend/posts.php';
 
 $app->get('/admin/login', [LoginController::class, 'login']);
 $app->post('/admin/login', [LoginController::class, 'authenticate']);
