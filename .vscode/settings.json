@@ -1,0 +1,16 @@
+{
+  "files.associations": {
+    "*.twig": "twig"
+  },
+  "editor.formatOnSave": true,
+  "[php]": {
+    "editor.defaultFormatter": "vscode.php-language-features"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "php.validate.enable": true
+}

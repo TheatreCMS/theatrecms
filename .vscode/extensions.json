@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "biati.ddev-manager",
+    "mblode.twig-language",
+    "xdebug.php-debug",
+    "bmewburn.vscode-intelephense-client",
+    "ms-playwright.playwright",
+    "dbcode.dbcode",
+    "github.copilot-chat"
+  ],
+  "unwantedRecommendations": [
+    "felixbecker.php-intellisense"
+  ]
+}

@@ -31,3 +31,18 @@ Copyright (C) 2026  TheatreCMS Team
 
 - `app/bootstrap.php` now delegates registration to `TheatreCMS\DI\ServiceRegistrar`, which registers shared services, discovers repository classes from `src/Repositories`, and maps controllers to their required dependencies.
 - `ServiceRegistrar` centralizes Twig/theme configuration and shared helpers so new controllers or repositories can simply be added under `src/Controllers` / `src/Repositories` without duplicating container wiring.
+
+## VS Code workspace setup
+
+- This repository includes workspace recommendations in `.vscode/extensions.json`.
+- When VS Code prompts you with workspace recommendations, use `Install All` to install the suggested extension set for this project.
+- If you miss the prompt, run `Extensions: Show Recommended Extensions` from the command palette.
+- `unwantedRecommendations` only suppresses suggestion noise for this workspace; it does not uninstall any global extensions.
+
+### Xdebug and DDEV alignment
+
+- The `Listen for Xdebug` launch configuration in `.vscode/launch.json` expects Xdebug on port `9003` with `/var/www/html` mapped to `${workspaceFolder}`.
+- The launch config runs pre/post debug tasks from `.vscode/tasks.json`:
+    - `DDEV: Enable Xdebug`
+    - `DDEV: Disable Xdebug`
+- If debugging does not attach, verify DDEV is running and that Xdebug is enabled for the current debug session.
