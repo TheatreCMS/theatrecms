@@ -25,4 +25,8 @@ Thumbs.db
 /www/uploads/*
 node_modules/
 
+# Jetbrains IDE files
 /.idea/
+
+# Application configuration files
+config.json
