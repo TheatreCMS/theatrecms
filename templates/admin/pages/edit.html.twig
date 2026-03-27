@@ -1,43 +1,90 @@
 {% extends 'layouts/admin.html.twig' %}
 
-{% block title %}Edit Page - {{ parent() }}{% endblock %}
+{% block title %}Edit Page -
+	{{ parent() }}
+{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Page</h1>
-        <p class="text-gray-600">Update title, slug, and content for this page.</p>
-    </div>
+	<div class="mb-6">
+		<h1 class="text-2xl font-bold text-gray-800">Edit Page</h1>
+		<p class="text-gray-600">Update title, slug, and content for this page.</p>
+	</div>
 
-    <form action="/admin/pages/edit" method="POST" class="space-y-6">
-        <input type="hidden" name="pageId" value="{{ page.id }}">
+	<form action="/admin/pages/edit" method="POST" class="space-y-6">
+		<input type="hidden" name="pageId" value="{{ page.id }}">
 
-        <div class="grid grid-cols-1 gap-6">
-            <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input type="text" name="title" id="title" required maxlength="255" value="{{ page.title }}"
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-            </div>
+		<div class="grid grid-cols-1 gap-6">
+			<div>
+				<label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+				<input type="text" name="title" id="title" required maxlength="255" value="{{ page.title }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+			</div>
 
-            <div>
-                <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                <input type="text" name="slug" id="slug" maxlength="255" value="{{ page.slug }}"
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-            </div>
+			<div>
+				<label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+				<input type="text" name="slug" id="slug" maxlength="255" value="{{ page.slug }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+			</div>
 
-            <div class="md:col-span-2 space-y-3">
-                <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                <textarea name="content" id="content" rows="10" data-editor="page-content"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ page.content|default('') }}</textarea>
-            </div>
-        </div>
+			<div class="md:col-span-2 space-y-3">
+				<label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+				<div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+				<textarea name="content" id="content" rows="10" data-editor="page-content" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ page.content|default('') }}</textarea>
+			</div>
+		</div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/admin/pages" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Changes</button>
-        </div>
-    </form>
-    {% block scripts %}
-        {{ parent() }}
-        <script type="module" src="/assets/js/editor.js"></script>
-    {% endblock %}
+		<div class="flex items-center justify-end space-x-3 pt-4 border-t">
+			<a href="/admin/pages" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
+			<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Changes</button>
+		</div>
+	</form>
+{% endblock %}
+
+{% block scripts %}
+	{{ parent() }}
+	<script type="module">
+		const editorConfig = {
+holder: 'editorjs',
+tools: {
+paragraph: {
+inlineToolbar: [
+'bold', 'italic', 'underline', 'link'
+],
+config: {
+preserveBlank: true
+}
+},
+quote: {
+class: Quote,
+inlineToolbar: true
+},
+underline: {
+class: Underline
+},
+header: {
+class: Header,
+inlineToolbar: true
+},
+list: {
+class: EditorjsList,
+inlineToolbar: true
+},
+image: {
+class: ImageTool,
+config: {
+endpoints : {
+byFile: '/admin/pages/images/upload', // adjust if a different route is used
+byUrl: '/admin/pages/images/fetch'
+}
+}
+}
+}
+}
+
+const editorData = {{ editorDescription is not null ? editorDescription|json_encode|raw : 'null' }};
+
+if (editorData) {
+editorConfig.data = editorData;
+}
+
+const editor = new EditorJS(editorConfig);
+	</script>
 {% endblock %}
