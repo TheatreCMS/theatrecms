@@ -34,74 +34,46 @@
 {% block scripts %}
 	{{ parent() }}
 	<script type="module">
+		import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+
 		document.addEventListener('DOMContentLoaded', function () {
-const form = document.querySelector('form[action="/admin/pages/create"]');
-const contentField = document.getElementById('content');
+			const form = document.querySelector('form[action="/admin/pages/create"]');
+			const contentField = document.getElementById('content');
 
-if (! form || ! contentField) {
-return;
-}
+			if (!form || !contentField) {
+				return;
+			}
 
-let isSaving = false;
+			let isSaving = false;
 
-const handleSubmit = function (event) {
-if (isSaving) {
-return;
-}
+			const handleSubmit = function (event) {
+				if (isSaving) {
+					return;
+				}
 
-event.preventDefault();
-isSaving = true;
+				event.preventDefault();
+				isSaving = true;
 
-editor.save().then((outputData) => {
-contentField.value = JSON.stringify(outputData);
-form.removeEventListener('submit', handleSubmit);
-form.submit();
-}).catch((error) => {
-console.error('EditorJS save failed:', error);
-alert('Unable to save the content. Please try again.');
-isSaving = false;
-});
-};
+				editor.save().then((outputData) => {
+					contentField.value = JSON.stringify(outputData);
+					form.removeEventListener('submit', handleSubmit);
+					form.submit();
+				}).catch((error) => {
+					console.error('EditorJS save failed:', error);
+					alert('Unable to save the content. Please try again.');
+					isSaving = false;
+				});
+			};
 
-form.addEventListener('submit', handleSubmit);
+			form.addEventListener('submit', handleSubmit);
 
-const editor = new EditorJS({
-holder: 'editorjs',
-tools: {
-paragraph: {
-inlineToolbar: [
-'bold', 'italic', 'underline', 'link'
-],
-config: {
-preserveBlank: true
-}
-},
-quote: {
-class: Quote,
-inlineToolbar: true
-},
-underline: {
-class: Underline
-},
-header: {
-class: Header,
-inlineToolbar: true
-},
-list: {
-class: EditorjsList,
-inlineToolbar: true
-},
-image: {
-class: ImageTool,
-config: {
-endpoints : {
-byFile: '/admin/pages/images/upload',
-byUrl: '/admin/pages/images/fetch'
-}
-}
-}
-}
-});
-});
+			const editor = new EditorJS(buildEditorJsConfig({
+				holder: 'editorjs',
+				imageEndpoints: {
+					byFile: '/admin/pages/images/upload',
+					byUrl: '/admin/pages/images/fetch'
+				}
+			}));
+		});
 	</script>
 {% endblock %}

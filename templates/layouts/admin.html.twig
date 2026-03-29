@@ -1,52 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{% block title %}Admin - {{ organization_name|default('TheatreCMS') }}{% endblock %}</title>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+		<title>
+			{% block title %}Admin -
+				{{ organization_name|default('TheatreCMS') }}
+			{% endblock %}
+		</title>
 
-    {# Tailwind via CDN for now; swap with asset pipeline later #}
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+		{# Tailwind via CDN for now; swap with asset pipeline later #}
+		<link
+		href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 
-    {# Flowbite for components #}
-    <link href="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.js"></script>
+		{# Flowbite for components #}
+		<link href="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.css" rel="stylesheet"/>
+		<script src="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.js"></script>
 
-    {# EditorJS for block editing #}
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+		{# EditorJS for block editing #}
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/list@2"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/underline@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@calumk/editorjs-columns@latest"></script>
 
-    {# HTMX for progressive enhancement #}
-    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+		{# HTMX for progressive enhancement #}
+		<script src="https://unpkg.com/htmx.org@1.9.2"></script>
 
-    <link rel="stylesheet" href="/assets/js/ckeditor5/ckeditor5.css">
-    <script type="importmap">
-        {
-            "imports": {
-                "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
-                "ckeditor5/": "/assets/js/ckeditor5/"
-            }
-        }
-    </script>
-    {% block head %}{% endblock %}
-</head>
-<body class="bg-gray-100 min-h-screen text-gray-900">
+		<link rel="stylesheet" href="/assets/js/ckeditor5/ckeditor5.css">
+		<script type="importmap">
+			{
+			            "imports": {
+			                "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
+			                "ckeditor5/": "/assets/js/ckeditor5/"
+			            }
+			        }
+		</script>
+		{% block head %}{% endblock %}
+	</head>
+	<body class="bg-gray-100 min-h-screen text-gray-900">
 
-<div class="min-h-screen flex">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r hidden md:block">
-        <div class="p-4 border-b">
-            <a href="/{{ base_path|default('') }}admin" class="flex items-center space-x-3">
-                <img src="{{ logo_url|default('/assets/images/logo.svg') }}" alt="{{ organization_name|default('TheatreCMS') }}" class="h-8 w-8">
-                <span class="font-semibold">{{ organization_name|default('TheatreCMS') }}</span>
-            </a>
-        </div>
-        <nav class="p-4">
-            {% set nav_items = [
+		<div
+			class="min-h-screen flex">
+			<!-- Sidebar -->
+			<aside class="w-64 bg-white border-r hidden md:block">
+				<div class="p-4 border-b">
+					<a href="/{{ base_path|default('') }}admin" class="flex items-center space-x-3">
+						<img src="{{ logo_url|default('/assets/images/logo.svg') }}" alt="{{ organization_name|default('TheatreCMS') }}" class="h-8 w-8">
+						<span class="font-semibold">{{ organization_name|default('TheatreCMS') }}</span>
+					</a>
+				</div>
+				<nav class="p-4">
+					{% set nav_items = [
                 { label: 'Dashboard', path: 'admin.dashboard', url: base_path ~ 'admin' },
                 { label: 'Seasons', path: 'admin.seasons', url: base_path ~ 'admin/seasons' },
                 { label: 'Productions', path: 'admin.productions', url: base_path ~ 'admin/productions' },
@@ -61,92 +68,101 @@
                 { label: 'Settings', path: 'admin.settings', url: base_path ~ 'admin/settings' }
             ] %}
 
-            {% for item in nav_items %}
-                {# Simple active detection: prefer `current_route` (route name) then `current_path` (request path) #}
-                {% set is_active = false %}
-                {% if current_route is defined and current_route is not empty %}
-                    {% if current_route == item.path %}
-                        {% set is_active = true %}
-                    {% endif %}
-                {% elseif current_path is defined %}
-                    {% if current_path starts with item.url %}
-                        {% set is_active = true %}
-                    {% endif %}
-                {% endif %}
+					{% for item in nav_items %}
+						{# Simple active detection: prefer `current_route` (route name) then `current_path` (request path) #}
+						{% set is_active = false %}
+						{% if current_route is defined and current_route is not empty %}
+							{% if current_route == item.path %}
+								{% set is_active = true %}
+							{% endif %}
+						{% elseif current_path is defined %}
+							{% if current_path starts with item.url %}
+								{% set is_active = true %}
+							{% endif %}
+						{% endif %}
 
-                <a href="/{{ item.url|trim('/') }}" class="block rounded-md px-3 py-2 mb-1 text-sm font-medium {% if is_active %}bg-blue-50 text-blue-600{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
-                    {{ item.label }}
-                </a>
-            {% endfor %}
-        </nav>
-    </aside>
+						<a href="/{{ item.url|trim('/') }}" class="block rounded-md px-3 py-2 mb-1 text-sm font-medium {% if is_active %}bg-blue-50 text-blue-600{% else %}text-gray-700 hover:bg-gray-50{% endif %}">
+							{{ item.label }}
+						</a>
+					{% endfor %}
+				</nav>
+			</aside>
 
-    <!-- Main content area -->
-    <div class="flex-1">
-        <!-- Top navigation (mobile + desktop) -->
-        <header class="bg-white border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16 items-center">
-                    <div class="flex items-center">
-                        <button id="sidebarToggle" class="md:hidden mr-3 px-2 py-1 rounded bg-gray-100">
-                            Menu
-                        </button>
-                        <a href="/{{ base_path|default('') }}admin" class="text-lg font-semibold">{{ organization_name|default('TheatreCMS') }}</a>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="text-sm text-gray-600">Signed in as <strong>{{ current_user.name|default('Admin') }}</strong></div>
-                        <a href="/{{ base_path|default('') }}admin/logout" class="text-sm text-red-600">Logout</a>
-                    </div>
-                </div>
-            </div>
-        </header>
+			<!-- Main content area -->
+			<div
+				class="flex-1">
+				<!-- Top navigation (mobile + desktop) -->
+				<header class="bg-white border-b">
+					<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+						<div class="flex justify-between h-16 items-center">
+							<div class="flex items-center">
+								<button id="sidebarToggle" class="md:hidden mr-3 px-2 py-1 rounded bg-gray-100">
+									Menu
+								</button>
+								<a href="/{{ base_path|default('') }}admin" class="text-lg font-semibold">{{ organization_name|default('TheatreCMS') }}</a>
+							</div>
+							<div class="flex items-center space-x-4">
+								<div class="text-sm text-gray-600">Signed in as
+									<strong>{{ current_user.name|default('Admin') }}</strong>
+								</div>
+								<a href="/{{ base_path|default('') }}admin/logout" class="text-sm text-red-600">Logout</a>
+							</div>
+						</div>
+					</div>
+				</header>
 
-        <main class="p-6 max-w-7xl mx-auto">
-            {# Flash messages #}
-            <div id="flash-messages">
-                {% for type, messages in flash|default({}) %}
-                    {% for message in messages %}
-                        {% set bg = 'bg-green-50 text-green-800 border-green-200' %}
-                        {% if type == 'error' or type == 'danger' %}
-                            {% set bg = 'bg-red-50 text-red-800 border-red-200' %}
-                        {% elseif type == 'warning' %}
-                            {% set bg = 'bg-yellow-50 text-yellow-800 border-yellow-200' %}
-                        {% endif %}
-                        <div class="mb-4 border-l-4 p-3 {{ bg }} rounded">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endfor %}
-            </div>
+				<main
+					class="p-6 max-w-7xl mx-auto">
+					{# Flash messages #}
+					<div id="flash-messages">
+						{% for type, messages in flash|default({}) %}
+							{% for message in messages %}
+								{% set bg = 'bg-green-50 text-green-800 border-green-200' %}
+								{% if type == 'error' or type == 'danger' %}
+									{% set bg = 'bg-red-50 text-red-800 border-red-200' %}
+								{% elseif type == 'warning' %}
+									{% set bg = 'bg-yellow-50 text-yellow-800 border-yellow-200' %}
+								{% endif %}
+								<div class="mb-4 border-l-4 p-3 {{ bg }} rounded">
+									{{ message }}
+								</div>
+							{% endfor %}
+						{% endfor %}
+					</div>
 
-            {# Page content block #}
-            <div class="bg-white shadow-sm rounded p-6">
-                {% block content %}{% endblock %}
-            </div>
-        </main>
+					{# Page content block #}
+					<div class="bg-white shadow-sm rounded p-6"> {% block content %}{% endblock %}
+						</div>
+					</main>
 
-        {% block footer %}
-            <footer class="text-center p-4 text-sm text-gray-500">
-                &copy; {{ "now"|date('Y') }} TheatreCMS. All rights reserved.
-            </footer>
-        {% endblock %}
-    </div>
-</div>
+					{% block footer %}
+						<footer class="text-center p-4 text-sm text-gray-500">
+							&copy;
+							{{ "now"|date('Y') }}
+							TheatreCMS. All rights reserved.
+						</footer>
+					{% endblock %}
+				</div>
+			</div>
 
-{# Small script to toggle sidebar on mobile #}
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var toggle = document.getElementById('sidebarToggle');
-        if (!toggle) return;
-        toggle.addEventListener('click', function () {
-            var aside = document.querySelector('aside');
-            if (!aside) return;
-            aside.classList.toggle('hidden');
-        });
-    });
-</script>
+			{# Small script to toggle sidebar on mobile #}
+			<script>
+				document.addEventListener('DOMContentLoaded', function () {
+var toggle = document.getElementById('sidebarToggle');
+if (! toggle) 
+return;
 
-{% block scripts %}{% endblock %}
+toggle.addEventListener('click', function () {
+var aside = document.querySelector('aside');
+if (! aside) 
+return;
 
-</body>
-</html>
+aside.classList.toggle('hidden');
+});
+});
+			</script>
+
+			{% block scripts %}{% endblock %}
+
+		</body>
+	</html>
