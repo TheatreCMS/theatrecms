@@ -20,6 +20,7 @@
                 <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input type="text" name="title" id="title" maxlength="255"
                        value="{{ event.title }}"
+                       placeholder="{{ event.production ? event.production.name : '' }}"
                        class="w-full rounded-md border-gray-300 shadow-sm">
             </div>
 
