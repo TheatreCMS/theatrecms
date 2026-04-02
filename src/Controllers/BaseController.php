@@ -15,11 +15,13 @@ use TheatreCMS\Repositories\SponsorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use Slim\Views\Twig;
 
 class BaseController
 {
     protected EntityManagerInterface $entityManager;
     protected PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository $repository;
+    protected Twig $twig;
 
     public function repository(): PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository
     {

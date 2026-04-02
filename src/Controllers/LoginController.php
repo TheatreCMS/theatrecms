@@ -20,7 +20,6 @@ use Twig\Error\SyntaxError;
 
 class LoginController extends BaseController
 {
-    private Twig $twig;
     private Auth $auth;
 
     public function __construct(UserRepository $repository, Twig $twig, Auth $auth)

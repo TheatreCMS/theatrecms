@@ -1,107 +1,16 @@
 <?php
 
-
 use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
-use TheatreCMS\Repositories\PersonRepository;
-use Psr\Container\ContainerInterface;
-use Psr\Http\Message\ResponseInterface as Response;
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Views\Twig;
-
-/**
- * The works route group
- *
- * @var ContainerInterface $container
- */
 
 if (isset($app)) {
     $app->group('/admin/works', function ($group) {
-        $container = $group->getContainer();
-
-        $group->post('/create', function (Request $request, Response $response) use ($container) {
-            /** @var WorksController $controller */
-            $controller = $container->get(WorksController::class);
-            /** @var Twig $twig */
-            $twig = $container->get(Twig::class);
-
-            $result = $controller->store($request, $response);
-
-            if ($request->getHeaderLine('HX-Request')) {
-                $success = $result->getStatusCode() < 400;
-                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
-                    'type'    => $success ? 'success' : 'error',
-                    'message' => $success ? 'Work created successfully.' : 'Unable to create work. Please check your input.',
-                ]));
-                return $response;
-            }
-
-            return $result;
-        });
-
-        $group->post('/edit', function (Request $request, Response $response) use ($container) {
-            /** @var WorksController $controller */
-            $controller = $container->get(WorksController::class);
-            /** @var Twig $twig */
-            $twig = $container->get(Twig::class);
-
-            $result = $controller->update($request, $response);
-
-            if ($request->getHeaderLine('HX-Request')) {
-                $success = $result->getStatusCode() < 400;
-                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
-                    'type'    => $success ? 'success' : 'error',
-                    'message' => $success ? 'Work saved successfully.' : 'Unable to save work. Please check your input.',
-                ]));
-                return $response;
-            }
-
-            return $result;
-        });
-
-        $group->get('/create', function (Request $request, Response $response) use ($container) {
-            /** @var Twig $twig */
-            $twig = $container->get(Twig::class);
-            $personRepo = $container->get(PersonRepository::class);
-
-            return $twig->render($response, 'admin/works/create.html.twig', [
-                'people' => $personRepo->fetchAll(),
-            ]);
-        });
-
-        $group->get('/edit/{id}', function (Request $request, Response $response, array $args) use ($container) {
-            /** @var Twig $twig */
-            $twig = $container->get(Twig::class);
-            $worksRepository = $container->get(WorksController::class)->repository();
-            $personRepo = $container->get(PersonRepository::class);
-
-            $work = $worksRepository->fetch($args['id']);
-            $creatorEntries = [];
-            if ($work) {
-                foreach ($work->getWorkCreators() as $wc) {
-                    $creatorEntries[] = [
-                        'personId' => $wc->person()->getId(),
-                        'role' => $wc->role(),
-                    ];
-                }
-            }
-
-            return $twig->render($response, 'admin/works/edit.html.twig', [
-                'work' => $work,
-                'people' => $personRepo->fetchAll(),
-                'creatorEntries' => $creatorEntries,
-            ]);
-        });
-
-        $group->get('', function (Request $request, Response $response) use ($container) {
-            /** @var Twig $twig */
-            $twig = $container->get(Twig::class);
-            $worksRepository = $container->get(WorksController::class)->repository();
-
-            return $twig->render($response, 'admin/works/index.html.twig', [
-                'works' => $worksRepository->fetchAll(),
-            ]);
-        });
-    })->add(new RequireTwigMiddleware($container))->add($container->get(AuthMiddleware::class));
+        $group->post('/create',   [WorksController::class, 'store']);
+        $group->get('/create',    [WorksController::class, 'create']);
+        $group->post('/edit',     [WorksController::class, 'update']);
+        $group->get('/edit/{id}', [WorksController::class, 'edit']);
+        $group->get('',           [WorksController::class, 'index']);
+    })->add(new RequireTwigMiddleware($container))
+      ->add($container->get(AuthMiddleware::class));
 }

@@ -10,11 +10,17 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Repositories\WorkRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
+use Slim\Views\Twig;
 use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
@@ -27,17 +33,92 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
-    public function __construct(ProductionRepository $repository, EntityManagerInterface $em)
-    {
+    private SeasonRepository $seasonRepo;
+    private PersonRepository $personRepo;
+    private WorkRepository $worksRepo;
+    private SponsorRepository $sponsorRepo;
+    private VenueRepository $venueRepo;
+
+    public function __construct(
+        ProductionRepository $repository,
+        EntityManagerInterface $em,
+        Twig $twig,
+        SeasonRepository $seasonRepo,
+        PersonRepository $personRepo,
+        WorkRepository $worksRepo,
+        SponsorRepository $sponsorRepo,
+        VenueRepository $venueRepo
+    ) {
         $this->repository    = $repository;
         $this->entityManager = $em;
+        $this->twig          = $twig;
+        $this->seasonRepo    = $seasonRepo;
+        $this->personRepo    = $personRepo;
+        $this->worksRepo     = $worksRepo;
+        $this->sponsorRepo   = $sponsorRepo;
+        $this->venueRepo     = $venueRepo;
     }
 
-    public function store(Request $request, Response $response): Response
+    public function index(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/productions/index.html.twig', [
+            'productions' => $this->repository->fetchAll(),
+        ]);
+    }
+
+    public function create(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/productions/create.html.twig', [
+            'seasons'  => $this->seasonRepo->fetchAll(),
+            'people'   => $this->personRepo->fetchAll(),
+            'works'    => $this->worksRepo->fetchAll(),
+            'sponsors' => $this->sponsorRepo->fetchAll(),
+            'venues'   => $this->venueRepo->fetchAll(),
+        ]);
+    }
+
+    public function edit(Request $request, Response $response, array $args = []): Response
+    {
+        /** @var \TheatreCMS\Models\Production $production */
+        $production = $this->repository->fetch($args['id']);
+
+        return $this->twig->render($response, 'admin/productions/edit.html.twig', [
+            'production' => $production,
+            'seasons'    => $this->seasonRepo->fetchAll(),
+            'people'     => $this->personRepo->fetchAll(),
+            'works'      => $this->worksRepo->fetchAll(),
+            'creatives'  => $production->getCreativeTeam()->toArray(),
+            'performers' => $production->getPerformers()->toArray(),
+            'sponsors'   => $this->sponsorRepo->fetchAll(),
+            'venues'     => $this->venueRepo->fetchAll(),
+        ]);
+    }
+
+    public function destroy(Request $request, Response $response, array $args = []): Response
+    {
+        $production = $this->repository->fetch($args['id']);
+        $this->repository->delete($production);
+
+        $data = ['productions' => $this->repository->fetchAll()];
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/productions/_table.html.twig', $data);
+        }
+
+        return $response->withHeader('Location', '/admin/productions');
+    }
+
+    public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
         if (empty($data)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to create production. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
@@ -52,14 +133,27 @@ class ProductionController extends BaseController
         $this->syncSponsorships($production, $data['sponsorshipSponsorIds']);
         $this->entityManager->flush();
 
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Production created successfully.',
+            ]);
+        }
+
         return $response->withHeader('Location', '/admin/productions');
     }
 
-    public function update(Request $request, Response $response): Response
+    public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
         if (empty($data)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save production. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
@@ -89,6 +183,12 @@ class ProductionController extends BaseController
         $season = $this->entityManager->getRepository(Season::class)->find($data['seasonId']);
         $venue = $this->entityManager->getRepository(Venue::class)->find($data['venueId']);
         if (!$venue) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save production. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
         $worksRepository = $this->entityManager->getRepository(Work::class);
@@ -103,6 +203,12 @@ class ProductionController extends BaseController
             $opening = new \DateTime($data['opening']);
             $closing = new \DateTime($data['closing']);
         } catch (\Exception $e) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save production. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
@@ -196,10 +302,17 @@ class ProductionController extends BaseController
 
         $this->repository->update($item);
 
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Production saved successfully.',
+            ]);
+        }
+
         return $response->withHeader('Location', '/admin/productions');
     }
 
-    public static function loadValidatorMetadata(ClassMetadata $metadata)
+    public static function loadValidatorMetadata(ClassMetadata $metadata): void
     {
         $metadata->addPropertyConstraint('name', new NotBlank());
         $metadata->addPropertyConstraint('opening', new Date());
@@ -265,7 +378,7 @@ class ProductionController extends BaseController
 
         try {
             $production->saveFeaturedImageFromUpload($poster);
-        } catch (\InvalidArgumentException|\RuntimeException) {
+        } catch (\InvalidArgumentException | \RuntimeException) {
             // Ignore invalid uploads; let other validation flow handle feedback.
         }
     }

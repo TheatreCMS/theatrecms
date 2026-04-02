@@ -6,9 +6,11 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Sponsorship;
 use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Repositories\SponsorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Views\Twig;
 
 /**
  * Class SeasonController
@@ -18,17 +20,76 @@ use Psr\Http\Message\ServerRequestInterface as Request;
  */
 class SeasonController extends BaseController
 {
-    public function __construct(SeasonRepository $repository, EntityManagerInterface $em)
+    private SponsorRepository $sponsorRepo;
+
+    public function __construct(SeasonRepository $repository, EntityManagerInterface $em, Twig $twig, SponsorRepository $sponsorRepo)
     {
         $this->repository    = $repository;
         $this->entityManager = $em;
+        $this->twig          = $twig;
+        $this->sponsorRepo   = $sponsorRepo;
     }
 
-    public function store(Request $request, Response $response): Response
+    public function index(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/seasons/index.html.twig', [
+            'seasons' => $this->repository()->fetchAll(),
+        ]);
+    }
+
+    public function create(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/seasons/create.html.twig', [
+            'sponsors' => $this->sponsorRepo->fetchAll(),
+        ]);
+    }
+
+    public function edit(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/seasons/edit.html.twig', [
+            'season'   => $this->repository()->fetch($args['id']),
+            'sponsors' => $this->sponsorRepo->fetchAll(),
+        ]);
+    }
+
+    public function show(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'seasons/show.html.twig', [
+            'season' => $this->repository()->fetch($args['id']),
+        ]);
+    }
+
+    public function destroy(Request $request, Response $response, array $args = []): Response
+    {
+        $season = $this->repository()->fetch($args['id']);
+        try {
+            if ($season) {
+                $this->repository()->delete($season);
+            }
+        } catch (\Exception $e) {
+            trigger_error("Unable to delete season: {$e->getMessage()}");
+        }
+
+        $data = ['seasons' => $this->repository()->fetchAll()];
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/seasons/_table.html.twig', $data);
+        }
+
+        return $this->twig->render($response, 'admin/seasons/index.html.twig', $data);
+    }
+
+    public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
         if (empty($data)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to create season. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
@@ -36,10 +97,17 @@ class SeasonController extends BaseController
         $this->syncSponsorships($season, $data['sponsorshipSponsorIds'] ?? []);
         $this->entityManager->flush();
 
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Season created successfully.',
+            ]);
+        }
+
         return $response->withHeader('Location', '/admin/seasons');
     }
 
-    public function update(Request $request, Response $response): Response
+    public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
@@ -53,10 +121,17 @@ class SeasonController extends BaseController
 
         $seasonId = $data['seasonId'] ?? null;
 
-        if (!$seasonId)
+        if (!$seasonId) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save season. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
+        }
 
-        try{
+        try {
             $start = new \DateTime($data['startDate']);
             $end   = new \DateTime($data['endDate']);
 
@@ -68,6 +143,13 @@ class SeasonController extends BaseController
             $item->setOverview($data['overview']);
             $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);
             $this->repository()->update($item);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'success',
+                    'message' => 'Season saved successfully.',
+                ]);
+            }
 
             return $response->withHeader('Location', '/admin/seasons');
         } catch (\InvalidArgumentException $e) {

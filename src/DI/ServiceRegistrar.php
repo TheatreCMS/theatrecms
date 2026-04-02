@@ -134,57 +134,76 @@ class ServiceRegistrar
             UsersController::class => static function (ContainerInterface $c): UsersController {
                 return new UsersController(
                     $c->get(UserRepository::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
+                    $c->get(Auth::class)
                 );
             },
             ProductionController::class => static function (ContainerInterface $c): ProductionController {
                 return new ProductionController(
                     $c->get(ProductionRepository::class),
-                    $c->get(EntityManager::class)
+                    $c->get(EntityManager::class),
+                    $c->get(Twig::class),
+                    $c->get(SeasonRepository::class),
+                    $c->get(PersonRepository::class),
+                    $c->get(WorkRepository::class),
+                    $c->get(SponsorRepository::class),
+                    $c->get(VenueRepository::class)
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
                 return new SeasonController(
                     $c->get(SeasonRepository::class),
-                    $c->get(EntityManager::class)
+                    $c->get(EntityManager::class),
+                    $c->get(Twig::class),
+                    $c->get(SponsorRepository::class)
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
                 return new EventController(
                     $c->get(EventRepository::class),
-                    $c->get(EntityManager::class)
+                    $c->get(EntityManager::class),
+                    $c->get(Twig::class),
+                    $c->get(ProductionRepository::class),
+                    $c->get(VenueRepository::class)
                 );
             },
             PostController::class => static function (ContainerInterface $c): PostController {
                 return new PostController(
                     $c->get(PostRepository::class),
-                    $c->get(EntityManager::class)
+                    $c->get(EntityManager::class),
+                    $c->get(Twig::class)
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
                 return new PageController(
                     $c->get(PageRepository::class),
-                    $c->get(EntityManager::class)
+                    $c->get(EntityManager::class),
+                    $c->get(Twig::class)
                 );
             },
             VenueController::class => static function (ContainerInterface $c): VenueController {
                 return new VenueController(
-                    $c->get(VenueRepository::class)
+                    $c->get(VenueRepository::class),
+                    $c->get(Twig::class)
                 );
             },
             PersonController::class => static function (ContainerInterface $c): PersonController {
                 return new PersonController(
-                    $c->get(PersonRepository::class)
+                    $c->get(PersonRepository::class),
+                    $c->get(Twig::class)
                 );
             },
             SponsorController::class => static function (ContainerInterface $c): SponsorController {
                 return new SponsorController(
-                    $c->get(SponsorRepository::class)
+                    $c->get(SponsorRepository::class),
+                    $c->get(Twig::class)
                 );
             },
             WorksController::class => static function (ContainerInterface $c): WorksController {
                 return new WorksController(
-                    $c->get(WorkRepository::class)
+                    $c->get(WorkRepository::class),
+                    $c->get(Twig::class),
+                    $c->get(PersonRepository::class)
                 );
             },
         ];

@@ -3,22 +3,68 @@
 namespace TheatreCMS\Controllers;
 
 use TheatreCMS\Models\Work;
+use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Views\Twig;
 
 class WorksController extends BaseController
 {
-    public function __construct(WorkRepository $repository)
+    private PersonRepository $personRepo;
+
+    public function __construct(WorkRepository $repository, Twig $twig, PersonRepository $personRepo)
     {
         $this->repository = $repository;
+        $this->twig       = $twig;
+        $this->personRepo = $personRepo;
     }
 
-    public function store(Request $request, Response $response): Response
+    public function index(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/works/index.html.twig', [
+            'works' => $this->repository->fetchAll(),
+        ]);
+    }
+
+    public function create(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/works/create.html.twig', [
+            'people' => $this->personRepo->fetchAll(),
+        ]);
+    }
+
+    public function edit(Request $request, Response $response, array $args = []): Response
+    {
+        $work = $this->repository->fetch($args['id']);
+        $creatorEntries = [];
+        if ($work) {
+            foreach ($work->getWorkCreators() as $wc) {
+                $creatorEntries[] = [
+                    'personId' => $wc->person()->getId(),
+                    'role'     => $wc->role(),
+                ];
+            }
+        }
+
+        return $this->twig->render($response, 'admin/works/edit.html.twig', [
+            'work'           => $work,
+            'people'         => $this->personRepo->fetchAll(),
+            'creatorEntries' => $creatorEntries,
+        ]);
+    }
+
+    public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
         if (empty($data)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to create work. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
@@ -28,10 +74,17 @@ class WorksController extends BaseController
 
         $this->repository->create($data);
 
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Work created successfully.',
+            ]);
+        }
+
         return $response->withHeader('Location', '/admin/works');
     }
 
-    public function update(Request $request, Response $response): Response
+    public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
@@ -46,12 +99,24 @@ class WorksController extends BaseController
         $workId = $data['id'] ?? null;
 
         if (!$workId) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save work. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
         $work = $this->repository->fetch(intval($workId));
 
         if (!$work) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Work not found.',
+                ]);
+            }
             return $response->withStatus(404);
         }
 
@@ -59,12 +124,17 @@ class WorksController extends BaseController
             $data['creators'] = $creatorEntries;
         }
 
-        // Help static analyzer: create a typed local variable
         /** @var Work $workEntity */
         $workEntity = $work;
 
-        // Update the entity using repository helper
         $this->repository->updateFromArgs($workEntity, $data);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Work saved successfully.',
+            ]);
+        }
 
         return $response->withHeader('Location', '/admin/works');
     }

@@ -5,23 +5,59 @@ namespace TheatreCMS\Controllers;
 use TheatreCMS\Repositories\PersonRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Views\Twig;
 
 class PersonController extends BaseController
 {
-    public function __construct(PersonRepository $repository)
+    public function __construct(PersonRepository $repository, Twig $twig)
     {
         $this->repository = $repository;
+        $this->twig       = $twig;
     }
 
-    public function store(Request $request, Response $response): Response
+    public function index(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/people/index.html.twig', [
+            'people' => $this->repository->fetchAll(),
+        ]);
+    }
+
+    public function create(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/people/create.html.twig');
+    }
+
+    public function edit(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/people/edit.html.twig', [
+            'person' => $this->repository->fetch($args['id']),
+        ]);
+    }
+
+    public function destroy(Request $request, Response $response, array $args = []): Response
+    {
+        $person = $this->repository->fetch(intval($args['id']));
+        if ($person) {
+            $this->repository->delete($person);
+        }
+
+        return $response->withHeader('Location', '/admin/people');
+    }
+
+    public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
         if (empty($data)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to create person. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
-        // Ensure required fields
         $data = $this->parseArgs($data, [
             'firstName' => null,
             'lastName'  => null,
@@ -31,14 +67,27 @@ class PersonController extends BaseController
 
         $this->repository->create($data);
 
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Person created successfully.',
+            ]);
+        }
+
         return $response->withHeader('Location', '/admin/people');
     }
 
-    public function update(Request $request, Response $response): Response
+    public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
 
         if (empty($data)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save person. Please check your input.',
+                ]);
+            }
             return $response->withStatus(400);
         }
 
@@ -53,6 +102,12 @@ class PersonController extends BaseController
         $person = $this->repository->fetch(intval($data['personId']));
 
         if (is_null($person)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Person not found.',
+                ]);
+            }
             return $response->withStatus(404);
         }
 
@@ -63,7 +118,13 @@ class PersonController extends BaseController
 
         $this->repository->update($person);
 
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'success',
+                'message' => 'Person saved successfully.',
+            ]);
+        }
+
         return $response->withHeader('Location', '/admin/people');
     }
 }
-
