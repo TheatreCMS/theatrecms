@@ -12,7 +12,25 @@ if (isset($app)) {
     $app->group('/admin/events', function ($group) {
         $container = $group->getContainer();
 
-        $group->post('/create', [EventController::class, 'store']);
+        $group->post('/create', function (Request $request, Response $response) use ($container) {
+            /** @var EventController $controller */
+            $controller = $container->get(EventController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->store($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Event created successfully.' : 'Unable to create event. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
@@ -22,7 +40,25 @@ if (isset($app)) {
             return $twig->render($response, 'admin/events/create.html.twig', ['productions' => $productions, 'venues' => $venues]);
         })->add(new RequireTwigMiddleware($container));
 
-        $group->post('/edit', [EventController::class, 'update']);
+        $group->post('/edit', function (Request $request, Response $response) use ($container) {
+            /** @var EventController $controller */
+            $controller = $container->get(EventController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->update($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Event saved successfully.' : 'Unable to save event. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
         $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
             $repository = $container->get(EventRepository::class);
             /** @var EventRepository $repository */

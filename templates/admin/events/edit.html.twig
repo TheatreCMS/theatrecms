@@ -11,7 +11,8 @@
         <p class="text-gray-600">Update the details for the event.</p>
     </div>
 
-    <form action="/admin/events/edit" method="POST" class="space-y-6">
+    <form action="/admin/events/edit" method="POST" class="space-y-6"
+          hx-post="/admin/events/edit" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="eventId" value="{{ event.id }}" />
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 

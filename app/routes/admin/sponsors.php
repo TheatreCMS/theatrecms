@@ -20,8 +20,45 @@ if (isset($app)) {
     $app->group('/admin/sponsors', function ($group) {
         $container = $group->getContainer();
 
-        $group->post('/create', [SponsorController::class, 'store']);
-        $group->post('/edit', [SponsorController::class, 'update']);
+        $group->post('/create', function (Request $request, Response $response) use ($container) {
+            /** @var SponsorController $controller */
+            $controller = $container->get(SponsorController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->store($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Sponsor created successfully.' : 'Unable to create sponsor. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
+
+        $group->post('/edit', function (Request $request, Response $response) use ($container) {
+            /** @var SponsorController $controller */
+            $controller = $container->get(SponsorController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->update($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Sponsor saved successfully.' : 'Unable to save sponsor. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
 
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */

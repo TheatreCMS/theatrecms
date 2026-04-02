@@ -14,7 +14,8 @@
         </div>
     </div>
 
-    <form action="/admin/users/create" method="post" class="bg-white shadow-sm rounded p-6 space-y-6" novalidate>
+    <form action="/admin/users/create" method="post" class="bg-white shadow-sm rounded p-6 space-y-6" novalidate
+          hx-post="/admin/users/create" hx-target="#flash-messages" hx-swap="innerHTML">
         {% if csrf_token is defined %}
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         {% endif %}

@@ -7,7 +7,8 @@
         <h1 class="text-2xl font-bold text-gray-800">Edit Person</h1>
     </div>
 
-    <form action="/admin/people/edit" method="POST" class="space-y-6">
+    <form action="/admin/people/edit" method="POST" class="space-y-6"
+          hx-post="/admin/people/edit" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="personId" value="{{ person.id }}">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

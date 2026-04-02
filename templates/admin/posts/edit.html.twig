@@ -8,7 +8,8 @@
         <p class="text-gray-600">Update the title, status, or content of the post.</p>
     </div>
 
-    <form action="/admin/posts/edit" method="POST" class="space-y-6">
+    <form action="/admin/posts/edit" method="POST" class="space-y-6"
+          hx-post="/admin/posts/edit" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="postId" value="{{ post.id }}">
 
         <div class="grid grid-cols-1 gap-6">

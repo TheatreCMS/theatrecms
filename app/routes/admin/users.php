@@ -18,8 +18,55 @@ use Slim\Views\Twig;
  */
 if (isset($app)) {
     $app->group('/admin/users', function ($group) use ($container){
-        $group->post('/create', [UsersController::class, 'store']);
-        $group->post('/edit', [UsersController::class, 'update']);
+        $group->post('/create', function (Request $request, Response $response) use ($container) {
+            $isHtmx = (bool) $request->getHeaderLine('HX-Request');
+            /** @var UsersController $controller */
+            $controller = $container->get(UsersController::class);
+
+            if (!$isHtmx) {
+                return $controller->store($request, $response);
+            }
+
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->store($request, $response);
+            $success = $result->getStatusCode() < 400;
+
+            $stream = fopen('php://temp', 'r+');
+            fwrite($stream, $twig->fetch('admin/partials/_alert.html.twig', [
+                'type'    => $success ? 'success' : 'error',
+                'message' => $success ? 'User created successfully.' : 'Unable to create user. Please check your input.',
+            ]));
+            rewind($stream);
+
+            return $response->withBody(new \Slim\Psr7\Stream($stream));
+        });
+
+        $group->post('/edit', function (Request $request, Response $response) use ($container) {
+            $isHtmx = (bool) $request->getHeaderLine('HX-Request');
+            /** @var UsersController $controller */
+            $controller = $container->get(UsersController::class);
+
+            if (!$isHtmx) {
+                return $controller->update($request, $response);
+            }
+
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->update($request, $response);
+            $success = $result->getStatusCode() < 400;
+
+            $stream = fopen('php://temp', 'r+');
+            fwrite($stream, $twig->fetch('admin/partials/_alert.html.twig', [
+                'type'    => $success ? 'success' : 'error',
+                'message' => $success ? 'User saved successfully.' : 'Unable to save user. Please check your input.',
+            ]));
+            rewind($stream);
+
+            return $response->withBody(new \Slim\Psr7\Stream($stream));
+        });
         $group->delete('/{id}', function (Request $request, Response $response, array $args) use ($container) {
             /** @var Auth $auth */
             $auth = $container->get(Auth::class);

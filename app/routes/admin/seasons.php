@@ -17,7 +17,25 @@ if (isset($app)) {
     $app->group('/admin/seasons', function ($group) {
         $container = $group->getContainer();
 
-        $group->post('/create', [SeasonController::class, 'store']);
+        $group->post('/create', function (Request $request, Response $response) use ($container) {
+            /** @var SeasonController $controller */
+            $controller = $container->get(SeasonController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->store($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Season created successfully.' : 'Unable to create season. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             $sponsorsRepository = $container->get(SponsorRepository::class);
             /** @var Twig $twig */
@@ -28,7 +46,25 @@ if (isset($app)) {
             ]);
         })->add(new RequireTwigMiddleware($container));
 
-        $group->post('/edit', [SeasonController::class, 'update']);
+        $group->post('/edit', function (Request $request, Response $response) use ($container) {
+            /** @var SeasonController $controller */
+            $controller = $container->get(SeasonController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->update($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Season saved successfully.' : 'Unable to save season. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
         $group->get('/edit/{id}', function (Request $request, Response $response) use ($container) {
             $repository = $container->get(SeasonRepository::class);
             $sponsorsRepository = $container->get(SponsorRepository::class);

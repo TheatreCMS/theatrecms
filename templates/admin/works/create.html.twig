@@ -32,7 +32,8 @@
         </div>
     {% endif %}
 
-    <form action="/{{ base_path|default('') }}admin/works/create" method="POST" class="space-y-6">
+    <form action="/{{ base_path|default('') }}admin/works/create" method="POST" class="space-y-6"
+          hx-post="/{{ base_path|default('') }}admin/works/create" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
                 <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title <span class="text-red-500">*</span></label>
@@ -236,11 +237,17 @@
             setupDynamicRows('creator');
 
             form.addEventListener('submit', function (e) {
+                e.preventDefault();
                 if (!titleInput.value.trim()) {
-                    e.preventDefault();
                     alert('Please provide a title for the work.');
                     titleInput.focus();
+                    return;
                 }
+                form.dispatchEvent(new Event('htmxSubmit'));
+            });
+
+            form.addEventListener('htmx:afterRequest', function() {
+                document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
         });
     </script>

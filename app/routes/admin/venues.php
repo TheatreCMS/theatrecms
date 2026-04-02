@@ -19,8 +19,45 @@ if (isset($app)) {
     $app->group('/admin/venues', function ($group) {
         $container = $group->getContainer();
 
-        $group->post('/create', [VenueController::class, 'store']);
-        $group->post('/edit', [VenueController::class, 'update']);
+        $group->post('/create', function (Request $request, Response $response) use ($container) {
+            /** @var VenueController $controller */
+            $controller = $container->get(VenueController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->store($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Venue created successfully.' : 'Unable to create venue. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
+
+        $group->post('/edit', function (Request $request, Response $response) use ($container) {
+            /** @var VenueController $controller */
+            $controller = $container->get(VenueController::class);
+            /** @var Twig $twig */
+            $twig = $container->get(Twig::class);
+
+            $result = $controller->update($request, $response);
+
+            if ($request->getHeaderLine('HX-Request')) {
+                $success = $result->getStatusCode() < 400;
+                $response->getBody()->write($twig->fetch('admin/partials/_alert.html.twig', [
+                    'type'    => $success ? 'success' : 'error',
+                    'message' => $success ? 'Venue saved successfully.' : 'Unable to save venue. Please check your input.',
+                ]));
+                return $response;
+            }
+
+            return $result;
+        });
 
         $group->get('/create', function (Request $request, Response $response) use ($container) {
             /** @var Twig $twig */

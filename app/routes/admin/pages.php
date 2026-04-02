@@ -23,7 +23,7 @@ if (isset($app)) {
 
             if (empty($data)) {
                 if ($isHtmx) {
-                    return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                    return $twig->render($response, 'admin/partials/_alert.html.twig', [
                         'type' => 'error',
                         'message' => 'No data received.',
                     ]);
@@ -38,7 +38,7 @@ if (isset($app)) {
                 ]);
             } catch (\InvalidArgumentException $e) {
                 if ($isHtmx) {
-                    return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                    return $twig->render($response, 'admin/partials/_alert.html.twig', [
                         'type' => 'error',
                         'message' => $e->getMessage(),
                     ]);
@@ -48,7 +48,7 @@ if (isset($app)) {
             }
 
             if ($isHtmx) {
-                return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                return $twig->render($response, 'admin/partials/_alert.html.twig', [
                     'type' => 'success',
                     'message' => 'Page created successfully.',
                 ]);
@@ -75,7 +75,7 @@ if (isset($app)) {
 
             if (empty($data)) {
                 if ($isHtmx) {
-                    return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                    return $twig->render($response, 'admin/partials/_alert.html.twig', [
                         'type' => 'error',
                         'message' => 'No data received.',
                     ]);
@@ -92,7 +92,7 @@ if (isset($app)) {
 
             if (!$page) {
                 if ($isHtmx) {
-                    return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                    return $twig->render($response, 'admin/partials/_alert.html.twig', [
                         'type' => 'error',
                         'message' => 'Page not found.',
                     ]);
@@ -102,7 +102,7 @@ if (isset($app)) {
 
             if (empty($title) || empty($content)) {
                 if ($isHtmx) {
-                    return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                    return $twig->render($response, 'admin/partials/_alert.html.twig', [
                         'type' => 'error',
                         'message' => 'Title and content are required.',
                     ]);
@@ -121,7 +121,7 @@ if (isset($app)) {
             $repository->update($page);
 
             if ($isHtmx) {
-                return $twig->render($response, 'admin/pages/_alert.html.twig', [
+                return $twig->render($response, 'admin/partials/_alert.html.twig', [
                     'type' => 'success',
                     'message' => 'Page saved successfully.',
                 ]);

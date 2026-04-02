@@ -32,7 +32,8 @@
         </div>
     {% endif %}
 
-    <form action="/{{ base_path|default('') }}admin/works/edit" method="POST" class="space-y-6">
+    <form action="/{{ base_path|default('') }}admin/works/edit" method="POST" class="space-y-6"
+          hx-post="/{{ base_path|default('') }}admin/works/edit" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
         <input type="hidden" name="id" value="{{ work.id }}">
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -262,11 +263,17 @@
                 setupDynamicRows('creator');
 
                 form.addEventListener('submit', function (e) {
+                    e.preventDefault();
                     if (!titleInput.value.trim()) {
-                        e.preventDefault();
                         alert('Please provide a title for the work.');
                         titleInput.focus();
+                        return;
                     }
+                    form.dispatchEvent(new Event('htmxSubmit'));
+                });
+
+                form.addEventListener('htmx:afterRequest', function() {
+                    document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 });
             });
         </script>
