@@ -1,0 +1,136 @@
+<section id="production-events-table" class="mt-10">
+    <div class="mb-4">
+        <h2 class="text-xl font-bold text-gray-800">Performances</h2>
+        <p class="text-gray-600 text-sm">Manage scheduled performances for this production.</p>
+    </div>
+
+    {% if events is not empty %}
+        <div class="relative overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-md mb-6">
+            <table class="w-full text-sm text-left text-gray-700">
+                <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+                <tr>
+                    <th class="px-4 py-3 font-medium">Date &amp; Time</th>
+                    <th class="px-4 py-3 font-medium">Venue</th>
+                    <th class="px-4 py-3 font-medium">Status</th>
+                    <th class="px-4 py-3 font-medium text-right">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for event in events %}
+                    <tr class="bg-white border-b border-gray-100">
+                        <td class="px-4 py-3 whitespace-nowrap">{{ event.startsAt|date('M j, Y g:i A') }}</td>
+                        <td class="px-4 py-3">
+                            {% if event.venue %}
+                                {{ event.venue.name }}
+                            {% elseif production is defined and production.venue %}
+                                {{ production.venue.name }} <span class="text-gray-400 text-xs">(production default)</span>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 capitalize">{{ event.status }}</td>
+                        <td class="px-4 py-3 text-right">
+                            <button type="button"
+                                    hx-delete="/admin/events/{{ event.id }}"
+                                    hx-swap="none"
+                                    hx-confirm="Delete this performance?"
+                                    class="perf-delete font-medium text-red-600 hover:underline text-sm">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-sm text-gray-500 mb-6">No performances have been added yet.</p>
+    {% endif %}
+
+    <div class="p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+        <h3 class="text-base font-semibold text-gray-900 mb-4">Add Performance</h3>
+        <form id="add-performance-form"
+              hx-post="/admin/events/create"
+              hx-target="#flash-messages"
+              hx-swap="innerHTML"
+              class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <input type="hidden" name="productionId" value="{{ productionId }}">
+
+            <div>
+                <label for="perf-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" id="perf-title"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="e.g. Opening Night">
+            </div>
+
+            <div>
+                <label for="perf-starts-at" class="block text-sm font-medium text-gray-700 mb-1">Date &amp; Time <span class="text-red-500">*</span></label>
+                <input type="datetime-local" name="startsAt" id="perf-starts-at" required
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <label for="perf-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" id="perf-status"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="scheduled">Scheduled</option>
+                    <option value="cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="perf-venue" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                <select name="venueId" id="perf-venue"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">— Default —</option>
+                    {% for venue in venues %}
+                        <option value="{{ venue.id }}">{{ venue.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="perf-ticket-url" class="block text-sm font-medium text-gray-700 mb-1">Ticket URL</label>
+                <input type="url" name="ticketUrl" id="perf-ticket-url"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="https://...">
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="perf-notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea name="notes" id="perf-notes" rows="2"
+                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                          placeholder="Any notes about this performance..."></textarea>
+            </div>
+
+            <div class="md:col-span-2 flex justify-end">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Add Performance
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById('add-performance-form');
+            if (form) {
+                form.addEventListener('htmx:afterRequest', function (e) {
+                    if (e.detail.successful) {
+                        window.location.reload();
+                    }
+                });
+            }
+
+            document.querySelectorAll('.perf-delete').forEach(function (btn) {
+                btn.addEventListener('htmx:afterRequest', function (e) {
+                    if (e.detail.successful) {
+                        window.location.reload();
+                    }
+                });
+            });
+        })();
+    </script>
+</section>

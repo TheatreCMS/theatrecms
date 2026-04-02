@@ -70,6 +70,8 @@ class EventController extends BaseController
             return $response->withStatus(400);
         }
 
+        $data['slug'] = '';
+
         try {
             $this->repository->create($data);
         } catch (\InvalidArgumentException $e) {

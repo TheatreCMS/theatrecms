@@ -10,6 +10,7 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
@@ -38,6 +39,7 @@ class ProductionController extends BaseController
     private WorkRepository $worksRepo;
     private SponsorRepository $sponsorRepo;
     private VenueRepository $venueRepo;
+    private EventRepository $eventRepo;
 
     public function __construct(
         ProductionRepository $repository,
@@ -47,7 +49,8 @@ class ProductionController extends BaseController
         PersonRepository $personRepo,
         WorkRepository $worksRepo,
         SponsorRepository $sponsorRepo,
-        VenueRepository $venueRepo
+        VenueRepository $venueRepo,
+        EventRepository $eventRepo
     ) {
         $this->repository    = $repository;
         $this->entityManager = $em;
@@ -57,6 +60,7 @@ class ProductionController extends BaseController
         $this->worksRepo     = $worksRepo;
         $this->sponsorRepo   = $sponsorRepo;
         $this->venueRepo     = $venueRepo;
+        $this->eventRepo     = $eventRepo;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -91,6 +95,7 @@ class ProductionController extends BaseController
             'performers' => $production->getPerformers()->toArray(),
             'sponsors'   => $this->sponsorRepo->fetchAll(),
             'venues'     => $this->venueRepo->fetchAll(),
+            'events'     => $this->eventRepo->fetchByProduction((int) $args['id']),
         ]);
     }
 

@@ -539,6 +539,13 @@
         </div>
     </form>
 
+    {% include 'admin/productions/_events.html.twig' with {
+        events: events|default([]),
+        venues: venues,
+        productionId: production.id,
+        production: production
+    } %}
+
     {% endblock %}
     {% block scripts %}
         <script type="module">
@@ -550,7 +557,7 @@
                 const seasonInput = document.getElementById('seasonId');
                 const descriptionField = document.getElementById('description');
 
-                const editorData = {{ editorDescription is not null ? editorDescription|json_encode|raw : 'null' }};
+                const editorData = {{ editorDescription is not null ? editorDescription|raw : 'null' }};
 
                 const setupDynamicRows = (namespace) => {
                     const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);

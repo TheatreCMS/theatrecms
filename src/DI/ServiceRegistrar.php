@@ -147,7 +147,8 @@ class ServiceRegistrar
                     $c->get(PersonRepository::class),
                     $c->get(WorkRepository::class),
                     $c->get(SponsorRepository::class),
-                    $c->get(VenueRepository::class)
+                    $c->get(VenueRepository::class),
+                    $c->get(EventRepository::class)
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {

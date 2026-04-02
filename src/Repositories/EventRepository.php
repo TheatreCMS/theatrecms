@@ -67,9 +67,50 @@ class EventRepository extends BaseRepository
             $event->setTitle($args['title']);
         }
 
+        $event->setSlug($this->generateEventSlug($event));
+
         $this->em->persist($event);
         $this->em->flush();
 
         return $event;
+    }
+
+    public function update($event): void
+    {
+        if (empty($event->getSlug())) {
+            $event->setSlug($this->generateEventSlug($event));
+        }
+
+        parent::update($event);
+    }
+
+    /**
+     * @return Event[]
+     */
+    public function fetchByProduction(int $productionId): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('e')
+            ->from(Event::class, 'e')
+            ->where('e.production = :productionId')
+            ->setParameter('productionId', $productionId)
+            ->orderBy('e.startsAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    private function generateEventSlug(Event $event): string
+    {
+        $date = $event->getStartsAt()->format('Y-m-d');
+
+        if (!empty($event->getTitle())) {
+            $base = $date . '-' . $event->getTitle();
+        } elseif ($event->getProduction() !== null) {
+            $base = $date . '-' . $event->getProduction()->getName();
+        } else {
+            $base = $event->getStartsAt()->format('Y-m-d-His');
+        }
+
+        return $this->generateUniqueSlug($base);
     }
 }
