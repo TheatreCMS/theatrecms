@@ -17,7 +17,6 @@
     <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
         <tr>
             <th scope="col" class="px-6 py-3 font-medium">Starts</th>
-            <th scope="col" class="px-6 py-3 font-medium">Production</th>
             <th scope="col" class="px-6 py-3 font-medium">Title</th>
             <th scope="col" class="px-6 py-3 font-medium">Status</th>
             <th scope="col" class="px-6 py-3 font-medium">Actions</th>
@@ -26,9 +25,8 @@
     <tbody id="eventList">
     {% for e in events %}
         <tr class="bg-neutral-primary border-b border-default">
-            <td class="px-6 py-4">{{ e.startsAt|date('Y-m-d H:i') }}</td>
+            <td class="px-6 py-4">{{ e.startsAt|date('D M j, Y g:i A') }}</td>
             <td class="px-6 py-4">{{ e.production ? e.production.name : '' }}</td>
-            <td class="px-6 py-4">{{ e.title }}</td>
             <td class="px-6 py-4">{{ e.status }}</td>
             <td class="px-6 py-4">
                 <a href="/admin/events/edit/{{ e.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
