@@ -99,11 +99,11 @@ class WorkRepository extends BaseRepository
         if (isset($args['creators']) && is_array($args['creators'])) {
             // Replace creators
             $work = $this->setCreators($work, $args['creators']);
-        } else {
-            // Persist any other changes
+        }
+
+        // Persist changes
             $this->em->persist($work);
             $this->em->flush();
-        }
 
         return $work;
     }
