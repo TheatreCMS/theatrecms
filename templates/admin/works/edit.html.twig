@@ -4,6 +4,8 @@
 {% set people = people|default([]) %}
 {% set work = work|default(null) %}
 {% set creatorEntries = creatorEntries|default([]) %}
+{% set editorDescription = work.description ? work.description|raw : null %}
+{% set editorSynopsis = work.synopsis ? work.synopsis|raw : null %}
 
 {% block title %}Edit {{ work.title|default('Work') }} - {{ parent() }}{% endblock %}
 
@@ -46,16 +48,14 @@
 
             <div class="md:col-span-2">
                 <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="description" id="description" rows="4"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="A short description or notes about the work...">{{ work.description }}</textarea>
+                <div id="editorjs-description" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <textarea name="description" id="description" class="hidden" aria-hidden="true">{{ work.description|default('') }}</textarea>
             </div>
 
             <div class="md:col-span-2">
                 <label for="synopsis" class="block text-sm font-medium text-gray-700 mb-1">Synopsis</label>
-                <textarea name="synopsis" id="synopsis" rows="6"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="A longer synopsis or summary...">{{ work.synopsis }}</textarea>
+                <div id="editorjs-synopsis" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <textarea name="synopsis" id="synopsis" class="hidden" aria-hidden="true">{{ work.synopsis|default('') }}</textarea>
             </div>
 
             <div class="md:col-span-2 space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
@@ -164,10 +164,14 @@
     </form>
 
     {% block scripts %}
-        <script>
+        <script type="module">
+            import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+
             document.addEventListener('DOMContentLoaded', function () {
                 const form = document.querySelector('form');
                 const titleInput = document.getElementById('title');
+                const descriptionField = document.getElementById('description');
+                const synopsisField = document.getElementById('synopsis');
 
                 const setupDynamicRows = (namespace) => {
                     const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);
@@ -262,6 +266,7 @@
 
                 setupDynamicRows('creator');
 
+                let isSaving = false;
                 form.addEventListener('submit', function (e) {
                     e.preventDefault();
                     if (!titleInput.value.trim()) {
@@ -269,28 +274,42 @@
                         titleInput.focus();
                         return;
                     }
-                    form.dispatchEvent(new Event('htmxSubmit'));
+
+                    if (isSaving) return;
+                    isSaving = true;
+
+                    Promise.all([editorDescription.save(), editorSynopsis.save()])
+                        .then(function ([descData, synopsisData]) {
+                            descriptionField.value = JSON.stringify(descData);
+                            synopsisField.value = JSON.stringify(synopsisData);
+                            form.dispatchEvent(new Event('htmxSubmit'));
+                        })
+                        .catch(function (error) {
+                            console.error('EditorJS save failed:', error);
+                            document.getElementById('flash-messages').innerHTML =
+                                '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
+                                '<p class="text-sm font-medium">Unable to save content. Please try again.</p></div>';
+                            isSaving = false;
+                        });
                 });
 
-                form.addEventListener('htmx:afterRequest', function() {
+                form.addEventListener('htmx:afterRequest', function () {
+                    isSaving = false;
                     document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 });
-            });
-        </script>
-        <script type="module">
-            import { ClassicEditor, Essentials, Bold, Italic, Paragraph, Font } from 'ckeditor5';
 
-            ClassicEditor
-                .create( document.querySelector( '#description' ), {
-                    licenseKey: 'GPL',
-                    plugins: [ Essentials, Bold, Italic, Paragraph, Font ],
-                    toolbar: [
-                        'undo', 'redo', '|', 'bold', 'italic', '|',
-                        'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-                    ]
-                } )
-                .then( /* ... */ )
-                .catch( /* ... */ );
+                const editorDescription = new EditorJS(buildEditorJsConfig({
+                    holder: 'editorjs-description',
+                    data: {{ editorDescription is not null ? editorDescription|json_encode|raw : 'null' }},
+                    placeholder: 'A short description or notes about the work...',
+                }));
+
+                const editorSynopsis = new EditorJS(buildEditorJsConfig({
+                    holder: 'editorjs-synopsis',
+                    data: {{ editorSynopsis is not null ? editorSynopsis|json_encode|raw : 'null' }},
+                    placeholder: 'A longer synopsis or summary...',
+                }));
+            });
         </script>
     {% endblock %}
 
