@@ -59,6 +59,17 @@ export function buildEditorJsConfig({ holder, data, imageEndpoints } = {}) {
             }
         },
         image: createImageTool(imageEndpoints),
+        table: {
+            class: Table,
+            inlineToolbar: true,
+        },
+        callout: {
+            class: Callout,
+            inlineToolbar: INLINE_TOOLBAR_ITEMS,
+        },
+        textVariant: {
+            class: TextVariantTune,
+        },
     };
 
     const config = {
