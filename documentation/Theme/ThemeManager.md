@@ -25,4 +25,4 @@ $themeManager->loadFunctions();
 $themeManager->configureTwig($twig, __DIR__ . '/../templates');
 ```
 
-When Twig renders a view, the loader will first check the themed template directory so theme overrides take precedence; if no themed file exists, developers should reference `core::templates/...` to fall back to the shared views.
+When Twig renders a view, the loader will first check the themed template directory so theme overrides take precedence; if no themed file exists, developers should reference `@core/...` to fall back to the shared views.
