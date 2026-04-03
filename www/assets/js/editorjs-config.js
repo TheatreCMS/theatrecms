@@ -70,6 +70,9 @@ export function buildEditorJsConfig({ holder, data, imageEndpoints } = {}) {
         sponsorBlock: {
             class: SponsorBlock,
         },
+        scheduleBlock: {
+            class: ScheduleBlock,
+        },
         textVariant: {
             class: TextVariantTune,
         },
