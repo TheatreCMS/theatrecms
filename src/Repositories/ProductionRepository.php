@@ -15,6 +15,16 @@ class ProductionRepository extends BaseRepository
 
     protected string $entityClass = Production::class;
 
+    public function fetchAll(): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Production::class, 'p')
+            ->orderBy('p.opening', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function create(array $args): Production
     {
         $args = array_merge([
