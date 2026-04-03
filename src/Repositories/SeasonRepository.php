@@ -11,6 +11,16 @@ class SeasonRepository extends BaseRepository
 {
      protected string $entityClass = Season::class;
 
+     public function fetchAll(): array
+     {
+         return $this->em->createQueryBuilder()
+             ->select('s')
+             ->from(Season::class, 's')
+             ->orderBy('s.startDate', 'DESC')
+             ->getQuery()
+             ->getResult();
+     }
+
      public function create(array $args): Season
      {
          $args = array_merge([
