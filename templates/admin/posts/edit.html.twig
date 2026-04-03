@@ -9,7 +9,8 @@
     </div>
 
     <form action="/admin/posts/edit" method="POST" class="space-y-6"
-          hx-post="/admin/posts/edit" hx-target="#flash-messages" hx-swap="innerHTML">
+          hx-post="/admin/posts/edit" hx-target="#flash-messages" hx-swap="innerHTML"
+          hx-trigger="htmxSubmit">
         <input type="hidden" name="postId" value="{{ post.id }}">
 
         <div class="grid grid-cols-1 gap-6">
@@ -36,8 +37,8 @@
 
             <div class="md:col-span-2 space-y-3">
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                <textarea name="content" id="content" rows="10" data-editor="post-content"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ post.content|default('') }}</textarea>
+                <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <textarea name="content" id="content" rows="10" class="hidden" aria-hidden="true">{{ post.content|default('') }}</textarea>
             </div>
         </div>
 
@@ -46,8 +47,70 @@
             <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Changes</button>
         </div>
     </form>
-    {% block scripts %}
-        {{ parent() }}
-        <script type="module" src="/assets/js/editor.js"></script>
-    {% endblock %}
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+    <script type="module">
+        import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form[action="/admin/posts/edit"]');
+            const contentField = document.getElementById('content');
+
+            if (!form || !contentField) {
+                return;
+            }
+
+            const rawContent = {{ post.content|default('')|json_encode(constant('JSON_HEX_TAG'))|raw }};
+            let editorData = null;
+
+            if (rawContent && typeof rawContent === 'string') {
+                try {
+                    const parsed = JSON.parse(rawContent);
+                    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.blocks)) {
+                        editorData = parsed;
+                    }
+                } catch (error) {
+                    console.warn('Existing post content is not valid EditorJS JSON; opening with empty editor.', error);
+                }
+            }
+
+            let isSaving = false;
+
+            const showEditorSaveError = () => {
+                document.getElementById('flash-messages').innerHTML =
+                    '<div id="post-form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+                    '<p class="text-sm font-medium">Unable to save content. Please try again.</p></div>';
+            };
+
+            const editor = new EditorJS(buildEditorJsConfig({
+                holder: 'editorjs',
+                data: editorData,
+            }));
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                if (isSaving) {
+                    return;
+                }
+                isSaving = true;
+
+                editor.save().then((outputData) => {
+                    contentField.value = JSON.stringify(outputData);
+                    form.dispatchEvent(new Event('htmxSubmit'));
+                }).catch((error) => {
+                    console.error('EditorJS save failed:', error);
+                    showEditorSaveError();
+                    isSaving = false;
+                });
+            });
+
+            form.addEventListener('htmx:afterRequest', () => {
+                isSaving = false;
+                document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+    </script>
 {% endblock %}
