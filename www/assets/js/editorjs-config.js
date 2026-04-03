@@ -67,6 +67,9 @@ export function buildEditorJsConfig({ holder, data, imageEndpoints } = {}) {
             class: Callout,
             inlineToolbar: INLINE_TOOLBAR_ITEMS,
         },
+        sponsorBlock: {
+            class: SponsorBlock,
+        },
         textVariant: {
             class: TextVariantTune,
         },
