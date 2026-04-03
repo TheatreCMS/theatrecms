@@ -22,7 +22,9 @@ if (isset($app)) {
             $production = $productionRepository->getBySlug($args['productionSlug']);
 
             if (!$production) {
-                return $response->withStatus(404)->write('Production not found in this season');
+                $response->getBody()->write('Production not found in this season');
+
+                return $response->withStatus(404);
             }
 
             $production = apply_filters('theatrecms/production', $production, $request, $args);
