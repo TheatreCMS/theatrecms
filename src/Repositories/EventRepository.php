@@ -84,6 +84,16 @@ class EventRepository extends BaseRepository
         parent::update($event);
     }
 
+    public function fetchAll(): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('e')
+            ->from(Event::class, 'e')
+            ->orderBy('e.startsAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * @return Event[]
      */
@@ -94,7 +104,7 @@ class EventRepository extends BaseRepository
             ->from(Event::class, 'e')
             ->where('e.production = :productionId')
             ->setParameter('productionId', $productionId)
-            ->orderBy('e.startsAt', 'ASC')
+            ->orderBy('e.startsAt', 'DESC')
             ->getQuery()
             ->getResult();
     }
