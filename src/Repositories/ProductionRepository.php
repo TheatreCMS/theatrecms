@@ -131,13 +131,6 @@ class ProductionRepository extends BaseRepository
 
     public function getBySlug(string $slug): ?object
     {
-        $item = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
-
-        if (!$item) {
-            trigger_error('Production not found: ' . $slug, E_USER_ERROR);
-            return null;
-        }
-
-        return $item;
+        return $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
     }
 }

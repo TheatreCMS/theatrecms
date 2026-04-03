@@ -39,6 +39,13 @@ if (isset($app)) {
             $repository = $container->get(SeasonRepository::class);
             /** @var SeasonRepository $repository */
             $season = $repository->fetchBySlug($args['slug']);
+
+            if (!$season) {
+                $response->getBody()->write('Season not found');
+
+                return $response->withStatus(404);
+            }
+
             $season = apply_filters('theatrecms/season', $season, $request, $args);
 
             /** @var Twig $twig */

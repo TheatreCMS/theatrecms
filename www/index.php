@@ -67,7 +67,7 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 
 $app->get('/', function (Request $request, Response $response) use ($container) {
     $twig = $container->get(Twig::class);
-    $posts = $container->get(PostRepository::class)->fetchAll();
+    $posts = $container->get(PostRepository::class)->fetchPublished();
 
     return $twig->render($response, 'index.html.twig', ['posts' => $posts]);
 });

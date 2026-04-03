@@ -17,7 +17,7 @@ const createImageTool = (imageEndpoints) => {
     return tool;
 };
 
-export function buildEditorJsConfig({ holder, data, imageEndpoints } = {}) {
+export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints } = {}) {
     if (!holder) {
         throw new Error('EditorJS config requires a holder ID.');
     }
@@ -91,6 +91,10 @@ export function buildEditorJsConfig({ holder, data, imageEndpoints } = {}) {
 
     if (data !== undefined && data !== null) {
         config.data = data;
+    }
+
+    if (placeholder !== undefined && placeholder !== null) {
+        config.placeholder = placeholder;
     }
 
     return config;

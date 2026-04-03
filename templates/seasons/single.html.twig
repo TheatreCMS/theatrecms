@@ -9,7 +9,7 @@
     {% for production in season.productions %}
         <article id="production-{{ production.id }}" class="production production-{{ production.slug }}">
             <header>
-                <a href="{{ season.slug }}/{{ production.slug }}">
+                <a href="/seasons/{{ season.slug }}/{{ production.slug }}">
                     <h3 class="entry-title">{{ production.name }}</h3>
                 </a>
                 <div class="excerpt">

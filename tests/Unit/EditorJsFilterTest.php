@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Text\EditorJsHtmlConverter;

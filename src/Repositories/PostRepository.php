@@ -41,6 +41,18 @@ class PostRepository extends BaseRepository
         return $post;
     }
 
+    public function fetchPublished(): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Post::class, 'p')
+            ->where('p.status = :status')
+            ->setParameter('status', PostStatus::PUBLISHED)
+            ->orderBy('p.publishedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function updateSlug(Post $post, string $slug): void
     {
         $slug = trim($slug);

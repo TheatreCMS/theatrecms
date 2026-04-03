@@ -1,4 +1,4 @@
-{% extends '../layouts/base.html.twig' %}
+{% extends 'layouts/base.html.twig' %}
 
 {% block title %}Seasons - {{ parent() }}{% endblock %}
 
@@ -6,7 +6,7 @@
     <h1>Our Seasons</h1>
     <ul>
         {% for season in seasons %}
-            <li><a href="seasons/{{ season.slug }}">{{ season.label }}</a></li>
+            <li><a href="/seasons/{{ season.slug }}">{{ season.label }}</a></li>
         {% else %}
             <li>No seasons found.</li>
         {% endfor %}

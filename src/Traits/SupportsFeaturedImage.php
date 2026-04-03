@@ -54,17 +54,29 @@ trait SupportsFeaturedImage
 
     private function isImageUpload(UploadedFileInterface $file): bool
     {
-        $mediaType = $file->getClientMediaType();
-        return is_string($mediaType) && str_starts_with($mediaType, 'image/');
+        $mimeType = $this->detectMimeType($file);
+        return is_string($mimeType) && str_starts_with($mimeType, 'image/');
     }
+
+    private function detectMimeType(UploadedFileInterface $file): string|false
+    {
+        $stream = $file->getStream();
+        $stream->rewind();
+        $header = $stream->read(4096);
+        $stream->rewind();
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        return $finfo->buffer($header);
+    }
+
     public function saveFeaturedImageFromUpload(UploadedFileInterface $file): string
     {
         if ($file->getError() !== UPLOAD_ERR_OK) {
             throw new \InvalidArgumentException('Uploaded file is not available.');
         }
 
-        $mediaType = $file->getClientMediaType();
-        if (!is_string($mediaType) || !str_starts_with($mediaType, 'image/')) {
+        $mimeType = $this->detectMimeType($file);
+        if (!is_string($mimeType) || !str_starts_with($mimeType, 'image/')) {
             throw new \InvalidArgumentException('Only image uploads are allowed for featured images.');
         }
 
