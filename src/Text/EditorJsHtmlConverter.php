@@ -177,16 +177,17 @@ class EditorJsHtmlConverter
         $data = $block['data'] ?? [];
 
         return match ($type) {
-            'header'    => $this->renderHeader($data),
-            'list'      => $this->renderList($data),
-            'quote'     => $this->renderQuote($data),
-            'image'     => $this->renderImage($data),
-            'delimiter'    => '<hr />',
+            'header'        => $this->renderHeader($data),
+            'list'          => $this->renderList($data),
+            'quote'         => $this->renderQuote($data),
+            'image'         => $this->renderImage($data),
+            'imageGallery'  => $this->renderGallery($data),
+            'delimiter'     => '<hr />',
             'sponsorBlock'  => '<div class="editorjs-sponsor-block"></div>',
             'scheduleBlock' => '<div class="editorjs-schedule-block"></div>',
-            'checklist' => $this->renderChecklist($data),
-            'code'      => $this->renderCode($data),
-            default     => $this->renderParagraph($data),
+            'checklist'     => $this->renderChecklist($data),
+            'code'          => $this->renderCode($data),
+            default         => $this->renderParagraph($data),
         };
     }
 
@@ -307,6 +308,62 @@ class EditorJsHtmlConverter
         }
 
         return $figure;
+    }
+
+    /**
+     * Render an image gallery block.
+     *
+     * @param array $data Expecting ['items' => [['url' => string, 'caption' => string], ...], 'layout' => string, 'caption' => string]
+     * @return string HTML gallery figure or empty string
+     */
+    private function renderGallery(array $data): string
+    {
+        $items = $data['items'] ?? [];
+        if (!is_array($items) || $items === []) {
+            return '';
+        }
+
+        $layout = in_array($data['layout'] ?? '', ['grid', 'list'], true)
+            ? $data['layout']
+            : 'grid';
+
+        $figures = [];
+        foreach ($items as $item) {
+            $url = $this->sanitizeUrl($item['url'] ?? '');
+            if ($url === '') {
+                continue;
+            }
+            $caption    = $this->sanitizeText($item['caption'] ?? '');
+            $escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+            $escapedAlt = htmlspecialchars(strip_tags($caption), ENT_QUOTES, 'UTF-8');
+
+            $fig = '<figure class="editorjs-gallery__item"><img src="' . $escapedUrl . '" alt="' . $escapedAlt . '" loading="lazy" />';
+            if ($caption !== '') {
+                $fig .= '<figcaption>' . $caption . '</figcaption>';
+            }
+            $fig .= '</figure>';
+            $figures[] = $fig;
+        }
+
+        if ($figures === []) {
+            return '';
+        }
+
+        $gallery = sprintf(
+            '<div class="editorjs-gallery" data-layout="%s">%s</div>',
+            htmlspecialchars($layout, ENT_QUOTES, 'UTF-8'),
+            implode('', $figures)
+        );
+
+        $galleryCaption = $this->sanitizeText($data['caption'] ?? '');
+        if ($galleryCaption !== '') {
+            return '<figure class="editorjs-gallery-wrap">'
+                . $gallery
+                . '<figcaption>' . $galleryCaption . '</figcaption>'
+                . '</figure>';
+        }
+
+        return $gallery;
     }
 
     /**

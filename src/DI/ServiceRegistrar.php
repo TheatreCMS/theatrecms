@@ -9,6 +9,7 @@ use Slim\App;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use TheatreCMS\Controllers\EventController;
+use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Controllers\PostController;
 use TheatreCMS\Controllers\LoginController;
@@ -207,6 +208,7 @@ class ServiceRegistrar
                     $c->get(PersonRepository::class)
                 );
             },
+            ImageUploadController::class => static fn(): ImageUploadController => new ImageUploadController(),
         ];
     }
 

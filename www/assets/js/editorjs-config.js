@@ -73,6 +73,12 @@ export function buildEditorJsConfig({ holder, data, imageEndpoints } = {}) {
         scheduleBlock: {
             class: ScheduleBlock,
         },
+        imageGallery: {
+            class: ImageGallery,
+            config: {
+                uploadEndpoint: '/admin/images/upload',
+            },
+        },
         textVariant: {
             class: TextVariantTune,
         },
