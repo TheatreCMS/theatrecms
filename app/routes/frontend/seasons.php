@@ -35,10 +35,10 @@ if (isset($app)) {
             return $twig->render($response, 'seasons/production.html.twig', ['production' => $production]);
         });
 
-        $group->get('/{slug}', function (Request $request, Response $response) use ($container, $resolver) {
+        $group->get('/{slug}', function (Request $request, Response $response, array $args) use ($container, $resolver ) {
             $repository = $container->get(SeasonRepository::class);
             /** @var SeasonRepository $repository */
-            $season = $repository->fetchBySlug($request->getAttribute('slug'));
+            $season = $repository->fetchBySlug($args['slug']);
             $season = apply_filters('theatrecms/season', $season, $request, $args);
 
             /** @var Twig $twig */
