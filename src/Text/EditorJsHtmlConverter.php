@@ -21,7 +21,9 @@
  * - code
  *
  * Sanitization and safety:
- * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br
+ * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br, a
+ * - For <a> tags only the href attribute is kept; the href value is validated
+ *   to be http(s) — all other attributes are dropped.
  * - All other HTML is stripped. URLs are validated to be http(s) using PHP's
  *   FILTER_VALIDATE_URL and parsed scheme checks.
  * - Text content is escaped using htmlspecialchars after restoring the allowed
@@ -38,11 +40,10 @@
 
 namespace TheatreCMS\Text;
 
-
 class EditorJsHtmlConverter
 {
     private const INLINE_TAGS = [
-        'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br',
+        'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br', 'a',
     ];
 
     /**
@@ -435,12 +436,32 @@ class EditorJsHtmlConverter
                 if (!in_array($tag, self::INLINE_TAGS, true)) {
                     return '';
                 }
+                if ($tag === 'a') {
+                    if ($closing) {
+                        return '</a>';
+                    }
+                    if (
+                        preg_match('/\bhref\s*=\s*"([^"]*)"/', $matches[0], $hrefMatch) ||
+                        preg_match("/\\bhref\\s*=\\s*'([^']*)'/", $matches[0], $hrefMatch)
+                    ) {
+                        $href = html_entity_decode($hrefMatch[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        $safeHref = $this->sanitizeUrl($href);
+                        if ($safeHref !== '') {
+                            return sprintf('<a href="%s">', $safeHref);
+                        }
+                    }
+                    return '';
+                }
                 return $closing ? sprintf('</%s>', $tag) : sprintf('<%s>', $tag);
             },
             $stripped
         );
 
-        $escaped = htmlspecialchars($cleaned, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        // Decode HTML entities to their UTF-8 characters before re-encoding,
+        // so named entities from EditorJS (e.g. &nbsp;, &mdash;) are not
+        // double-encoded into literal &amp;nbsp; in the output.
+        $decoded = html_entity_decode((string) $cleaned, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $escaped = htmlspecialchars($decoded, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         return trim($this->restoreAllowedTags($escaped));
     }
 
@@ -455,6 +476,12 @@ class EditorJsHtmlConverter
         foreach (self::INLINE_TAGS as $tag) {
             if ($tag === 'br') {
                 $value = str_replace(['&lt;br&gt;', '&lt;br/&gt;'], '<br>', $value);
+                continue;
+            }
+
+            if ($tag === 'a') {
+                $value = (string) preg_replace('/&lt;a href=&quot;(.+?)&quot;&gt;/', '<a href="$1">', $value);
+                $value = str_replace('&lt;/a&gt;', '</a>', $value);
                 continue;
             }
 
