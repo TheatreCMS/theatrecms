@@ -4,7 +4,6 @@
 {% set people = people|default([]) %}
 {% set work = work|default(null) %}
 {% set creatorEntries = creatorEntries|default([]) %}
-{% set editorDescription = work.description ? work.description|raw : null %}
 
 {% block title %}Edit {{ work.title|default('Work') }} - {{ parent() }}{% endblock %}
 
@@ -300,7 +299,13 @@
 
                 const editorDescription = new EditorJS(buildEditorJsConfig({
                     holder: 'editorjs-description',
-                    data: {{ editorDescription is not null ? editorDescription|raw : 'null' }},
+                    data: (() => {
+                        const raw = {{ work.description|default('')|json_encode(constant('JSON_HEX_TAG'))|raw }};
+                        if (raw && typeof raw === 'string') {
+                            try { return JSON.parse(raw); } catch (e) { return null; }
+                        }
+                        return raw || null;
+                    })(),
                     placeholder: 'A short description or notes about the work...',
                 }));
             });

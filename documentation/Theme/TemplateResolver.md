@@ -1,6 +1,6 @@
 ## TemplateResolver
 
-When building theme-aware controllers, you often need to provide a list of candidate templates (for example `production-special.html.twig`, `production.html.twig`, `core::production.html.twig`) and render the first one that exists. `TemplateResolver` encapsulates that logic.
+When building theme-aware controllers, you often need to provide a list of candidate templates (for example `production-special.html.twig`, `production.html.twig`, `@core/production.html.twig`) and render the first one that exists. `TemplateResolver` encapsulates that logic.
 
 ### How it works
 
@@ -16,7 +16,7 @@ $template = $resolver->resolve(
     $twig,
     "themes/season/special-season.html.twig",
     "themes/season/default-season.html.twig",
-    "core::season.html.twig"
+    "@core/season.html.twig"
 );
 return $twig->render($response, $template, $data);
 ```

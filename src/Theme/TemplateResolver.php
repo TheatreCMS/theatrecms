@@ -18,6 +18,10 @@ class TemplateResolver
 {
     public function resolve(Twig $twig, string ...$candidates): string
     {
+        if (empty($candidates)) {
+            throw new \InvalidArgumentException('At least one template candidate must be provided.');
+        }
+
         $loader = $twig->getLoader();
 
         foreach ($candidates as $template) {
