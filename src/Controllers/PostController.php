@@ -136,6 +136,7 @@ class PostController extends BaseController
             'status' => PostStatus::DRAFT->value,
             'content' => null,
             'slug' => null,
+            'publishedAt' => null,
         ]);
 
         $post = $this->repository->fetch($data['postId']);
@@ -176,10 +177,11 @@ class PostController extends BaseController
         $post->setContent($data['content']);
         $post->touchModified();
 
-        if ($status === PostStatus::PUBLISHED) {
-            if ($post->getPublishedAt() === null) {
-                $post->setPublishedAt(new DateTimeImmutable());
-            }
+        if (!empty($data['publishedAt'])) {
+            $parsedDate = DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $data['publishedAt']);
+            $post->setPublishedAt($parsedDate ?: null);
+        } elseif ($status === PostStatus::PUBLISHED && $post->getPublishedAt() === null) {
+            $post->setPublishedAt(new DateTimeImmutable());
         } else {
             $post->setPublishedAt(null);
         }
