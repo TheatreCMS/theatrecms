@@ -30,4 +30,4 @@ node_modules/
 /.idea/
 
 # Application configuration files
-config.json
+app/config.yaml

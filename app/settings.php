@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * Copyright (C) 2026  TheatreCMS Team (https://theatrecms.dev)
@@ -13,11 +14,26 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-if( !defined('APP_ROOT') )
-    define ('APP_ROOT', dirname(__DIR__));
+
+if (!defined('APP_ROOT')) {
+    define('APP_ROOT', dirname(__DIR__));
+}
+
+use Symfony\Component\Yaml\Yaml;
+
+$configFile = APP_ROOT . '/app/config.yaml';
+$config = file_exists($configFile) ? (Yaml::parseFile($configFile) ?? []) : [];
+
+$defaults = [
+    'siteTitle'    => 'TheatreCMS',
+    'siteTimezone' => 'UTC',
+];
+
+$appConfig = array_merge($defaults, $config);
 
 return [
     'settings' => [
+        'app' => $appConfig,
         'slim' => [
             // Returns a detailed HTML page with error details and
             // a stack trace. Should be disabled in production.
@@ -81,7 +97,7 @@ return [
             'dir' => APP_ROOT . '/www/themes',
 
             // The active theme to use. Should correspond to a subdirectory in the themes dir.
-            'active' => 'default'
+            'active' => $appConfig['themes']['active'] ?? 'default',
         ]
     ]
 ];
