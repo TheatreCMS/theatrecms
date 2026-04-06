@@ -81,7 +81,7 @@ return [
             'dir' => APP_ROOT . '/www/themes',
 
             // The active theme to use. Should correspond to a subdirectory in the themes dir.
-            'active' => 'avlt'
+            'active' => 'default'
         ]
     ]
 ];
