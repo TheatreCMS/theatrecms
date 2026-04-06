@@ -52,7 +52,7 @@ class ThemeManager
     /**
      * Configure Twig to check theme templates first, fall back to core templates.
      */
-    public function configureTwig(Twig $twig, string $coreTemplatesDir): void
+    public function configureTwig(Twig $twig, array $templatesDirs): void
     {
         /** @var FilesystemLoader $loader */
         $loader = $twig->getLoader();
@@ -63,6 +63,11 @@ class ThemeManager
         }
 
         // Core templates as fallback namespace
-        $loader->addPath($coreTemplatesDir, 'core');
+        foreach($templatesDirs as $dir) {
+            if (is_dir($dir)) {
+                $loader->addPath($dir, 'core');
+            }
+        }
+        //$loader->addPath($coreTemplatesDir, 'core');
     }
 }

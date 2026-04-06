@@ -22,7 +22,6 @@ Thumbs.db
 .phpunit.result.cache
 
 /sql/
-/www/themes
 /www/uploads/*
 node_modules/
 
@@ -31,3 +30,7 @@ node_modules/
 
 # Application configuration files
 app/config.yaml
+
+# All themes except the default
+/www/themes/*
+!/www/themes/default/

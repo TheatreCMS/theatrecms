@@ -1,0 +1,14 @@
+{
+  "name": "theatrecms/default-theme",
+  "description": "Default Theme for TheatreCMS",
+  "type": "theatrecms-theme",
+  "minimum-stability": "stable",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "Daryl M. Lozupone",
+      "email": "admin@theatrecms.dev"
+    }
+  ],
+  "require": {}
+}

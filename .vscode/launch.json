@@ -1,5 +1,6 @@
 {
   "configurations": [
+    
     {
       "name": "Listen for Xdebug",
       "type": "php",
