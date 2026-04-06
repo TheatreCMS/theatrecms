@@ -41,6 +41,16 @@ class PostRepository extends BaseRepository
         return $post;
     }
 
+    public function fetchAll(): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Post::class, 'p')
+            ->orderBy('p.publishedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
     public function fetchPublished(): array
     {
         return $this->em->createQueryBuilder()
