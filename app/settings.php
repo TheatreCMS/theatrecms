@@ -81,11 +81,11 @@ return [
         // Twig view settings. Template path and cache may be customized per-environment.
         'view' => [
             // Path (or array of paths) where Twig will look for templates
-            'template_path' => [
-                APP_ROOT . '/www/themes/' . ($appConfig['themes']['active'] ?? 'default') . '/',
+            'template_path' => array_filter([
+                file_exists(APP_ROOT . '/www/themes/' . ($appConfig['themes']['active'] ?? 'default') . '/') ? APP_ROOT . '/www/themes/' . ($appConfig['themes']['active'] ?? 'default') . '/' : null,
                 APP_ROOT . '/www/themes/default/',
                 APP_ROOT . '/templates/'
-            ],
+            ]),
 
             // Path for twig cache. Set to false or leave empty to disable caching in dev.
             'cache' => APP_ROOT . '/var/twig',
