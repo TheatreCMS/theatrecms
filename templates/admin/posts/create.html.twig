@@ -29,7 +29,7 @@
 
             <div class="md:col-span-2 space-y-3">
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <div id="blocknote-holder" class="rounded-md border border-gray-200 bg-white shadow-sm min-h-[200px]"></div>
                 <textarea name="content" id="content" rows="10" class="hidden" aria-hidden="true"></textarea>
             </div>
         </div>
@@ -44,48 +44,26 @@
 {% block scripts %}
     {{ parent() }}
     <script type="module">
-        import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+        import { mountBlockNoteEditor } from '/assets/js/blocknote-editor.js';
 
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form[action="/admin/posts/create"]');
-            const contentField = document.getElementById('content');
 
-            if (!form || !contentField) {
-                return;
-            }
+            if (!form) return;
 
-            let isSaving = false;
-
-            const showEditorSaveError = () => {
-                document.getElementById('flash-messages').innerHTML =
-                    '<div id="post-form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
-                    '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
-                    '<p class="text-sm font-medium">Unable to save content. Please try again.</p></div>';
-            };
-
-            const editor = new EditorJS(buildEditorJsConfig({
-                holder: 'editorjs',
-            }));
+            mountBlockNoteEditor({
+                holderId: 'blocknote-holder',
+                fieldId: 'content',
+                initialData: null,
+                imageUploadEndpoint: '/admin/images/upload',
+            });
 
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
-                if (isSaving) {
-                    return;
-                }
-                isSaving = true;
-
-                editor.save().then((outputData) => {
-                    contentField.value = JSON.stringify(outputData);
-                    form.dispatchEvent(new Event('htmxSubmit'));
-                }).catch((error) => {
-                    console.error('EditorJS save failed:', error);
-                    showEditorSaveError();
-                    isSaving = false;
-                });
+                form.dispatchEvent(new Event('htmxSubmit'));
             });
 
             form.addEventListener('htmx:afterRequest', () => {
-                isSaving = false;
                 document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
         });

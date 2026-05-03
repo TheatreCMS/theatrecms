@@ -17,22 +17,9 @@
 		<link href="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.css" rel="stylesheet"/>
 		<script src="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.js"></script>
 
-		{# EditorJS for block editing (local copies) #}
-		<script src="/assets/js/editorjs/editor.js"></script>
-		<script src="/assets/js/editorjs/header.js"></script>
-		<script src="/assets/js/editorjs/list.js"></script>
-		<script src="/assets/js/editorjs/underline.js"></script>
-		<script src="/assets/js/editorjs/quote.js"></script>
-		<script src="/assets/js/editorjs/image.js"></script>
-		<script src="/assets/js/editorjs/link.js"></script>
-		<script src="/assets/js/editorjs/columns.js"></script>
-		<script src="/assets/js/editorjs/table.js"></script>
-		<script src="/assets/js/editorjs/callout.js"></script>
-		<script src="/assets/js/editorjs/sponsor-block.js"></script>
-		<script src="/assets/js/editorjs/sponsor.js"></script>
-		<script src="/assets/js/editorjs/schedule.js"></script>
-		<script src="/assets/js/editorjs/gallery.js"></script>
-		<script src="/assets/js/editorjs/text-variant-tune.js"></script>
+		{# BlockNote rich-text editor #}
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@blocknote/core@0.24.0/style.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@blocknote/mantine@0.24.0/style.css">
 
 		{# HTMX for progressive enhancement #}
 		<script src="https://unpkg.com/htmx.org@1.9.2"></script>
@@ -40,11 +27,16 @@
 		<link rel="stylesheet" href="/assets/js/ckeditor5/ckeditor5.css">
 		<script type="importmap">
 			{
-			            "imports": {
-			                "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
-			                "ckeditor5/": "/assets/js/ckeditor5/"
-			            }
-			        }
+			    "imports": {
+			        "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
+			        "ckeditor5/": "/assets/js/ckeditor5/",
+			        "react": "https://esm.sh/react@18.3.1",
+			        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+			        "@blocknote/core": "https://esm.sh/@blocknote/core@0.24.0",
+			        "@blocknote/react": "https://esm.sh/@blocknote/react@0.24.0",
+			        "@blocknote/mantine": "https://esm.sh/@blocknote/mantine@0.24.0"
+			    }
+			}
 		</script>
 		{% block head %}{% endblock %}
 	</head>

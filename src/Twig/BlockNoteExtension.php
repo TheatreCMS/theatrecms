@@ -2,14 +2,14 @@
 
 namespace TheatreCMS\Twig;
 
-use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Text\BlockNoteHtmlConverter;
 use Twig\Extension\AbstractExtension;
 use Twig\Markup;
 use Twig\TwigFilter;
 
-class EditorJsExtension extends AbstractExtension
+class BlockNoteExtension extends AbstractExtension
 {
-    public function __construct(private EditorJsHtmlConverter $converter)
+    public function __construct(private BlockNoteHtmlConverter $converter)
     {
     }
 
@@ -17,7 +17,7 @@ class EditorJsExtension extends AbstractExtension
     {
         return [
             new TwigFilter(
-                'editorjs_to_html',
+                'block_content_to_html',
                 [$this, 'convert'],
                 ['is_safe' => ['html']]
             ),

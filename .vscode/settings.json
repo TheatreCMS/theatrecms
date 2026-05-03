@@ -12,5 +12,6 @@
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features"
   },
-  "php.validate.enable": true
+  "php.validate.enable": true,
+  "intelephense.environment.phpVersion": "8.4"
 }

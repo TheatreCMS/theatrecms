@@ -30,10 +30,10 @@ use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
-use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Text\BlockNoteHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\ThemeManager;
-use TheatreCMS\Twig\EditorJsExtension;
+use TheatreCMS\Twig\BlockNoteExtension;
 use Delight\Auth\Auth;
 
 /**
@@ -83,7 +83,7 @@ class ServiceRegistrar
             $themeManager = $c->get(ThemeManager::class);
             $themeManager->configureTwig($twig, $templateDir);
             $themeManager->loadFunctions();
-            $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
+            $twig->addExtension(new BlockNoteExtension(new BlockNoteHtmlConverter()));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             return $twig;
