@@ -43,15 +43,13 @@
 
 {% block scripts %}
     {{ parent() }}
-    <script type="module">
-        import { mountBlockNoteEditor } from '/assets/js/blocknote-editor.js';
-
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form[action="/admin/posts/create"]');
 
             if (!form) return;
 
-            mountBlockNoteEditor({
+            BlockNoteEditor.mountBlockNoteEditor({
                 holderId: 'blocknote-holder',
                 fieldId: 'content',
                 initialData: null,

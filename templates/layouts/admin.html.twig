@@ -18,28 +18,18 @@
 		<script src="https://cdn.jsdelivr.net/npm/flowbite@2/dist/flowbite.min.js"></script>
 
 		{# BlockNote rich-text editor #}
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@blocknote/core@0.24.0/style.css">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@blocknote/mantine@0.24.0/style.css">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="/assets/css/blocknote-mantine.css">
 
 		{# HTMX for progressive enhancement #}
 		<script src="https://unpkg.com/htmx.org@1.9.2"></script>
 
 		<link rel="stylesheet" href="/assets/js/ckeditor5/ckeditor5.css">
-		<script type="importmap">
-			{
-			    "imports": {
-			        "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
-			        "ckeditor5/": "/assets/js/ckeditor5/",
-			        "react": "https://esm.sh/react@18.3.1",
-			        "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-			        "@blocknote/core": "https://esm.sh/@blocknote/core@0.24.0",
-			        "@blocknote/react": "https://esm.sh/@blocknote/react@0.24.0",
-			        "@blocknote/mantine": "https://esm.sh/@blocknote/mantine@0.24.0"
-			    }
-			}
-		</script>
+		<script src="/assets/js/blocknote-editor.bundle.js" defer></script>
 		{% block head %}{% endblock %}
-	</head>
+	</head>ref
 	<body class="bg-gray-100 min-h-screen text-gray-900">
 
 		<div

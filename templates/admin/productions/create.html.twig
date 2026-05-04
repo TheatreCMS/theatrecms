@@ -349,9 +349,7 @@
 
 {% endblock %}
 {% block scripts %}
-    <script type="module">
-        import { mountBlockNoteEditor } from '/assets/js/blocknote-editor.js';
-
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.querySelector('form');
             const nameInput = document.getElementById('name');
@@ -423,7 +421,7 @@
             setupDynamicRows('performer');
             setupDynamicRows('sponsorship');
 
-            mountBlockNoteEditor({
+            BlockNoteEditor.mountBlockNoteEditor({
                 holderId: 'blocknote-holder',
                 fieldId: 'description',
                 initialData: null,

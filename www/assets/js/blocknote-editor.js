@@ -12,7 +12,8 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { useCreateBlockNote, BlockNoteView, createReactBlockSpec } from '@blocknote/react';
+import { useCreateBlockNote, createReactBlockSpec } from '@blocknote/react';
+import { BlockNoteView } from '@blocknote/mantine';
 import { BlockNoteSchema, defaultBlockSpecs } from '@blocknote/core';
 
 // ── Custom block: Callout ──────────────────────────────────────────────────
