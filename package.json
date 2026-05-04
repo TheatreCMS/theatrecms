@@ -1,31 +1,22 @@
 {
   "name": "theatrecms",
   "version": "1.0.0",
-  "description": "[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/?branch=main) [![Build Status](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/badges/build.png?b=main)](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/build-status/main)",
-  "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
   "scripts": {
     "test": "npx playwright test",
-    "test:e2e": "npx playwright test"
+    "test:e2e": "npx playwright test",
+    "build:blocknote": "esbuild www/assets/js/blocknote-editor.js --bundle --outfile=www/assets/js/blocknote-editor.bundle.js --format=iife --global-name=BlockNoteEditor --minify"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TheatreCMS/theatrecms.git"
+  "dependencies": {
+    "@blocknote/core": "^0.24.0",
+    "@blocknote/mantine": "^0.24.0",
+    "@blocknote/react": "^0.24.0",
+    "react": "^18",
+    "react-dom": "^18"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/TheatreCMS/theatrecms/issues"
-  },
-  "homepage": "https://github.com/TheatreCMS/theatrecms#readme",
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.3",
+    "esbuild": "^0.25.0",
     "typescript": "^5.9.3"
-  },
-  "dependencies": {}
+  }
 }
