@@ -17,6 +17,9 @@ composer stan                                           # PHPStan level 4
 # E2E (start server first)
 php -S 127.0.0.1:8080 -t www
 npm run test:e2e
+
+# BlockNote editor (after editing www/assets/js/blocknote-editor.js)
+npm run build:blocknote
 ```
 
 ## Architecture
@@ -34,6 +37,7 @@ npm run test:e2e
 - **EditorJS** content is stored as JSON. Rendered via `editorjs_to_html` Twig filter. Add block types in `src/Text/EditorJsHtmlConverter.php`.
 - **Themes** load from `www/themes/<slug>/` with fallback chain: active theme → default → `templates/`. Active theme set in `app/config.yaml`.
 - **Admin Twig templates** live in `templates/admin/<resource>/`.
+- **BlockNote** is bundled via esbuild. Source: `www/assets/js/blocknote-editor.js` → output: `www/assets/js/blocknote-editor.bundle.js` (IIFE, exposes `BlockNoteEditor.mountBlockNoteEditor` globally). After editing the source, run `npm run build:blocknote`. Templates call `BlockNoteEditor.mountBlockNoteEditor()` — no import needed. CSS/fonts are local in `www/assets/css/`.
 
 ## Environment
 
