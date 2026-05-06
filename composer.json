@@ -32,7 +32,8 @@
         "slim/twig-view": "^3.4",
         "delight-im/auth": "^9.0",
         "clubdeuce/schema-php": "^0.3",
-        "intervention/image": "^3.0"
+        "intervention/image": "^3.0",
+        "slim/csrf": "^1.5"
     },
     "require-dev": {
         "consolidation/robo": "^5.1",
