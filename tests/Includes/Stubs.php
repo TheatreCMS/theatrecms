@@ -153,7 +153,7 @@ namespace Slim\Psr7\Factory {
     {
         public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
         {
-            return new \Slim\Psr7\Response($code);
+            return new \Slim\Psr7\Response($code, $reasonPhrase);
         }
     }
 }
@@ -165,11 +165,13 @@ namespace Slim\Psr7 {
     class Response implements ResponseInterface
     {
         private int $status;
+        private string $reasonPhrase;
         private array $headers = [];
 
-        public function __construct(int $status = 200)
+        public function __construct(int $status = 200, string $reasonPhrase = '')
         {
             $this->status = $status;
+            $this->reasonPhrase = $reasonPhrase;
         }
 
         public function getStatusCode(): int { return $this->status; }
@@ -177,9 +179,10 @@ namespace Slim\Psr7 {
         {
             $clone = clone $this;
             $clone->status = $code;
+            $clone->reasonPhrase = $reasonPhrase;
             return $clone;
         }
-        public function getReasonPhrase(): string { return ''; }
+        public function getReasonPhrase(): string { return $this->reasonPhrase; }
         public function getProtocolVersion(): string { return '1.1'; }
         public function withProtocolVersion(string $version): static { return clone $this; }
         public function getHeaders(): array { return $this->headers; }
