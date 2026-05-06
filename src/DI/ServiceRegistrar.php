@@ -5,7 +5,10 @@ namespace TheatreCMS\DI;
 use DI\Container;
 use Doctrine\ORM\EntityManager;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
+use Slim\Csrf\Guard;
+use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use TheatreCMS\Controllers\EventController;
@@ -60,6 +63,8 @@ class ServiceRegistrar
     {
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
+        $container->set(ResponseFactoryInterface::class, static fn(): ResponseFactoryInterface => new ResponseFactory());
+
         $container->set(ThemeManager::class, static function (ContainerInterface $c): ThemeManager {
             $settings = $c->get('settings');
             $themesDir = $settings['themes']['dir'] ?? APP_ROOT . '/themes';
@@ -95,6 +100,14 @@ class ServiceRegistrar
 
         $container->set(Auth::class, static function (ContainerInterface $c): Auth {
             return new Auth($c->get(EntityManager::class)->getConnection()->getNativeConnection());
+        });
+
+        $container->set(Guard::class, static function (ContainerInterface $c): Guard {
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
+            $responseFactory = $c->get(ResponseFactoryInterface::class);
+            return new Guard($responseFactory, 'csrf', null, null, 200, 16, true);
         });
     }
 
