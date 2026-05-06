@@ -23,6 +23,9 @@ use Twig\Error\SyntaxError;
  */
 class LoginController extends BaseController
 {
+    private const CSRF_NAME_KEY  = 'csrf_name';
+    private const CSRF_VALUE_KEY = 'csrf_value';
+
     private Auth $auth;
 
     public function __construct(UserRepository $repository, Twig $twig, Auth $auth)
@@ -34,13 +37,13 @@ class LoginController extends BaseController
     public function login(Request $request, Response $response): Response
     {
         try {
-            $csrfNameKey  = $request->getAttribute('csrf_name');
-            $csrfValueKey = $request->getAttribute('csrf_value');
+            $csrfNameKey  = $request->getAttribute(self::CSRF_NAME_KEY);
+            $csrfValueKey = $request->getAttribute(self::CSRF_VALUE_KEY);
 
             return $this->twig->render($response, 'admin/login.html.twig', [
-                'csrf_name_key'  => 'csrf_name',
+                'csrf_name_key'  => self::CSRF_NAME_KEY,
                 'csrf_name'      => $csrfNameKey,
-                'csrf_value_key' => 'csrf_value',
+                'csrf_value_key' => self::CSRF_VALUE_KEY,
                 'csrf_value'     => $csrfValueKey,
             ]);
         } catch (LoaderError|RuntimeError|SyntaxError $e) {
