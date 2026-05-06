@@ -20,8 +20,8 @@ use Twig\Error\SyntaxError;
 
 class LoginController extends BaseController
 {
-    private const CSRF_NAME_KEY  = 'csrf_name';
-    private const CSRF_VALUE_KEY = 'csrf_value';
+    public const CSRF_NAME_KEY  = 'csrf_name';
+    public const CSRF_VALUE_KEY = 'csrf_value';
 
     private Auth $auth;
 

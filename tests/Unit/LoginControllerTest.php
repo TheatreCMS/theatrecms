@@ -31,8 +31,8 @@ class LoginControllerTest extends TestCase
         $request = $this->createMock(Request::class);
         $request->method('getAttribute')
             ->willReturnMap([
-                ['csrf_name', null, 'csrf_abc123'],
-                ['csrf_value', null, 'token_xyz789'],
+                [LoginController::CSRF_NAME_KEY, null, 'csrf_abc123'],
+                [LoginController::CSRF_VALUE_KEY, null, 'token_xyz789'],
             ]);
 
         $response = $this->createMock(Response::class);
@@ -43,8 +43,8 @@ class LoginControllerTest extends TestCase
                 $this->isInstanceOf(Response::class),
                 'admin/login.html.twig',
                 $this->callback(function (array $context): bool {
-                    return $context['csrf_name_key'] === 'csrf_name'
-                        && $context['csrf_value_key'] === 'csrf_value'
+                    return $context['csrf_name_key'] === LoginController::CSRF_NAME_KEY
+                        && $context['csrf_value_key'] === LoginController::CSRF_VALUE_KEY
                         && $context['csrf_name'] === 'csrf_abc123'
                         && $context['csrf_value'] === 'token_xyz789';
                 })
