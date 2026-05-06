@@ -13,14 +13,9 @@ use Delight\Auth\Auth;
 
 class LoginControllerTest extends TestCase
 {
-    /** @var UserRepository|MockObject */
-    private $repository;
-
-    /** @var Twig|MockObject */
-    private $twig;
-
-    /** @var Auth|MockObject */
-    private $auth;
+    private UserRepository|MockObject $repository;
+    private Twig|MockObject $twig;
+    private Auth|MockObject $auth;
 
     protected function setUp(): void
     {
