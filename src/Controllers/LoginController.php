@@ -35,14 +35,14 @@ class LoginController extends BaseController
     public function login(Request $request, Response $response): Response
     {
         try {
-            $csrfNameKey  = $request->getAttribute(self::CSRF_NAME_KEY);
-            $csrfValueKey = $request->getAttribute(self::CSRF_VALUE_KEY);
+            $csrfName  = $request->getAttribute(self::CSRF_NAME_KEY);
+            $csrfValue = $request->getAttribute(self::CSRF_VALUE_KEY);
 
             return $this->twig->render($response, 'admin/login.html.twig', [
                 'csrf_name_key'  => self::CSRF_NAME_KEY,
-                'csrf_name'      => $csrfNameKey,
+                'csrf_name'      => $csrfName,
                 'csrf_value_key' => self::CSRF_VALUE_KEY,
-                'csrf_value'     => $csrfValueKey,
+                'csrf_value'     => $csrfValue,
             ]);
         } catch (LoaderError|RuntimeError|SyntaxError $e) {
             $response->getBody()->write('An error occurred while loading the login page.');
