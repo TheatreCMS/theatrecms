@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>{% block title %}TheatreCMS{% endblock %}</title>
+    <title>{% block title %}{{ name|default('TheatreCMS') }}{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     {% block head %}{% endblock %}
 </head>
