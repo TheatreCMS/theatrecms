@@ -1,0 +1,49 @@
+build:
+  environment:
+    php: '8.3'
+    node: '24'
+
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
+
+    tests:
+      tests:
+        before:
+          - command: composer install --no-interaction --prefer-dist
+          - command: npm install
+
+        override:
+          - command: ./vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit
+            coverage:
+              file: var/coverage/clover.xml
+              format: clover
+
+checks:
+  php:
+    code_rating: true
+    duplication: true
+
+filter:
+  paths:
+    - src/
+    - tests/
+
+tools:
+  php_analyzer: true
+  php_code_sniffer:
+    config:
+      standard: phpcs.xml
+    enabled: true
+    filter:
+      paths:
+        - src/
+  php_mess_detector: false
+  php_cpd: true
+  php_loc:
+    enabled: true
+    excluded_dirs:
+      - vendor
+      - var
