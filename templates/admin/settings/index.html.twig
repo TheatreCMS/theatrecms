@@ -48,6 +48,15 @@
                        class="w-full rounded-md border-gray-300 shadow-sm"
                        placeholder="info@example.com">
             </div>
+
+            <div>
+                <label for="site_url" class="block text-sm font-medium text-gray-700 mb-1">Site URL</label>
+                <input type="url" name="site_url" id="site_url"
+                       value="{{ settings.site_url|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="https://example.com">
+                <p class="mt-1 text-xs text-gray-500">The public-facing URL of the site, used for generating links.</p>
+            </div>
         </div>
     </fieldset>
 
