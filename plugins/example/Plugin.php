@@ -48,7 +48,8 @@ class Plugin extends AbstractPlugin
         // Filter example: append a note to any page_title value passed through apply_filters()
         add_filter('page_title', fn(string $title): string => $title . ' — Powered by TheatreCMS');
 
-        // Action example: runs whenever do_action('season_saved', $season) is called in core
+        // Action example: runs whenever do_action('season_saved', $season) is called in core.
+        // do_action() passes args directly, so $season is the first argument.
         add_action('season_saved', function (mixed $season): void {
             // Plugins would do real work here (send notifications, invalidate caches, etc.)
             error_log('[ExamplePlugin] season_saved action fired');
@@ -59,7 +60,7 @@ class Plugin extends AbstractPlugin
 // ---------------------------------------------------------------------------
 // Supporting class — kept in the same file for simplicity.
 // Larger plugins would split this into separate files and require_once them
-// at the top of Plugin.php before the namespace declaration.
+// after the namespace declaration (namespace must come first in PHP).
 // ---------------------------------------------------------------------------
 
 class GreetingService

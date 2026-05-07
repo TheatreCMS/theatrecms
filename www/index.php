@@ -55,9 +55,6 @@ require ROUTES_DIR . '/admin/pages.php';
 require ROUTES_DIR . '/admin/images.php';
 require ROUTES_DIR . '/frontend/seasons.php';
 
-// Plugin boot phase (Phase 2): plugins register routes, middleware, and hook callbacks.
-$container->get(PluginManager::class)->bootAll($app);
-
 $app->get('/admin/login', [LoginController::class, 'login']);
 $app->post('/admin/login', [LoginController::class, 'authenticate']);
 $app->get('/admin/logout', [LoginController::class, 'logout']);
@@ -75,4 +72,9 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
 
     return $twig->render($response, 'index.html.twig', ['posts' => $posts]);
 });
+
+// Plugin boot phase (Phase 2): plugins register routes, middleware, and hook callbacks.
+// Runs after ALL core routes so plugins see the full routing table.
+$container->get(PluginManager::class)->bootAll($app);
+
 $app->run();

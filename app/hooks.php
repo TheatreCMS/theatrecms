@@ -53,11 +53,13 @@ if (!function_exists('do_action')) {
     /**
      * Fire all callbacks registered for an action tag.
      *
+     * Each handler receives $args directly; return values are discarded.
+     *
      * @param string $tag
      * @param mixed  ...$args
      */
     function do_action(string $tag, mixed ...$args): void
     {
-        HookManager::getInstance()->applyFilters($tag, null, ...$args);
+        HookManager::getInstance()->doAction($tag, ...$args);
     }
 }

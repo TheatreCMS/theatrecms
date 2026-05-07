@@ -45,14 +45,18 @@ class PluginManager
 
         $data = json_decode((string) file_get_contents($this->configFile), true);
 
-        return is_array($data['active'] ?? null) ? $data['active'] : [];
+        if (!is_array($data) || !isset($data['active']) || !is_array($data['active'])) {
+            return [];
+        }
+
+        return array_values(array_filter($data['active'], 'is_string'));
     }
 
     /**
      * Phase 1 — instantiate every active plugin and call register().
      *
-     * Missing or invalid plugins emit E_USER_WARNING and are skipped so that
-     * one broken plugin does not prevent the application from booting.
+     * Missing, invalid, or throwing plugins emit E_USER_WARNING and are skipped
+     * so that one broken plugin does not prevent the application from booting.
      */
     public function registerAll(Container $container): void
     {
@@ -61,8 +65,15 @@ class PluginManager
             if ($plugin === null) {
                 continue;
             }
-            $this->loaded[$slug] = $plugin;
-            $plugin->register($container);
+            try {
+                $plugin->register($container);
+                $this->loaded[$slug] = $plugin;
+            } catch (\Throwable $e) {
+                trigger_error(
+                    "Plugin '$slug' threw during register(): " . $e->getMessage(),
+                    E_USER_WARNING
+                );
+            }
         }
     }
 
@@ -73,18 +84,29 @@ class PluginManager
      */
     public function bootAll(App $app): void
     {
-        foreach ($this->loaded as $plugin) {
-            $plugin->boot($app);
+        foreach ($this->loaded as $slug => $plugin) {
+            try {
+                $plugin->boot($app);
+            } catch (\Throwable $e) {
+                trigger_error(
+                    "Plugin '$slug' threw during boot(): " . $e->getMessage(),
+                    E_USER_WARNING
+                );
+            }
         }
     }
 
     /**
      * Adds a slug to the active list and persists the config file.
      *
-     * @throws RuntimeException if the plugin's Plugin.php is missing.
+     * @throws RuntimeException if the plugin's Plugin.php is missing or the slug is invalid.
      */
     public function activate(string $slug): void
     {
+        if (!$this->isValidSlug($slug)) {
+            throw new RuntimeException("Plugin slug '$slug' contains invalid characters (allowed: a-z, 0-9, -).");
+        }
+
         $pluginFile = $this->pluginsDir . '/' . $slug . '/Plugin.php';
         if (!file_exists($pluginFile)) {
             throw new RuntimeException("Plugin '$slug' not found at $pluginFile");
@@ -109,7 +131,7 @@ class PluginManager
     }
 
     /**
-     * Returns metadata from plugin.json for a given slug, or [] if absent.
+     * Returns metadata from plugin.json for a given slug, or [] if absent or invalid.
      *
      * @return array<string, string>
      */
@@ -120,7 +142,9 @@ class PluginManager
             return [];
         }
 
-        return json_decode((string) file_get_contents($metaFile), true) ?? [];
+        $decoded = json_decode((string) file_get_contents($metaFile), true);
+
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**
@@ -148,6 +172,14 @@ class PluginManager
 
     private function loadPlugin(string $slug): ?PluginInterface
     {
+        if (!$this->isValidSlug($slug)) {
+            trigger_error(
+                "Plugin slug '$slug' contains invalid characters; skipping.",
+                E_USER_WARNING
+            );
+            return null;
+        }
+
         $pluginFile = $this->pluginsDir . '/' . $slug . '/Plugin.php';
 
         if (!file_exists($pluginFile)) {
@@ -158,13 +190,28 @@ class PluginManager
             return null;
         }
 
-        require_once $pluginFile;
+        // Guard against path traversal: ensure the resolved path stays inside pluginsDir.
+        $realPluginFile = realpath($pluginFile);
+        $realPluginsDir = realpath($this->pluginsDir);
+        if (
+            $realPluginFile === false ||
+            $realPluginsDir === false ||
+            !str_starts_with($realPluginFile, $realPluginsDir . DIRECTORY_SEPARATOR)
+        ) {
+            trigger_error(
+                "Plugin '$slug': resolved path is outside the plugins directory; skipping.",
+                E_USER_WARNING
+            );
+            return null;
+        }
+
+        require_once $realPluginFile;
 
         $class = $this->resolveClass($slug);
 
         if (!class_exists($class)) {
             trigger_error(
-                "Plugin class '$class' not found after requiring '$pluginFile'.",
+                "Plugin class '$class' not found after requiring '$realPluginFile'.",
                 E_USER_WARNING
             );
             return null;
@@ -180,13 +227,33 @@ class PluginManager
             return null;
         }
 
+        // Enforce that the plugin self-reports a slug matching its directory name.
+        if ($plugin->getSlug() !== $slug) {
+            trigger_error(
+                "Plugin class '$class' reports slug '{$plugin->getSlug()}' but was loaded from directory '$slug'; skipping.",
+                E_USER_WARNING
+            );
+            return null;
+        }
+
         return $plugin;
     }
 
-    /** Converts slug "example" → "TheatreCMS\Plugin\Example\Plugin" */
+    /**
+     * Converts a slug to the StudlyCase namespace segment used by the plugin class.
+     * e.g. "my-plugin" → "TheatreCMS\Plugin\MyPlugin\Plugin"
+     *      "box_office" → "TheatreCMS\Plugin\BoxOffice\Plugin"
+     */
     private function resolveClass(string $slug): string
     {
-        return 'TheatreCMS\\Plugin\\' . ucfirst($slug) . '\\Plugin';
+        $studly = implode('', array_map('ucfirst', preg_split('/[-_]+/', $slug) ?: [$slug]));
+        return 'TheatreCMS\\Plugin\\' . $studly . '\\Plugin';
+    }
+
+    /** Slugs must be lowercase alphanumeric with optional hyphens. */
+    private function isValidSlug(string $slug): bool
+    {
+        return (bool) preg_match('/^[a-z0-9][a-z0-9-]*$/', $slug);
     }
 
     /** @param string[] $active */
