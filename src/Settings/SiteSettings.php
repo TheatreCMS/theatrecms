@@ -16,6 +16,7 @@ class SiteSettings
     private static array $defaults = [
         'organization_name' => '',
         'name'              => 'TheatreCMS',
+        'site_url'          => '',
         'logo_url'          => '/assets/images/logo.svg',
         'contact_email'     => '',
         'social'            => [
@@ -59,6 +60,7 @@ class SiteSettings
 
         $current['organization_name'] = $data['organization_name'] ?? $current['organization_name'];
         $current['name']              = $data['name']              ?? $current['name'];
+        $current['site_url']          = $data['site_url']          ?? $current['site_url'];
         $current['logo_url']          = $data['logo_url']          ?? $current['logo_url'];
         $current['contact_email']     = $data['contact_email']     ?? $current['contact_email'];
 
