@@ -16,10 +16,12 @@ use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Controllers\PersonController;
 use TheatreCMS\Controllers\ProductionController;
 use TheatreCMS\Controllers\SeasonController;
+use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Controllers\SponsorController;
 use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
+use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
@@ -58,6 +60,10 @@ class ServiceRegistrar
      */
     public static function registerSharedServices(Container $container): void
     {
+        $container->set(SiteSettings::class, static function (): SiteSettings {
+            return new SiteSettings(APP_ROOT . '/app/config.yaml');
+        });
+
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
         $container->set(ThemeManager::class, static function (ContainerInterface $c): ThemeManager {
@@ -85,6 +91,11 @@ class ServiceRegistrar
             $themeManager->loadFunctions();
             $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
+
+            $siteSettings = $c->get(SiteSettings::class);
+            foreach ($siteSettings->all() as $key => $value) {
+                $twig->getEnvironment()->addGlobal($key, $value);
+            }
 
             return $twig;
         });
@@ -209,6 +220,12 @@ class ServiceRegistrar
                 );
             },
             ImageUploadController::class => static fn(): ImageUploadController => new ImageUploadController(),
+            SettingsController::class => static function (ContainerInterface $c): SettingsController {
+                return new SettingsController(
+                    $c->get(SiteSettings::class),
+                    $c->get(Twig::class)
+                );
+            },
         ];
     }
 

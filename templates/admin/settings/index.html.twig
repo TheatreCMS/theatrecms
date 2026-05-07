@@ -1,0 +1,101 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Settings - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Site Settings</h1>
+    <p class="text-gray-600">Manage your theatre's global configuration.</p>
+</div>
+
+<form action="/admin/settings" method="POST" class="space-y-8"
+      hx-post="/admin/settings" hx-target="#flash-messages" hx-swap="innerHTML">
+
+    <fieldset class="space-y-4">
+        <legend class="text-lg font-semibold text-gray-700 border-b pb-2 w-full">General</legend>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="organization_name" class="block text-sm font-medium text-gray-700 mb-1">Organization Name</label>
+                <input type="text" name="organization_name" id="organization_name"
+                       value="{{ settings.organization_name|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="e.g. Acme Community Theatre">
+                <p class="mt-1 text-xs text-gray-500">Displayed in the admin sidebar and browser title.</p>
+            </div>
+
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Site Name</label>
+                <input type="text" name="name" id="name"
+                       value="{{ settings.name|default('TheatreCMS') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="TheatreCMS">
+            </div>
+
+            <div>
+                <label for="logo_url" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                <input type="text" name="logo_url" id="logo_url"
+                       value="{{ settings.logo_url|default('/assets/images/logo.svg') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="/assets/images/logo.svg">
+                <p class="mt-1 text-xs text-gray-500">Relative or absolute URL to the logo image.</p>
+            </div>
+
+            <div>
+                <label for="base_path" class="block text-sm font-medium text-gray-700 mb-1">Base Path</label>
+                <input type="text" name="base_path" id="base_path"
+                       value="{{ settings.base_path|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="Leave empty for root install">
+                <p class="mt-1 text-xs text-gray-500">Only set if the site is installed in a subdirectory (e.g. <code>/theatre/</code>).</p>
+            </div>
+
+            <div>
+                <label for="contact_email" class="block text-sm font-medium text-gray-700 mb-1">Contact Email</label>
+                <input type="email" name="contact_email" id="contact_email"
+                       value="{{ settings.contact_email|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="info@example.com">
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="space-y-4">
+        <legend class="text-lg font-semibold text-gray-700 border-b pb-2 w-full">Social Links</legend>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <label for="social_facebook" class="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+                <input type="url" name="social_facebook" id="social_facebook"
+                       value="{{ settings.social.facebook|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="https://facebook.com/yourpage">
+            </div>
+
+            <div>
+                <label for="social_twitter" class="block text-sm font-medium text-gray-700 mb-1">Twitter / X</label>
+                <input type="url" name="social_twitter" id="social_twitter"
+                       value="{{ settings.social.twitter|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="https://twitter.com/yourhandle">
+            </div>
+
+            <div>
+                <label for="social_instagram" class="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                <input type="url" name="social_instagram" id="social_instagram"
+                       value="{{ settings.social.instagram|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="https://instagram.com/yourhandle">
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+        <button type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+            Save Settings
+        </button>
+    </div>
+
+</form>
+{% endblock %}
