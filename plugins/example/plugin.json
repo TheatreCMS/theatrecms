@@ -1,0 +1,8 @@
+{
+    "name": "Example Plugin",
+    "slug": "example",
+    "version": "1.0.0",
+    "description": "A reference plugin demonstrating all TheatreCMS extension points.",
+    "author": "TheatreCMS Team",
+    "requires": "1.0.0"
+}

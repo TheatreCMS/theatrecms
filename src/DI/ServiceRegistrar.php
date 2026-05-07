@@ -30,6 +30,7 @@ use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\ThemeManager;
@@ -58,6 +59,14 @@ class ServiceRegistrar
      */
     public static function registerSharedServices(Container $container): void
     {
+        $container->set(PluginManager::class, static function (ContainerInterface $c): PluginManager {
+            $settings = $c->get('settings');
+            return new PluginManager(
+                $settings['plugins']['dir']    ?? APP_ROOT . '/plugins',
+                $settings['plugins']['config'] ?? APP_ROOT . '/config/plugins.json',
+            );
+        });
+
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
         $container->set(ThemeManager::class, static function (ContainerInterface $c): ThemeManager {
