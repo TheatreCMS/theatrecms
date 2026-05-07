@@ -30,3 +30,36 @@ if (!function_exists('apply_filters')) {
         return HookManager::getInstance()->applyFilters($tag, $value, ...$args);
     }
 }
+
+if (!function_exists('add_action')) {
+    /**
+     * Register a callback to fire when an action tag is triggered.
+     *
+     * Actions are side-effect callbacks — unlike filters they do not transform
+     * a value.  Internally they share the same HookManager storage as filters;
+     * the return value is simply discarded when do_action() is called.
+     *
+     * @param string   $tag
+     * @param callable $callback
+     * @param int      $priority
+     */
+    function add_action(string $tag, callable $callback, int $priority = 10): void
+    {
+        HookManager::getInstance()->addFilter($tag, $callback, $priority);
+    }
+}
+
+if (!function_exists('do_action')) {
+    /**
+     * Fire all callbacks registered for an action tag.
+     *
+     * Each handler receives $args directly; return values are discarded.
+     *
+     * @param string $tag
+     * @param mixed  ...$args
+     */
+    function do_action(string $tag, mixed ...$args): void
+    {
+        HookManager::getInstance()->doAction($tag, ...$args);
+    }
+}

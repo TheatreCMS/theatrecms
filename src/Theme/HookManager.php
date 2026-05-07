@@ -60,4 +60,26 @@ class HookManager
 
         return $value;
     }
+
+    /**
+     * Fire all callbacks registered for an action tag.
+     *
+     * Unlike applyFilters(), return values are discarded and each handler
+     * receives the original $args directly (no value chaining).
+     */
+    public function doAction(string $tag, mixed ...$args): void
+    {
+        if (!isset($this->filters[$tag])) {
+            return;
+        }
+
+        $callbacks = $this->filters[$tag];
+        ksort($callbacks);
+
+        foreach ($callbacks as $handlers) {
+            foreach ($handlers as $handler) {
+                $handler(...$args);
+            }
+        }
+    }
 }

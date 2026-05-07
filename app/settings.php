@@ -82,6 +82,14 @@ return [
 
             // The active theme to use. Should correspond to a subdirectory in the themes dir.
             'active' => 'avlt'
+        ],
+
+        'plugins' => [
+            // Directory where plugins are stored. Each plugin in its own subdirectory.
+            'dir' => APP_ROOT . '/plugins',
+
+            // JSON file listing active plugin slugs (source of truth — not the database).
+            'config' => APP_ROOT . '/config/plugins.json',
         ]
     ]
 ];

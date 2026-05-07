@@ -23,6 +23,7 @@ use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use TheatreCMS\DI\ServiceRegistrar;
+use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Theme\HookManager;
 
@@ -66,6 +67,9 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 });
 
 ServiceRegistrar::register($container);
+
+// Plugin register phase (Phase 1): plugins register DI services before the Slim App is created.
+$container->get(PluginManager::class)->registerAll($container);
 
 // Add the Auth
 $container->get(UserRepository::class)->setAuth($container->get(Auth::class));

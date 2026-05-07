@@ -21,6 +21,7 @@ require_once ROOT_DIR . "/vendor/autoload.php";
 
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -71,4 +72,9 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
 
     return $twig->render($response, 'index.html.twig', ['posts' => $posts]);
 });
+
+// Plugin boot phase (Phase 2): plugins register routes, middleware, and hook callbacks.
+// Runs after ALL core routes so plugins see the full routing table.
+$container->get(PluginManager::class)->bootAll($app);
+
 $app->run();
