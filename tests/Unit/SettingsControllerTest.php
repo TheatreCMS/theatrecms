@@ -70,7 +70,6 @@ class SettingsControllerTest extends TestCase
             'organization_name' => 'Acme Theatre',
             'name'              => 'Acme CMS',
             'logo_url'          => '/img/logo.png',
-            'base_path'         => '',
             'contact_email'     => 'info@acme.org',
         ];
 

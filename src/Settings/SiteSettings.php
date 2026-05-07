@@ -17,7 +17,6 @@ class SiteSettings
         'organization_name' => '',
         'name'              => 'TheatreCMS',
         'logo_url'          => '/assets/images/logo.svg',
-        'base_path'         => '',
         'contact_email'     => '',
         'social'            => [
             'facebook'  => '',
@@ -61,7 +60,6 @@ class SiteSettings
         $current['organization_name'] = $data['organization_name'] ?? $current['organization_name'];
         $current['name']              = $data['name']              ?? $current['name'];
         $current['logo_url']          = $data['logo_url']          ?? $current['logo_url'];
-        $current['base_path']         = $data['base_path']         ?? $current['base_path'];
         $current['contact_email']     = $data['contact_email']     ?? $current['contact_email'];
 
         $current['social']['facebook']  = $data['social_facebook']  ?? $current['social']['facebook']  ?? '';
