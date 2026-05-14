@@ -15,6 +15,8 @@
  * GNU General Public License for more details.
  */
 
+declare(strict_types=1);
+
 namespace TheatreCMS\Plugin;
 
 use DI\Container;
@@ -242,11 +244,10 @@ class PluginManager
     /**
      * Converts a slug to the StudlyCase namespace segment used by the plugin class.
      * e.g. "my-plugin" → "TheatreCMS\Plugin\MyPlugin\Plugin"
-     *      "box_office" → "TheatreCMS\Plugin\BoxOffice\Plugin"
      */
     private function resolveClass(string $slug): string
     {
-        $studly = implode('', array_map('ucfirst', preg_split('/[-_]+/', $slug) ?: [$slug]));
+        $studly = implode('', array_map('ucfirst', explode('-', $slug)));
         return 'TheatreCMS\\Plugin\\' . $studly . '\\Plugin';
     }
 
@@ -264,12 +265,14 @@ class PluginManager
             mkdir($dir, 0755, true);
         }
 
-        file_put_contents(
-            $this->configFile,
-            json_encode(
-                ['active' => array_values($active)],
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
-            ) . "\n"
-        );
+        $json = json_encode(
+            ['active' => array_values($active)],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+        ) . "\n";
+
+        // Write to a temp file first, then rename for an atomic replace.
+        $tmp = $this->configFile . '.tmp.' . getmypid();
+        file_put_contents($tmp, $json);
+        rename($tmp, $this->configFile);
     }
 }

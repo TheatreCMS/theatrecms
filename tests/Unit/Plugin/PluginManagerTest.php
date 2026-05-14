@@ -146,6 +146,53 @@ class PluginManagerTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // bootAll()
+    // -------------------------------------------------------------------------
+
+    public function testBootAllIsNoOpWhenNoPluginsAreLoaded(): void
+    {
+        // No plugins registered; should complete without error or warning.
+        $app = $this->createMock(\Slim\App::class);
+        $this->manager->bootAll($app);
+        $this->addToAssertionCount(1);
+    }
+
+    public function testBootAllCallsBootOnLoadedPlugin(): void
+    {
+        $uid     = uniqid();
+        $slug    = 'bt' . $uid;
+        $studly  = 'Bt' . $uid;
+        $flagFile = $this->tmpDir . '/boot_called.txt';
+
+        $this->createRealPlugin($slug, $studly, "file_put_contents('{$flagFile}', '1');");
+        $this->writeConfig(['active' => [$slug]]);
+
+        $container = $this->createMock(\DI\Container::class);
+        $this->manager->registerAll($container);
+        $this->manager->bootAll($this->createMock(\Slim\App::class));
+
+        self::assertFileExists($flagFile);
+    }
+
+    public function testBootAllSkipsPluginThatThrowsDuringBoot(): void
+    {
+        $uid    = uniqid();
+        $slug   = 'eb' . $uid;
+        $studly = 'Eb' . $uid;
+
+        $this->createRealPlugin($slug, $studly, "throw new \\RuntimeException('boot failed');");
+        $this->writeConfig(['active' => [$slug]]);
+
+        $container = $this->createMock(\DI\Container::class);
+        $this->manager->registerAll($container);
+
+        $this->expectWarning();
+        $this->expectWarningMessageMatches('/threw during boot/');
+
+        $this->manager->bootAll($this->createMock(\Slim\App::class));
+    }
+
+    // -------------------------------------------------------------------------
     // Missing-plugin graceful handling
     // -------------------------------------------------------------------------
 
@@ -217,6 +264,30 @@ class PluginManagerTest extends TestCase
         if ($meta !== []) {
             file_put_contents($dir . '/plugin.json', json_encode($meta));
         }
+    }
+
+    /**
+     * Creates a loadable plugin with a unique class name to avoid PHP redeclaration
+     * errors when multiple tests run in the same process.
+     *
+     * @param string $bootBody PHP statement(s) to execute inside boot().
+     */
+    private function createRealPlugin(string $slug, string $studly, string $bootBody): void
+    {
+        $dir = $this->pluginsDir . '/' . $slug;
+        mkdir($dir, 0755, true);
+
+        file_put_contents($dir . '/Plugin.php', <<<PHP
+        <?php
+        declare(strict_types=1);
+        namespace TheatreCMS\Plugin\\$studly;
+        use DI\Container;
+        use TheatreCMS\Plugin\AbstractPlugin;
+        class Plugin extends AbstractPlugin {
+            public function getSlug(): string { return '$slug'; }
+            public function boot(\Slim\App \$app): void { $bootBody }
+        }
+        PHP);
     }
 
     private function removeDirectory(string $dir): void

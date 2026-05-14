@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TheatreCMS\Plugin\Example;
 
+require_once __DIR__ . '/GreetingService.php';
+
 use DI\Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -54,23 +56,5 @@ class Plugin extends AbstractPlugin
             // Plugins would do real work here (send notifications, invalidate caches, etc.)
             error_log('[ExamplePlugin] season_saved action fired');
         });
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Supporting class — kept in the same file for simplicity.
-// Larger plugins would split this into separate files and require_once them
-// after the namespace declaration (namespace must come first in PHP).
-// ---------------------------------------------------------------------------
-
-class GreetingService
-{
-    public function __construct(private readonly string $name)
-    {
-    }
-
-    public function greet(): string
-    {
-        return "Hello from {$this->name}!";
     }
 }
