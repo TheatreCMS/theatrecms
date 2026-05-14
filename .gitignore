@@ -31,3 +31,4 @@ node_modules/
 
 # Application configuration files
 config.json
+config/plugins.json
