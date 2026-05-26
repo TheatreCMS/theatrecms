@@ -25,6 +25,7 @@ use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Csrf\Guard;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 
@@ -55,8 +56,8 @@ require ROUTES_DIR . '/admin/images.php';
 require ROUTES_DIR . '/admin/settings.php';
 require ROUTES_DIR . '/frontend/seasons.php';
 
-$app->get('/admin/login', [LoginController::class, 'login']);
-$app->post('/admin/login', [LoginController::class, 'authenticate']);
+$app->get('/admin/login', [LoginController::class, 'login'])->add($container->get(Guard::class));
+$app->post('/admin/login', [LoginController::class, 'authenticate'])->add($container->get(Guard::class));
 $app->get('/admin/logout', [LoginController::class, 'logout']);
 $app->post('/admin/register', [LoginController::class, 'register']);
 
