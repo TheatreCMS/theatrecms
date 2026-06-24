@@ -119,10 +119,25 @@ class ProductionRepository extends BaseRepository
             }
         }
 
-        // Persist production first so relations can reference it
-        $this->em->persist($production);
+        $workIds = $args['works'] ?? [];
+        if (!is_array($workIds)) {
+            $workIds = !empty($workIds) ? explode(',', (string) $workIds) : [];
+        }
 
-        // @todo update people and works if provided
+        $workIds = array_filter(array_map('trim', array_map('strval', $workIds)), static function (string $workId): bool {
+            return $workId !== '';
+        });
+
+        $worksRepository = $this->em->getRepository(Work::class);
+        foreach ($workIds as $workId) {
+            $work = $worksRepository->find((int) $workId);
+            if ($work instanceof Work) {
+                $production->addWork($work);
+            }
+        }
+
+        // Persist production after all relationship updates
+        $this->em->persist($production);
 
         $this->em->flush();
 

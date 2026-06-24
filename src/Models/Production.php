@@ -33,13 +33,13 @@ class Production extends ModelBase
 
     #[Column(type: 'string', nullable: true)]
     private ?string $excerpt = null;
- 
+
     #[Column(type: 'date', nullable: true)]
     private ?DateTime $opening = null;
-    
+
     #[Column(type: 'date', nullable: true)]
     private ?DateTime $closing = null;
-    
+
     /**
      * @var int Runtime in minutes
      */
@@ -79,7 +79,7 @@ class Production extends ModelBase
 
     #[OneToMany(targetEntity: Sponsorship::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $sponsorships;
-    
+
     /**
      * Accept either a single Work instance, an array of Work instances, or null for $works.
      * This keeps compatibility with existing unit tests which pass a Work as the third arg.
@@ -295,7 +295,7 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function addPerformer(Person $person, string $role = null): self
+    public function addPerformer(Person $person, ?string $role = null): self
     {
         $productionPerson = new ProductionPerson($this, $person);
         $productionPerson->setRoleType(RoleType::Cast);

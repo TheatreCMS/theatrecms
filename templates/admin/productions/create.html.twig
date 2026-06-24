@@ -7,368 +7,345 @@
 {% set sponsorsList = sponsors|default([]) %}
 {% set venues = venues|default([]) %}
 
-{% block title %}Create Production - {{ parent() }}{% endblock %}
+{% block title %}Create Production -
+	{{ parent() }}
+{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Create New Production</h1>
-        <p class="text-gray-600">Enter the details for the new production.</p>
-    </div>
-    {# Show a flash/warning for empty collections #}
-    {% if seasons is empty %}
-        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <!-- exclamation icon -->
-                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                         fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd"
-                              d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
-                              clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">No seasons available</h3>
-                    <div class="mt-1 text-sm text-yellow-700">
-                        There are no seasons in the system. A production should belong to a season — create a season
-                        from the Seasons section first.
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+	<div class="mb-6">
+		<h1 class="text-2xl font-bold text-gray-800">Create New Production</h1>
+		<p class="text-gray-600">Enter the details for the new production.</p>
+	</div>
+	{# Show a flash/warning for empty collections #}
+	{% if seasons is empty %}
+		<div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+			<div class="flex">
+				<div
+					class="flex-shrink-0">
+					<!-- exclamation icon -->
+					<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-sm font-medium text-yellow-800">No seasons available</h3>
+					<div class="mt-1 text-sm text-yellow-700">
+						There are no seasons in the system. A production should belong to a season — create a season
+						                        from the Seasons section first.
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
 
-    {% if works is empty %}
-        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <!-- exclamation icon -->
-                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                         fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd"
-                              d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
-                              clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">No works available</h3>
-                    <div class="mt-1 text-sm text-yellow-700">
-                        There are no works in the system to attach to this production. You can add works from the Works
-                        section before creating a production.
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+	{% if works is empty %}
+		<div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+			<div class="flex">
+				<div
+					class="flex-shrink-0">
+					<!-- exclamation icon -->
+					<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-sm font-medium text-yellow-800">No works available</h3>
+					<div class="mt-1 text-sm text-yellow-700">
+						There are no works in the system to attach to this production. You can add works from the Works
+						                        section before creating a production.
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
 
-    {% if people is empty %}
-        <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <!-- exclamation icon -->
-                    <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                         fill="currentColor" aria-hidden="true">
-                        <path fill-rule="evenodd"
-                              d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
-                              clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">No people available</h3>
-                    <div class="mt-1 text-sm text-yellow-700">
-                        There are no people in the system to attach to this production. You can add people from the People
-                        section before creating a production.
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+	{% if people is empty %}
+		<div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+			<div class="flex">
+				<div
+					class="flex-shrink-0">
+					<!-- exclamation icon -->
+					<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-sm font-medium text-yellow-800">No people available</h3>
+					<div class="mt-1 text-sm text-yellow-700">
+						There are no people in the system to attach to this production. You can add people from the People
+						                        section before creating a production.
+					</div>
+				</div>
+			</div>
+		</div>
+	{% endif %}
 
-    <form action="/{{ base_path|default('') }}admin/productions/create" method="POST" enctype="multipart/form-data"
-          class="space-y-6"
-          hx-post="/{{ base_path|default('') }}admin/productions/create" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="md:col-span-2">
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Production Name <span
-                            class="text-red-500">*</span></label>
-                <input type="text" name="name" id="name" required
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                       placeholder="e.g. Hamlet">
-            </div>
+	<form action="/{{ base_path|default('') }}admin/productions/create" method="POST" enctype="multipart/form-data" class="space-y-6" hx-post="/{{ base_path|default('') }}admin/productions/create" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div class="md:col-span-2">
+				<label for="name" class="block text-sm font-medium text-gray-700 mb-1">Production Name
+					<span class="text-red-500">*</span>
+				</label>
+				<input type="text" name="name" id="name" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="e.g. Hamlet">
+			</div>
 
-            <div class="md:col-span-2">
-                <label for="seasonId" class="block text-sm font-medium text-gray-700 mb-1">Season <span
-                            class="text-red-500">*</span></label>
-                {% if seasons is not empty %}
-                    <select name="seasonId" id="seasonId" required
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Select a season</option>
-                        {% for s in seasons %}
-                            <option value="{{ s.id }}">{{ s.label|default(s.slug|default(s.id)) }}</option>
-                        {% endfor %}
-                    </select>
-                {% else %}
-                    <div class="text-xs text-gray-500 mt-1">No seasons!! — you can create a season first from the
-                        Seasons section.
-                    </div>
-                {% endif %}
-            </div>
+			<div class="md:col-span-2">
+				<label for="seasonId" class="block text-sm font-medium text-gray-700 mb-1">Season
+					<span class="text-red-500">*</span>
+				</label>
+				{% if seasons is not empty %}
+					<select name="seasonId" id="seasonId" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+						<option value="">Select a season</option>
+						{% for s in seasons %}
+							<option value="{{ s.id }}">{{ s.label|default(s.slug|default(s.id)) }}</option>
+						{% endfor %}
+					</select>
+				{% else %}
+					<div class="text-xs text-gray-500 mt-1">No seasons!! — you can create a season first from the
+						                        Seasons section.
+					</div>
+				{% endif %}
+			</div>
 
-            <div class="md:col-span-2">
-                <label for="venueId" class="block text-sm font-medium text-gray-700 mb-1">Venue <span class="text-red-500">*</span></label>
-                {% if venues is empty %}
-                    <div class="text-xs text-gray-500 mt-1">No venues yet — add a venue from the Venues section before scheduling productions.</div>
-                {% else %}
-                    <select name="venueId" id="venueId" required
-                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Select a venue</option>
-                        {% for v in venues %}
-                            <option value="{{ v.id }}">{{ v.name }}</option>
-                        {% endfor %}
-                    </select>
-                {% endif %}
-            </div>
+			<div class="md:col-span-2">
+				<label for="venueId" class="block text-sm font-medium text-gray-700 mb-1">Venue
+					<span class="text-red-500">*</span>
+				</label>
+				{% if venues is empty %}
+					<div class="text-xs text-gray-500 mt-1">No venues yet — add a venue from the Venues section before scheduling productions.</div>
+				{% else %}
+					<select name="venueId" id="venueId" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+						<option value="">Select a venue</option>
+						{% for v in venues %}
+							<option value="{{ v.id }}">{{ v.name }}</option>
+						{% endfor %}
+					</select>
+				{% endif %}
+			</div>
 
-            <div class="md:col-span-2">
-                <fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="opening" class="block text-sm font-medium text-gray-700 mb-1">Opening <span
-                                    class="text-red-500">*</span></label>
-                        <input type="date" name="opening" id="opening" required
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label for="closing" class="block text-sm font-medium text-gray-700 mb-1">Closing <span
-                                    class="text-red-500">*</span></label>
-                        <input type="date" name="closing" id="closing" required
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-                </fieldset>
-            </div>
+			<div class="md:col-span-2">
+				<fieldset class="grid grid-cols-1 md:grid-cols-2 gap-6">
+					<div>
+						<label for="opening" class="block text-sm font-medium text-gray-700 mb-1">Opening
+							<span class="text-red-500">*</span>
+						</label>
+						<input type="date" name="opening" id="opening" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+					</div>
+					<div>
+						<label for="closing" class="block text-sm font-medium text-gray-700 mb-1">Closing
+							<span class="text-red-500">*</span>
+						</label>
+						<input type="date" name="closing" id="closing" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+					</div>
+				</fieldset>
+			</div>
 
-            <div class="md:col-span-2 space-y-3">
-                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
-                <textarea name="description" id="description" rows="6"
-                          class="hidden" aria-hidden="true"></textarea>
-            </div>
+			<div class="md:col-span-2 space-y-3">
+				<label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+				<div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+				<textarea name="description" id="description" rows="6" class="hidden" aria-hidden="true"></textarea>
+			</div>
 
-            <div class="md:col-span-2">
-                <label for="excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
-                <textarea name="excerpt" id="excerpt" rows="3"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="Short teaser or summary..."></textarea>
-            </div>
+			<div class="md:col-span-2">
+				<label for="excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+				<textarea name="excerpt" id="excerpt" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Short teaser or summary..."></textarea>
+			</div>
 
-            <div>
-                <label for="promoVideoUrl" class="block text-sm font-medium text-gray-700 mb-1">Promo Video URL</label>
-                <input type="url" name="promoVideoUrl" id="promoVideoUrl"
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                       placeholder="https://example.com/video">
-            </div>
+			<div>
+				<label for="promoVideoUrl" class="block text-sm font-medium text-gray-700 mb-1">Promo Video URL</label>
+				<input type="url" name="promoVideoUrl" id="promoVideoUrl" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://example.com/video">
+			</div>
 
-            <div>
-                <label for="ticketPurchaseUrl" class="block text-sm font-medium text-gray-700 mb-1">Ticket Purchase
-                    URL</label>
-                <input type="url" name="ticketPurchaseUrl" id="ticketPurchaseUrl"
-                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                       placeholder="https://example.com/tickets">
-            </div>
+			<div>
+				<label for="ticketPurchaseUrl" class="block text-sm font-medium text-gray-700 mb-1">Ticket Purchase
+					                    URL</label>
+				<input type="url" name="ticketPurchaseUrl" id="ticketPurchaseUrl" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://example.com/tickets">
+			</div>
 
-            <div class="md:col-span-2">
-                <label for="works" class="block text-sm font-medium text-gray-700 mb-1">Works</label>
-                <select multiple="multiple" name="works" id="works" class="w-full rounded-md border-gray-300 shadow-sm">
-                    {% for w in works %}
-                        <option value="{{ w.id }}">{{ w.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+			<div class="md:col-span-2">
+				<label for="works" class="block text-sm font-medium text-gray-700 mb-1">Works</label>
+				<select multiple="multiple" name="works[]" id="works" class="w-full rounded-md border-gray-300 shadow-sm">
+					{% for w in works %}
+						<option value="{{ w.id }}">{{ w.title }}</option>
+					{% endfor %}
+				</select>
+			</div>
 
-            <div class="md:col-span-2 relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
-                {% if people is empty %}
-                    <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <!-- exclamation icon -->
-                                <svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg"
-                                     viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd"
-                                          d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z"
-                                          clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-yellow-800">No people available</h3>
-                                <div class="mt-1 text-sm text-yellow-700">
-                                    There are no people in the system to add to the creative team. Add people from the
-                                    People section before assigning creatives.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                <table class="w-full text-sm text-left rtl:text-right text-body">
-                    <thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 font-medium">
-                            Creative Team
-                        </th>
-                        <th scope="col" class="px-6 py-3 font-medium">
-                            Role
-                        </th>
-                        <th>
-                            <button type="button" id="add-creative">Add Creative</button>
-                        </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr class="bg-neutral-primary-soft border-b  border-default">
-                        <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-                            <select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm"
-                                    name="creatives[][personId]">
-                                <option value="">Select a person</option>
-                                {% for p in people %}
-                                    <option value="{{ p.id }}">{{ p.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </th>
-                        <td class="px-6 py-4">
-                            <label class="sr-only" for="creatives[][role]">Role</label>
-                            <input class="w-full rounded-md border-gray-300 shadow-sm" type="text"
-                                   id="creatives[][role]" name="creatives[][role]" placeholder="e.g. Director">
-                        </td>
-                        <td class="px-6 py-4 text-right">
-                            <a href="#" class="font-medium text-fg-brand hover:underline">Delete</a>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
+			<div class="md:col-span-2 relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
+				{% if people is empty %}
+					<div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
+						<div class="flex">
+							<div
+								class="flex-shrink-0">
+								<!-- exclamation icon -->
+								<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
+									<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+								</svg>
+							</div>
+							<div class="ml-3">
+								<h3 class="text-sm font-medium text-yellow-800">No people available</h3>
+								<div class="mt-1 text-sm text-yellow-700">
+									There are no people in the system to add to the creative team. Add people from the
+									                                    People section before assigning creatives.
+								</div>
+							</div>
+						</div>
+					</div>
+				{% endif %}
+				<table class="w-full text-sm text-left rtl:text-right text-body">
+					<thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
+						<tr>
+							<th scope="col" class="px-6 py-3 font-medium">
+								Creative Team
+							</th>
+							<th scope="col" class="px-6 py-3 font-medium">
+								Role
+							</th>
+							<th>
+								<button type="button" id="add-creative">Add Creative</button>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="bg-neutral-primary-soft border-b  border-default">
+							<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+								<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="creatives[][personId]">
+									<option value="">Select a person</option>
+									{% for p in people %}
+										<option value="{{ p.id }}">{{ p.name }}</option>
+									{% endfor %}
+								</select>
+							</th>
+							<td class="px-6 py-4">
+								<label class="sr-only" for="creatives[][role]">Role</label>
+								<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="creatives[][role]" name="creatives[][role]" placeholder="e.g. Director">
+							</td>
+							<td class="px-6 py-4 text-right">
+								<a href="#" class="font-medium text-fg-brand hover:underline">Delete</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 
-            <div class="md:col-span-2 space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900 mb-1">Sponsorships</h2>
-                        <p class="text-sm text-gray-600">Choose which sponsors support this production.</p>
-                    </div>
-                    <button type="button"
-                            id="add-sponsorship"
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if sponsorsList is empty %}opacity-50 cursor-not-allowed{% endif %}"
-                            {% if sponsorsList is empty %}disabled{% endif %}>
-                        Add Sponsorship
-                    </button>
-                </div>
+			<div class="md:col-span-2 space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+				<div class="flex items-start justify-between gap-4">
+					<div>
+						<h2 class="text-lg font-semibold text-gray-900 mb-1">Sponsorships</h2>
+						<p class="text-sm text-gray-600">Choose which sponsors support this production.</p>
+					</div>
+					<button type="button" id="add-sponsorship" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if sponsorsList is empty %}opacity-50 cursor-not-allowed{% endif %}" {% if sponsorsList is empty %} disabled {% endif %}>
+						Add Sponsorship
+					</button>
+				</div>
 
-                {% if sponsorsList is empty %}
-                    <div class="rounded-md bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
-                        There are no sponsors yet. Add sponsors from the Sponsors section before assigning them here.
-                    </div>
-                {% else %}
-                    <div class="relative overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-md">
-                        <table class="w-full text-sm text-left text-gray-700">
-                            <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
-                            <tr>
-                                <th class="px-4 py-3 font-medium">Sponsor</th>
-                                <th class="px-4 py-3 font-medium text-right">Action</th>
-                            </tr>
-                            </thead>
-                            <tbody data-sponsorship-rows>
-                            <tr class="bg-white border-b border-gray-100" data-sponsorship-row>
-                                <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                    <select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        <option value="">Select a sponsor</option>
-                                        {% for sponsor in sponsorsList %}
-                                            <option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </th>
-                                <td class="px-4 py-3 text-right">
-                                    <a href="#" class="delete-sponsorship font-medium text-blue-600 hover:underline">Delete</a>
-                                </td>
-                            </tr>
-                            <tr class="hidden bg-white border-b border-gray-100" data-sponsorship-template>
-                                <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                    <select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        <option value="">Select a sponsor</option>
-                                        {% for sponsor in sponsorsList %}
-                                            <option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </th>
-                                <td class="px-4 py-3 text-right">
-                                    <a href="#" class="delete-sponsorship font-medium text-blue-600 hover:underline">Delete</a>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                {% endif %}
-            </div>
+				{% if sponsorsList is empty %}
+					<div class="rounded-md bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
+						There are no sponsors yet. Add sponsors from the Sponsors section before assigning them here.
+					</div>
+				{% else %}
+					<div class="relative overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-md">
+						<table class="w-full text-sm text-left text-gray-700">
+							<thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
+								<tr>
+									<th class="px-4 py-3 font-medium">Sponsor</th>
+									<th class="px-4 py-3 font-medium text-right">Action</th>
+								</tr>
+							</thead>
+							<tbody data-sponsorship-rows>
+								<tr class="bg-white border-b border-gray-100" data-sponsorship-row>
+									<th scope="row" class="px-4 py-3 font-medium text-gray-900">
+										<select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+											<option value="">Select a sponsor</option>
+											{% for sponsor in sponsorsList %}
+												<option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
+											{% endfor %}
+										</select>
+									</th>
+									<td class="px-4 py-3 text-right">
+										<a href="#" class="delete-sponsorship font-medium text-blue-600 hover:underline">Delete</a>
+									</td>
+								</tr>
+								<tr class="hidden bg-white border-b border-gray-100" data-sponsorship-template>
+									<th scope="row" class="px-4 py-3 font-medium text-gray-900">
+										<select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+											<option value="">Select a sponsor</option>
+											{% for sponsor in sponsorsList %}
+												<option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
+											{% endfor %}
+										</select>
+									</th>
+									<td class="px-4 py-3 text-right">
+										<a href="#" class="delete-sponsorship font-medium text-blue-600 hover:underline">Delete</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				{% endif %}
+			</div>
 
-            <div class="md:col-span-2">
-                <label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Poster / Image</label>
-                <input type="file" name="poster" id="poster" accept="image/*"
-                       class="w-full">
-            </div>
-        </div>
+			<div class="md:col-span-2">
+				<label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Poster / Image</label>
+				<input type="file" name="poster" id="poster" accept="image/*" class="w-full">
+			</div>
+		</div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/{{ base_path|default('') }}admin/productions"
-               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                Cancel
-            </a>
-            <button type="submit"
-                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                Create Production
-            </button>
-        </div>
-    </form>
+		<div class="flex items-center justify-end space-x-3 pt-4 border-t">
+			<a href="/{{ base_path|default('') }}admin/productions" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+				Cancel
+			</a>
+			<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+				Create Production
+			</button>
+		</div>
+	</form>
 
 {% endblock %}
 {% block scripts %}
-    <script type="module">
-        import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+	<script type="module">
+		import {buildEditorJsConfig} from '/assets/js/editorjs-config.js';
 
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.querySelector('form');
-            const nameInput = document.getElementById('name');
-            const seasonInput = document.getElementById('seasonId');
-            const descriptionField = document.getElementById('description');
+document.addEventListener('DOMContentLoaded', function () {
+const form = document.querySelector('form');
+const nameInput = document.getElementById('name');
+const seasonInput = document.getElementById('seasonId');
+const descriptionField = document.getElementById('description');
 
-            const editorData = null;
+const editorData = null;
 
-            const setupDynamicRows = (namespace) => {
-                const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);
-                const templateRow = rowsBody ? rowsBody.querySelector(`tr[data-${namespace}-template]`) : null;
-                const addButton = document.getElementById(`add-${namespace}`);
+const setupDynamicRows = (namespace) => {
+const rowsBody = document.querySelector (`tbody[data-${namespace}-rows]`);
+const templateRow = rowsBody ? rowsBody.querySelector (`tr[data-${namespace}-template]`) : null;
+const addButton = document.getElementById (`add-${namespace}`);
 
-                if (!rowsBody || !templateRow) {
-                    return;
-                }
+if (! rowsBody || ! templateRow) {
+return;
+}
 
-                const getVisibleRows = () => Array.from(rowsBody.querySelectorAll(`tr[data-${namespace}-row]`));
+const getVisibleRows = () => Array.from(rowsBody.querySelectorAll (`tr[data-${namespace}-row]`));
 
-                const resetRowInputs = (row) => {
-                    const select = row.querySelector('select');
-                    if (select) {
-                        select.value = '';
-                    }
-                    const input = row.querySelector('input[type="text"]');
-                    if (input) {
-                        input.value = '';
-                    }
-                };
+const resetRowInputs = (row) => {
+const select = row.querySelector('select');
+if (select) {
+select.value = '';
+}
+const input = row.querySelector('input[type="text"]');
+if (input) {
+input.value = '';
+}
+};
 
-                const attachDeleteHandler = (row) => {
-                    const deleteLink = row.querySelector(`.delete-${namespace}`);
-                    if (!deleteLink) {
-                        return;
-                    }
+const attachDeleteHandler = (row) => {
+const deleteLink = row.querySelector (`.delete-${namespace}`);
+if (! deleteLink) {
+return;
+}
 
-                    deleteLink.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        const visibleRows = getVisibleRows();
-                        if (visibleRows.length <= 1) {
+deleteLink.addEventListener('click', function (event) {
+event.preventDefault();
+const visibleRows = getVisibleRows();
+if (visibleRows.length<= 1) {
                             resetRowInputs(row);
                             return;
                         }
@@ -378,104 +355,109 @@
                 };
 
                 const createRow = () => {
-                    const newRow = templateRow.cloneNode(true);
-                    newRow.removeAttribute(`data-${namespace}-template`);
-                    newRow.setAttribute(`data-${namespace}-row`, '');
-                    newRow.classList.remove('hidden');
+const newRow = templateRow.cloneNode(true);
+newRow.removeAttribute (`data-${namespace}-template`);
+newRow.setAttribute (`data-${namespace}-row`, '');
+newRow.classList.remove('hidden');
 
-                    const select = newRow.querySelector('select');
-                    if (select) {
-                        select.value = '';
-                    }
+const select = newRow.querySelector('select');
+if (select) {
+select.value = '';
+}
 
-                    const input = newRow.querySelector('input[type="text"]');
-                    if (input) {
-                        const newId = `${namespace}-role-${getVisibleRows().length}`;
-                        input.id = newId;
-                        input.value = '';
-                        const label = newRow.querySelector('label');
-                        if (label) {
-                            label.setAttribute('for', newId);
-                        }
-                    }
+const input = newRow.querySelector('input[type="text"]');
+if (input) {
+const newId = `${namespace}-role-${
+getVisibleRows().length
+}`;
+input.id = newId;
+input.value = '';
+const label = newRow.querySelector('label');
+if (label) {
+label.setAttribute('for', newId);
+}
+}
 
-                    return newRow;
-                };
+return newRow;
+};
 
-                getVisibleRows().forEach((row) => attachDeleteHandler(row));
+getVisibleRows().forEach((row) => attachDeleteHandler(row));
 
-                const ensureRowPresent = () => {
-                    if (getVisibleRows().length === 0) {
-                        const row = createRow();
-                        if (row) {
-                            attachDeleteHandler(row);
-                            rowsBody.insertBefore(row, templateRow);
-                        }
-                    }
-                };
+const ensureRowPresent =() => {
+if (getVisibleRows().length === 0) {
+const row = createRow();
+if (row) {
+attachDeleteHandler(row);
+rowsBody.insertBefore(row, templateRow);
+}
+}
+};
 
-                ensureRowPresent();
+ensureRowPresent();
 
-                if (addButton) {
-                    addButton.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        const row = createRow();
-                        if (row) {
-                            attachDeleteHandler(row);
-                            rowsBody.insertBefore(row, templateRow);
-                        }
-                    });
-                }
-            };
+if (addButton) {
+addButton.addEventListener('click', function (event) {
+event.preventDefault();
+const row = createRow();
+if (row) {
+attachDeleteHandler(row);
+rowsBody.insertBefore(row, templateRow);
+}
+});
+}
+};
 
-            setupDynamicRows('creative');
-            setupDynamicRows('performer');
-            setupDynamicRows('sponsorship');
+setupDynamicRows('creative');
+setupDynamicRows('performer');
+setupDynamicRows('sponsorship');
 
-            let isSaving = false;
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
+let isSaving = false;
+form.addEventListener('submit', function (event) {
+event.preventDefault();
 
-                if (!nameInput.value.trim()) {
-                    alert('Please provide a production name.');
-                    nameInput.focus();
-                    return;
-                }
+if (! nameInput.value.trim()) {
+alert('Please provide a production name.');
+nameInput.focus();
+return;
+}
 
-                if (!seasonInput || !seasonInput.value) {
-                    alert('Please select or enter a season for the production.');
-                    if (seasonInput) seasonInput.focus();
-                    return;
-                }
+if (! seasonInput || ! seasonInput.value) {
+alert('Please select or enter a season for the production.');
+if (seasonInput) 
+seasonInput.focus();
 
-                if (isSaving) return;
-                isSaving = true;
+return;
+}
 
-                editor.save().then(function(outputData) {
-                    descriptionField.value = JSON.stringify(outputData);
-                    form.dispatchEvent(new Event('htmxSubmit'));
-                }).catch(function(error) {
-                    console.error('EditorJS save failed:', error);
-                    document.getElementById('flash-messages').innerHTML =
-                        '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
-                        '<p class="text-sm font-medium">Unable to save description. Please try again.</p></div>';
-                    isSaving = false;
-                });
-            });
+if (isSaving) 
+return;
 
-            form.addEventListener('htmx:afterRequest', function() {
-                isSaving = false;
-                document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
+isSaving = true;
 
-            const editor = new EditorJS(buildEditorJsConfig({
-                holder: 'editorjs',
-                data: editorData,
-                imageEndpoints: {
-                    byFile: '/admin/productions/images/upload',
-                    byUrl: '/admin/productions/images/fetch'
-                }
-            }));
-        });
-    </script>
-{% endblock %}
+editor.save().then(function (outputData) {
+descriptionField.value = JSON.stringify(outputData);
+form.dispatchEvent(new Event('htmxSubmit'));
+}).catch(function (error) {
+console.error('EditorJS save failed:', error);
+document.getElementById('flash-messages').innerHTML = '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' + '<p class="text-sm font-medium">Unable to save description. Please try again.</p></div>';
+isSaving = false;
+});
+});
+
+form.addEventListener('htmx:afterRequest', function () {
+isSaving = false;
+document.getElementById('flash-messages') ?. scrollIntoView({behavior: 'smooth', block: 'nearest'});
+});
+
+const editor = new EditorJS(buildEditorJsConfig({
+holder: 'editorjs',
+data: editorData,
+imageEndpoints: {
+byFile: '/admin/productions/images/upload',
+byUrl: '/admin/productions/images/fetch'
+}
+}));
+});
+</script>
+			{% endblock %}
+	{% endblock %}

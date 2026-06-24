@@ -198,11 +198,22 @@ class ProductionController extends BaseController
         }
         $worksRepository = $this->entityManager->getRepository(Work::class);
 
-        $works = is_array($data['works']) ? $data['works'] : explode(',', $data['works']);
+        $workIds = $data['works'];
+        if (!is_array($workIds)) {
+            $workIds = !empty($workIds) ? explode(',', (string) $workIds) : [];
+        }
 
-        $works = array_map(function ($workId) use ($worksRepository) {
-            return $worksRepository->find($workId);
-        }, $works);
+        $workIds = array_filter(array_map('trim', array_map('strval', $workIds)), static function (string $workId): bool {
+            return $workId !== '';
+        });
+
+        $works = [];
+        foreach ($workIds as $workId) {
+            $work = $worksRepository->find((int) $workId);
+            if ($work instanceof Work) {
+                $works[] = $work;
+            }
+        }
 
         try {
             $opening = new \DateTime($data['opening']);
