@@ -6,6 +6,7 @@ use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Venue;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 class EventRepository extends BaseRepository
 {
@@ -135,14 +136,9 @@ class EventRepository extends BaseRepository
         parent::update($event);
     }
 
-    public function fetchAll(): array
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
-        return $this->em->createQueryBuilder()
-            ->select('e')
-            ->from(Event::class, 'e')
-            ->orderBy('e.startsAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $builder->orderBy(sprintf('%s.startsAt', $alias), 'DESC');
     }
 
     /**

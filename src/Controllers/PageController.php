@@ -22,9 +22,11 @@ class PageController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/pages/index.html.twig', [
-            'pages' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/pages/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'pages', '/admin/pages')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -56,13 +58,13 @@ class PageController extends BaseController
             }
         }
 
-        $pages = $this->repository->fetchAll();
+        $data = $this->buildPaginatedViewData($request, $this->repository, 'pages', '/admin/pages');
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/pages/_table.html.twig', ['pages' => $pages]);
+            return $this->twig->render($response, 'admin/pages/_list.html.twig', $data);
         }
 
-        return $this->twig->render($response, 'admin/pages/index.html.twig', ['pages' => $pages]);
+        return $this->buildListRedirect($response, $request, '/admin/pages');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response

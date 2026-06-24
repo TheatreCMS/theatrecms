@@ -13,51 +13,5 @@
     </div>
 </div>
 
-<table class="w-full text-sm text-left rtl:text-right text-body">
-    <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
-        <tr>
-            <th scope="col" class="px-6 py-3 font-medium">
-                Name
-            </th>
-            <th scope="col" class="px-6 py-3 font-medium">
-                Season
-            </th>
-            <th scope="col" class="px-6 py-3 font-medium">
-                Opens
-            </th>
-            <th scope="col" class="px-6 py-3 font-medium">
-                Closes
-            </th>
-            <th scope="col" class="px-6 py-3 font-medium">
-                Actions
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for p in productions %}
-        <tr class="bg-neutral-primary border-b border-default">
-            <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-                {{ p.name }}
-            </th>
-            <td class="px-6 py-4">
-                {{ p.season.label|default(p.season.slug|default(p.season.id)) }}
-            </td>
-            <td class="px-6 py-4">
-                {{ p.opening|date('m/d/Y')|default('Not yet specified') }}
-            </td>
-            <td class="px-6 py-4">
-                {{ p.closing|date('m/d/Y')|default('Not yet specified') }}
-            </td>
-            <td class="px-6 py-4">
-                <a href="/admin/productions/edit/{{ p.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
-                <a href="/admin/productions/delete/{{ p.id }}" class="text-red-600 hover:text-red-900">Delete</a>
-            </td>
-        </tr>
-    {% else %}
-        <tr class="bg-neutral-primary border-b border-default">
-            <td class="px-6 py-4">No productions found.</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% include 'admin/productions/_list.html.twig' with {'productions': productions, 'pagination': pagination} %}
 {% endblock %}

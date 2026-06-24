@@ -1,0 +1,18 @@
+<div id="eventListContainer">
+    <table class="w-full text-sm text-left rtl:text-right text-body">
+        <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+            <tr>
+                <th scope="col" class="px-6 py-3 font-medium">Starts</th>
+                <th scope="col" class="px-6 py-3 font-medium">Production</th>
+                <th scope="col" class="px-6 py-3 font-medium">Title</th>
+                <th scope="col" class="px-6 py-3 font-medium">Status</th>
+                <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="eventList">
+            {% include 'admin/events/_table.html.twig' with {'events': events} %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {'pagination': pagination} %}
+</div>

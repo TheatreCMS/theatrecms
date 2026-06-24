@@ -4,6 +4,7 @@ namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Enums\PostStatus;
 use TheatreCMS\Models\Post;
+use Doctrine\ORM\QueryBuilder;
 
 class PostRepository extends BaseRepository
 {
@@ -41,14 +42,10 @@ class PostRepository extends BaseRepository
         return $post;
     }
 
-    public function fetchAll(): array
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
-        return $this->em->createQueryBuilder()
-            ->select('p')
-            ->from(Post::class, 'p')
-            ->orderBy('p.publishedAt', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $builder->orderBy(sprintf('%s.publishedAt', $alias), 'DESC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
     }
 
     public function fetchPublished(): array

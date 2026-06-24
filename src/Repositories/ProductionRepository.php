@@ -9,20 +9,16 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 class ProductionRepository extends BaseRepository
 {
-
     protected string $entityClass = Production::class;
 
-    public function fetchAll(): array
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
-        return $this->em->createQueryBuilder()
-            ->select('p')
-            ->from(Production::class, 'p')
-            ->orderBy('p.opening', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $builder->orderBy(sprintf('%s.opening', $alias), 'DESC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
     }
 
     public function create(array $args): Production

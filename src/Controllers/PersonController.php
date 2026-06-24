@@ -17,9 +17,11 @@ class PersonController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/people/index.html.twig', [
-            'people' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/people/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'people', '/admin/people')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -41,7 +43,13 @@ class PersonController extends BaseController
             $this->repository->delete($person);
         }
 
-        return $response->withHeader('Location', '/admin/people');
+        $data = $this->buildPaginatedViewData($request, $this->repository, 'people', '/admin/people');
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/people/_list.html.twig', $data);
+        }
+
+        return $this->buildListRedirect($response, $request, '/admin/people');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response

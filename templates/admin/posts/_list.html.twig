@@ -1,0 +1,17 @@
+<div id="postListContainer" class="overflow-x-auto bg-white shadow-sm rounded">
+    <table class="w-full text-sm text-left text-body">
+        <thead class="text-sm text-body bg-neutral-secondary-soft border-b border-default">
+        <tr>
+            <th scope="col" class="px-6 py-3 font-medium">Title</th>
+            <th scope="col" class="px-6 py-3 font-medium">Status</th>
+            <th scope="col" class="px-6 py-3 font-medium">Publish Date</th>
+            <th scope="col" class="px-6 py-3 font-medium text-right">Actions</th>
+        </tr>
+        </thead>
+        <tbody id="postList">
+        {% include 'admin/posts/_table.html.twig' with {'posts': posts, 'status_labels': statuses} %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {'pagination': pagination} %}
+</div>

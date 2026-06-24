@@ -7,6 +7,7 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\User;
 use TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 abstract class BaseRepository
 {
@@ -32,11 +33,31 @@ abstract class BaseRepository
     }
 
     /**
-     * @return array<Person|Season|User|Work>
+     * @return array<int, object>
      */
     public function fetchAll(): array
     {
-        return $this->em->getRepository($this->entityClass)->findAll();
+        return $this->createListQueryBuilder()->getQuery()->getResult();
+    }
+
+    /**
+     * @return array{items: array<int, object>, total: int, page: int, perPage: int}
+     */
+    public function fetchPage(int $page = 1, int $perPage = 25): array
+    {
+        $page = max(1, $page);
+        $perPage = max(1, $perPage);
+
+        return [
+            'items' => $this->createListQueryBuilder()
+                ->setFirstResult(($page - 1) * $perPage)
+                ->setMaxResults($perPage)
+                ->getQuery()
+                ->getResult(),
+            'total' => $this->countAll(),
+            'page' => $page,
+            'perPage' => $perPage,
+        ];
     }
 
     public function fetch(int $id)
@@ -70,6 +91,31 @@ abstract class BaseRepository
         ];
     }
 
+    protected function createListQueryBuilder(string $alias = 'e'): QueryBuilder
+    {
+        $builder = $this->em->createQueryBuilder()
+            ->select($alias)
+            ->from($this->entityClass, $alias);
+
+        $this->applyListOrder($builder, $alias);
+
+        return $builder;
+    }
+
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
+    {
+        $builder->orderBy(sprintf('%s.id', $alias), 'ASC');
+    }
+
+    protected function countAll(string $alias = 'e'): int
+    {
+        return (int) $this->em->createQueryBuilder()
+            ->select(sprintf('COUNT(%s.id)', $alias))
+            ->from($this->entityClass, $alias)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     protected function generateUniqueSlug(string $string): string
     {
         // first prepare the string by lowercasing and replacing non-alphanumeric characters with hyphens
@@ -79,7 +125,7 @@ abstract class BaseRepository
         $i = 0;
 
         // if the slug already exists, append a number and increment until we find a unique slug
-        while($this->slugExists($slug)){
+        while ($this->slugExists($slug)) {
             $i++;
             $slug = $processed . '-' . $i;
         }

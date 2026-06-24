@@ -1,0 +1,16 @@
+<div id="pageListContainer" class="overflow-x-auto bg-white shadow-sm rounded">
+    <table class="w-full text-sm text-left text-body">
+        <thead class="text-sm text-body bg-neutral-secondary-soft border-b border-default">
+            <tr>
+                <th scope="col" class="px-6 py-3 font-medium">Title</th>
+                <th scope="col" class="px-6 py-3 font-medium">Last Updated</th>
+                <th scope="col" class="px-6 py-3 font-medium text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="pageList">
+            {% include 'admin/pages/_table.html.twig' with {'pages': pages} %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {'pagination': pagination} %}
+</div>

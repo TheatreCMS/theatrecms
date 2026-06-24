@@ -22,9 +22,11 @@ class WorksController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/works/index.html.twig', [
-            'works' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/works/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'works', '/admin/works')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -137,6 +139,23 @@ class WorksController extends BaseController
         }
 
         return $response->withHeader('Location', '/admin/works');
+    }
+
+    public function destroy(Request $request, Response $response, array $args = []): Response
+    {
+        $work = $this->repository->fetch((int) ($args['id'] ?? 0));
+
+        if ($work) {
+            $this->repository->delete($work);
+        }
+
+        $data = $this->buildPaginatedViewData($request, $this->repository, 'works', '/admin/works');
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/works/_list.html.twig', $data);
+        }
+
+        return $this->buildListRedirect($response, $request, '/admin/works');
     }
 
     private function collectCreatorEntries(array $data): ?array

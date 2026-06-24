@@ -32,9 +32,11 @@ class SeasonController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/seasons/index.html.twig', [
-            'seasons' => $this->repository()->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/seasons/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository(), 'seasons', '/admin/seasons')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -70,13 +72,13 @@ class SeasonController extends BaseController
             trigger_error("Unable to delete season: {$e->getMessage()}");
         }
 
-        $data = ['seasons' => $this->repository()->fetchAll()];
+        $data = $this->buildPaginatedViewData($request, $this->repository(), 'seasons', '/admin/seasons');
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/seasons/_table.html.twig', $data);
+            return $this->twig->render($response, 'admin/seasons/_list.html.twig', $data);
         }
 
-        return $this->twig->render($response, 'admin/seasons/index.html.twig', $data);
+        return $this->buildListRedirect($response, $request, '/admin/seasons');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response

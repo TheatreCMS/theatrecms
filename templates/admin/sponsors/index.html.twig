@@ -13,30 +13,5 @@
     </div>
 </div>
 
-<table class="w-full text-sm text-left rtl:text-right text-body">
-    <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
-        <tr>
-            <th scope="col" class="px-6 py-3 font-medium">Name</th>
-            <th scope="col" class="px-6 py-3 font-medium">Website</th>
-            <th scope="col" class="px-6 py-3 font-medium">Actions</th>
-        </tr>
-    </thead>
-    <tbody id="sponsorList">
-    {% for s in sponsors %}
-        <tr class="bg-neutral-primary border-b border-default">
-            <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">{{ s.name }}</th>
-            <td class="px-6 py-4">{% if s.websiteUrl %}<a href="{{ s.websiteUrl }}" target="_blank" rel="noopener">{{ s.websiteUrl }}</a>{% endif %}</td>
-            <td class="px-6 py-4">
-                <a href="/admin/sponsors/edit/{{ s.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
-                <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/sponsors/{{ s.id }}" hx-target="#sponsorList">Delete</button>
-            </td>
-        </tr>
-    {% else %}
-        <tr class="bg-neutral-primary border-b border-default">
-            <td class="px-6 py-4">No sponsors found.</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% include 'admin/sponsors/_list.html.twig' with {'sponsors': sponsors, 'pagination': pagination} %}
 {% endblock %}
-

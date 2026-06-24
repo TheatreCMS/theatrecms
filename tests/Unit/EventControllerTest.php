@@ -3,7 +3,6 @@
 namespace TheatreCMS\Tests\Unit;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -12,7 +11,6 @@ use Slim\Psr7\Response as SlimResponse;
 use Slim\Views\Twig;
 use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Models\Production;
-use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\VenueRepository;
@@ -49,6 +47,49 @@ class EventControllerTest extends TestCase
         $this->eventRepo->expects($this->never())->method('createRecurring');
 
         $result = $controller->storeRecurring($request, $response);
+
+        $this->assertInstanceOf(Response::class, $result);
+    }
+
+    public function testIndexRendersPaginatedEventsContext(): void
+    {
+        $controller = $this->buildController();
+        $eventA = $this->createMock(\TheatreCMS\Models\Event::class);
+        $eventB = $this->createMock(\TheatreCMS\Models\Event::class);
+
+        $request = $this->createMock(Request::class);
+        $request->method('getQueryParams')->willReturn(['page' => '2']);
+
+        $response = $this->createMock(Response::class);
+
+        $this->eventRepo->expects($this->once())
+            ->method('fetchPage')
+            ->with(2, 25)
+            ->willReturn([
+                'items' => [$eventA, $eventB],
+                'total' => 51,
+                'page' => 2,
+                'perPage' => 25,
+            ]);
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with(
+                $this->isInstanceOf(Response::class),
+                'admin/events/index.html.twig',
+                $this->callback(static function (array $context) use ($eventA, $eventB): bool {
+                    return $context['events'] === [$eventA, $eventB]
+                        && $context['pagination']['page'] === 2
+                        && $context['pagination']['pageCount'] === 3
+                        && $context['pagination']['hasPrevious'] === true
+                        && $context['pagination']['hasNext'] === true
+                        && $context['pagination']['from'] === 26
+                        && $context['pagination']['to'] === 27;
+                })
+            )
+            ->willReturn($this->createMock(Response::class));
+
+        $result = $controller->index($request, $response);
 
         $this->assertInstanceOf(Response::class, $result);
     }
@@ -95,8 +136,7 @@ class EventControllerTest extends TestCase
     {
         $controller = $this->buildController();
         $production = $this->createMock(Production::class);
-        $venueEntityRepository = $this->createMock(EntityRepository::class);
-
+        $venueEntityRepository = $this->createMock(\Doctrine\ORM\EntityRepository::class);
         $request = $this->createMock(Request::class);
         $request->method('getParsedBody')->willReturn([
             'productionId' => 12,
@@ -141,7 +181,7 @@ class EventControllerTest extends TestCase
 
         $this->entityManager->expects($this->once())
             ->method('getRepository')
-            ->with(Venue::class)
+            ->with(\TheatreCMS\Models\Venue::class)
             ->willReturn($venueEntityRepository);
 
         $venueEntityRepository->expects($this->once())
@@ -180,6 +220,7 @@ class EventControllerTest extends TestCase
     {
         $controller = $this->buildController();
         $event = $this->createMock(\TheatreCMS\Models\Event::class);
+        $venueEntityRepository = $this->createMock(\Doctrine\ORM\EntityRepository::class);
 
         $request = $this->createMock(Request::class);
         $request->method('getQueryParams')->willReturn([
@@ -200,8 +241,12 @@ class EventControllerTest extends TestCase
 
         $this->entityManager->expects($this->once())
             ->method('getRepository')
-            ->with(Venue::class)
-            ->willReturn($this->createMock(EntityRepository::class));
+            ->with(\TheatreCMS\Models\Venue::class)
+            ->willReturn($venueEntityRepository);
+
+        $venueEntityRepository->expects($this->once())
+            ->method('findAll')
+            ->willReturn([]);
 
         $this->twig->expects($this->once())
             ->method('render')
@@ -216,6 +261,63 @@ class EventControllerTest extends TestCase
             ->willReturn($this->createMock(Response::class));
 
         $result = $controller->edit($request, $response, ['id' => '44']);
+
+        $this->assertInstanceOf(Response::class, $result);
+    }
+
+    public function testDestroyRendersAdjustedPageWhenDeleteEmptiesCurrentHtmxPage(): void
+    {
+        $controller = $this->buildController();
+        $event = $this->createMock(\TheatreCMS\Models\Event::class);
+        $remainingEvent = $this->createMock(\TheatreCMS\Models\Event::class);
+
+        $request = $this->createMock(Request::class);
+        $request->method('getQueryParams')->willReturn(['page' => '3']);
+        $request->method('getHeaderLine')->with('HX-Request')->willReturn('true');
+
+        $response = $this->createMock(Response::class);
+
+        $this->eventRepo->expects($this->once())
+            ->method('fetch')
+            ->with('44')
+            ->willReturn($event);
+
+        $this->eventRepo->expects($this->once())
+            ->method('delete')
+            ->with($event);
+
+        $this->eventRepo->expects($this->exactly(2))
+            ->method('fetchPage')
+            ->willReturnOnConsecutiveCalls(
+                [
+                    'items' => [],
+                    'total' => 50,
+                    'page' => 3,
+                    'perPage' => 25,
+                ],
+                [
+                    'items' => [$remainingEvent],
+                    'total' => 50,
+                    'page' => 2,
+                    'perPage' => 25,
+                ]
+            );
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with(
+                $this->isInstanceOf(Response::class),
+                'admin/events/_list.html.twig',
+                $this->callback(static function (array $context) use ($remainingEvent): bool {
+                    return $context['events'] === [$remainingEvent]
+                        && $context['pagination']['page'] === 2
+                        && $context['pagination']['pageCount'] === 2
+                        && $context['pagination']['hasNext'] === false;
+                })
+            )
+            ->willReturn($this->createMock(Response::class));
+
+        $result = $controller->destroy($request, $response, ['id' => '44']);
 
         $this->assertInstanceOf(Response::class, $result);
     }

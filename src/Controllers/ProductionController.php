@@ -65,9 +65,11 @@ class ProductionController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/productions/index.html.twig', [
-            'productions' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/productions/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -107,13 +109,13 @@ class ProductionController extends BaseController
         $production = $this->repository->fetch($args['id']);
         $this->repository->delete($production);
 
-        $data = ['productions' => $this->repository->fetchAll()];
+        $data = $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions');
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/productions/_table.html.twig', $data);
+            return $this->twig->render($response, 'admin/productions/_list.html.twig', $data);
         }
 
-        return $response->withHeader('Location', '/admin/productions');
+        return $this->buildListRedirect($response, $request, '/admin/productions');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response

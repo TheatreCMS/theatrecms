@@ -6,7 +6,7 @@
         <td class="px-6 py-4">{{ e.status }}</td>
         <td class="px-6 py-4">
             <a href="/admin/events/edit/{{ e.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
-            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/events/{{ e.id }}" hx-target="#eventList">Delete</button>
+            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/events/{{ e.id }}?page={{ pagination.page }}" hx-target="#eventListContainer" hx-swap="outerHTML">Delete</button>
         </td>
     </tr>
 {% else %}

@@ -14,8 +14,9 @@
             <button
                 type="button"
                 class="text-red-600 hover:text-red-900"
-                hx-delete="/admin/seasons/{{ season.id }}"
-                hx-target="#prodList">
+                hx-delete="/admin/seasons/{{ season.id }}?page={{ pagination.page }}"
+                hx-target="#seasonListContainer"
+                hx-swap="outerHTML">
                 Delete
             </button>
         </td>

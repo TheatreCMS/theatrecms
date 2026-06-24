@@ -41,9 +41,11 @@ class EventController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/events/index.html.twig', [
-            'events' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/events/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'events', '/admin/events')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -150,8 +152,8 @@ class EventController extends BaseController
         }
 
         $message = $this->formatRecurringCreateMessage(
-            (int) ($result['created'] ?? 0),
-            (int) ($result['skipped'] ?? 0)
+            $result['created'],
+            $result['skipped']
         );
 
         if ($request->getHeaderLine('HX-Request')) {
@@ -277,13 +279,13 @@ class EventController extends BaseController
             trigger_error("Unable to delete event: {$e->getMessage()}");
         }
 
-        $data = ['events' => $this->repository->fetchAll()];
+        $data = $this->buildPaginatedViewData($request, $this->repository, 'events', '/admin/events');
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/events/_table.html.twig', $data);
+            return $this->twig->render($response, 'admin/events/_list.html.twig', $data);
         }
 
-        return $this->twig->render($response, 'admin/events/index.html.twig', $data);
+        return $this->buildListRedirect($response, $request, '/admin/events');
     }
 
     public static function loadValidatorMetadata(ClassMetadata $metadata): void

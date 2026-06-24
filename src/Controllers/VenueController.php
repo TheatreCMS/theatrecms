@@ -17,9 +17,11 @@ class VenueController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/venues/index.html.twig', [
-            'venues' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/venues/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'venues', '/admin/venues')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -42,12 +44,14 @@ class VenueController extends BaseController
         }
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/venues/_table.html.twig', [
-                'venues' => $this->repository->fetchAll(),
-            ]);
+            return $this->twig->render(
+                $response,
+                'admin/venues/_list.html.twig',
+                $this->buildPaginatedViewData($request, $this->repository, 'venues', '/admin/venues')
+            );
         }
 
-        return $response->withHeader('Location', '/admin/venues');
+        return $this->buildListRedirect($response, $request, '/admin/venues');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response
