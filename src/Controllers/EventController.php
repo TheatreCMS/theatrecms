@@ -56,10 +56,13 @@ class EventController extends BaseController
 
     public function edit(Request $request, Response $response, array $args = []): Response
     {
+        $queryParams = $request->getQueryParams();
+
         return $this->twig->render($response, 'admin/events/edit.html.twig', [
-            'event'       => $this->repository->fetch($args['id']),
-            'productions' => $this->productionRepo->fetchAll(),
-            'venues'      => $this->venueRepo->fetchAll(),
+            'event'               => $this->repository->fetch($args['id']),
+            'productions'         => $this->productionRepo->fetchAll(),
+            'venues'              => $this->venueRepo->fetchAll(),
+            'backToProductionUrl' => $this->buildBackToProductionUrl($queryParams),
         ]);
     }
 
@@ -356,5 +359,19 @@ class EventController extends BaseController
         rewind($stream);
 
         return $response->withBody(new Stream($stream));
+    }
+
+    private function buildBackToProductionUrl(array $queryParams): ?string
+    {
+        if (($queryParams['returnTo'] ?? null) !== 'production-performances') {
+            return null;
+        }
+
+        $productionId = (int) ($queryParams['productionId'] ?? 0);
+        if ($productionId <= 0) {
+            return null;
+        }
+
+        return sprintf('/admin/productions/edit/%d?tab=performances#performances', $productionId);
     }
 }

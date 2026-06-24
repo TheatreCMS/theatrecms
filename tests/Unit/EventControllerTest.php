@@ -176,6 +176,50 @@ class EventControllerTest extends TestCase
         $this->assertStringContainsString('production-events-table', (string) $result->getBody());
     }
 
+    public function testEditPassesBackToProductionUrlWhenOpenedFromProductionPerformances(): void
+    {
+        $controller = $this->buildController();
+        $event = $this->createMock(\TheatreCMS\Models\Event::class);
+
+        $request = $this->createMock(Request::class);
+        $request->method('getQueryParams')->willReturn([
+            'returnTo' => 'production-performances',
+            'productionId' => '12',
+        ]);
+
+        $response = $this->createMock(Response::class);
+
+        $this->eventRepo->expects($this->once())
+            ->method('fetch')
+            ->with('44')
+            ->willReturn($event);
+
+        $this->productionRepo->expects($this->once())
+            ->method('fetchAll')
+            ->willReturn([]);
+
+        $this->entityManager->expects($this->once())
+            ->method('getRepository')
+            ->with(Venue::class)
+            ->willReturn($this->createMock(EntityRepository::class));
+
+        $this->twig->expects($this->once())
+            ->method('render')
+            ->with(
+                $this->isInstanceOf(Response::class),
+                'admin/events/edit.html.twig',
+                $this->callback(static function (array $context) use ($event): bool {
+                    return $context['event'] === $event
+                        && $context['backToProductionUrl'] === '/admin/productions/edit/12?tab=performances#performances';
+                })
+            )
+            ->willReturn($this->createMock(Response::class));
+
+        $result = $controller->edit($request, $response, ['id' => '44']);
+
+        $this->assertInstanceOf(Response::class, $result);
+    }
+
     private function buildController(): EventController
     {
         return new EventController(

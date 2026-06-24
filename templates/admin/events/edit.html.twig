@@ -9,6 +9,11 @@
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Edit Event</h1>
         <p class="text-gray-600">Update the details for the event.</p>
+        {% if backToProductionUrl %}
+            <div class="mt-3">
+                <a href="{{ backToProductionUrl }}" class="text-sm font-medium text-blue-600 hover:underline">Back to Production</a>
+            </div>
+        {% endif %}
     </div>
 
     <form action="/admin/events/edit" method="POST" class="space-y-6"

@@ -85,6 +85,8 @@ class ProductionController extends BaseController
     {
         /** @var \TheatreCMS\Models\Production $production */
         $production = $this->repository->fetch($args['id']);
+        $queryParams = $request->getQueryParams();
+        $activeTab = ($queryParams['tab'] ?? '') === 'performances' ? 'performances' : 'details';
 
         return $this->twig->render($response, 'admin/productions/edit.html.twig', [
             'production' => $production,
@@ -96,6 +98,7 @@ class ProductionController extends BaseController
             'sponsors'   => $this->sponsorRepo->fetchAll(),
             'venues'     => $this->venueRepo->fetchAll(),
             'events'     => $this->eventRepo->fetchByProduction((int) $args['id']),
+            'activeTab'  => $activeTab,
         ]);
     }
 
