@@ -1,4 +1,4 @@
-<section id="production-events-table" class="mt-10">
+<section id="production-events-table" class="mt-10" {% if oobSwap|default(false) %}hx-swap-oob="outerHTML"{% endif %}>
     <div class="mb-4">
         <h2 class="text-xl font-bold text-gray-800">Performances</h2>
         <p class="text-gray-600 text-sm">Manage scheduled performances for this production.</p>
@@ -47,13 +47,72 @@
         <p class="text-sm text-gray-500 mb-6">No performances have been added yet.</p>
     {% endif %}
 
+    <div class="p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50 mb-6">
+        <h3 class="text-base font-semibold text-gray-900 mb-4">Add Recurring Performances</h3>
+        <p class="text-sm text-gray-600 mb-4">Choose the weekdays and start times to generate performances from the production opening date through the closing date.</p>
+
+        {% set recurringDays = [
+            { key: 'sunday', label: 'Sunday' },
+            { key: 'monday', label: 'Monday' },
+            { key: 'tuesday', label: 'Tuesday' },
+            { key: 'wednesday', label: 'Wednesday' },
+            { key: 'thursday', label: 'Thursday' },
+            { key: 'friday', label: 'Friday' },
+            { key: 'saturday', label: 'Saturday' },
+        ] %}
+
+        <form id="add-recurring-performances-form"
+              hx-post="/admin/events/bulk-create"
+              hx-target="#flash-messages"
+              hx-swap="innerHTML"
+              class="performance-refresh-form space-y-4">
+
+            <input type="hidden" name="productionId" value="{{ productionId }}">
+
+            <div class="overflow-hidden rounded-md border border-gray-200 bg-white">
+                <div class="grid grid-cols-12 gap-4 bg-gray-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <div class="col-span-6 md:col-span-7">Day</div>
+                    <div class="col-span-6 md:col-span-5">Start Time</div>
+                </div>
+
+                {% for day in recurringDays %}
+                    <div class="grid grid-cols-12 gap-4 border-t border-gray-100 px-4 py-3 items-center">
+                        <div class="col-span-6 md:col-span-7 flex items-center gap-3">
+                            <input type="checkbox"
+                                   name="weekdays[{{ day.key }}][selected]"
+                                   id="recurring-{{ day.key }}"
+                                   value="1"
+                                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                            <label for="recurring-{{ day.key }}" class="text-sm font-medium text-gray-800">{{ day.label }}</label>
+                        </div>
+
+                        <div class="col-span-6 md:col-span-5">
+                            <label class="sr-only" for="recurring-time-{{ day.key }}">{{ day.label }} start time</label>
+                            <input type="time"
+                                   name="weekdays[{{ day.key }}][time]"
+                                   id="recurring-time-{{ day.key }}"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Add Recurring Performances
+                </button>
+            </div>
+        </form>
+    </div>
+
     <div class="p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
         <h3 class="text-base font-semibold text-gray-900 mb-4">Add Performance</h3>
         <form id="add-performance-form"
               hx-post="/admin/events/create"
               hx-target="#flash-messages"
               hx-swap="innerHTML"
-              class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              class="performance-refresh-form grid grid-cols-1 md:grid-cols-2 gap-4">
 
             <input type="hidden" name="productionId" value="{{ productionId }}">
 
@@ -115,19 +174,14 @@
 
     <script>
         (function () {
-            const form = document.getElementById('add-performance-form');
-            if (form) {
-                form.addEventListener('htmx:afterRequest', function (e) {
-                    if (e.detail.successful) {
-                        window.location.reload();
-                    }
-                });
-            }
+            const reloadToPerformances = function () {
+                window.location.href = window.location.pathname + window.location.search + '#performances';
+            };
 
             document.querySelectorAll('.perf-delete').forEach(function (btn) {
                 btn.addEventListener('htmx:afterRequest', function (e) {
                     if (e.detail.successful) {
-                        window.location.reload();
+                        reloadToPerformances();
                     }
                 });
             });
