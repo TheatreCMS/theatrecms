@@ -14,8 +14,8 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\JoinTable;
 use Doctrine\ORM\Mapping\Table;
+use DateTime;
 use TheatreCMS\Traits\SupportsFeaturedImage;
-use \DateTime;
 
 #[Entity, Table(name: 'productions')]
 class Production extends ModelBase
@@ -71,7 +71,8 @@ class Production extends ModelBase
 
     // Many productions have many works
     #[ManyToMany(targetEntity: Work::class, cascade: ['persist'])]
-    #[JoinTable(name: 'production_works',
+    #[JoinTable(
+        name: 'production_works',
         joinColumns: [new JoinColumn(name: 'production_id', referencedColumnName: 'id')],
         inverseJoinColumns: [new JoinColumn(name: 'work_id', referencedColumnName: 'id')]
     )]
@@ -310,19 +311,23 @@ class Production extends ModelBase
         return $this->works;
     }
 
-     public function addWork(Work $work): self
-     {
-         if (!$this->works->contains($work)) {
-             $this->works[] = $work;
-         }
+    public function addWork(Work $work): self
+    {
+        if (!$this->works->contains($work)) {
+            $this->works[] = $work;
+        }
 
-         return $this;
-     }
+        return $this;
+    }
 
     public function setWorks(array $works): self
     {
-        foreach($works as $w) {
-            $this->works->add($w);
+        $this->works->clear();
+
+        foreach ($works as $work) {
+            if ($work instanceof Work) {
+                $this->addWork($work);
+            }
         }
 
         return $this;
