@@ -285,7 +285,7 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function addToCreativeTeam(Person $person, string $role = null): self
+    public function addToCreativeTeam(Person $person, ?string $role = null): self
     {
         $productionPerson = new ProductionPerson($this, $person);
         $productionPerson->setRoleType(RoleType::Creative);
