@@ -503,9 +503,6 @@
 
 	</div>
 	{# /prod-tab-content #}
-
-{% endblock %}
-{% block scripts %}
 	<script type="module">
 		import {buildEditorJsConfig} from '/assets/js/editorjs-config.js';
 
@@ -517,6 +514,11 @@ const isPerformances = btn.getAttribute('data-tabs-target') === '#tab-performanc
 formActions.classList.toggle('hidden', isPerformances);
 });
 });
+
+if (window.location.hash === '#performances') {
+    document.getElementById('tab-performances-btn').click();
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+}
 const form = document.querySelector('form');
 const nameInput = document.getElementById('name');
 const seasonInput = document.getElementById('seasonId');
@@ -669,4 +671,4 @@ byUrl: '/admin/productions/images/fetch'
 }));
 });
 </script>
-			{% endblock %}
+{% endblock %}
