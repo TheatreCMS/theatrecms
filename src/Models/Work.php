@@ -21,10 +21,10 @@ class Work extends ModelBase implements \JsonSerializable
     private string $title;
 
     #[Column(type: 'text', nullable: true)]
-    private string $description;
+    private ?string $description = null;
 
     #[Column(type: 'text', nullable: true)]
-    private string $synopsis;
+    private ?string $synopsis = null;
 
     // OneToMany relation to WorkCreator entities which link to Person with role
     #[OneToMany(targetEntity: WorkCreator::class, mappedBy: 'work', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -47,7 +47,7 @@ class Work extends ModelBase implements \JsonSerializable
 
     public function getDescription(): string
     {
-        return $this->description;
+        return $this->description ?? '';
     }
 
     /**
@@ -81,7 +81,7 @@ class Work extends ModelBase implements \JsonSerializable
 
     public function getSynopsis(): string
     {
-        return $this->synopsis;
+        return $this->synopsis ?? '';
     }
 
     /**
@@ -111,13 +111,13 @@ class Work extends ModelBase implements \JsonSerializable
         return $this;
     }
 
-    public function setDescription(string $description): self
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
         return $this;
     }
 
-    public function setSynopsis(string $synopsis): self
+    public function setSynopsis(?string $synopsis): self
     {
         $this->synopsis = $synopsis;
         return $this;
@@ -127,5 +127,4 @@ class Work extends ModelBase implements \JsonSerializable
     {
         return get_object_vars($this);
     }
-
 }
