@@ -46,10 +46,6 @@
 					</div>
 					<div>
 						<div id="tab-pages" role="tabpanel" class="p-3 max-h-96 overflow-y-auto space-y-1">
-							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
-								<span class="truncate font-medium text-gray-700">Pages Archive</span>
-								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="page" data-label="All Pages">Add</button>
-							</div>
 							{% for page in pages %}
 								<div class="flex items-center justify-between text-sm py-1">
 									<span class="truncate">{{ page.title }}</span>

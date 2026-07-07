@@ -209,8 +209,12 @@ class MenuController extends BaseController
                 throw new \InvalidArgumentException('Custom links require a URL.');
             }
 
-            // A non-custom item with no targetId links to that content type's
-            // archive rather than a specific item — a deliberate, valid state.
+            // Pages have no archive/listing page, so they must always link to a
+            // specific page. Post/Production/Season items with no targetId are
+            // valid — that's how they link to their type's archive instead.
+            if ($linkType === MenuItemType::PAGE && !$targetId) {
+                throw new \InvalidArgumentException('Pages must link to a specific page.');
+            }
 
             $normalized[] = [
                 'clientId' => (string) $row['clientId'],

@@ -20,12 +20,12 @@ class MenuItemResolver
      * Conventional listing-page URLs for each content type's archive. A menu
      * item of a given type with no targetId links to that type's archive
      * rather than a specific piece of content — no separate "archive" enum
-     * case or DB column needed.
+     * case or DB column needed. Pages are deliberately excluded: they're
+     * always individually linked, with no archive/listing page.
      *
      * @var array<string, string>
      */
     private const ARCHIVE_URLS = [
-        'page' => '/pages',
         'post' => '/posts',
         'production' => '/productions',
         'season' => '/seasons',
@@ -35,7 +35,6 @@ class MenuItemResolver
      * @var array<string, string>
      */
     private const ARCHIVE_LABELS = [
-        'page' => 'All Pages',
         'post' => 'All Posts',
         'production' => 'All Productions',
         'season' => 'All Seasons',
@@ -55,7 +54,7 @@ class MenuItemResolver
      */
     public function resolveUrl(MenuItem $item): ?string
     {
-        if ($item->getLinkType() !== MenuItemType::CUSTOM && !$item->getTargetId()) {
+        if (!$item->getTargetId() && isset(self::ARCHIVE_URLS[$item->getLinkType()->value])) {
             return self::ARCHIVE_URLS[$item->getLinkType()->value];
         }
 
@@ -74,7 +73,7 @@ class MenuItemResolver
             return $item->getLabel();
         }
 
-        if ($item->getLinkType() !== MenuItemType::CUSTOM && !$item->getTargetId()) {
+        if (!$item->getTargetId() && isset(self::ARCHIVE_LABELS[$item->getLinkType()->value])) {
             return self::ARCHIVE_LABELS[$item->getLinkType()->value];
         }
 
