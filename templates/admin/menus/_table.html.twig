@@ -1,0 +1,27 @@
+{% for menu in menus %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4">
+            <div class="text-sm font-medium text-gray-900">{{ menu.name }}</div>
+        </td>
+        <td class="px-6 py-4">
+            {% if menu.location is null %}
+                <span class="text-xs text-gray-500">— Unassigned —</span>
+            {% elseif locations[menu.location] is defined %}
+                <span class="text-xs text-gray-700">{{ locations[menu.location] }}</span>
+            {% else %}
+                <span class="text-xs text-yellow-700" title="This location is no longer registered by the active theme.">{{ menu.location }} (inactive location)</span>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4">
+            {{ menu.items|length }}
+        </td>
+        <td class="px-6 py-4 text-right space-x-2">
+            <a href="/admin/menus/edit/{{ menu.id }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/menus/{{ menu.id }}" hx-target="#menuListContainer" hx-swap="outerHTML" hx-confirm="Delete this menu? This cannot be undone.">Delete</button>
+        </td>
+    </tr>
+{% else %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4" colspan="4">No menus found.</td>
+    </tr>
+{% endfor %}

@@ -1,0 +1,336 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Edit Menu - {{ parent() }}{% endblock %}
+
+{% block content %}
+	<div class="mb-6">
+		<h1 class="text-2xl font-bold text-gray-800">Edit Menu</h1>
+		<p class="text-gray-600">Add items from the left, then drag to reorder or nest them into sub-menus.</p>
+	</div>
+
+	<form id="menu-tree-form" action="/admin/menus/{{ menu.id }}/items" method="POST"
+		hx-post="/admin/menus/{{ menu.id }}/items"
+		hx-target="#flash-messages"
+		hx-swap="innerHTML"
+		hx-trigger="menuTreeSubmit">
+		<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 max-w-3xl">
+			<div>
+				<label for="name" class="block text-sm font-medium text-gray-700 mb-1">Menu Name</label>
+				<input type="text" name="name" id="name" required maxlength="255" value="{{ menu.name }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+			</div>
+			<div>
+				<label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+				<select name="location" id="location" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+					<option value="">— None —</option>
+					{% for slug, label in locations %}
+						<option value="{{ slug }}" {% if menu.location == slug %}selected{% endif %}>{{ label }}</option>
+					{% endfor %}
+					{% if menu.location and locations[menu.location] is not defined %}
+						<option value="{{ menu.location }}" selected>{{ menu.location }} (inactive location)</option>
+					{% endif %}
+				</select>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+			<div class="md:col-span-1">
+				<div class="bg-white border border-gray-200 rounded-md">
+					<div class="border-b border-gray-200">
+						<ul class="flex flex-wrap text-sm font-medium text-center" role="tablist">
+							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-pages" role="tab">Pages</button></li>
+							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-posts" role="tab">Posts</button></li>
+							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-productions" role="tab">Productions</button></li>
+							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-seasons" role="tab">Seasons</button></li>
+							<li><button class="inline-block p-3" type="button" data-tabs-target="#tab-custom" role="tab">Custom Link</button></li>
+						</ul>
+					</div>
+					<div>
+						<div id="tab-pages" role="tabpanel" class="p-3 max-h-96 overflow-y-auto space-y-1">
+							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
+								<span class="truncate font-medium text-gray-700">Pages Archive</span>
+								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="page" data-label="All Pages">Add</button>
+							</div>
+							{% for page in pages %}
+								<div class="flex items-center justify-between text-sm py-1">
+									<span class="truncate">{{ page.title }}</span>
+									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="page" data-target-id="{{ page.id }}" data-label="{{ page.title }}">Add</button>
+								</div>
+							{% else %}
+								<p class="text-sm text-gray-500">No pages yet.</p>
+							{% endfor %}
+						</div>
+						<div id="tab-posts" role="tabpanel" class="hidden p-3 max-h-96 overflow-y-auto space-y-1">
+							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
+								<span class="truncate font-medium text-gray-700">Posts Archive</span>
+								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="post" data-label="All Posts">Add</button>
+							</div>
+							{% for post in posts %}
+								<div class="flex items-center justify-between text-sm py-1">
+									<span class="truncate">{{ post.title }}</span>
+									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="post" data-target-id="{{ post.id }}" data-label="{{ post.title }}">Add</button>
+								</div>
+							{% else %}
+								<p class="text-sm text-gray-500">No posts yet.</p>
+							{% endfor %}
+						</div>
+						<div id="tab-productions" role="tabpanel" class="hidden p-3 max-h-96 overflow-y-auto space-y-1">
+							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
+								<span class="truncate font-medium text-gray-700">Productions Archive</span>
+								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="production" data-label="All Productions">Add</button>
+							</div>
+							{% for production in productions %}
+								<div class="flex items-center justify-between text-sm py-1">
+									<span class="truncate">{{ production.name }}</span>
+									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="production" data-target-id="{{ production.id }}" data-label="{{ production.name }}">Add</button>
+								</div>
+							{% else %}
+								<p class="text-sm text-gray-500">No productions yet.</p>
+							{% endfor %}
+						</div>
+						<div id="tab-seasons" role="tabpanel" class="hidden p-3 max-h-96 overflow-y-auto space-y-1">
+							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
+								<span class="truncate font-medium text-gray-700">Seasons Archive</span>
+								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="season" data-label="All Seasons">Add</button>
+							</div>
+							{% for season in seasons %}
+								<div class="flex items-center justify-between text-sm py-1">
+									<span class="truncate">{{ season.label }}</span>
+									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="season" data-target-id="{{ season.id }}" data-label="{{ season.label }}">Add</button>
+								</div>
+							{% else %}
+								<p class="text-sm text-gray-500">No seasons yet.</p>
+							{% endfor %}
+						</div>
+						<div id="tab-custom" role="tabpanel" class="hidden p-3 space-y-3">
+							<div>
+								<label for="custom-url" class="block text-xs font-medium text-gray-700 mb-1">URL</label>
+								<input type="text" id="custom-url" placeholder="https://example.com" class="w-full text-sm rounded-md border-gray-300 shadow-sm">
+							</div>
+							<div>
+								<label for="custom-label" class="block text-xs font-medium text-gray-700 mb-1">Label</label>
+								<input type="text" id="custom-label" placeholder="Link text" class="w-full text-sm rounded-md border-gray-300 shadow-sm">
+							</div>
+							<button type="button" id="add-custom-link" class="w-full px-3 py-2 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700">Add to menu</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="md:col-span-2">
+				<div class="bg-white border border-gray-200 rounded-md p-4">
+					<ul id="menu-item-tree" class="menu-item-tree min-h-[3rem]"></ul>
+					<p id="menu-item-tree-empty" class="text-sm text-gray-500">No items yet — add some from the left.</p>
+				</div>
+				<div class="flex items-center justify-end space-x-3 pt-4">
+					<a href="/admin/menus" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Back to Menus</a>
+					<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Menu</button>
+				</div>
+			</div>
+		</div>
+
+		<input type="hidden" name="items" id="items-field">
+	</form>
+{% endblock %}
+
+{% block scripts %}
+	{{ parent() }}
+	<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			const initialItems = {{ menuItemsJson|raw }};
+			const tree = document.getElementById('menu-item-tree');
+			const emptyState = document.getElementById('menu-item-tree-empty');
+			const typeLabels = { page: 'Page', post: 'Post', production: 'Production', season: 'Season', custom: 'Custom Link' };
+			let clientIdCounter = 0;
+
+			function nextClientId() {
+				return 'new-' + (clientIdCounter++);
+			}
+
+			function updateEmptyState() {
+				emptyState.style.display = tree.children.length ? 'none' : 'block';
+			}
+
+			function makeSortable(ul) {
+				new Sortable(ul, {
+					group: 'menu-items',
+					handle: '.drag-handle',
+					animation: 150,
+					fallbackOnBody: true,
+					swapThreshold: 0.65,
+					onSort: updateEmptyState
+				});
+			}
+
+			function createLi(data) {
+				const li = document.createElement('li');
+				li.className = 'menu-item border border-gray-200 rounded-md bg-gray-50 mb-2';
+				li.dataset.clientId = data.clientId;
+				li.dataset.id = data.id ?? '';
+				li.dataset.linkType = data.linkType;
+				li.dataset.targetId = data.targetId ?? '';
+				li.dataset.customUrl = data.customUrl ?? '';
+				li.dataset.label = data.label ?? '';
+
+				const row = document.createElement('div');
+				row.className = 'flex items-center gap-2 px-3 py-2';
+
+				const handle = document.createElement('span');
+				handle.className = 'drag-handle cursor-move text-gray-400';
+				handle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>';
+				row.appendChild(handle);
+
+				const label = document.createElement('span');
+				label.className = 'flex-1 text-sm text-gray-800 truncate';
+				label.textContent = data.label || '(untitled)';
+				row.appendChild(label);
+
+				const badge = document.createElement('span');
+				badge.className = 'text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600';
+				badge.textContent = typeLabels[data.linkType] || data.linkType;
+				row.appendChild(badge);
+
+				if (data.orphaned) {
+					const warning = document.createElement('span');
+					warning.className = 'text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800';
+					warning.textContent = 'Linked content missing';
+					row.appendChild(warning);
+				}
+
+				const remove = document.createElement('button');
+				remove.type = 'button';
+				remove.className = 'text-red-600 hover:text-red-900 text-xs';
+				remove.textContent = 'Remove';
+				remove.addEventListener('click', function () {
+					li.remove();
+					updateEmptyState();
+				});
+				row.appendChild(remove);
+
+				li.appendChild(row);
+
+				const childrenUl = document.createElement('ul');
+				childrenUl.className = 'menu-item-children pl-6 pt-1';
+				li.appendChild(childrenUl);
+				makeSortable(childrenUl);
+
+				return li;
+			}
+
+			function renderNodes(nodes, targetUl) {
+				(nodes || []).forEach(function (node) {
+					const clientId = 'existing-' + node.id;
+					const li = createLi({
+						clientId: clientId,
+						id: node.id,
+						label: node.label,
+						linkType: node.linkType,
+						targetId: node.targetId,
+						customUrl: node.customUrl,
+						orphaned: node.orphaned
+					});
+					targetUl.appendChild(li);
+					if (node.children && node.children.length) {
+						renderNodes(node.children, li.querySelector(':scope > ul.menu-item-children'));
+					}
+				});
+			}
+
+			renderNodes(initialItems, tree);
+			makeSortable(tree);
+			updateEmptyState();
+
+			function addItem(data) {
+				data.clientId = nextClientId();
+				data.id = null;
+				data.orphaned = false;
+				const li = createLi(data);
+				tree.appendChild(li);
+				updateEmptyState();
+			}
+
+			document.querySelectorAll('[data-add-item]').forEach(function (btn) {
+				btn.addEventListener('click', function () {
+					addItem({
+						label: btn.dataset.label,
+						linkType: btn.dataset.linkType,
+						targetId: btn.dataset.targetId,
+						customUrl: null
+					});
+				});
+			});
+
+			document.getElementById('add-custom-link').addEventListener('click', function () {
+				const urlField = document.getElementById('custom-url');
+				const labelField = document.getElementById('custom-label');
+				if (!urlField.value.trim()) {
+					urlField.focus();
+					return;
+				}
+				addItem({
+					label: labelField.value.trim() || urlField.value.trim(),
+					linkType: 'custom',
+					targetId: null,
+					customUrl: urlField.value.trim()
+				});
+				urlField.value = '';
+				labelField.value = '';
+			});
+
+			// Simple tab switching (Flowbite's own JS also supports data-tabs-target,
+			// but we drive it manually here to avoid depending on tab group init timing).
+			document.querySelectorAll('[data-tabs-target]').forEach(function (btn) {
+				btn.addEventListener('click', function () {
+					document.querySelectorAll('[role="tabpanel"]').forEach(function (panel) {
+						panel.classList.add('hidden');
+					});
+					document.querySelectorAll('[data-tabs-target]').forEach(function (tabBtn) {
+						tabBtn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
+					});
+					document.querySelector(btn.dataset.tabsTarget).classList.remove('hidden');
+					btn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+				});
+			});
+			document.querySelector('[data-tabs-target]')?.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+
+			function serializeTree() {
+				const rows = [];
+				function walk(ul, parentClientId) {
+					Array.from(ul.children).forEach(function (li, index) {
+						if (li.tagName !== 'LI') {
+							return;
+						}
+						const d = li.dataset;
+						rows.push({
+							clientId: d.clientId,
+							id: d.id ? parseInt(d.id, 10) : null,
+							parentClientId: parentClientId,
+							position: index,
+							label: d.label || null,
+							linkType: d.linkType,
+							targetId: d.targetId ? parseInt(d.targetId, 10) : null,
+							customUrl: d.customUrl || null
+						});
+						const childUl = li.querySelector(':scope > ul.menu-item-children');
+						if (childUl) {
+							walk(childUl, d.clientId);
+						}
+					});
+				}
+				walk(tree, null);
+				return rows;
+			}
+
+			const form = document.getElementById('menu-tree-form');
+			form.addEventListener('submit', function (event) {
+				event.preventDefault();
+				document.getElementById('items-field').value = JSON.stringify(serializeTree());
+				form.dispatchEvent(new Event('menuTreeSubmit'));
+			});
+
+			form.addEventListener('htmx:afterRequest', function () {
+				document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+			});
+		});
+	</script>
+{% endblock %}
