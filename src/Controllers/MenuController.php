@@ -69,7 +69,7 @@ class MenuController extends BaseController
             return $response->withStatus(400);
         }
 
-        return $response->withHeader('Location', '/admin/menus/edit/' . $menu->getId());
+        return $response->withStatus(302)->withHeader('Location', '/admin/menus/edit/' . $menu->getId());
     }
 
     public function edit(Request $request, Response $response, array $args = []): Response
@@ -82,7 +82,10 @@ class MenuController extends BaseController
 
         return $this->twig->render($response, 'admin/menus/edit.html.twig', [
             'menu' => $menu,
-            'menuItemsJson' => json_encode($this->buildTreeForEditor($menu->getTopLevelItems()->toArray())),
+            'menuItemsJson' => json_encode(
+                $this->buildTreeForEditor($menu->getTopLevelItems()->toArray()),
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+            ),
             'locations' => $this->locationRegistry->all(),
             'pages' => $this->pageRepository->fetchAll(),
             'posts' => $this->postRepository->fetchAll(),
@@ -132,7 +135,7 @@ class MenuController extends BaseController
             ]);
         }
 
-        return $response->withHeader('Location', '/admin/menus/edit/' . $menu->getId());
+        return $response->withStatus(302)->withHeader('Location', '/admin/menus/edit/' . $menu->getId());
     }
 
     public function destroy(Request $request, Response $response, array $args = []): Response
@@ -150,7 +153,7 @@ class MenuController extends BaseController
             ]);
         }
 
-        return $response->withHeader('Location', '/admin/menus');
+        return $response->withStatus(302)->withHeader('Location', '/admin/menus');
     }
 
     /**
@@ -207,6 +210,13 @@ class MenuController extends BaseController
 
             if ($linkType === MenuItemType::CUSTOM && empty($customUrl)) {
                 throw new \InvalidArgumentException('Custom links require a URL.');
+            }
+
+            if ($customUrl !== null) {
+                $scheme = strtolower((string) parse_url($customUrl, PHP_URL_SCHEME));
+                if (in_array($scheme, ['javascript', 'data'], true)) {
+                    throw new \InvalidArgumentException('Custom link URL scheme is not allowed.');
+                }
             }
 
             // Pages have no archive/listing page, so they must always link to a
@@ -269,7 +279,7 @@ class MenuController extends BaseController
     private function alertOrStatus(Response $response, bool $isHtmx, string $type, string $message, int $status): Response
     {
         if ($isHtmx) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+            return $this->twig->render($response->withStatus($status), 'admin/partials/_alert.html.twig', [
                 'type' => $type, 'message' => $message,
             ]);
         }
