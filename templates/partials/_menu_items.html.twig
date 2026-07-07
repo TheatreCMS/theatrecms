@@ -1,0 +1,12 @@
+{% if items is not empty %}
+<ul class="menu{% if depth|default(0) == 0 %} flex flex-wrap items-center gap-4{% else %} mt-1 space-y-1{% endif %}">
+  {% for item in items %}
+    <li class="menu-item{% if item.children is not empty %} has-children{% endif %}">
+      <a href="{{ item.url }}" class="hover:text-gray-900">{{ item.label }}</a>
+      {% if item.children is not empty %}
+        {% include '@core/partials/_menu_items.html.twig' with {items: item.children, depth: depth|default(0) + 1} %}
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% endif %}
