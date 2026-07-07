@@ -25,6 +25,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Theme\MenuLocationRegistry;
 
 
 if( !defined('APP_ROOT') )
@@ -32,6 +33,7 @@ if( !defined('APP_ROOT') )
 
 require_once APP_ROOT . '/vendor/autoload.php';
 require_once APP_ROOT . '/app/hooks.php';
+require_once APP_ROOT . '/app/menu-locations.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
 
@@ -72,5 +74,13 @@ $container->get(UserRepository::class)->setAuth($container->get(Auth::class));
 
 $hookManager = $container->get(HookManager::class);
 HookManager::setInstance($hookManager);
+
+$menuLocationRegistry = $container->get(MenuLocationRegistry::class);
+MenuLocationRegistry::setInstance($menuLocationRegistry);
+
+// Core locations rendered by the fallback templates (templates/partials/header.html.twig,
+// footer.html.twig) so they're assignable even when the active theme registers none of its own.
+register_menu_location('primary', 'Primary Navigation');
+register_menu_location('footer', 'Footer Menu');
 
 return $container;
