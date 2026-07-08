@@ -167,6 +167,7 @@
 				li.dataset.targetId = data.targetId ?? '';
 				li.dataset.customUrl = data.customUrl ?? '';
 				li.dataset.label = data.label ?? '';
+				li.dataset.sourceTitle = data.sourceTitle ?? '';
 
 				const row = document.createElement('div');
 				row.className = 'flex items-center gap-2 px-3 py-2';
@@ -176,10 +177,30 @@
 				handle.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>';
 				row.appendChild(handle);
 
-				const label = document.createElement('span');
-				label.className = 'flex-1 text-sm text-gray-800 truncate';
-				label.textContent = data.label || '(untitled)';
+				const label = document.createElement('input');
+				label.type = 'text';
+				label.className = 'flex-1 min-w-0 text-sm text-gray-800 bg-transparent border-b border-dashed border-gray-300 focus:outline-none focus:border-blue-500';
+				label.placeholder = '(untitled)';
+				label.value = data.label || '';
 				row.appendChild(label);
+
+				const renamed = document.createElement('span');
+				renamed.className = 'renamed-indicator hidden text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 cursor-help';
+				renamed.textContent = 'Renamed';
+				row.appendChild(renamed);
+
+				function syncRenamedIndicator() {
+					const sourceTitle = li.dataset.sourceTitle;
+					const isRenamed = !!sourceTitle && label.value !== sourceTitle;
+					renamed.classList.toggle('hidden', !isRenamed);
+					renamed.title = sourceTitle ? 'Originally: ' + sourceTitle : '';
+				}
+
+				label.addEventListener('input', function () {
+					li.dataset.label = label.value;
+					syncRenamedIndicator();
+				});
+				syncRenamedIndicator();
 
 				const badge = document.createElement('span');
 				badge.className = 'text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600';
@@ -220,6 +241,7 @@
 						clientId: clientId,
 						id: node.id,
 						label: node.label,
+						sourceTitle: node.sourceTitle,
 						linkType: node.linkType,
 						targetId: node.targetId,
 						customUrl: node.customUrl,
@@ -249,6 +271,7 @@
 				btn.addEventListener('click', function () {
 					addItem({
 						label: btn.dataset.label,
+						sourceTitle: btn.dataset.targetId ? btn.dataset.label : null,
 						linkType: btn.dataset.linkType,
 						targetId: btn.dataset.targetId,
 						customUrl: null

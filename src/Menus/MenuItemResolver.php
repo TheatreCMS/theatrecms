@@ -77,15 +77,28 @@ class MenuItemResolver
             return self::ARCHIVE_LABELS[$item->getLinkType()->value];
         }
 
-        $title = match ($item->getLinkType()) {
-            MenuItemType::CUSTOM => null,
-            MenuItemType::PAGE => $item->getTargetId() ? $this->pageRepository->fetch($item->getTargetId())?->getTitle() : null,
-            MenuItemType::POST => $item->getTargetId() ? $this->postRepository->fetch($item->getTargetId())?->getTitle() : null,
-            MenuItemType::PRODUCTION => $item->getTargetId() ? $this->productionRepository->fetch($item->getTargetId())?->getName() : null,
-            MenuItemType::SEASON => $item->getTargetId() ? $this->seasonRepository->fetch($item->getTargetId())?->getLabel() : null,
-        };
+        return $this->resolveSourceTitle($item) ?? '(untitled)';
+    }
 
-        return $title ?? '(untitled)';
+    /**
+     * Returns the linked Page/Post/Production/Season's own title, regardless of
+     * any label override on the item. Used by the editor to tell the admin what
+     * content a renamed item still points to. Null for custom links and archive
+     * links (no specific piece of content to name).
+     */
+    public function resolveSourceTitle(MenuItem $item): ?string
+    {
+        if (!$item->getTargetId()) {
+            return null;
+        }
+
+        return match ($item->getLinkType()) {
+            MenuItemType::CUSTOM => null,
+            MenuItemType::PAGE => $this->pageRepository->fetch($item->getTargetId())?->getTitle(),
+            MenuItemType::POST => $this->postRepository->fetch($item->getTargetId())?->getTitle(),
+            MenuItemType::PRODUCTION => $this->productionRepository->fetch($item->getTargetId())?->getName(),
+            MenuItemType::SEASON => $this->seasonRepository->fetch($item->getTargetId())?->getLabel(),
+        };
     }
 
     private function resolvePageUrl(MenuItem $item): ?string

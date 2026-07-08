@@ -168,6 +168,7 @@ class MenuController extends BaseController
             $tree[] = [
                 'id' => $item->getId(),
                 'label' => $this->resolver->resolveLabel($item),
+                'sourceTitle' => $this->resolver->resolveSourceTitle($item),
                 'linkType' => $item->getLinkType()->value,
                 'linkTypeLabel' => $item->getLinkType()->label(),
                 'targetId' => $item->getTargetId(),
