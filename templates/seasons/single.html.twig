@@ -4,18 +4,68 @@
 
 {% block content %}
 
-    <h2 id="this-season-{{ season.slug }}">THIS SEASON ({{ season.label }})</h2>
+    <h1 id="this-season-{{ season.slug }}">SEASON ({{ season.label }})</h1>
 
-    {% for production in season.productions %}
-        <article id="production-{{ production.id }}" class="production production-{{ production.slug }}">
-            <header>
-                <a href="/seasons/{{ season.slug }}/{{ production.slug }}">
-                    <h3 class="entry-title">{{ production.name }}</h3>
-                </a>
-                <div class="excerpt">
-                    {{ production.excerpt }}
-                </div>
-            </header>
-        </article>
-    {% endfor %}
+    {% if season.overview %}
+        <div class="season-overview">
+            {{ season.overview|nl2br }}
+        </div>
+    {% endif %}
+
+    {% if season.sponsorships|length > 0 %}
+        <section class="season-sponsors" aria-labelledby="season-sponsors-heading">
+            <h2 id="season-sponsors-heading">Sponsors</h2>
+            <ul class="sponsor-list">
+                {% for sponsorship in season.sponsorships %}
+                    {% set sponsor = sponsorship.sponsor %}
+                    <li class="sponsor sponsor-{{ sponsor.slug }}">
+                        {% if sponsor.websiteUrl %}
+                            <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank">{{ sponsor.name }}</a>
+                        {% else %}
+                            {{ sponsor.name }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+
+    {% if season.productions|length > 0 %}
+        <section class="season-productions" aria-labelledby="season-productions-heading">
+            <h2 id="season-productions-heading">Productions</h2>
+
+            <ul class="production-list">
+                {% for production in season.productions %}
+                <article id="production-{{ production.id }}" class="production production-{{ production.slug }}">
+                    <header>
+                        <a href="/seasons/{{ season.slug }}/{{ production.slug }}">
+                            <h3 class="entry-title">{{ production.name }}</h3>
+                        </a>
+                        {% if production.opening or production.closing %}
+                            <p class="run-dates">
+                                {% if production.opening and production.closing %}
+                                    <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+                                    -
+                                    <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                                {% elseif production.opening %}
+                                    Opens <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+                                {% else %}
+                                    Closes <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                        <div class="excerpt">
+                            {{ production.excerpt }}
+                        </div>
+                    </header>
+                </article>
+            {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    {% if season.productions|length == 0 %}
+        <p>No productions for this season.</p>
+    {% endif %}
 {% endblock %}
