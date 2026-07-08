@@ -65,9 +65,11 @@ class ProductionController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/productions/index.html.twig', [
-            'productions' => $this->repository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/productions/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -85,6 +87,8 @@ class ProductionController extends BaseController
     {
         /** @var \TheatreCMS\Models\Production $production */
         $production = $this->repository->fetch($args['id']);
+        $queryParams = $request->getQueryParams();
+        $activeTab = ($queryParams['tab'] ?? '') === 'performances' ? 'performances' : 'details';
 
         return $this->twig->render($response, 'admin/productions/edit.html.twig', [
             'production' => $production,
@@ -96,6 +100,7 @@ class ProductionController extends BaseController
             'sponsors'   => $this->sponsorRepo->fetchAll(),
             'venues'     => $this->venueRepo->fetchAll(),
             'events'     => $this->eventRepo->fetchByProduction((int) $args['id']),
+            'activeTab'  => $activeTab,
         ]);
     }
 
@@ -104,13 +109,13 @@ class ProductionController extends BaseController
         $production = $this->repository->fetch($args['id']);
         $this->repository->delete($production);
 
-        $data = ['productions' => $this->repository->fetchAll()];
+        $data = $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions');
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/productions/_table.html.twig', $data);
+            return $this->twig->render($response, 'admin/productions/_list.html.twig', $data);
         }
 
-        return $response->withHeader('Location', '/admin/productions');
+        return $this->buildListRedirect($response, $request, '/admin/productions');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response
@@ -198,11 +203,22 @@ class ProductionController extends BaseController
         }
         $worksRepository = $this->entityManager->getRepository(Work::class);
 
-        $works = is_array($data['works']) ? $data['works'] : explode(',', $data['works']);
+        $workIds = $data['works'];
+        if (!is_array($workIds)) {
+            $workIds = !empty($workIds) ? explode(',', (string) $workIds) : [];
+        }
 
-        $works = array_map(function ($workId) use ($worksRepository) {
-            return $worksRepository->find($workId);
-        }, $works);
+        $workIds = array_filter(array_map('trim', array_map('strval', $workIds)), static function (string $workId): bool {
+            return $workId !== '';
+        });
+
+        $works = [];
+        foreach ($workIds as $workId) {
+            $work = $worksRepository->find((int) $workId);
+            if ($work instanceof Work) {
+                $works[] = $work;
+            }
+        }
 
         try {
             $opening = new \DateTime($data['opening']);

@@ -1,0 +1,22 @@
+<div id="userListContainer">
+    <table class="w-full text-sm text-left rtl:text-right text-body">
+        <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+            <tr>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Email address
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Last login
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody id="userList">
+            {% include 'admin/users/_table.html.twig' with {'users': users, 'currentUserId': currentUserId} %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {'pagination': pagination} %}
+</div>

@@ -1,0 +1,37 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}Create Menu - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Create New Menu</h1>
+        <p class="text-gray-600">Give your menu a name. You'll add and arrange items on the next screen.</p>
+    </div>
+
+    <form action="/admin/menus/create" method="POST" class="space-y-6">
+        <div class="grid grid-cols-1 gap-6 max-w-lg">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Menu Name</label>
+                <input type="text" name="name" id="name" required maxlength="255" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+            </div>
+
+            <div>
+                <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <select name="location" id="location" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                    <option value="">— None —</option>
+                    {% for slug, label in locations %}
+                        <option value="{{ slug }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+                {% if locations is empty %}
+                    <p class="mt-1 text-xs text-gray-500">The active theme hasn't registered any menu locations yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end space-x-3 pt-4 border-t max-w-lg">
+            <a href="/admin/menus" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Create Menu</button>
+        </div>
+    </form>
+{% endblock %}

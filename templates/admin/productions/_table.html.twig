@@ -1,0 +1,31 @@
+{% for p in productions %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+            {{ p.name }}
+        </th>
+        <td class="px-6 py-4">
+            {{ p.season.label|default(p.season.slug|default(p.season.id)) }}
+        </td>
+        <td class="px-6 py-4">
+            {{ p.opening ? p.opening|date('m/d/Y') : 'Not yet specified' }}
+        </td>
+        <td class="px-6 py-4">
+            {{ p.closing ? p.closing|date('m/d/Y') : 'Not yet specified' }}
+        </td>
+        <td class="px-6 py-4">
+            <a href="/admin/productions/edit/{{ p.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+            <button
+                type="button"
+                class="text-red-600 hover:text-red-900"
+                hx-delete="/admin/productions/{{ p.id }}?page={{ pagination.page }}"
+                hx-target="#productionListContainer"
+                hx-swap="outerHTML">
+                Delete
+            </button>
+        </td>
+    </tr>
+{% else %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4" colspan="5">No productions found.</td>
+    </tr>
+{% endfor %}

@@ -24,10 +24,17 @@ class PostController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/posts/index.html.twig', [
-            'posts'    => $this->repository->fetchAll(),
-            'statuses' => PostStatus::labels(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/posts/index.html.twig',
+            $this->buildPaginatedViewData(
+                $request,
+                $this->repository,
+                'posts',
+                '/admin/posts',
+                ['statuses' => PostStatus::labels()]
+            )
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -62,17 +69,22 @@ class PostController extends BaseController
             }
         }
 
-        $data = [
-            'posts'         => $this->repository->fetchAll(),
-            'statuses'      => PostStatus::labels(),
-            'status_labels' => PostStatus::labels(),
-        ];
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'posts',
+            '/admin/posts',
+            [
+                'statuses' => PostStatus::labels(),
+                'status_labels' => PostStatus::labels(),
+            ]
+        );
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/posts/_table.html.twig', $data);
+            return $this->twig->render($response, 'admin/posts/_list.html.twig', $data);
         }
 
-        return $this->twig->render($response, 'admin/posts/index.html.twig', $data);
+        return $this->buildListRedirect($response, $request, '/admin/posts');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response

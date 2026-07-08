@@ -3,6 +3,7 @@
 namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Models\Person;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @method Person[] query(array $args = [])
@@ -37,8 +38,10 @@ final class PersonRepository extends BaseRepository
         return $person;
     }
 
-    public function fetchAll(): array
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
-        return $this->em->getRepository(Person::class)->findBy([], ['lastName' => 'ASC', 'firstName' => 'ASC']);
+        $builder->orderBy(sprintf('%s.lastName', $alias), 'ASC')
+            ->addOrderBy(sprintf('%s.firstName', $alias), 'ASC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
     }
 }

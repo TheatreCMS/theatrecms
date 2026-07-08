@@ -6,57 +6,54 @@ use TheatreCMS\Models\Season;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use Doctrine\ORM\QueryBuilder;
 
 class SeasonRepository extends BaseRepository
 {
-     protected string $entityClass = Season::class;
+    protected string $entityClass = Season::class;
 
-     public function fetchAll(): array
-     {
-         return $this->em->createQueryBuilder()
-             ->select('s')
-             ->from(Season::class, 's')
-             ->orderBy('s.startDate', 'DESC')
-             ->getQuery()
-             ->getResult();
-     }
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
+    {
+        $builder->orderBy(sprintf('%s.startDate', $alias), 'DESC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
+    }
 
-     public function create(array $args): Season
-     {
-         $args = array_merge([
-            'label'     => null,
-            'startDate' => null,
-            'endDate'   => null,
-            'overview'  => null,
-         ], $args);
+    public function create(array $args): Season
+    {
+        $args = array_merge([
+           'label'     => null,
+           'startDate' => null,
+           'endDate'   => null,
+           'overview'  => null,
+        ], $args);
 
-         try {
-             $startDate = $args['startDate'] ? new \DateTime($args['startDate']) : null;
-             $endDate   = $args['endDate']   ? new \DateTime($args['endDate'])   : null;
-         } catch (\Exception $e) {
-                throw new \InvalidArgumentException('Invalid date format. Use YYYY-MM-DD.');
-         }
+        try {
+            $startDate = $args['startDate'] ? new \DateTime($args['startDate']) : null;
+            $endDate   = $args['endDate']   ? new \DateTime($args['endDate'])   : null;
+        } catch (\Exception $e) {
+               throw new \InvalidArgumentException('Invalid date format. Use YYYY-MM-DD.');
+        }
 
-         if ($startDate && $endDate && $endDate <= $startDate) {
-             throw new \InvalidArgumentException('End date must be after start date.');
-         }
+        if ($startDate && $endDate && $endDate <= $startDate) {
+            throw new \InvalidArgumentException('End date must be after start date.');
+        }
 
 
-         $season = new Season($this->generateUniqueSlug($args['label']), $args['label']);
+        $season = new Season($this->generateUniqueSlug($args['label']), $args['label']);
 
-         if ($startDate) {
-             $season->setStartDate($startDate);
-         }
+        if ($startDate) {
+            $season->setStartDate($startDate);
+        }
 
-         if ($endDate) {
-             $season->setEndDate($endDate);
-         }
+        if ($endDate) {
+            $season->setEndDate($endDate);
+        }
 
-         $season->setOverview($args['overview']);
+        $season->setOverview($args['overview']);
 
-         $this->em->persist($season);
-         $this->em->flush();
+        $this->em->persist($season);
+        $this->em->flush();
 
-         return $season;
-     }
+        return $season;
+    }
 }

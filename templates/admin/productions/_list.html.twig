@@ -1,0 +1,28 @@
+<div id="productionListContainer">
+    <table class="w-full text-sm text-left rtl:text-right text-body">
+        <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+            <tr>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Name
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Season
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Opens
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Closes
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Actions
+                </th>
+            </tr>
+        </thead>
+        <tbody id="productionList">
+            {% include 'admin/productions/_table.html.twig' with {'productions': productions} %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {'pagination': pagination} %}
+</div>

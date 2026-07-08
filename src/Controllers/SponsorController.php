@@ -19,9 +19,11 @@ class SponsorController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/sponsors/index.html.twig', [
-            'sponsors' => $this->sponsorRepository->fetchAll(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/sponsors/index.html.twig',
+            $this->buildPaginatedViewData($request, $this->sponsorRepository, 'sponsors', '/admin/sponsors')
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -44,12 +46,14 @@ class SponsorController extends BaseController
         }
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/sponsors/_table.html.twig', [
-                'sponsors' => $this->sponsorRepository->fetchAll(),
-            ]);
+            return $this->twig->render(
+                $response,
+                'admin/sponsors/_list.html.twig',
+                $this->buildPaginatedViewData($request, $this->sponsorRepository, 'sponsors', '/admin/sponsors')
+            );
         }
 
-        return $response->withHeader('Location', '/admin/sponsors');
+        return $this->buildListRedirect($response, $request, '/admin/sponsors');
     }
 
     public function store(Request $request, Response $response, array $args = []): Response

@@ -10,6 +10,7 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Controllers\ImageUploadController;
+use TheatreCMS\Controllers\MenuController;
 use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Controllers\PostController;
 use TheatreCMS\Controllers\LoginController;
@@ -21,8 +22,10 @@ use TheatreCMS\Controllers\SponsorController;
 use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
+use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\PersonRepository;
@@ -34,8 +37,10 @@ use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\EditorJsExtension;
+use TheatreCMS\Twig\MenuExtension;
 use Delight\Auth\Auth;
 
 /**
@@ -66,6 +71,17 @@ class ServiceRegistrar
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
+        $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
+
+        $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {
+            return new MenuItemResolver(
+                $c->get(PageRepository::class),
+                $c->get(PostRepository::class),
+                $c->get(ProductionRepository::class),
+                $c->get(SeasonRepository::class)
+            );
+        });
+
         $container->set(ThemeManager::class, static function (ContainerInterface $c): ThemeManager {
             $settings = $c->get('settings');
             $themesDir = $settings['themes']['dir'] ?? APP_ROOT . '/themes';
@@ -90,6 +106,7 @@ class ServiceRegistrar
             $themeManager->configureTwig($twig, $templateDir);
             $themeManager->loadFunctions();
             $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
+            $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $siteSettings = $c->get(SiteSettings::class);
@@ -192,6 +209,19 @@ class ServiceRegistrar
                     $c->get(PageRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class)
+                );
+            },
+            MenuController::class => static function (ContainerInterface $c): MenuController {
+                return new MenuController(
+                    $c->get(MenuRepository::class),
+                    $c->get(EntityManager::class),
+                    $c->get(Twig::class),
+                    $c->get(MenuLocationRegistry::class),
+                    $c->get(MenuItemResolver::class),
+                    $c->get(PageRepository::class),
+                    $c->get(PostRepository::class),
+                    $c->get(ProductionRepository::class),
+                    $c->get(SeasonRepository::class)
                 );
             },
             VenueController::class => static function (ContainerInterface $c): VenueController {

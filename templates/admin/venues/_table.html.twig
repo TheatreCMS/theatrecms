@@ -4,7 +4,7 @@
         <td class="px-6 py-4">{{ v.city }}, {{ v.state }}</td>
         <td class="px-6 py-4">
             <a href="/admin/venues/edit/{{ v.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
-            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/venues/delete/{{ v.id }}" hx-target="#venueList">Delete</button>
+            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/venues/{{ v.id }}?page={{ pagination.page }}" hx-target="#venueListContainer" hx-swap="outerHTML">Delete</button>
         </td>
     </tr>
 {% else %}

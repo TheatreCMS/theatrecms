@@ -13,32 +13,5 @@
     </div>
 </div>
 
-<table class="w-full text-sm text-left rtl:text-right text-body">
-    <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
-        <tr>
-            <th scope="col" class="px-6 py-3 font-medium">Last Name</th>
-            <th scope="col" class="px-6 py-3 font-medium">First Name</th>
-            <th scope="col" class="px-6 py-3 font-medium">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for p in people %}
-        <tr class="bg-neutral-primary border-b border-default">
-            <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">{{ p.lastName }}</th>
-            <td class="px-6 py-4">{{ p.firstName }}</td>
-            <td class="px-6 py-4">
-                <a href="/admin/people/edit/{{ p.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
-                <form action="/admin/people/{{ p.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this person?');">
-                    <input type="hidden" name="_METHOD" value="DELETE">
-                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                </form>
-            </td>
-        </tr>
-    {% else %}
-        <tr class="bg-neutral-primary border-b border-default">
-            <td class="px-6 py-4">No people found.</td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+{% include 'admin/people/_list.html.twig' with {'people': people, 'pagination': pagination} %}
 {% endblock %}

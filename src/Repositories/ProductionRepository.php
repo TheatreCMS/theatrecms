@@ -9,20 +9,16 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 class ProductionRepository extends BaseRepository
 {
-
     protected string $entityClass = Production::class;
 
-    public function fetchAll(): array
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
-        return $this->em->createQueryBuilder()
-            ->select('p')
-            ->from(Production::class, 'p')
-            ->orderBy('p.opening', 'DESC')
-            ->getQuery()
-            ->getResult();
+        $builder->orderBy(sprintf('%s.opening', $alias), 'DESC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
     }
 
     public function create(array $args): Production
@@ -119,10 +115,25 @@ class ProductionRepository extends BaseRepository
             }
         }
 
-        // Persist production first so relations can reference it
-        $this->em->persist($production);
+        $workIds = $args['works'] ?? [];
+        if (!is_array($workIds)) {
+            $workIds = !empty($workIds) ? explode(',', (string) $workIds) : [];
+        }
 
-        // @todo update people and works if provided
+        $workIds = array_filter(array_map('trim', array_map('strval', $workIds)), static function (string $workId): bool {
+            return $workId !== '';
+        });
+
+        $worksRepository = $this->em->getRepository(Work::class);
+        foreach ($workIds as $workId) {
+            $work = $worksRepository->find((int) $workId);
+            if ($work instanceof Work) {
+                $production->addWork($work);
+            }
+        }
+
+        // Persist production after all relationship updates
+        $this->em->persist($production);
 
         $this->em->flush();
 

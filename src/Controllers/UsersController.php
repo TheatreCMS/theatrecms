@@ -22,10 +22,17 @@ class UsersController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/users/index.html.twig', [
-            'users'         => $this->repository->fetchAll(),
-            'currentUserId' => $this->auth->getUserId(),
-        ]);
+        return $this->twig->render(
+            $response,
+            'admin/users/index.html.twig',
+            $this->buildPaginatedViewData(
+                $request,
+                $this->repository,
+                'users',
+                '/admin/users',
+                ['currentUserId' => $this->auth->getUserId()]
+            )
+        );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
@@ -47,12 +54,20 @@ class UsersController extends BaseController
             $this->auth->admin()->deleteUserById($id);
 
             if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/users/_table.html.twig', [
-                    'users' => $this->repository->fetchAll(),
-                ]);
+                return $this->twig->render(
+                    $response,
+                    'admin/users/_list.html.twig',
+                    $this->buildPaginatedViewData(
+                        $request,
+                        $this->repository,
+                        'users',
+                        '/admin/users',
+                        ['currentUserId' => $this->auth->getUserId()]
+                    )
+                );
             }
 
-            return $response->withHeader('Location', '/admin/users')->withStatus(302);
+            return $this->buildListRedirect($response, $request, '/admin/users')->withStatus(302);
         } catch (UnknownIdException $e) {
             $response->getBody()->write($e->getMessage());
             return $response->withStatus(400);

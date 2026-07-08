@@ -13,6 +13,11 @@ final class VenueRepository extends BaseRepository
 {
     protected string $entityClass = Venue::class;
 
+    public function fetchAll(): array
+    {
+        return $this->em->getRepository(Venue::class)->findAll();
+    }
+
     public function create(array $args): Venue
     {
         $args = array_merge([
