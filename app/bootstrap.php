@@ -78,9 +78,4 @@ HookManager::setInstance($hookManager);
 $menuLocationRegistry = $container->get(MenuLocationRegistry::class);
 MenuLocationRegistry::setInstance($menuLocationRegistry);
 
-// Core locations rendered by the fallback templates (templates/partials/header.html.twig,
-// footer.html.twig) so they're assignable even when the active theme registers none of its own.
-register_menu_location('primary', 'Primary Navigation');
-register_menu_location('footer', 'Footer Menu');
-
 return $container;

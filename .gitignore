@@ -22,7 +22,8 @@ Thumbs.db
 .phpunit.result.cache
 
 /sql/
-/www/themes
+/www/themes/*
+!/www/themes/default
 /www/uploads/*
 node_modules/
 

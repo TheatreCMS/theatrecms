@@ -33,7 +33,7 @@ class MenuExtension extends AbstractExtension
             return new Markup('', 'UTF-8');
         }
 
-        $html = $env->render('@core/partials/_menu_items.html.twig', [
+        $html = $env->render('partials/_menu_items.html.twig', [
             'items' => $tree,
             'options' => $options,
         ]);

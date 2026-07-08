@@ -4,7 +4,7 @@
     <li class="menu-item{% if item.children is not empty %} has-children{% endif %}">
       <a href="{{ item.url }}" class="hover:text-gray-900">{{ item.label }}</a>
       {% if item.children is not empty %}
-        {% include '@core/partials/_menu_items.html.twig' with {items: item.children, depth: depth|default(0) + 1} %}
+        {% include 'partials/_menu_items.html.twig' with {items: item.children, depth: depth|default(0) + 1} %}
       {% endif %}
     </li>
   {% endfor %}
