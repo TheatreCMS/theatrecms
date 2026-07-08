@@ -205,11 +205,27 @@ class MenuController extends BaseController
                 throw new \InvalidArgumentException('Invalid menu item link type.');
             }
 
-            $customUrl = !empty($row['customUrl']) ? (string) $row['customUrl'] : null;
+            $customUrl = !empty($row['customUrl']) ? trim((string) $row['customUrl']) : null;
             $targetId = isset($row['targetId']) && $row['targetId'] !== '' ? (int) $row['targetId'] : null;
 
-            if ($linkType === MenuItemType::CUSTOM && empty($customUrl)) {
-                throw new \InvalidArgumentException('Custom links require a URL.');
+            if ($linkType === MenuItemType::CUSTOM) {
+                if ($customUrl === null || $customUrl === '') {
+                    throw new \InvalidArgumentException('Custom links require a URL.');
+                }
+
+                $scheme = parse_url($customUrl, PHP_URL_SCHEME);
+
+                if ($scheme === false) {
+                    throw new \InvalidArgumentException('Custom link URL is invalid.');
+                }
+
+                if ($scheme !== null && !in_array(strtolower($scheme), ['http', 'https', 'mailto', 'tel'], true)) {
+                    throw new \InvalidArgumentException('Custom link URLs must be relative or use http(s), mailto, or tel.');
+                }
+
+                if ($scheme === null && str_starts_with($customUrl, '//')) {
+                    throw new \InvalidArgumentException('Protocol-relative URLs (starting with "//") are not allowed.');
+                }
             }
 
             if ($customUrl !== null) {
