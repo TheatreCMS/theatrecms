@@ -35,6 +35,7 @@ use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
@@ -70,6 +71,8 @@ class ServiceRegistrar
         });
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
+
+        $container->set(ImageUploadService::class, static fn(): ImageUploadService => new ImageUploadService(APP_ROOT . '/www'));
 
         $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
 
@@ -201,7 +204,8 @@ class ServiceRegistrar
                 return new PostController(
                     $c->get(PostRepository::class),
                     $c->get(EntityManager::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
+                    $c->get(ImageUploadService::class)
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
@@ -239,7 +243,8 @@ class ServiceRegistrar
             SponsorController::class => static function (ContainerInterface $c): SponsorController {
                 return new SponsorController(
                     $c->get(SponsorRepository::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
+                    $c->get(ImageUploadService::class)
                 );
             },
             WorksController::class => static function (ContainerInterface $c): WorksController {
@@ -249,7 +254,9 @@ class ServiceRegistrar
                     $c->get(PersonRepository::class)
                 );
             },
-            ImageUploadController::class => static fn(): ImageUploadController => new ImageUploadController(),
+            ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
+                return new ImageUploadController($c->get(ImageUploadService::class));
+            },
             SettingsController::class => static function (ContainerInterface $c): SettingsController {
                 return new SettingsController(
                     $c->get(SiteSettings::class),

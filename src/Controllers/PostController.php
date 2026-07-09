@@ -10,20 +10,21 @@ use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\PostStatus;
 use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Services\ImageUploadService;
 
 /**
  * @method PostRepository repository()
  */
 class PostController extends BaseController
 {
-    private const UPLOADS_SUBPATH = '/uploads/';
-    private const RANDOM_SUFFIX_BYTES = 12;
+    private ImageUploadService $imageUploadService;
 
-    public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig)
+    public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig, ImageUploadService $imageUploadService)
     {
         $this->repository = $repository;
         $this->entityManager = $em;
         $this->twig       = $twig;
+        $this->imageUploadService = $imageUploadService;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -105,7 +106,7 @@ class PostController extends BaseController
             return $response->withStatus(404);
         }
 
-        $this->deleteFeaturedImageFile($post->getFeaturedImageUrl());
+        $this->imageUploadService->delete($post->getFeaturedImageUrl());
         $post->setFeaturedImageUrl(null);
         $this->repository->update($post);
 
@@ -261,75 +262,10 @@ class PostController extends BaseController
             return null;
         }
 
-        if ($featuredImage->getError() !== UPLOAD_ERR_OK || !$this->isImageUpload($featuredImage)) {
+        if ($featuredImage->getError() !== UPLOAD_ERR_OK || !$this->imageUploadService->isImage($featuredImage)) {
             return null;
         }
 
-        $directory = $this->ensureUploadsDirectory();
-        $filename = $this->generateUploadFilename($featuredImage);
-        $featuredImage->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
-
-        return rtrim(self::UPLOADS_SUBPATH, '/') . '/' . $filename;
-    }
-
-    private function deleteFeaturedImageFile(?string $url): void
-    {
-        if (!$url) {
-            return;
-        }
-
-        $path = $this->resolveFeaturedImagePath($url);
-        if ($path && file_exists($path)) {
-            @unlink($path);
-        }
-    }
-
-    private function resolveFeaturedImagePath(string $url): ?string
-    {
-        if (!str_starts_with($url, self::UPLOADS_SUBPATH)) {
-            return null;
-        }
-
-        $relative = ltrim($url, '/');
-        if ($relative === '' || str_contains($relative, '..')) {
-            return null;
-        }
-
-        return $this->getPublicRoot() . '/' . $relative;
-    }
-
-    private function isImageUpload(UploadedFileInterface $file): bool
-    {
-        $mediaType = $file->getClientMediaType();
-        return is_string($mediaType) && str_starts_with($mediaType, 'image/');
-    }
-
-    private function ensureUploadsDirectory(): string
-    {
-        $directory = $this->getPublicRoot() . self::UPLOADS_SUBPATH;
-
-        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
-            throw new \RuntimeException(sprintf('Unable to create upload directory "%s".', $directory));
-        }
-
-        return rtrim($directory, '/\\');
-    }
-
-    private function generateUploadFilename(UploadedFileInterface $file): string
-    {
-        $original = $file->getClientFilename() ?? '';
-        $extension = strtolower(pathinfo($original, PATHINFO_EXTENSION));
-
-        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
-            $extension = 'jpg';
-        }
-
-        return sprintf('%s.%s', bin2hex(random_bytes(self::RANDOM_SUFFIX_BYTES)), $extension);
-    }
-
-    private function getPublicRoot(): string
-    {
-        $root = defined('APP_ROOT') ? APP_ROOT : dirname(__DIR__, 2);
-        return rtrim($root, '/\\') . '/www';
+        return $this->imageUploadService->store($featuredImage);
     }
 }
