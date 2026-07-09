@@ -3,6 +3,10 @@
 {% block title %}Home - {{ parent() }}{% endblock %}
 
 {% block content %}
+    {% if featuredProduction %}
+        {% include 'partials/_hero.html.twig' with { production: featuredProduction, status: featuredProductionStatus } %}
+    {% endif %}
+
     {% for p in posts %}
         {% include 'posts/_post.html.twig' with { post: p } %}
     {% endfor %}

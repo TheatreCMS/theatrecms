@@ -1,0 +1,33 @@
+{# Reusable home page hero - expects `production` and `status` ('now-playing'|'upcoming') variables #}
+<section class="relative overflow-hidden rounded-lg bg-gray-900 text-white shadow-lg"
+         {% if production.hasFeaturedImage %}
+             style="background-image: linear-gradient(to top, rgba(17,24,39,0.9), rgba(17,24,39,0.5)), url('{{ production.featuredImageUrl }}'); background-size: cover; background-position: center;"
+         {% endif %}>
+    <div class="max-w-4xl mx-auto px-6 py-20 sm:py-28 text-center space-y-4">
+        <p class="text-xs uppercase tracking-widest text-gray-300">
+            {% if status == 'now-playing' %}Now Playing{% else %}Coming Soon{% endif %}
+        </p>
+        <h1 class="text-4xl sm:text-5xl font-bold">{{ production.name }}</h1>
+
+        {% set dateRange = null %}
+        {% if production.opening and production.closing %}
+            {% set dateRange = production.opening|date('F j, Y') ~ ' – ' ~ production.closing|date('F j, Y') %}
+        {% elseif production.opening %}
+            {% set dateRange = 'Opens ' ~ production.opening|date('F j, Y') %}
+        {% endif %}
+        {% if dateRange %}
+            <p class="text-lg text-gray-200">{{ dateRange }}</p>
+        {% endif %}
+
+        {% if production.venue %}
+            <p class="text-sm text-gray-300">{{ production.venue.name }}</p>
+        {% endif %}
+
+        <div class="pt-4">
+            <a href="/seasons/{{ production.season.slug }}/{{ production.slug }}"
+               class="inline-block bg-white text-gray-900 font-semibold px-6 py-3 rounded-md hover:bg-gray-100 transition-colors">
+                Learn More
+            </a>
+        </div>
+    </div>
+</section>
