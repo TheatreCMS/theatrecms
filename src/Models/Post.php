@@ -13,7 +13,6 @@ use TheatreCMS\Enums\PostStatus;
 #[Entity, Table(name: 'posts')]
 class Post extends ModelBase
 {
-
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
@@ -25,6 +24,9 @@ class Post extends ModelBase
 
     #[Column(type: 'text', nullable: false)]
     private string $content;
+
+    #[Column(name: 'featured_image_url', type: 'string', length: 255, nullable: true)]
+    private ?string $featuredImageUrl = null;
 
     #[Column(name: 'created_at', type: 'datetime_immutable')]
     private DateTimeImmutable $createdAt;
@@ -85,6 +87,18 @@ class Post extends ModelBase
     public function setContent(string $content): self
     {
         $this->content = $content;
+
+        return $this;
+    }
+
+    public function getFeaturedImageUrl(): ?string
+    {
+        return $this->featuredImageUrl;
+    }
+
+    public function setFeaturedImageUrl(?string $featuredImageUrl): self
+    {
+        $this->featuredImageUrl = $featuredImageUrl;
 
         return $this;
     }
