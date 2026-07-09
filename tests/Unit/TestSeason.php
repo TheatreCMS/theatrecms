@@ -72,7 +72,7 @@ class TestSeason extends TestCase
             'overview' => 'This is the overview for the 2026-2027 season.',
             'startDate' => $startDate->format('Y-m-d'),
             'endDate' => $endDate->format('Y-m-d'),
-            'heroImageUrl' => '',
+            'featuredImageUrl' => null,
             'productions' => [],
         ];
 

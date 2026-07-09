@@ -23,9 +23,9 @@ class Season extends ModelBase implements \JsonSerializable
     #[Column(type: 'text', nullable: true)]
     private ?string $overview = null;
 
-    #[Column(name: 'hero_image_url', type: 'string', nullable: false)]
-    private string $heroImageUrl = '';
-    
+    #[Column(name: 'featured_image_url', type: 'string', nullable: true)]
+    private ?string $featuredImageUrl = null;
+
     #[Column(name: 'start_date', type: 'datetime', nullable: false)]
     private ?\DateTime $startDate = null;
 
@@ -74,9 +74,9 @@ class Season extends ModelBase implements \JsonSerializable
         return $this->endDate;
     }
 
-    public function getHeroImageUrl(): string
+    public function getFeaturedImageUrl(): ?string
     {
-        return $this->heroImageUrl;
+        return $this->featuredImageUrl;
     }
 
     public function getProductions(): Collection
@@ -117,9 +117,9 @@ class Season extends ModelBase implements \JsonSerializable
         return $this;
     }
 
-    public function setHeroImageUrl(string $heroImageUrl): self
+    public function setFeaturedImageUrl(?string $featuredImageUrl): self
     {
-        $this->heroImageUrl = $heroImageUrl;
+        $this->featuredImageUrl = $featuredImageUrl;
 
         return $this;
     }
@@ -154,7 +154,7 @@ class Season extends ModelBase implements \JsonSerializable
             'startDate' => $this->getStartDate()?->format('Y-m-d'),
             'endDate' => $this->getEndDate()?->format('Y-m-d'),
             'overview' => $this->getOverview(),
-            'heroImageUrl' => $this->getHeroImageUrl(),
+            'featuredImageUrl' => $this->getFeaturedImageUrl(),
             'productions' => $this->getProductions()->toArray(),
         ];
     }
