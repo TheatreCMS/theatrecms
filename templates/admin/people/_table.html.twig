@@ -1,5 +1,18 @@
 {% for p in people %}
     <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4">
+            {% if p.headshotUrl %}
+                <img
+                    src="{{ p.headshotUrl }}"
+                    alt="Headshot of {{ p.name }}"
+                    class="h-10 w-10 rounded-full object-cover border border-gray-200 bg-gray-50"
+                >
+            {% else %}
+                <div class="h-10 w-10 rounded-full border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-[10px] text-gray-400 uppercase">
+                    No photo
+                </div>
+            {% endif %}
+        </td>
         <th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">{{ p.lastName }}</th>
         <td class="px-6 py-4">{{ p.firstName }}</td>
         <td class="px-6 py-4">
@@ -16,6 +29,6 @@
     </tr>
 {% else %}
     <tr class="bg-neutral-primary border-b border-default">
-        <td class="px-6 py-4" colspan="3">No people found.</td>
+        <td class="px-6 py-4" colspan="4">No people found.</td>
     </tr>
 {% endfor %}
