@@ -196,15 +196,7 @@
 						</select>
 					</div>
 
-					<div class="md:col-span-2">
-						<label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
-						{% if production.hasFeaturedImage() %}
-							<div class="w-full h-40 overflow-hidden rounded-md border border-gray-200 bg-gray-50">
-								<img src="{{ production.featuredImageUrl }}" alt="Featured image for {{ production.name }}" class="object-contain w-full h-full">
-							</div>
-						{% endif %}
-						<input type="file" name="poster" id="poster" accept="image/*" class="w-full">
-					</div>
+					{% include 'admin/productions/_featured_image_section.html.twig' %}
 
 				</div>
 			</div>
@@ -525,6 +517,8 @@ const form = document.querySelector('form');
 const nameInput = document.getElementById('name');
 const seasonInput = document.getElementById('seasonId');
 const descriptionField = document.getElementById('description');
+const posterInput = document.getElementById('poster');
+const uploadFeaturedImagePreview = document.getElementById('upload-featured-image-preview');
 
 const editorData = {{ editorDescription is not null ? editorDescription|raw : 'null' }};
 
@@ -625,6 +619,36 @@ setupDynamicRows('creative');
 setupDynamicRows('performer');
 setupDynamicRows('sponsorship');
 
+if (posterInput && uploadFeaturedImagePreview) {
+let activeObjectUrl = null;
+
+posterInput.addEventListener('change', function (event) {
+const input = event.target;
+
+if (activeObjectUrl) {
+URL.revokeObjectURL(activeObjectUrl);
+activeObjectUrl = null;
+}
+
+if (!input || !input.files || input.files.length === 0) {
+uploadFeaturedImagePreview.src = '';
+uploadFeaturedImagePreview.classList.add('hidden');
+return;
+}
+
+const file = input.files[0];
+if (!file.type || file.type.indexOf('image/') !== 0) {
+uploadFeaturedImagePreview.src = '';
+uploadFeaturedImagePreview.classList.add('hidden');
+return;
+}
+
+activeObjectUrl = URL.createObjectURL(file);
+uploadFeaturedImagePreview.src = activeObjectUrl;
+uploadFeaturedImagePreview.classList.remove('hidden');
+});
+}
+
 let isSaving = false;
 form.addEventListener('submit', function (event) {
 event.preventDefault();
@@ -637,13 +661,13 @@ return;
 
 if (! seasonInput || ! seasonInput.value) {
 alert('Please select or enter a season for the production.');
-if (seasonInput) 
+if (seasonInput)
 seasonInput.focus();
 
 return;
 }
 
-if (isSaving) 
+if (isSaving)
 return;
 
 isSaving = true;

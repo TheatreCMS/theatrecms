@@ -285,9 +285,20 @@
 				{% endif %}
 			</div>
 
-			<div class="md:col-span-2">
-				<label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Poster / Image</label>
-				<input type="file" name="poster" id="poster" accept="image/*" class="w-full">
+			<div id="featured-image-section" class="md:col-span-2">
+				<label for="poster" class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+				<div class="rounded-md border border-gray-200 bg-gray-50 p-4">
+					<p id="current-featured-image-placeholder" class="text-sm text-gray-500">No featured image set.</p>
+					<img
+						id="upload-featured-image-preview"
+						src=""
+						alt="Selected featured image preview"
+						class="mt-3 hidden max-h-40 w-auto object-contain"
+					>
+				</div>
+
+				<input type="file" name="poster" id="poster" accept="image/*" class="mt-3 w-full rounded-md border-gray-300 shadow-sm">
+				<p class="mt-1 text-xs text-gray-500">Uploading a file will set the featured image when saved.</p>
 			</div>
 		</div>
 
@@ -311,6 +322,8 @@ const form = document.querySelector('form');
 const nameInput = document.getElementById('name');
 const seasonInput = document.getElementById('seasonId');
 const descriptionField = document.getElementById('description');
+const posterInput = document.getElementById('poster');
+const uploadFeaturedImagePreview = document.getElementById('upload-featured-image-preview');
 
 const editorData = null;
 
@@ -410,6 +423,36 @@ rowsBody.insertBefore(row, templateRow);
 setupDynamicRows('creative');
 setupDynamicRows('performer');
 setupDynamicRows('sponsorship');
+
+if (posterInput && uploadFeaturedImagePreview) {
+let activeObjectUrl = null;
+
+posterInput.addEventListener('change', function (event) {
+const input = event.target;
+
+if (activeObjectUrl) {
+URL.revokeObjectURL(activeObjectUrl);
+activeObjectUrl = null;
+}
+
+if (!input || !input.files || input.files.length === 0) {
+uploadFeaturedImagePreview.src = '';
+uploadFeaturedImagePreview.classList.add('hidden');
+return;
+}
+
+const file = input.files[0];
+if (!file.type || file.type.indexOf('image/') !== 0) {
+uploadFeaturedImagePreview.src = '';
+uploadFeaturedImagePreview.classList.add('hidden');
+return;
+}
+
+activeObjectUrl = URL.createObjectURL(file);
+uploadFeaturedImagePreview.src = activeObjectUrl;
+uploadFeaturedImagePreview.classList.remove('hidden');
+});
+}
 
 let isSaving = false;
 form.addEventListener('submit', function (event) {

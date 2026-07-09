@@ -1,0 +1,4 @@
+{% include 'admin/productions/_featured_image_section.html.twig' %}
+<div id="flash-messages" hx-swap-oob="innerHTML">
+    {% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': 'Featured image removed successfully.'} %}
+</div>

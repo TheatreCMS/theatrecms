@@ -34,6 +34,8 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
+    private const UPLOADS_SUBPATH = '/uploads/';
+
     private SeasonRepository $seasonRepo;
     private PersonRepository $personRepo;
     private WorkRepository $worksRepo;
@@ -116,6 +118,35 @@ class ProductionController extends BaseController
         }
 
         return $this->buildListRedirect($response, $request, '/admin/productions');
+    }
+
+    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
+    {
+        /** @var Production|null $production */
+        $production = $this->repository->fetch((int) $args['id']);
+
+        if ($production === null) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Production not found.',
+                ]);
+            }
+
+            return $response->withStatus(404);
+        }
+
+        $this->deleteFeaturedImageFile($production->getFeaturedImageUrl());
+        $production->setFeaturedImageUrl(null);
+        $this->repository->update($production);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/productions/_featured_image_removed.html.twig', [
+                'production' => $production,
+            ]);
+        }
+
+        return $response->withHeader('Location', '/admin/productions/edit/' . $production->getId());
     }
 
     public function store(Request $request, Response $response, array $args = []): Response
@@ -324,9 +355,8 @@ class ProductionController extends BaseController
         $this->repository->update($item);
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Production saved successfully.',
+            return $this->twig->render($response, 'admin/productions/_saved.html.twig', [
+                'production' => $item,
             ]);
         }
 
@@ -402,6 +432,38 @@ class ProductionController extends BaseController
         } catch (\InvalidArgumentException | \RuntimeException) {
             // Ignore invalid uploads; let other validation flow handle feedback.
         }
+    }
+
+    private function deleteFeaturedImageFile(?string $url): void
+    {
+        if (!$url) {
+            return;
+        }
+
+        $path = $this->resolveFeaturedImagePath($url);
+        if ($path && file_exists($path)) {
+            @unlink($path);
+        }
+    }
+
+    private function resolveFeaturedImagePath(string $url): ?string
+    {
+        if (!str_starts_with($url, self::UPLOADS_SUBPATH)) {
+            return null;
+        }
+
+        $relative = ltrim($url, '/');
+        if ($relative === '' || str_contains($relative, '..')) {
+            return null;
+        }
+
+        return $this->getPublicRoot() . '/' . $relative;
+    }
+
+    private function getPublicRoot(): string
+    {
+        $root = defined('APP_ROOT') ? APP_ROOT : dirname(__DIR__, 2);
+        return rtrim($root, '/\\') . '/www';
     }
 
     private function isImageUpload(UploadedFileInterface $file): bool
