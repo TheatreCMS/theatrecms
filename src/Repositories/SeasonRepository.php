@@ -21,10 +21,11 @@ class SeasonRepository extends BaseRepository
     public function create(array $args): Season
     {
         $args = array_merge([
-           'label'     => null,
-           'startDate' => null,
-           'endDate'   => null,
-           'overview'  => null,
+           'label'            => null,
+           'startDate'        => null,
+           'endDate'          => null,
+           'overview'         => null,
+           'featuredImageUrl' => null,
         ], $args);
 
         try {
@@ -50,6 +51,7 @@ class SeasonRepository extends BaseRepository
         }
 
         $season->setOverview($args['overview']);
+        $season->setFeaturedImageUrl($args['featuredImageUrl']);
 
         $this->em->persist($season);
         $this->em->flush();

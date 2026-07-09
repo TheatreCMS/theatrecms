@@ -7,9 +7,11 @@ use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Sponsorship;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Services\ImageUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 
 /**
@@ -21,13 +23,20 @@ use Slim\Views\Twig;
 class SeasonController extends BaseController
 {
     private SponsorRepository $sponsorRepo;
+    private ImageUploadService $imageUploadService;
 
-    public function __construct(SeasonRepository $repository, EntityManagerInterface $em, Twig $twig, SponsorRepository $sponsorRepo)
-    {
+    public function __construct(
+        SeasonRepository $repository,
+        EntityManagerInterface $em,
+        Twig $twig,
+        SponsorRepository $sponsorRepo,
+        ImageUploadService $imageUploadService
+    ) {
         $this->repository    = $repository;
         $this->entityManager = $em;
         $this->twig          = $twig;
         $this->sponsorRepo   = $sponsorRepo;
+        $this->imageUploadService = $imageUploadService;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -81,6 +90,33 @@ class SeasonController extends BaseController
         return $this->buildListRedirect($response, $request, '/admin/seasons');
     }
 
+    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
+    {
+        $season = $this->repository()->fetch($args['id']);
+
+        if (is_null($season)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Season not found.',
+                ]);
+            }
+            return $response->withStatus(404);
+        }
+
+        $this->imageUploadService->delete($season->getFeaturedImageUrl());
+        $season->setFeaturedImageUrl(null);
+        $this->repository()->update($season);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/seasons/_featured_image_removed.html.twig', [
+                'season' => $season,
+            ]);
+        }
+
+        return $response->withHeader('Location', '/admin/seasons/edit/' . $season->getId());
+    }
+
     public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
@@ -118,8 +154,14 @@ class SeasonController extends BaseController
             'startDate' => null,
             'endDate' => null,
             'overview' => null,
+            'featuredImageUrl' => null,
             'sponsorshipSponsorIds' => [],
         ], $data);
+
+        $featuredImageUploadUrl = $this->storeFeaturedImageUpload($request);
+        if ($featuredImageUploadUrl !== null) {
+            $data['featuredImageUrl'] = $featuredImageUploadUrl;
+        }
 
         $seasonId = $data['seasonId'] ?? null;
 
@@ -143,13 +185,13 @@ class SeasonController extends BaseController
             $item->setStartDate($start);
             $item->setEndDate($end);
             $item->setOverview($data['overview']);
+            $item->setFeaturedImageUrl($data['featuredImageUrl'] !== '' ? $data['featuredImageUrl'] : null);
             $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);
             $this->repository()->update($item);
 
             if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'success',
-                    'message' => 'Season saved successfully.',
+                return $this->twig->render($response, 'admin/seasons/_saved.html.twig', [
+                    'season' => $item,
                 ]);
             }
 
@@ -202,5 +244,21 @@ class SeasonController extends BaseController
             $season->addSponsorship($newSponsorship);
             $this->entityManager->persist($newSponsorship);
         }
+    }
+
+    private function storeFeaturedImageUpload(Request $request): ?string
+    {
+        $uploadedFiles = $request->getUploadedFiles();
+        $featuredImage = $uploadedFiles['featuredImage'] ?? null;
+
+        if (!$featuredImage instanceof UploadedFileInterface || $featuredImage->getError() === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        if ($featuredImage->getError() !== UPLOAD_ERR_OK || !$this->imageUploadService->isImage($featuredImage)) {
+            return null;
+        }
+
+        return $this->imageUploadService->store($featuredImage);
     }
 }

@@ -188,7 +188,8 @@ class ServiceRegistrar
                     $c->get(SeasonRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
-                    $c->get(SponsorRepository::class)
+                    $c->get(SponsorRepository::class),
+                    $c->get(ImageUploadService::class)
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
