@@ -6,7 +6,14 @@
     <h1>Our Seasons</h1>
     <ul>
         {% for season in seasons %}
-            <li><a href="/seasons/{{ season.slug }}">{{ season.label }}</a></li>
+            <li>
+                <a href="/seasons/{{ season.slug }}">
+                    {% if season.featuredImageUrl %}
+                        <img src="{{ season.featuredImageUrl }}" alt="{{ season.label }}" class="season-featured-image-thumb">
+                    {% endif %}
+                    {{ season.label }}
+                </a>
+            </li>
         {% else %}
             <li>No seasons found.</li>
         {% endfor %}

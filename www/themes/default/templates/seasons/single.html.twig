@@ -6,6 +6,10 @@
 
     <h1 id="this-season-{{ season.slug }}">SEASON {{ season.label }}</h1>
 
+    {% if season.featuredImageUrl %}
+        <img src="{{ season.featuredImageUrl }}" alt="{{ season.label }}" class="season-featured-image">
+    {% endif %}
+
     {% if season.overview %}
         <div class="season-overview">
             {{ season.overview|nl2br }}
