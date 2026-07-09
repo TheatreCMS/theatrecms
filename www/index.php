@@ -22,6 +22,7 @@ require_once ROOT_DIR . "/vendor/autoload.php";
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -70,7 +71,20 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 $app->get('/', function (Request $request, Response $response) use ($container) {
     $twig = $container->get(Twig::class);
     $posts = $container->get(PostRepository::class)->fetchPublished();
+    $featuredProduction = $container->get(ProductionRepository::class)->findFeatured();
 
-    return $twig->render($response, 'index.html.twig', ['posts' => $posts]);
+    $featuredProductionStatus = null;
+    if ($featuredProduction) {
+        $today = new \DateTime('today');
+        $featuredProductionStatus = $featuredProduction->getOpening() && $featuredProduction->getOpening() <= $today
+            ? 'now-playing'
+            : 'upcoming';
+    }
+
+    return $twig->render($response, 'index.html.twig', [
+        'posts' => $posts,
+        'featuredProduction' => $featuredProduction,
+        'featuredProductionStatus' => $featuredProductionStatus,
+    ]);
 });
 $app->run();
