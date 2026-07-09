@@ -144,4 +144,25 @@ class ProductionRepository extends BaseRepository
     {
         return $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
     }
+
+    /**
+     * Finds the production to feature on the home page hero: the currently running
+     * production if one exists, otherwise the next upcoming one. Productions that
+     * have already closed are never returned.
+     */
+    public function findFeatured(): ?Production
+    {
+        $today = new DateTime('today');
+
+        return $this->em->createQueryBuilder()
+            ->select('p')
+            ->from(Production::class, 'p')
+            ->where('p.opening IS NOT NULL')
+            ->andWhere('p.closing IS NULL OR p.closing >= :today')
+            ->setParameter('today', $today)
+            ->orderBy('p.opening', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
