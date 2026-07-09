@@ -42,6 +42,14 @@
                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
             </div>
 
+            <div>
+                <label for="featuredImageUrl" class="block text-sm font-medium text-gray-700 mb-1">Featured Image URL</label>
+                <input type="url" name="featuredImageUrl" id="featuredImageUrl"
+                       value="{{ post.featuredImageUrl|default('') }}"
+                       placeholder="https://example.com/post-cover.jpg"
+                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+            </div>
+
             <div class="md:col-span-2 space-y-3">
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
                 <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
