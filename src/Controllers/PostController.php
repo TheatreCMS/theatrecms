@@ -106,6 +106,7 @@ class PostController extends BaseController
                 'title' => $data['title'] ?? null,
                 'status' => $data['status'] ?? PostStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
+                'featuredImageUrl' => $data['featuredImageUrl'] ?? null,
             ]);
         } catch (\InvalidArgumentException $e) {
             if ($request->getHeaderLine('HX-Request')) {
@@ -149,6 +150,7 @@ class PostController extends BaseController
             'content' => null,
             'slug' => null,
             'publishedAt' => null,
+            'featuredImageUrl' => null,
         ]);
 
         $post = $this->repository->fetch($data['postId']);
@@ -187,6 +189,7 @@ class PostController extends BaseController
         $post->setTitle($data['title']);
         $post->setStatus($status);
         $post->setContent($data['content']);
+        $post->setFeaturedImageUrl($data['featuredImageUrl'] !== '' ? $data['featuredImageUrl'] : null);
         $post->touchModified();
 
         if (!empty($data['publishedAt'])) {
