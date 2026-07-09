@@ -182,6 +182,11 @@ class Production extends ModelBase
         return $this->people->filter(fn(ProductionPerson $productionPerson) => $productionPerson->getRoleType() === RoleType::Cast);
     }
 
+    public function getProductionTeam(): Collection
+    {
+        return $this->people->filter(fn(ProductionPerson $productionPerson) => $productionPerson->getRoleType() === RoleType::ProductionTeam);
+    }
+
     public function getPromoVideoUrl(): string
     {
         return $this->promoVideoUrl ?? '';

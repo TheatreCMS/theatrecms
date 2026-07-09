@@ -302,7 +302,25 @@
                     data: (() => {
                         const raw = {{ work.description|default('')|json_encode(constant('JSON_HEX_TAG'))|raw }};
                         if (raw && typeof raw === 'string') {
-                            try { return JSON.parse(raw); } catch (e) { return null; }
+                            try {
+                                return JSON.parse(raw);
+                            } catch (e) {
+                                const plainText = raw.trim();
+                                if (!plainText) {
+                                    return null;
+                                }
+
+                                return {
+                                    time: Date.now(),
+                                    blocks: [
+                                        {
+                                            type: 'paragraph',
+                                            data: { text: plainText },
+                                        },
+                                    ],
+                                    version: '2.0.0',
+                                };
+                            }
                         }
                         return raw || null;
                     })(),

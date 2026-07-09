@@ -3,12 +3,26 @@
 {% block title %}{{ production.name }} - {{ parent() }}{% endblock %}
 
 {% block content %}
+    {% set allCreators = [] %}
+    {% for work in production.works %}
+        {% for wc in work.workCreators %}
+            {% set allCreators = allCreators|merge([wc]) %}
+        {% endfor %}
+    {% endfor %}
+
     <article class="max-w-4xl mx-auto space-y-6">
         <header class="space-y-2 border-b border-gray-200 pb-4">
             <p class="text-xs uppercase tracking-wide text-gray-500">
                 {{ production.season.label }}
             </p>
             <h1 class="text-4xl font-semibold text-gray-900">{{ production.name }}</h1>
+            {% if allCreators|length > 0 %}
+                <p class="text-sm text-gray-600">
+                    {% for wc in allCreators %}
+                        {{ wc.role }}: {{ wc.person.name }}{% if not loop.last %} · {% endif %}
+                    {% endfor %}
+                </p>
+            {% endif %}
             {% set dateRange = null %}
             {% if production.opening and production.closing %}
                 {% set dateRange = production.opening|date('F j, Y') ~ ' – ' ~ production.closing|date('F j, Y') %}
@@ -25,6 +39,27 @@
             {% endif %}
         </header>
 
+        {% set synopses = production.works|filter(w => w.synopsis is not empty) %}
+
+        {% set aboutWorkKind = 'play' %}
+        {% if production.works|length > 0 %}
+            {% set primaryWork = production.works|first %}
+            {% set explicitWorkType = (primaryWork.type|default(primaryWork.workType|default('')))|lower|trim %}
+
+            {% if explicitWorkType in ['play', 'symphony', 'ballet'] %}
+                {% set aboutWorkKind = explicitWorkType %}
+            {% else %}
+                {% for creator in primaryWork.workCreators|default([]) %}
+                    {% set creatorRole = creator.role|lower %}
+                    {% if aboutWorkKind == 'play' and 'choreograph' in creatorRole %}
+                        {% set aboutWorkKind = 'ballet' %}
+                    {% elseif aboutWorkKind == 'play' and ('compos' in creatorRole or 'conductor' in creatorRole) %}
+                        {% set aboutWorkKind = 'symphony' %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+
         <section class="space-y-6 leading-relaxed text-gray-700">
             {% if production.description %}
                 {{ production.description|editorjs_to_html }}
@@ -32,5 +67,150 @@
                 <p class="italic text-gray-500">Description coming soon.</p>
             {% endif %}
         </section>
+
+        {% set performers = production.performers %}
+        {% if performers|length > 0 %}
+            <section class="border-t border-gray-200 pt-6 space-y-4" aria-labelledby="cast-heading">
+                <h2 id="cast-heading" class="text-sm uppercase tracking-wide text-gray-500">Cast</h2>
+                <ul class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                    {% for pp in performers %}
+                        <li class="flex flex-col items-center text-center gap-2">
+                            {% if pp.person.headshotUrl %}
+                                <img src="{{ pp.person.headshotUrl }}" alt="{{ pp.person.name }}"
+                                     class="w-24 h-24 rounded-full object-cover shadow-sm">
+                            {% else %}
+                                <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-2xl font-light">
+                                    {{ pp.person.firstName|slice(0,1) }}{{ pp.person.lastName|slice(0,1) }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <p class="font-medium text-gray-900 text-sm">{{ pp.person.name }}</p>
+                                <p class="text-xs text-gray-500">{{ pp.role }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+
+        {% set productionTeam = production.productionTeam %}
+        {% if productionTeam|length > 0 %}
+            <section class="border-t border-gray-200 pt-6 space-y-4" aria-labelledby="team-heading">
+                <h2 id="team-heading" class="text-sm uppercase tracking-wide text-gray-500">Production Team</h2>
+                <ul class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                    {% for pp in productionTeam %}
+                        <li class="flex flex-col items-center text-center gap-2">
+                            {% if pp.person.headshotUrl %}
+                                <img src="{{ pp.person.headshotUrl }}" alt="{{ pp.person.name }}"
+                                     class="w-24 h-24 rounded-full object-cover shadow-sm">
+                            {% else %}
+                                <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-2xl font-light">
+                                    {{ pp.person.firstName|slice(0,1) }}{{ pp.person.lastName|slice(0,1) }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <p class="font-medium text-gray-900 text-sm">{{ pp.person.name }}</p>
+                                <p class="text-xs text-gray-500">{{ pp.role }}</p>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+
+        {% set performances = performances|default([]) %}
+        {% if performances|length > 0 %}
+            <section class="border-t border-gray-200 pt-6" aria-labelledby="performances-heading">
+                <details class="group rounded-md border border-gray-200 bg-white">
+                    <summary id="performances-heading" class="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+                        <span class="text-sm uppercase tracking-wide text-gray-500">Performances ({{ performances|length }})</span>
+                        <span class="text-xs text-gray-400 group-open:hidden">Show</span>
+                        <span class="text-xs text-gray-400 hidden group-open:inline">Hide</span>
+                    </summary>
+                    <ul class="px-4 pb-4 space-y-3">
+                        {% for performance in performances %}
+                            <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
+                                <p class="text-sm font-medium text-gray-900">
+                                    <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('l, F j, Y \a\t g:i A') }}</time>
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    {% if performance.venue %}{{ performance.venue.name }}{% elseif production.venue %}{{ production.venue.name }}{% else %}Venue TBA{% endif %}
+                                    {% if performance.status %} · {{ performance.status|title }}{% endif %}
+                                </p>
+                                {% if performance.ticketUrl %}
+                                    <p class="mt-1">
+                                        <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
+                                    </p>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </details>
+            </section>
+        {% endif %}
+
+        <section class="space-y-6 leading-relaxed text-gray-700">
+            <h2 id="about-this-{{ aboutWorkKind }}" class="text-xl font-semibold text-gray-900">About this {{ aboutWorkKind }}</h2>
+            {% if synopses|length > 0 %}
+                <div class="border-l-4 border-gray-300 pl-4 space-y-3">
+                    {% for work in synopses %}
+                        <p class="text-lg text-gray-700 leading-relaxed italic">{{ work.synopsis }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% for work in production.works %}
+                {% if work.description %}
+                    {% for paragraph in work.description|split('\n\n') %}
+                        {% if paragraph|trim %}
+                            <p>{{ paragraph|trim }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </section>
+
+        {% set creatorsWithBio = allCreators|filter(wc => wc.person.biography is not empty) %}
+        {% if creatorsWithBio|length > 0 %}
+            {% for wc in creatorsWithBio %}
+                <section class="border-t border-gray-200 pt-6 space-y-3">
+                    <h2 class="text-lg font-semibold text-gray-900">About the {{ wc.role }}</h2>
+                    <div class="flex gap-4 items-start">
+                        {% if wc.person.headshotUrl %}
+                            <img src="{{ wc.person.headshotUrl }}" alt="{{ wc.person.name }}"
+                                 class="w-20 h-20 rounded-full object-cover flex-shrink-0">
+                        {% endif %}
+                        <div class="space-y-1">
+                            <p class="font-medium text-gray-900">{{ wc.person.name }}</p>
+                            <p class="text-sm text-gray-700 leading-relaxed">{{ wc.person.biography }}</p>
+                        </div>
+                    </div>
+                </section>
+            {% endfor %}
+        {% endif %}
+
+        {% if production.sponsorships|length > 0 %}
+            <section class="border-t border-gray-200 pt-6 space-y-4" aria-labelledby="production-sponsors-heading">
+                <h2 id="production-sponsors-heading" class="text-sm uppercase tracking-wide text-gray-500">Sponsors</h2>
+                <ul class="flex flex-wrap gap-6 items-center">
+                    {% for sponsorship in production.sponsorships %}
+                        {% set sponsor = sponsorship.sponsor %}
+                        <li>
+                            {% if sponsor.websiteUrl %}
+                                <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank"
+                                   class="block hover:opacity-75 transition-opacity">
+                            {% endif %}
+                            {% if sponsor.logoUrl %}
+                                <img src="{{ sponsor.logoUrl }}" alt="{{ sponsor.name }}" class="h-10 w-auto object-contain">
+                            {% else %}
+                                <span class="text-sm text-gray-700 font-medium">{{ sponsor.name }}</span>
+                            {% endif %}
+                            {% if sponsor.websiteUrl %}
+                                </a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
     </article>
 {% endblock %}

@@ -1,6 +1,7 @@
 <?php
 
 use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Theme\TemplateResolver;
@@ -29,10 +30,17 @@ if (isset($app)) {
 
             $production = apply_filters('theatrecms/production', $production, $request, $args);
 
+            /** @var EventRepository $eventRepository */
+            $eventRepository = $container->get(EventRepository::class);
+            $performances = $eventRepository->fetchByProduction($production->getId());
+
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $twig->render($response, 'seasons/production.html.twig', ['production' => $production]);
+            return $twig->render($response, 'seasons/production.html.twig', [
+                'production' => $production,
+                'performances' => $performances,
+            ]);
         });
 
         $group->get('/{slug}', function (Request $request, Response $response, array $args) use ($container, $resolver ) {
