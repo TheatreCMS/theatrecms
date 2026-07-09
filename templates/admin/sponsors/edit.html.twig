@@ -72,6 +72,20 @@
                 uploadPreview.src = activeObjectUrl;
                 uploadPreview.classList.remove('hidden');
             });
+
+            document.body.addEventListener('htmx:afterRequest', function (event) {
+                var elt = event.detail.elt;
+                if (!event.detail.successful || !elt || !elt.matches('[hx-delete$="/logo"]')) {
+                    return;
+                }
+
+                if (activeObjectUrl) {
+                    URL.revokeObjectURL(activeObjectUrl);
+                    activeObjectUrl = null;
+                }
+
+                logoInput.value = '';
+            });
         }());
     </script>
 
