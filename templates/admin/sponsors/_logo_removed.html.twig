@@ -1,0 +1,5 @@
+{% include 'admin/sponsors/_logo_section.html.twig' %}
+{% include 'admin/sponsors/_logo_url_field.html.twig' with {'oob': true} %}
+<div id="flash-messages" hx-swap-oob="innerHTML">
+    {% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': 'Logo removed successfully.'} %}
+</div>

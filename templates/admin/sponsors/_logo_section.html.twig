@@ -1,0 +1,33 @@
+<div id="logo-section"{% if oob %} hx-swap-oob="true"{% endif %} class="md:col-span-2">
+    <label class="block text-sm font-medium text-gray-700 mb-1">Logo Preview</label>
+    <div class="rounded-md border border-gray-200 bg-gray-50 p-4">
+        {% if sponsor.logoUrl %}
+            <img
+                id="current-logo-preview"
+                src="{{ sponsor.logoUrl }}"
+                alt="Current logo for {{ sponsor.name }}"
+                class="max-h-24 w-auto object-contain"
+            >
+            <div class="mt-3">
+                <button
+                    type="button"
+                    class="px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50"
+                    hx-delete="/admin/sponsors/{{ sponsor.id }}/logo"
+                    hx-target="#logo-section"
+                    hx-swap="outerHTML"
+                    hx-confirm="Remove the current logo? This will permanently delete the image file from the server."
+                >
+                    Remove Logo
+                </button>
+            </div>
+        {% else %}
+            <p id="current-logo-placeholder" class="text-sm text-gray-500">No current logo set.</p>
+        {% endif %}
+        <img
+            id="upload-logo-preview"
+            src=""
+            alt="Selected logo preview"
+            class="mt-3 hidden max-h-24 w-auto object-contain"
+        >
+    </div>
+</div>

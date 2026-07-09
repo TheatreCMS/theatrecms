@@ -7,9 +7,10 @@
         <h1 class="text-2xl font-bold text-gray-800">Edit Sponsor</h1>
     </div>
 
-    <form action="/admin/sponsors/edit" method="POST" class="space-y-6"
-          hx-post="/admin/sponsors/edit" hx-target="#flash-messages" hx-swap="innerHTML">
+        <form action="/admin/sponsors/edit" method="POST" enctype="multipart/form-data" class="space-y-6"
+            hx-post="/admin/sponsors/edit" hx-encoding="multipart/form-data" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="sponsorId" value="{{ sponsor.id }}">
+        {% include 'admin/sponsors/_logo_url_field.html.twig' %}
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
@@ -17,9 +18,12 @@
             </div>
 
             <div>
-                <label for="logoUrl" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                <input type="url" name="logoUrl" id="logoUrl" class="w-full rounded-md border-gray-300 shadow-sm" value="{{ sponsor.logoUrl }}">
+                <label for="logoImage" class="block text-sm font-medium text-gray-700 mb-1">Upload Logo Image</label>
+                <input type="file" name="logoImage" id="logoImage" accept="image/*" class="w-full rounded-md border-gray-300 shadow-sm">
+                <p class="mt-1 text-xs text-gray-500">Uploading a file will replace the current logo when saved.</p>
             </div>
+
+            {% include 'admin/sponsors/_logo_section.html.twig' %}
 
             <div>
                 <label for="websiteUrl" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
@@ -32,6 +36,44 @@
             <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Changes</button>
         </div>
     </form>
+
+    <script>
+        (function () {
+            var logoInput = document.getElementById('logoImage');
+            var uploadPreview = document.getElementById('upload-logo-preview');
+            var activeObjectUrl = null;
+
+            if (!logoInput || !uploadPreview) {
+                return;
+            }
+
+            logoInput.addEventListener('change', function (event) {
+                var input = event.target;
+
+                if (activeObjectUrl) {
+                    URL.revokeObjectURL(activeObjectUrl);
+                    activeObjectUrl = null;
+                }
+
+                if (!input || !input.files || input.files.length === 0) {
+                    uploadPreview.src = '';
+                    uploadPreview.classList.add('hidden');
+                    return;
+                }
+
+                var file = input.files[0];
+                if (!file.type || file.type.indexOf('image/') !== 0) {
+                    uploadPreview.src = '';
+                    uploadPreview.classList.add('hidden');
+                    return;
+                }
+
+                activeObjectUrl = URL.createObjectURL(file);
+                uploadPreview.src = activeObjectUrl;
+                uploadPreview.classList.remove('hidden');
+            });
+        }());
+    </script>
 
 {% endblock %}
 
