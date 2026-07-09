@@ -311,6 +311,16 @@ class Production extends ModelBase
         return $this;
     }
 
+    public function addToProductionTeam(Person $person, ?string $role = null): self
+    {
+        $productionPerson = new ProductionPerson($this, $person);
+        $productionPerson->setRoleType(RoleType::ProductionTeam);
+        $productionPerson->setRole($role);
+        $this->people->add($productionPerson);
+
+        return $this;
+    }
+
     public function getWorks(): Collection
     {
         return $this->works;

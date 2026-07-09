@@ -97,8 +97,8 @@ class ProductionController extends BaseController
             'seasons'    => $this->seasonRepo->fetchAll(),
             'people'     => $this->personRepo->fetchAll(),
             'works'      => $this->worksRepo->fetchAll(),
-            'creatives'  => $production->getCreativeTeam()->toArray(),
-            'performers' => $production->getPerformers()->toArray(),
+            'performers'      => $production->getPerformers()->toArray(),
+            'productionTeam'  => $production->getProductionTeam()->toArray(),
             'sponsors'   => $this->sponsorRepo->fetchAll(),
             'venues'     => $this->venueRepo->fetchAll(),
             'events'     => $this->eventRepo->fetchByProduction((int) $args['id']),
@@ -213,6 +213,8 @@ class ProductionController extends BaseController
             'creativeRoles' => [],
             'performerIds' => [],
             'performerRoles' => [],
+            'productionTeamIds' => [],
+            'productionTeamRoles' => [],
             'sponsorshipSponsorIds' => [],
             'venueId' => 0,
         ]);
@@ -281,9 +283,12 @@ class ProductionController extends BaseController
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
         $performerIds = is_array($data['performerIds']) ? $data['performerIds'] : [];
         $performerRoles = is_array($data['performerRoles']) ? $data['performerRoles'] : [];
+        $productionTeamIds = is_array($data['productionTeamIds']) ? $data['productionTeamIds'] : [];
+        $productionTeamRoles = is_array($data['productionTeamRoles']) ? $data['productionTeamRoles'] : [];
 
         $existingCreatives = [];
         $existingPerformers = [];
+        $existingProductionTeam = [];
 
         foreach ($item->getPeople() as $productionPerson) {
             $personId = $productionPerson->getPerson()->getId();
@@ -293,6 +298,8 @@ class ProductionController extends BaseController
                 $existingCreatives[$personId] = $productionPerson;
             } elseif ($roleType === RoleType::Cast) {
                 $existingPerformers[$personId] = $productionPerson;
+            } elseif ($roleType === RoleType::ProductionTeam) {
+                $existingProductionTeam[$personId] = $productionPerson;
             }
         }
 
@@ -340,6 +347,27 @@ class ProductionController extends BaseController
             $item->addPerformer($person, $role);
         }
 
+        foreach ($productionTeamIds as $idx => $memberId) {
+            if (empty($memberId)) {
+                continue;
+            }
+
+            $role = $productionTeamRoles[$idx] ?? null;
+
+            if (isset($existingProductionTeam[$memberId])) {
+                $existingProductionTeam[$memberId]->setRole($role);
+                unset($existingProductionTeam[$memberId]);
+                continue;
+            }
+
+            $person = $personRepository->find($memberId);
+            if (!$person) {
+                continue;
+            }
+
+            $item->addToProductionTeam($person, $role);
+        }
+
         foreach ($existingCreatives as $staleCreative) {
             $item->getPeople()->removeElement($staleCreative);
             $this->entityManager->remove($staleCreative);
@@ -348,6 +376,11 @@ class ProductionController extends BaseController
         foreach ($existingPerformers as $stalePerformer) {
             $item->getPeople()->removeElement($stalePerformer);
             $this->entityManager->remove($stalePerformer);
+        }
+
+        foreach ($existingProductionTeam as $staleMember) {
+            $item->getPeople()->removeElement($staleMember);
+            $this->entityManager->remove($staleMember);
         }
 
         $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);

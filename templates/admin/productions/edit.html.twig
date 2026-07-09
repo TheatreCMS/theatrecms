@@ -4,7 +4,6 @@
 {% set seasons = seasons|default([]) %}
 {% set people = people|default([]) %}
 {% set works = works|default([]) %}
-{% set creatives = creatives|default([]) %}
 {% set performers = performers|default([]) %}
 {% set sponsorsList = sponsors|default([]) %}
 {% set venues = venues|default([]) %}
@@ -226,86 +225,7 @@
 
 				<div
 					class="space-y-6">
-					{# Creative Team #}
-					<div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
-						<table class="w-full text-sm text-left rtl:text-right text-body">
-							<thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
-								<tr>
-									<th scope="col" class="px-6 py-3 font-medium">
-										Creative Team
-									</th>
-									<th scope="col" class="px-6 py-3 font-medium">
-										Role
-									</th>
-									<th>
-										<button type="button" id="add-creative">Add Creative</button>
-									</th>
-								</tr>
-							</thead>
-							<tbody data-creative-rows>
-								{% if creatives is empty %}
-									<tr class="bg-neutral-primary-soft border-b border-default" data-creative-row>
-										<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-											<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="creativeIds[]">
-												<option value="">Select a person</option>
-												{% for p in people %}
-													<option value="{{ p.id }}">{{ p.name }}</option>
-												{% endfor %}
-											</select>
-										</th>
-										<td class="px-6 py-4">
-											<label class="sr-only" for="creative-role-empty">Role</label>
-											<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="creative-role-empty" name="creativeRoles[]" placeholder="e.g. Director">
-										</td>
-										<td class="px-6 py-4 text-right">
-											<a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
-										</td>
-									</tr>
-								{% else %}
-									{% for c in creatives %}
-										<tr class="bg-neutral-primary-soft border-b border-default" data-creative-row>
-											<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-												<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="creativeIds[]">
-													<option value="">Select a person</option>
-													{% for p in people %}
-														<option value="{{ p.id }}" {% if p.id == c.person.id %} selected {% endif %}>
-															{{ p.name }}
-														</option>
-													{% endfor %}
-												</select>
-											</th>
-											<td class="px-6 py-4">
-												<label class="sr-only" for="creative-role-{{ loop.index0 }}">Role</label>
-												<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="creative-role-{{ loop.index0 }}" name="creativeRoles[]" placeholder="e.g. Director" value="{{ c.role }}">
-											</td>
-											<td class="px-6 py-4 text-right">
-												<a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
-											</td>
-										</tr>
-									{% endfor %}
-								{% endif %}
-								<tr class="hidden bg-neutral-primary-soft border-b border-default" data-creative-template>
-									<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-										<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="creativeIds[]">
-											<option value="">Select a person</option>
-											{% for p in people %}
-												<option value="{{ p.id }}">{{ p.name }}</option>
-											{% endfor %}
-										</select>
-									</th>
-									<td class="px-6 py-4">
-										<label class="sr-only" for="creative-role-template">Role</label>
-										<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="creative-role-template" name="creativeRoles[]" placeholder="e.g. Director">
-									</td>
-									<td class="px-6 py-4 text-right">
-										<a href="#" class="delete-creative font-medium text-fg-brand hover:underline">Delete</a>
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-
-					{# Performers #}
+				{# Performers #}
 					<div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
 						<table class="w-full text-sm text-left rtl:text-right text-body">
 							<thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
@@ -378,6 +298,85 @@
 									</td>
 									<td class="px-6 py-4 text-right">
 										<a href="#" class="delete-performer font-medium text-fg-brand hover:underline">Delete</a>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+
+					{# Production Team #}
+					<div class="relative overflow-x-auto bg-neutral-primary-soft shadow-xs rounded-base border border-default">
+						<table class="w-full text-sm text-left rtl:text-right text-body">
+							<thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
+								<tr>
+									<th scope="col" class="px-6 py-3 font-medium">
+										Production Team
+									</th>
+									<th scope="col" class="px-6 py-3 font-medium">
+										Role
+									</th>
+									<th>
+										<button type="button" id="add-productionTeam">Add Member</button>
+									</th>
+								</tr>
+							</thead>
+							<tbody data-productionTeam-rows>
+								{% if productionTeam is empty %}
+									<tr class="bg-neutral-primary-soft border-b border-default" data-productionTeam-row>
+										<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+											<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="productionTeamIds[]">
+												<option value="">Select a person</option>
+												{% for p in people %}
+													<option value="{{ p.id }}">{{ p.name }}</option>
+												{% endfor %}
+											</select>
+										</th>
+										<td class="px-6 py-4">
+											<label class="sr-only" for="productionTeam-role-empty">Role</label>
+											<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="productionTeam-role-empty" name="productionTeamRoles[]" placeholder="e.g. Director">
+										</td>
+										<td class="px-6 py-4 text-right">
+											<a href="#" class="delete-productionTeam font-medium text-fg-brand hover:underline">Delete</a>
+										</td>
+									</tr>
+								{% else %}
+									{% for m in productionTeam %}
+										<tr class="bg-neutral-primary-soft border-b border-default" data-productionTeam-row>
+											<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+												<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="productionTeamIds[]">
+													<option value="">Select a person</option>
+													{% for person in people %}
+														<option value="{{ person.id }}" {% if person.id == m.person.id %} selected {% endif %}>
+															{{ person.name }}
+														</option>
+													{% endfor %}
+												</select>
+											</th>
+											<td class="px-6 py-4">
+												<label class="sr-only" for="productionTeam-role-{{ loop.index0 }}">Role</label>
+												<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="productionTeam-role-{{ loop.index0 }}" name="productionTeamRoles[]" placeholder="e.g. Director" value="{{ m.role }}">
+											</td>
+											<td class="px-6 py-4 text-right">
+												<a href="#" class="delete-productionTeam font-medium text-fg-brand hover:underline">Delete</a>
+											</td>
+										</tr>
+									{% endfor %}
+								{% endif %}
+								<tr class="hidden bg-neutral-primary-soft border-b border-default" data-productionTeam-template>
+									<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
+										<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="productionTeamIds[]">
+											<option value="">Select a person</option>
+											{% for p in people %}
+												<option value="{{ p.id }}">{{ p.name }}</option>
+											{% endfor %}
+										</select>
+									</th>
+									<td class="px-6 py-4">
+										<label class="sr-only" for="productionTeam-role-template">Role</label>
+										<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="productionTeam-role-template" name="productionTeamRoles[]" placeholder="e.g. Director">
+									</td>
+									<td class="px-6 py-4 text-right">
+										<a href="#" class="delete-productionTeam font-medium text-fg-brand hover:underline">Delete</a>
 									</td>
 								</tr>
 							</tbody>
@@ -615,8 +614,8 @@ rowsBody.insertBefore(row, templateRow);
 }
 };
 
-setupDynamicRows('creative');
 setupDynamicRows('performer');
+setupDynamicRows('productionTeam');
 setupDynamicRows('sponsorship');
 
 if (posterInput && uploadFeaturedImagePreview) {
