@@ -6,6 +6,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\PostStatus;
 use TheatreCMS\Repositories\PostRepository;
@@ -15,6 +16,9 @@ use TheatreCMS\Repositories\PostRepository;
  */
 class PostController extends BaseController
 {
+    private const UPLOADS_SUBPATH = '/uploads/';
+    private const RANDOM_SUFFIX_BYTES = 12;
+
     public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig)
     {
         $this->repository = $repository;
@@ -87,6 +91,33 @@ class PostController extends BaseController
         return $this->buildListRedirect($response, $request, '/admin/posts');
     }
 
+    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
+    {
+        $post = $this->repository->fetch($args['id']);
+
+        if (is_null($post)) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Post not found.',
+                ]);
+            }
+            return $response->withStatus(404);
+        }
+
+        $this->deleteFeaturedImageFile($post->getFeaturedImageUrl());
+        $post->setFeaturedImageUrl(null);
+        $this->repository->update($post);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/posts/_featured_image_removed.html.twig', [
+                'post' => $post,
+            ]);
+        }
+
+        return $response->withHeader('Location', '/admin/posts/edit/' . $post->getId());
+    }
+
     public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
@@ -153,6 +184,11 @@ class PostController extends BaseController
             'featuredImageUrl' => null,
         ]);
 
+        $featuredImageUploadUrl = $this->storeFeaturedImageUpload($request);
+        if ($featuredImageUploadUrl !== null) {
+            $data['featuredImageUrl'] = $featuredImageUploadUrl;
+        }
+
         $post = $this->repository->fetch($data['postId']);
 
         if (!$post) {
@@ -208,12 +244,92 @@ class PostController extends BaseController
         $this->repository->update($post);
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Post saved successfully.',
+            return $this->twig->render($response, 'admin/posts/_saved.html.twig', [
+                'post' => $post,
             ]);
         }
 
         return $response->withHeader('Location', '/admin/posts');
+    }
+
+    private function storeFeaturedImageUpload(Request $request): ?string
+    {
+        $uploadedFiles = $request->getUploadedFiles();
+        $featuredImage = $uploadedFiles['featuredImage'] ?? null;
+
+        if (!$featuredImage instanceof UploadedFileInterface || $featuredImage->getError() === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        if ($featuredImage->getError() !== UPLOAD_ERR_OK || !$this->isImageUpload($featuredImage)) {
+            return null;
+        }
+
+        $directory = $this->ensureUploadsDirectory();
+        $filename = $this->generateUploadFilename($featuredImage);
+        $featuredImage->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
+
+        return rtrim(self::UPLOADS_SUBPATH, '/') . '/' . $filename;
+    }
+
+    private function deleteFeaturedImageFile(?string $url): void
+    {
+        if (!$url) {
+            return;
+        }
+
+        $path = $this->resolveFeaturedImagePath($url);
+        if ($path && file_exists($path)) {
+            @unlink($path);
+        }
+    }
+
+    private function resolveFeaturedImagePath(string $url): ?string
+    {
+        if (!str_starts_with($url, self::UPLOADS_SUBPATH)) {
+            return null;
+        }
+
+        $relative = ltrim($url, '/');
+        if ($relative === '' || str_contains($relative, '..')) {
+            return null;
+        }
+
+        return $this->getPublicRoot() . '/' . $relative;
+    }
+
+    private function isImageUpload(UploadedFileInterface $file): bool
+    {
+        $mediaType = $file->getClientMediaType();
+        return is_string($mediaType) && str_starts_with($mediaType, 'image/');
+    }
+
+    private function ensureUploadsDirectory(): string
+    {
+        $directory = $this->getPublicRoot() . self::UPLOADS_SUBPATH;
+
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new \RuntimeException(sprintf('Unable to create upload directory "%s".', $directory));
+        }
+
+        return rtrim($directory, '/\\');
+    }
+
+    private function generateUploadFilename(UploadedFileInterface $file): string
+    {
+        $original = $file->getClientFilename() ?? '';
+        $extension = strtolower(pathinfo($original, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            $extension = 'jpg';
+        }
+
+        return sprintf('%s.%s', bin2hex(random_bytes(self::RANDOM_SUFFIX_BYTES)), $extension);
+    }
+
+    private function getPublicRoot(): string
+    {
+        $root = defined('APP_ROOT') ? APP_ROOT : dirname(__DIR__, 2);
+        return rtrim($root, '/\\') . '/www';
     }
 }
