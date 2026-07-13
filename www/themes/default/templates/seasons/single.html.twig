@@ -10,66 +10,88 @@
         <img src="{{ season.featuredImageUrl }}" alt="{{ season.label }}" class="season-featured-image">
     {% endif %}
 
-    {% if season.overview %}
-        <div class="season-overview">
-            {{ season.overview|nl2br }}
-        </div>
-    {% endif %}
+    <div class="season-layout {% if season.overview %}has-sidebar{% endif %}">
+        {% if season.overview %}
+            <div class="season-overview">
+                {{ season.overview|nl2br }}
+            </div>
+        {% endif %}
 
-    {% if season.sponsorships|length > 0 %}
-        <section class="season-sponsors" aria-labelledby="season-sponsors-heading">
-            <h2 id="season-sponsors-heading">Sponsors</h2>
-            <ul class="sponsor-list">
-                {% for sponsorship in season.sponsorships %}
-                    {% set sponsor = sponsorship.sponsor %}
-                    <li class="sponsor sponsor-{{ sponsor.slug }}">
-                        {% if sponsor.websiteUrl %}
-                            <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank">{{ sponsor.name }}</a>
-                        {% else %}
-                            {{ sponsor.name }}
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        </section>
-    {% endif %}
-
-
-    {% if season.productions|length > 0 %}
-        <section class="season-productions" aria-labelledby="season-productions-heading">
-            <h2 id="season-productions-heading">Productions</h2>
-
-            <ul class="production-list">
-                {% for production in season.productions %}
-                <article id="production-{{ production.id }}" class="production production-{{ production.slug }}">
-                    <header>
-                        <a href="/seasons/{{ season.slug }}/{{ production.slug }}">
-                            <h3 class="entry-title">{{ production.name }}</h3>
-                        </a>
-                        {% if production.opening or production.closing %}
-                            <p class="run-dates">
-                                {% if production.opening and production.closing %}
-                                    <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
-                                    -
-                                    <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
-                                {% elseif production.opening %}
-                                    Opens <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+        <aside class="season-sidebar">
+            {% if season.sponsorships|length > 0 %}
+                <section class="season-sponsors" aria-labelledby="season-sponsors-heading">
+                    <h2 id="season-sponsors-heading">Sponsors</h2>
+                    <ul class="sponsor-list">
+                        {% for sponsorship in season.sponsorships %}
+                            {% set sponsor = sponsorship.sponsor %}
+                            <li class="sponsor sponsor-{{ sponsor.slug }}">
+                                {% if sponsor.websiteUrl %}
+                                    <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank">{{ sponsor.name }}</a>
                                 {% else %}
-                                    Closes <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                                    {{ sponsor.name }}
                                 {% endif %}
-                            </p>
-                        {% endif %}
-                        <div class="excerpt">
-                            {{ production.excerpt }}
-                        </div>
-                    </header>
-                </article>
-            {% endfor %}
-            </ul>
-        </section>
-    {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
 
-    {% if season.productions|length == 0 %}
-        <p>No productions for this season.</p>
-    {% endif %}
+            {% if season.productions|length > 0 %}
+                <section class="season-productions" aria-labelledby="season-productions-heading">
+                    <h2 id="season-productions-heading">Productions</h2>
+
+                    <ul class="production-list space-y-6">
+                        {% for production in season.productions %}
+                            <li id="production-{{ production.id }}" class="production production-{{ production.slug }} relative overflow-hidden rounded-lg bg-gray-900 text-white shadow-lg">
+                                {% if production.hasFeaturedImage %}
+                                    <div class="absolute inset-0 bg-cover bg-center"
+                                         style="background-image: linear-gradient(to top, rgba(17,24,39,0.9), rgba(17,24,39,0.5)), url('{{ production.featuredImageUrl }}');"></div>
+                                {% else %}
+                                    <div class="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"></div>
+                                {% endif %}
+
+                                <a href="/seasons/{{ season.slug }}/{{ production.slug }}" class="relative block px-6 py-12 sm:px-8 sm:py-14">
+                                    <h3 class="text-3xl sm:text-4xl font-bold leading-tight">{{ production.name }}</h3>
+
+                                    {% set authors = [] %}
+                                    {% for work in production.works %}
+                                        {% for wc in work.workCreators %}
+                                            {% set authors = authors|merge([wc.person.name]) %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% if authors|length > 0 %}
+                                        <p class="mt-1 text-sm text-gray-300">by {{ authors|join(', ') }}</p>
+                                    {% endif %}
+
+                                    {% if production.opening or production.closing %}
+                                        <p class="mt-3 text-lg text-gray-200">
+                                            {% if production.opening and production.closing %}
+                                                <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+                                                -
+                                                <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                                            {% elseif production.opening %}
+                                                Opens <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+                                            {% else %}
+                                                Closes <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                                            {% endif %}
+                                        </p>
+                                    {% endif %}
+
+                                    {% if production.excerpt %}
+                                        <p class="mt-4 max-w-3xl text-sm sm:text-base text-gray-200 leading-relaxed">{{ production.excerpt }}</p>
+                                    {% endif %}
+
+                                    <span class="mt-6 inline-block bg-white text-gray-900 font-semibold px-5 py-2 rounded-md hover:bg-gray-100 transition-colors">Learn More</span>
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+
+            {% if season.productions|length == 0 %}
+                <p>No productions for this season.</p>
+            {% endif %}
+        </aside>
+    </div>
 {% endblock %}
