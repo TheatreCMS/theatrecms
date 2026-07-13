@@ -11,6 +11,11 @@
     {% endfor %}
 
     <article class="max-w-4xl mx-auto space-y-6">
+        {% if production.hasFeaturedImage %}
+            <img src="{{ production.featuredImageUrl }}" alt="{{ production.name }}"
+                 class="w-full h-80 object-cover rounded-lg shadow-sm">
+        {% endif %}
+
         <header class="space-y-2 border-b border-gray-200 pb-4">
             <p class="text-xs uppercase tracking-wide text-gray-500">
                 {{ production.season.label }}

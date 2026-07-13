@@ -1,0 +1,39 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}Productions - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <h1>Productions</h1>
+
+    <ul class="production-list">
+        {% for production in productions %}
+            <li id="production-{{ production.id }}" class="production production-{{ production.slug }}">
+                <a href="/seasons/{{ production.season.slug }}/{{ production.slug }}">
+                    {% if production.hasFeaturedImage %}
+                        <img src="{{ production.featuredImageUrl }}" alt="{{ production.name }}" class="production-featured-image-thumb">
+                    {% endif %}
+                    <h3 class="entry-title">{{ production.name }}</h3>
+                </a>
+                <p class="season-label">{{ production.season.label }}</p>
+                {% if production.opening or production.closing %}
+                    <p class="run-dates">
+                        {% if production.opening and production.closing %}
+                            <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+                            -
+                            <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                        {% elseif production.opening %}
+                            Opens <time datetime="{{ production.opening|date('Y-m-d') }}">{{ production.opening|date('F j, Y') }}</time>
+                        {% else %}
+                            Closes <time datetime="{{ production.closing|date('Y-m-d') }}">{{ production.closing|date('F j, Y') }}</time>
+                        {% endif %}
+                    </p>
+                {% endif %}
+                {% if production.excerpt %}
+                    <div class="excerpt">{{ production.excerpt }}</div>
+                {% endif %}
+            </li>
+        {% else %}
+            <li>No productions found.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
