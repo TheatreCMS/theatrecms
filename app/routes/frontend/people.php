@@ -19,7 +19,10 @@ if (isset($app)) {
             Request $request,
             Response $response,
             array $args
-        ) use ($container, $resolver) {
+        ) use (
+            $container,
+            $resolver
+        ) {
             /** @var PersonRepository $repository */
             $repository = $container->get(PersonRepository::class);
             $person = $repository->fetchBySlug($args['slug']);
