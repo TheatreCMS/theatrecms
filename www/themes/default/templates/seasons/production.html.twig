@@ -24,7 +24,7 @@
             {% if allCreators|length > 0 %}
                 <p class="text-sm text-gray-600">
                     {% for wc in allCreators %}
-                        {{ wc.role }}: {{ wc.person.name }}{% if not loop.last %} · {% endif %}
+                        {{ wc.role }}: <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>{% if not loop.last %} · {% endif %}
                     {% endfor %}
                 </p>
             {% endif %}
@@ -89,7 +89,9 @@
                                 </div>
                             {% endif %}
                             <div>
-                                <p class="font-medium text-gray-900 text-sm">{{ pp.person.name }}</p>
+                                <p class="font-medium text-gray-900 text-sm">
+                                    <a href="/people/{{ pp.person.slug }}" class="hover:underline">{{ pp.person.name }}</a>
+                                </p>
                                 <p class="text-xs text-gray-500">{{ pp.role }}</p>
                             </div>
                         </li>
@@ -114,7 +116,9 @@
                                 </div>
                             {% endif %}
                             <div>
-                                <p class="font-medium text-gray-900 text-sm">{{ pp.person.name }}</p>
+                                <p class="font-medium text-gray-900 text-sm">
+                                    <a href="/people/{{ pp.person.slug }}" class="hover:underline">{{ pp.person.name }}</a>
+                                </p>
                                 <p class="text-xs text-gray-500">{{ pp.role }}</p>
                             </div>
                         </li>
@@ -185,7 +189,9 @@
                                  class="w-20 h-20 rounded-full object-cover flex-shrink-0">
                         {% endif %}
                         <div class="space-y-1">
-                            <p class="font-medium text-gray-900">{{ wc.person.name }}</p>
+                            <p class="font-medium text-gray-900">
+                                <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>
+                            </p>
                             <p class="text-sm text-gray-700 leading-relaxed">{{ wc.person.biography }}</p>
                         </div>
                     </div>
