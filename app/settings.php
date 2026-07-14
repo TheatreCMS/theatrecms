@@ -13,8 +13,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+use Symfony\Component\Yaml\Yaml;
+
 if( !defined('APP_ROOT') )
     define ('APP_ROOT', dirname(__DIR__));
+
+$config = Yaml::parseFile(APP_ROOT . '/app/config.yaml');
+$database = $config['database'] ?? [];
 
 return [
     'settings' => [
@@ -52,13 +57,13 @@ return [
             // Refer to the Doctrine documentation to see the full list
             // of valid parameters: https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/configuration.html
             'connection' => [
-                'driver' => 'pdo_mysql',
-                'host' => 'db',
-                'port' => 3306,
-                'dbname' => 'db',
-                'user' => 'db',
-                'password' => 'db',
-                'charset' => 'utf8mb4'
+                'driver' => $database['driver'] ?? 'pdo_mysql',
+                'host' => $database['host'] ?? 'db',
+                'port' => $database['port'] ?? 3306,
+                'dbname' => $database['dbname'] ?? 'db',
+                'user' => $database['user'] ?? 'db',
+                'password' => $database['password'] ?? 'db',
+                'charset' => $database['charset'] ?? 'utf8mb4'
             ]
         ],
 
