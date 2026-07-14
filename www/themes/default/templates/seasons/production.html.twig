@@ -65,13 +65,49 @@
             {% endif %}
         {% endif %}
 
-        <section class="space-y-6 leading-relaxed text-gray-700">
-            {% if production.description %}
-                {{ production.description|editorjs_to_html }}
-            {% else %}
-                <p class="italic text-gray-500">Description coming soon.</p>
+        {% set performances = performances|default([]) %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <section class="lg:col-span-2 space-y-6 leading-relaxed text-gray-700">
+                {% if production.description %}
+                    {{ production.description|editorjs_to_html }}
+                {% else %}
+                    <p class="italic text-gray-500">Description coming soon.</p>
+                {% endif %}
+            </section>
+
+            {% if performances|length > 0 %}
+                <aside class="lg:col-span-1" aria-labelledby="performances-heading">
+                    <div class="lg:sticky lg:top-6 rounded-md border border-gray-200 bg-white">
+                        <h2 id="performances-heading" class="px-4 py-3 border-b border-gray-200 text-sm uppercase tracking-wide text-gray-500">
+                            Performances ({{ performances|length }})
+                        </h2>
+                        <ul class="px-4 py-4 space-y-3 max-h-96 overflow-y-auto">
+                            {% for performance in performances %}
+                                <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
+                                    <p class="text-sm font-medium text-gray-900">
+                                        {% if performance.ticketUrl %}
+                                            <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                                                <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
+                                            </a>
+                                        {% else %}
+                                            <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-xs text-gray-500">
+                                        {% if performance.venue %}{{ performance.venue.name }}{% elseif production.venue %}{{ production.venue.name }}{% else %}Venue TBA{% endif %}
+                                    </p>
+                                    {% if performance.ticketUrl %}
+                                        <p class="mt-1">
+                                            <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
+                                        </p>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </aside>
             {% endif %}
-        </section>
+        </div>
 
         {% set performers = production.performers %}
         {% if performers|length > 0 %}
@@ -124,37 +160,6 @@
                         </li>
                     {% endfor %}
                 </ul>
-            </section>
-        {% endif %}
-
-        {% set performances = performances|default([]) %}
-        {% if performances|length > 0 %}
-            <section class="border-t border-gray-200 pt-6" aria-labelledby="performances-heading">
-                <details class="group rounded-md border border-gray-200 bg-white">
-                    <summary id="performances-heading" class="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
-                        <span class="text-sm uppercase tracking-wide text-gray-500">Performances ({{ performances|length }})</span>
-                        <span class="text-xs text-gray-400 group-open:hidden">Show</span>
-                        <span class="text-xs text-gray-400 hidden group-open:inline">Hide</span>
-                    </summary>
-                    <ul class="px-4 pb-4 space-y-3">
-                        {% for performance in performances %}
-                            <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
-                                <p class="text-sm font-medium text-gray-900">
-                                    <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('l, F j, Y \a\t g:i A') }}</time>
-                                </p>
-                                <p class="text-xs text-gray-500">
-                                    {% if performance.venue %}{{ performance.venue.name }}{% elseif production.venue %}{{ production.venue.name }}{% else %}Venue TBA{% endif %}
-                                    {% if performance.status %} · {{ performance.status|title }}{% endif %}
-                                </p>
-                                {% if performance.ticketUrl %}
-                                    <p class="mt-1">
-                                        <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
-                                    </p>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </details>
             </section>
         {% endif %}
 
