@@ -1,0 +1,30 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}{{ work.title }} - {{ parent() }}{% endblock %}
+
+{% block content %}
+    <article class="max-w-3xl mx-auto space-y-6">
+        <header class="space-y-2 border-b border-gray-200 pb-4">
+            <h1 class="text-4xl font-semibold text-gray-900">{{ work.title }}</h1>
+            {% if work.workCreators|length > 0 %}
+                <p class="text-sm text-gray-600">
+                    {% for wc in work.workCreators %}
+                        {{ wc.role }}: <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>{% if not loop.last %} · {% endif %}
+                    {% endfor %}
+                </p>
+            {% endif %}
+        </header>
+
+        {% if work.synopsis %}
+            <p class="text-lg text-gray-700 leading-relaxed italic border-l-4 border-gray-300 pl-4">{{ work.synopsis }}</p>
+        {% endif %}
+
+        <section class="space-y-4 leading-relaxed text-gray-700">
+            {% if work.description %}
+                {{ work.description|editorjs_to_html }}
+            {% else %}
+                <p class="italic text-gray-500">Description coming soon.</p>
+            {% endif %}
+        </section>
+    </article>
+{% endblock %}
