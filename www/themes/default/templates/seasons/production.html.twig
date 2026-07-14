@@ -66,6 +66,7 @@
         {% endif %}
 
         {% set performances = performances|default([]) %}
+        {% set hasSponsorships = production.sponsorships|length > 0 %}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <section class="lg:col-span-2 space-y-6 leading-relaxed text-gray-700">
                 {% if production.description %}
@@ -75,35 +76,66 @@
                 {% endif %}
             </section>
 
-            {% if performances|length > 0 %}
-                <aside class="lg:col-span-1" aria-labelledby="performances-heading">
-                    <div class="lg:sticky lg:top-6 rounded-md border border-gray-200 bg-white">
-                        <h2 id="performances-heading" class="px-4 py-3 border-b border-gray-200 text-sm uppercase tracking-wide text-gray-500">
-                            Performances ({{ performances|length }})
-                        </h2>
-                        <ul class="px-4 py-4 space-y-3 max-h-96 overflow-y-auto">
-                            {% for performance in performances %}
-                                <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {% if performance.ticketUrl %}
-                                            <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
-                                                <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
-                                            </a>
-                                        {% else %}
-                                            <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
-                                        {% endif %}
-                                    </p>
-                                    <p class="text-xs text-gray-500">
-                                        {% if performance.venue %}{{ performance.venue.name }}{% elseif production.venue %}{{ production.venue.name }}{% else %}Venue TBA{% endif %}
-                                    </p>
-                                    {% if performance.ticketUrl %}
-                                        <p class="mt-1">
-                                            <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
-                                        </p>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
+            {% if performances|length > 0 or hasSponsorships %}
+                <aside class="lg:col-span-1 space-y-6">
+                    <div class="lg:sticky lg:top-6 space-y-6">
+                        {% if performances|length > 0 %}
+                            <div class="rounded-md border border-gray-200 bg-white" aria-labelledby="performances-heading">
+                                <h2 id="performances-heading" class="px-4 py-3 border-b border-gray-200 text-sm uppercase tracking-wide text-gray-500">
+                                    Performances ({{ performances|length }})
+                                </h2>
+                                <ul class="px-4 py-4 space-y-3 max-h-96 overflow-y-auto">
+                                    {% for performance in performances %}
+                                        <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
+                                            <p class="text-sm font-medium text-gray-900">
+                                                {% if performance.ticketUrl %}
+                                                    <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                                                        <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
+                                                    </a>
+                                                {% else %}
+                                                    <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
+                                                {% endif %}
+                                            </p>
+                                            <p class="text-xs text-gray-500">
+                                                {% if performance.venue %}{{ performance.venue.name }}{% elseif production.venue %}{{ production.venue.name }}{% else %}Venue TBA{% endif %}
+                                            </p>
+                                            {% if performance.ticketUrl %}
+                                                <p class="mt-1">
+                                                    <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
+                                                </p>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+
+                        {% if hasSponsorships %}
+                            <div class="rounded-md border border-gray-200 bg-white" aria-labelledby="production-sponsors-heading">
+                                <h2 id="production-sponsors-heading" class="px-4 py-3 border-b border-gray-200 text-sm uppercase tracking-wide text-gray-500">
+                                    Sponsors
+                                </h2>
+                                <ul class="px-4 py-4 flex flex-wrap gap-4 items-center">
+                                    {% for sponsorship in production.sponsorships %}
+                                        {% set sponsor = sponsorship.sponsor %}
+                                        <li>
+                                            {% if sponsor.websiteUrl %}
+                                                <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank"
+                                                   class="block hover:opacity-75 transition-opacity">
+                                            {% endif %}
+                                            {% if sponsor.logoUrl %}
+                                                <img src="{{ sponsor.logoUrl }}" alt="{{ sponsor.name }}" class="h-10 w-auto object-contain">
+                                            {% else %}
+                                                <span class="text-sm text-gray-700 font-medium">{{ sponsor.name }}</span>
+                                            {% endif %}
+                                            {% if sponsor.websiteUrl %}
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
                     </div>
                 </aside>
             {% endif %}
@@ -204,29 +236,5 @@
             {% endfor %}
         {% endif %}
 
-        {% if production.sponsorships|length > 0 %}
-            <section class="border-t border-gray-200 pt-6 space-y-4" aria-labelledby="production-sponsors-heading">
-                <h2 id="production-sponsors-heading" class="text-sm uppercase tracking-wide text-gray-500">Sponsors</h2>
-                <ul class="flex flex-wrap gap-6 items-center">
-                    {% for sponsorship in production.sponsorships %}
-                        {% set sponsor = sponsorship.sponsor %}
-                        <li>
-                            {% if sponsor.websiteUrl %}
-                                <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank"
-                                   class="block hover:opacity-75 transition-opacity">
-                            {% endif %}
-                            {% if sponsor.logoUrl %}
-                                <img src="{{ sponsor.logoUrl }}" alt="{{ sponsor.name }}" class="h-10 w-auto object-contain">
-                            {% else %}
-                                <span class="text-sm text-gray-700 font-medium">{{ sponsor.name }}</span>
-                            {% endif %}
-                            {% if sponsor.websiteUrl %}
-                                </a>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </section>
-        {% endif %}
     </article>
 {% endblock %}
