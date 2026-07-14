@@ -220,6 +220,11 @@ class EditorJsHtmlConverter
     /**
      * Render a list (ordered or unordered).
      *
+     * Supports both the legacy flat Editor.js list format (`items` is an array
+     * of plain strings) and the modern nested-list format (`items` is an array
+     * of `{content, items}` objects, where `items` holds child list items of
+     * the same shape).
+     *
      * @param array $data Expecting ['items' => array, 'style' => 'ordered'|'unordered']
      * @return string HTML <ol>/<ul> list or empty string
      */
@@ -231,17 +236,43 @@ class EditorJsHtmlConverter
         }
 
         $tag = ($data['style'] ?? 'unordered') === 'ordered' ? 'ol' : 'ul';
+        $lines = $this->renderListItems($items, $tag);
+
+        return $lines === '' ? '' : sprintf('<%s>%s</%s>', $tag, $lines, $tag);
+    }
+
+    /**
+     * Render a (possibly nested) array of Editor.js list items as <li> markup.
+     *
+     * @param array $items
+     * @param string $tag The list tag ('ol' or 'ul') to use for any nested sub-lists
+     * @return string Concatenated <li>...</li> markup, or empty string if no items rendered
+     */
+    private function renderListItems(array $items, string $tag): string
+    {
         $lines = [];
 
         foreach ($items as $item) {
-            $line = $this->sanitizeText((string)$item);
-            if ($line === '') {
+            if (is_array($item)) {
+                $text = $this->sanitizeText((string)($item['content'] ?? ''));
+                $children = $item['items'] ?? [];
+                $nested = is_array($children) && $children !== []
+                    ? $this->renderListItems($children, $tag)
+                    : '';
+            } else {
+                $text = $this->sanitizeText((string)$item);
+                $nested = '';
+            }
+
+            if ($text === '' && $nested === '') {
                 continue;
             }
-            $lines[] = sprintf('<li>%s</li>', $line);
+
+            $inner = $nested === '' ? $text : sprintf('%s<%s>%s</%s>', $text, $tag, $nested, $tag);
+            $lines[] = sprintf('<li>%s</li>', $inner);
         }
 
-        return empty($lines) ? '' : sprintf('<%s>%s</%s>', $tag, implode('', $lines), $tag);
+        return implode('', $lines);
     }
 
     /**
