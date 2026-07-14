@@ -70,6 +70,8 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
     return $twig->render($response, 'admin/index.html.twig');
 })->add(new RequireTwigMiddleware($container));
 
+require ROUTES_DIR . '/frontend/pages.php';
+
 $app->get('/', function (Request $request, Response $response) use ($container) {
     $twig = $container->get(Twig::class);
     $posts = $container->get(PostRepository::class)->fetchPublished();

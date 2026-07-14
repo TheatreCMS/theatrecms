@@ -166,3 +166,46 @@ h1[id^="this-season-"] {
         flex-shrink: 0;
     }
 }
+
+/* Minimal typographic rules for `.prose` content (Editor.js output on pages
+   and posts) since the Tailwind build in use here doesn't include the
+   Typography plugin. */
+.prose h2 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.prose h2:first-child {
+    margin-top: 0;
+}
+
+.prose p {
+    margin-top: 1rem;
+    line-height: 1.7;
+}
+
+.prose p:first-child {
+    margin-top: 0;
+}
+
+.prose ul,
+.prose ol {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.prose ul {
+    list-style: disc;
+}
+
+.prose ol {
+    list-style: decimal;
+}
+
+.prose li {
+    margin-top: 0.25rem;
+}
