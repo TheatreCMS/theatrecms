@@ -18,6 +18,7 @@ use TheatreCMS\Controllers\PostController;
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Controllers\PersonController;
 use TheatreCMS\Controllers\ProductionController;
+use TheatreCMS\Controllers\ProfileController;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Controllers\SponsorController;
@@ -175,6 +176,13 @@ class ServiceRegistrar
             },
             UsersController::class => static function (ContainerInterface $c): UsersController {
                 return new UsersController(
+                    $c->get(UserRepository::class),
+                    $c->get(Twig::class),
+                    $c->get(Auth::class)
+                );
+            },
+            ProfileController::class => static function (ContainerInterface $c): ProfileController {
+                return new ProfileController(
                     $c->get(UserRepository::class),
                     $c->get(Twig::class),
                     $c->get(Auth::class)

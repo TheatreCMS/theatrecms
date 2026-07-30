@@ -283,17 +283,6 @@ class UsersController extends BaseController
         return $response->withHeader('Location', '/admin/users')->withStatus(302);
     }
 
-    private function freshAlertResponse(Response $response, string $type, string $message): Response
-    {
-        $stream = fopen('php://temp', 'r+');
-        fwrite($stream, $this->twig->fetch('admin/partials/_alert.html.twig', [
-            'type'    => $type,
-            'message' => $message,
-        ]));
-        rewind($stream);
-        return $response->withBody(new \Slim\Psr7\Stream($stream));
-    }
-
     /**
      * @return array<string, mixed>
      */
