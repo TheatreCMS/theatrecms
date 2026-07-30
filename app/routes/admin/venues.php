@@ -1,7 +1,10 @@
 <?php
 
+use TheatreCMS\Auth\AuthorizationService;
+use TheatreCMS\Auth\Capability;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 
 if (isset($app)) {
@@ -13,5 +16,6 @@ if (isset($app)) {
         $group->delete('/{id}',   [VenueController::class, 'destroy']);
         $group->get('',           [VenueController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))
+      ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), Capability::MANAGE_PRODUCTIONS))
       ->add($container->get(AuthMiddleware::class));
 }

@@ -22,6 +22,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Theme\HookManager;
@@ -77,5 +78,9 @@ HookManager::setInstance($hookManager);
 
 $menuLocationRegistry = $container->get(MenuLocationRegistry::class);
 MenuLocationRegistry::setInstance($menuLocationRegistry);
+
+$capabilityRegistry = $container->get(CapabilityRegistry::class);
+CapabilityRegistry::setInstance($capabilityRegistry);
+require_once APP_ROOT . '/app/capabilities.php';
 
 return $container;

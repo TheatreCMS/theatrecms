@@ -8,6 +8,8 @@ use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use TheatreCMS\Auth\AuthorizationService;
+use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Controllers\MenuController;
@@ -40,6 +42,7 @@ use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\ThemeManager;
+use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\MenuExtension;
 use Delight\Auth\Auth;
@@ -71,6 +74,12 @@ class ServiceRegistrar
         });
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
+
+        $container->set(CapabilityRegistry::class, static fn(): CapabilityRegistry => new CapabilityRegistry());
+
+        $container->set(AuthorizationService::class, static function (ContainerInterface $c): AuthorizationService {
+            return new AuthorizationService($c->get(Auth::class), $c->get(CapabilityRegistry::class));
+        });
 
         $container->set(ImageUploadService::class, static fn(): ImageUploadService => new ImageUploadService(APP_ROOT . '/www'));
 
@@ -110,6 +119,7 @@ class ServiceRegistrar
             $themeManager->loadFunctions();
             $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
+            $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $siteSettings = $c->get(SiteSettings::class);

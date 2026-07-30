@@ -1,7 +1,10 @@
 <?php
 
+use TheatreCMS\Auth\AuthorizationService;
+use TheatreCMS\Auth\Capability;
 use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 
 if (isset($app)) {
@@ -13,5 +16,6 @@ if (isset($app)) {
         $group->delete('/{id}',   [PageController::class, 'destroy']);
         $group->get('',           [PageController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))
+      ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), Capability::EDIT_PAGES))
       ->add($container->get(AuthMiddleware::class));
 }

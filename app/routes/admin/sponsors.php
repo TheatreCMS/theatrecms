@@ -1,7 +1,10 @@
 <?php
 
+use TheatreCMS\Auth\AuthorizationService;
+use TheatreCMS\Auth\Capability;
 use TheatreCMS\Controllers\SponsorController;
 use TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 
 if (isset($app)) {
@@ -14,5 +17,6 @@ if (isset($app)) {
         $group->delete('/{id}',   [SponsorController::class, 'destroy']);
         $group->get('',           [SponsorController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))
+      ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), Capability::MANAGE_PRODUCTIONS))
       ->add($container->get(AuthMiddleware::class));
 }
