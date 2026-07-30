@@ -4,11 +4,7 @@ namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Models\User;
 use Delight\Auth\Auth;
-use Delight\Auth\InvalidEmailException;
-use Delight\Auth\InvalidPasswordException;
-use Delight\Auth\TooManyRequestsException;
-use Delight\Auth\UserAlreadyExistsException;
-use Delight\Auth\AuthError;
+use Delight\Auth\Role;
 
 
 class UserRepository extends BaseRepository
@@ -22,13 +18,21 @@ class UserRepository extends BaseRepository
         $this->auth = $auth;
     }
 
-    public function create(array $args): void
+    public function create(array $args): int
     {
-        try {
-            $this->auth->register($args['email'], $args['password'], $args['username']);
-        } catch (InvalidEmailException|AuthError|InvalidPasswordException|UserAlreadyExistsException|TooManyRequestsException $e) {
-            trigger_error('Failed to create user: ' . $e->getMessage());
+        if (!isset($this->auth)) {
+            throw new \RuntimeException('Auth service has not been configured for UserRepository.');
         }
+
+        $userId = $this->auth->admin()->createUserWithUniqueUsername(
+            (string) $args['email'],
+            (string) $args['password'],
+            (string) $args['username']
+        );
+
+        $this->syncRoleByUserId($userId, (string) ($args['role'] ?? 'user'));
+
+        return $userId;
     }
 
     public function findByEmail(string $email): ?object
@@ -39,5 +43,48 @@ class UserRepository extends BaseRepository
     public function findByUsername(string $username): ?object
     {
         return $this->em->getRepository($this->entityClass)->findOneBy(['username' => $username]);
+    }
+
+    public function updatePassword(int $userId, string $password): void
+    {
+        if (!isset($this->auth)) {
+            throw new \RuntimeException('Auth service has not been configured for UserRepository.');
+        }
+
+        $this->auth->admin()->changePasswordForUserById($userId, $password);
+    }
+
+    public function syncRoleByUserId(int $userId, string $role): void
+    {
+        if (!isset($this->auth)) {
+            throw new \RuntimeException('Auth service has not been configured for UserRepository.');
+        }
+
+        $user = $this->fetch($userId);
+        if (!$user instanceof User) {
+            throw new \InvalidArgumentException('Unknown user ID provided.');
+        }
+
+        $isAdmin = $this->isAdmin($user);
+        $targetIsAdmin = $role === 'admin';
+
+        if ($targetIsAdmin && !$isAdmin) {
+            $this->auth->admin()->addRoleForUserById($userId, Role::ADMIN);
+            return;
+        }
+
+        if (!$targetIsAdmin && $isAdmin) {
+            $this->auth->admin()->removeRoleForUserById($userId, Role::ADMIN);
+        }
+    }
+
+    public function resolveRoleLabel(User $user): string
+    {
+        return $this->isAdmin($user) ? 'admin' : 'user';
+    }
+
+    private function isAdmin(User $user): bool
+    {
+        return (($user->getRolesMask() & Role::ADMIN) === Role::ADMIN);
     }
 }

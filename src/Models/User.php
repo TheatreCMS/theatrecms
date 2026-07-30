@@ -2,35 +2,46 @@
 
 namespace TheatreCMS\Models;
 
-use DateTimeImmutable;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
+#[Entity, Table(name: 'users')]
 final class User
 {
+    #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 
+    #[Column(type: 'string', nullable: false)]
     private string $email;
 
+    #[Column(type: 'string', nullable: false)]
     private string $password;
 
-    private string $username;
+    #[Column(type: 'string', nullable: true)]
+    private ?string $username = null;
 
+    #[Column(type: 'boolean', nullable: false)]
     private bool $status;
 
+    #[Column(type: 'boolean', nullable: false)]
     private bool $verified;
 
+    #[Column(type: 'boolean', nullable: false)]
     private bool $resettable;
 
+    #[Column(name: 'roles_mask', type: 'integer', nullable: false)]
     private int $rolesMask;
 
+    #[Column(type: 'integer', nullable: false)]
     private int $registered;
 
-    private int $lastLogin;
+    #[Column(name: 'last_login', type: 'integer', nullable: true)]
+    private ?int $lastLogin = null;
 
+    #[Column(name: 'force_logout', type: 'integer', nullable: false)]
     private int $forceLogout;
 
     public function __construct(string $email)
@@ -72,13 +83,9 @@ final class User
         return $this->password;
     }
 
-    /**
-     * Note: the property is misspelled as `$useername` (to match existing mapping).
-     * We expose correctly-named accessors: getUsername / setUsername.
-     */
     public function getUsername(): string
     {
-        return $this->username;
+        return $this->username ?? '';
     }
 
     public function setUsername(string $username): self
