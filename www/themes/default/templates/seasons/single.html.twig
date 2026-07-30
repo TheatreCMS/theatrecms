@@ -18,24 +18,6 @@
         {% endif %}
 
         <aside class="season-sidebar">
-            {% if season.sponsorships|length > 0 %}
-                <section class="season-sponsors" aria-labelledby="season-sponsors-heading">
-                    <h2 id="season-sponsors-heading">Sponsors</h2>
-                    <ul class="sponsor-list">
-                        {% for sponsorship in season.sponsorships %}
-                            {% set sponsor = sponsorship.sponsor %}
-                            <li class="sponsor sponsor-{{ sponsor.slug }}">
-                                {% if sponsor.websiteUrl %}
-                                    <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank">{{ sponsor.name }}</a>
-                                {% else %}
-                                    {{ sponsor.name }}
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </section>
-            {% endif %}
-
             {% if season.productions|length > 0 %}
                 <section class="season-productions" aria-labelledby="season-productions-heading">
                     <h2 id="season-productions-heading">Productions</h2>
@@ -83,6 +65,24 @@
 
                                     <span class="mt-6 inline-block bg-white text-gray-900 font-semibold px-5 py-2 rounded-md hover:bg-gray-100 transition-colors">Learn More</span>
                                 </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endif %}
+
+            {% if season.sponsorships|length > 0 %}
+                <section class="season-sponsors" aria-labelledby="season-sponsors-heading">
+                    <h2 id="season-sponsors-heading">Sponsors</h2>
+                    <ul class="sponsor-list">
+                        {% for sponsorship in season.sponsorships %}
+                            {% set sponsor = sponsorship.sponsor %}
+                            <li class="sponsor sponsor-{{ sponsor.slug }}">
+                                {% if sponsor.websiteUrl %}
+                                    <a href="{{ sponsor.websiteUrl }}" rel="noopener noreferrer" target="_blank">{{ sponsor.name }}</a>
+                                {% else %}
+                                    {{ sponsor.name }}
+                                {% endif %}
                             </li>
                         {% endfor %}
                     </ul>
