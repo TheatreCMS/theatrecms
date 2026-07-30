@@ -123,6 +123,11 @@ class ServiceRegistrar
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
+            $auth = $c->get(Auth::class);
+            $twig->getEnvironment()->addGlobal('current_user', [
+                'name' => $auth->getUsername() ?? $auth->getEmail(),
+            ]);
+
             $siteSettings = $c->get(SiteSettings::class);
             foreach ($siteSettings->all() as $key => $value) {
                 $twig->getEnvironment()->addGlobal($key, $value);
