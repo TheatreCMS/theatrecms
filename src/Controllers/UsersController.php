@@ -5,6 +5,7 @@ namespace TheatreCMS\Controllers;
 use Delight\Auth\Auth;
 use Delight\Auth\UnknownIdException;
 use TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Models\User;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
@@ -25,25 +26,29 @@ class UsersController extends BaseController
         return $this->twig->render(
             $response,
             'admin/users/index.html.twig',
-            $this->buildPaginatedViewData(
-                $request,
-                $this->repository,
-                'users',
-                '/admin/users',
-                ['currentUserId' => $this->auth->getUserId()]
-            )
+            $this->buildUsersListViewData($request)
         );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/users/create.html.twig');
+        return $this->twig->render($response, 'admin/users/create.html.twig', [
+            'old' => ['role' => 'user'],
+        ]);
     }
 
     public function edit(Request $request, Response $response, array $args = []): Response
     {
+        $user = $this->repository->fetch((int) $args['id']);
+
+        if (!$user instanceof User) {
+            return $response->withStatus(404);
+        }
+
         return $this->twig->render($response, 'admin/users/edit.html.twig', [
-            'user' => $this->repository->fetch($args['id']),
+            'user' => $user,
+            'userRole' => $this->repository->resolveRoleLabel($user),
+            'currentUserId' => $this->auth->getUserId(),
         ]);
     }
 
@@ -57,13 +62,7 @@ class UsersController extends BaseController
                 return $this->twig->render(
                     $response,
                     'admin/users/_list.html.twig',
-                    $this->buildPaginatedViewData(
-                        $request,
-                        $this->repository,
-                        'users',
-                        '/admin/users',
-                        ['currentUserId' => $this->auth->getUserId()]
-                    )
+                    $this->buildUsersListViewData($request)
                 );
             }
 
@@ -89,28 +88,72 @@ class UsersController extends BaseController
         $required = ['email', 'username', 'password'];
 
         $data = $this->parseArgs($body, [
-            'email'    => null,
+            'email' => null,
             'username' => null,
             'password' => null,
-            'role'     => 'user',
+            'password_confirmation' => null,
+            'role' => 'user',
         ]);
+
+        $errors = [];
 
         foreach ($required as $index) {
             if (empty($data[$index])) {
-                if ($isHtmx) {
-                    return $this->freshAlertResponse($response, 'error', 'Unable to create user. Please check your input.');
-                }
-                throw new \InvalidArgumentException("$index is required");
+                $errors[$index] = ucfirst($index) . ' is required.';
             }
         }
 
-        $this->repository->create($data);
+        if (!empty($data['email']) && !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['email'] = 'Invalid email address.';
+        }
+
+        if (($data['password'] ?? '') !== ($data['password_confirmation'] ?? '')) {
+            $errors['password_confirmation'] = 'Passwords do not match.';
+        }
+
+        if (!$this->isValidRole((string) $data['role'])) {
+            $errors['role'] = 'Invalid role selected.';
+        }
+
+        $existingByEmail = !empty($data['email']) ? $this->repository->findByEmail((string) $data['email']) : null;
+        if ($existingByEmail instanceof User) {
+            $errors['email'] = 'A user with that email already exists.';
+        }
+
+        $existingByUsername = !empty($data['username']) ? $this->repository->findByUsername((string) $data['username']) : null;
+        if ($existingByUsername instanceof User) {
+            $errors['username'] = 'Username is already taken.';
+        }
+
+        if (!empty($errors)) {
+            if ($isHtmx) {
+                return $this->freshAlertResponse($response, 'error', (string) reset($errors));
+            }
+
+            return $this->twig->render($response, 'admin/users/create.html.twig', [
+                'errors' => $errors,
+                'old' => $data,
+            ]);
+        }
+
+        try {
+            $this->repository->create($data);
+        } catch (\Throwable $e) {
+            if ($isHtmx) {
+                return $this->freshAlertResponse($response, 'error', 'Unable to create user. Please check your input.');
+            }
+
+            return $this->twig->render($response, 'admin/users/create.html.twig', [
+                'errors' => ['general' => 'Unable to create user. Please check your input.'],
+                'old' => $data,
+            ]);
+        }
 
         if ($isHtmx) {
             return $this->freshAlertResponse($response, 'success', 'User created successfully.');
         }
 
-        return $response->withHeader('Location', '/admin/users');
+        return $response->withHeader('Location', '/admin/users')->withStatus(302);
     }
 
     public function update(Request $request, Response $response, array $args = []): Response
@@ -139,21 +182,33 @@ class UsersController extends BaseController
         $userId = intval($data['userId']);
         $user = $this->repository->fetch($userId);
 
-        if (is_null($user)) {
+        if (!$user instanceof User) {
             if ($isHtmx) {
                 return $this->freshAlertResponse($response, 'error', 'Unable to save user. Please check your input.');
             }
             return $response->withStatus(404);
         }
 
-        if (empty(trim((string)$data['email']))) {
+        $email = trim((string) $data['email']);
+        $username = trim((string) $data['username']);
+        $role = (string) $data['role'];
+
+        if ($email === '') {
             $errors['email'] = 'Email is required.';
-        } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Invalid email address.';
         }
 
-        if (empty(trim((string)$data['username']))) {
+        if ($username === '') {
             $errors['username'] = 'Username is required.';
+        }
+
+        if (!$this->isValidRole($role)) {
+            $errors['role'] = 'Invalid role selected.';
+        }
+
+        if ($userId === $this->auth->getUserId() && $role !== 'admin') {
+            $errors['role'] = 'You cannot remove your own admin role.';
         }
 
         if (!empty($data['password']) || !empty($data['password_confirmation'])) {
@@ -165,16 +220,14 @@ class UsersController extends BaseController
             }
         }
 
-        $existingByEmail = $this->repository->findByEmail($data['email']);
+        $existingByEmail = $this->repository->findByEmail($email);
         if ($existingByEmail && $existingByEmail->getId() !== $userId) {
             $errors['email'] = 'A user with that email already exists.';
         }
 
-        if (method_exists($this->repository, 'findByUsername')) {
-            $existingByUsername = $this->repository->findByUsername($data['username']);
-            if ($existingByUsername && $existingByUsername->getId() !== $userId) {
-                $errors['username'] = 'Username is already taken.';
-            }
+        $existingByUsername = $this->repository->findByUsername($username);
+        if ($existingByUsername && $existingByUsername->getId() !== $userId) {
+            $errors['username'] = 'Username is already taken.';
         }
 
         if (!empty($errors)) {
@@ -185,6 +238,8 @@ class UsersController extends BaseController
             try {
                 return $this->twig->render($response, 'admin/users/edit.html.twig', [
                     'user' => $user,
+                    'userRole' => $this->repository->resolveRoleLabel($user),
+                    'currentUserId' => $this->auth->getUserId(),
                     'errors' => $errors,
                     'old' => $data,
                 ]);
@@ -194,17 +249,15 @@ class UsersController extends BaseController
         }
 
         try {
-            $user->setEmail($data['email'])
-                ->setUsername($data['username']);
-
-            if (!empty($data['password'])) {
-                $hashed = password_hash($data['password'], PASSWORD_DEFAULT);
-                if (method_exists($user, 'setPassword')) {
-                    $user->setPassword($hashed);
-                }
-            }
+            $user->setEmail($email)
+                ->setUsername($username);
 
             $this->repository->update($user);
+            $this->repository->syncRoleByUserId($userId, $role);
+
+            if (!empty($data['password'])) {
+                $this->repository->updatePassword($userId, (string) $data['password']);
+            }
         } catch (\Throwable $e) {
             $errors['general'] = 'Failed to update user.';
             if ($isHtmx) {
@@ -213,6 +266,8 @@ class UsersController extends BaseController
             try {
                 return $this->twig->render($response, 'admin/users/edit.html.twig', [
                     'user' => $user,
+                    'userRole' => $this->repository->resolveRoleLabel($user),
+                    'currentUserId' => $this->auth->getUserId(),
                     'errors' => $errors,
                     'old' => $data,
                 ]);
@@ -237,5 +292,35 @@ class UsersController extends BaseController
         ]));
         rewind($stream);
         return $response->withBody(new \Slim\Psr7\Stream($stream));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildUsersListViewData(Request $request): array
+    {
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'users',
+            '/admin/users',
+            ['currentUserId' => $this->auth->getUserId()]
+        );
+
+        $roleMap = [];
+        foreach ($data['users'] as $user) {
+            if ($user instanceof User) {
+                $roleMap[$user->getId()] = $this->repository->resolveRoleLabel($user);
+            }
+        }
+
+        $data['userRoles'] = $roleMap;
+
+        return $data;
+    }
+
+    private function isValidRole(string $role): bool
+    {
+        return in_array($role, ['user', 'admin'], true);
     }
 }
