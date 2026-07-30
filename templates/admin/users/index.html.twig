@@ -13,5 +13,5 @@
     </div>
 </div>
 
-{% include 'admin/users/_list.html.twig' with {'users': users, 'currentUserId': currentUserId, 'pagination': pagination} %}
+{% include 'admin/users/_list.html.twig' with {'users': users, 'userRoles': userRoles, 'currentUserId': currentUserId, 'pagination': pagination} %}
 {% endblock %}

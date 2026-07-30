@@ -6,6 +6,12 @@
                     Email address
                 </th>
                 <th scope="col" class="px-6 py-3 font-medium">
+                    Username
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    Role
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
                     Last login
                 </th>
                 <th scope="col" class="px-6 py-3 font-medium">
@@ -14,7 +20,7 @@
             </tr>
         </thead>
         <tbody id="userList">
-            {% include 'admin/users/_table.html.twig' with {'users': users, 'currentUserId': currentUserId} %}
+            {% include 'admin/users/_table.html.twig' with {'users': users, 'userRoles': userRoles, 'currentUserId': currentUserId} %}
         </tbody>
     </table>
 

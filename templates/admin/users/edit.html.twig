@@ -20,6 +20,12 @@
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
         {% endif %}
 
+        {% if errors.general is defined %}
+            <div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {{ errors.general }}
+            </div>
+        {% endif %}
+
         <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email address <span class="text-red-500">*</span></label>
             <input
@@ -99,13 +105,17 @@
         <div>
             <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
             <select id="role" name="role" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="user" {% if old.role|default(user.role|default('user')) == 'user' %}selected{% endif %}>User</option>
-                <option value="admin" {% if old.role is defined and old.role == 'admin' or user.role is defined and user.role == 'admin' %}selected{% endif %}>Admin</option>
+                {% set selectedRole = old.role|default(userRole|default('user')) %}
+                <option value="user" {% if selectedRole == 'user' %}selected{% endif %} {% if currentUserId == user.id %}disabled{% endif %}>User</option>
+                <option value="admin" {% if selectedRole == 'admin' %}selected{% endif %}>Admin</option>
             </select>
             {% if errors.role is defined %}
                 <p id="role-error" class="text-red-600 text-sm mt-1">{{ errors.role }}</p>
             {% else %}
                 <p id="role-error" class="sr-only" aria-hidden="true"></p>
+            {% endif %}
+            {% if currentUserId == user.id %}
+                <p class="text-xs text-gray-500 mt-1">Your own account must keep the admin role.</p>
             {% endif %}
         </div>
 
