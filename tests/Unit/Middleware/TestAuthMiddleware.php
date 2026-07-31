@@ -1,8 +1,8 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit\Middleware;
+namespace TheatreCMS\Tests\Unit\Middleware;
 
-use Clubdeuce\TheatreCMS\Middleware\AuthMiddleware;
+use TheatreCMS\Middleware\AuthMiddleware;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;

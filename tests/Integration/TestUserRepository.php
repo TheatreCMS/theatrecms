@@ -1,9 +1,9 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Integration;
+namespace TheatreCMS\Tests\Integration;
 
-use Clubdeuce\TheatreCMS\Models\User;
-use Clubdeuce\TheatreCMS\Repositories\UserRepository;
+use TheatreCMS\Models\User;
+use TheatreCMS\Repositories\UserRepository;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;

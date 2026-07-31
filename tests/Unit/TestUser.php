@@ -1,15 +1,15 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\User;
-use Clubdeuce\TheatreCMS\Tests\Includes\TestCase;
+use TheatreCMS\Models\User;
+use TheatreCMS\Tests\Includes\TestCase;
 
 /**
  * Class TestUser
  *
- * @package Clubdeuce\TheatreCMS\Tests\Unit
- * @coversDefaultClass \Clubdeuce\TheatreCMS\Models\User
+ * @package TheatreCMS\Tests\Unit
+ * @coversDefaultClass \TheatreCMS\Models\User
  */
 class TestUser extends TestCase
 {

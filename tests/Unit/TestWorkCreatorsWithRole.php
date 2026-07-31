@@ -1,9 +1,9 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\Person;
-use Clubdeuce\TheatreCMS\Models\Work;
+use TheatreCMS\Models\Person;
+use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 class TestWorkCreatorsWithRole extends TestCase

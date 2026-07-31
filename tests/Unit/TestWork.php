@@ -1,16 +1,16 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\Person;
-use Clubdeuce\TheatreCMS\Models\Work;
+use TheatreCMS\Models\Person;
+use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class TestWork
- * @package Clubdeuce\TheatreCMS\Tests\Unit
+ * @package TheatreCMS\Tests\Unit
  *
- * @coversDefaultClass \Clubdeuce\TheatreCMS\Models\Work
+ * @coversDefaultClass \TheatreCMS\Models\Work
  */
 class TestWork extends TestCase
 {

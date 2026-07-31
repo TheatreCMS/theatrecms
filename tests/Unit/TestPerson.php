@@ -1,12 +1,12 @@
 <?php
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\Person;
-use Clubdeuce\TheatreCMS\Tests\Includes\TestCase;
+use TheatreCMS\Models\Person;
+use TheatreCMS\Tests\Includes\TestCase;
 
 /**
  * Class TestPerson
- * @package Clubdeuce\TheaterCMS\Tests\Unit
+ * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass Person
  */

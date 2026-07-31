@@ -1,18 +1,18 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\Event;
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Models\Season;
-use Clubdeuce\TheatreCMS\Models\Work;
+use TheatreCMS\Models\Event;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class TestEvent
- * @package Clubdeuce\TheatreCMS\Tests\Unit
+ * @package TheatreCMS\Tests\Unit
  *
- * @coversDefaultClass  \Clubdeuce\TheatreCMS\Models\Event
+ * @coversDefaultClass  \TheatreCMS\Models\Event
  */
 class TestEvent extends TestCase
 {

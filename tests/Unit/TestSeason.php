@@ -1,15 +1,15 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\Season;
+use TheatreCMS\Models\Season;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class TestSeason
- * @package Clubdeuce\TheatreCMS\Tests\Unit
+ * @package TheatreCMS\Tests\Unit
  *
- * @coversDefaultClass  \Clubdeuce\TheatreCMS\Models\Season
+ * @coversDefaultClass  \TheatreCMS\Models\Season
  */
 class TestSeason extends TestCase
 {

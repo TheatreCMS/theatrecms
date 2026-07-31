@@ -1,9 +1,9 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Integration;
+namespace TheatreCMS\Tests\Integration;
 
-use Clubdeuce\TheatreCMS\Models\Venue;
-use Clubdeuce\TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\VenueRepository;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
@@ -11,7 +11,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Clubdeuce\TheatreCMS\Repositories\VenueRepository
+ * @coversDefaultClass \TheatreCMS\Repositories\VenueRepository
  */
 class TestVenueRepository extends TestCase
 {

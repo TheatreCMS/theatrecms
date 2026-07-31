@@ -1,13 +1,13 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\RoleType;
+use TheatreCMS\Models\RoleType;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Class TestRoleType
- * @package Clubdeuce\TheatreCMS\Tests\Unit
+ * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass RoleType
  */

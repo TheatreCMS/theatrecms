@@ -1,12 +1,12 @@
 <?php
 
-namespace Clubdeuce\TheatreCMS\Tests\Unit;
+namespace TheatreCMS\Tests\Unit;
 
-use Clubdeuce\TheatreCMS\Models\Production;
-use Clubdeuce\TheatreCMS\Models\Season;
-use Clubdeuce\TheatreCMS\Models\Sponsor;
-use Clubdeuce\TheatreCMS\Models\Sponsorship;
-use Clubdeuce\TheatreCMS\Models\Work;
+use TheatreCMS\Models\Production;
+use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Sponsorship;
+use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 class TestSponsorship extends TestCase
