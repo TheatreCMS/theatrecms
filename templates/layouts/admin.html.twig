@@ -55,7 +55,7 @@
 			<!-- Sidebar -->
 			<aside class="w-64 bg-white border-r hidden md:block">
 				<div class="p-4 border-b">
-					<a href="/{{ base_path|default('') }}admin" class="flex items-center space-x-3">
+					<a href="/{{ base_path|default('') }}" class="flex items-center space-x-3" title="View the site">
 						<img src="{{ logo_url|default('/assets/images/logo.svg') }}" alt="{{ organization_name|default('TheatreCMS') }}" class="h-8 w-8">
 						<span class="font-semibold">{{ organization_name|default('TheatreCMS') }}</span>
 					</a>
@@ -110,7 +110,6 @@
 								<button id="sidebarToggle" class="md:hidden mr-3 px-2 py-1 rounded bg-gray-100">
 									Menu
 								</button>
-								<a href="/{{ base_path|default('') }}admin" class="text-lg font-semibold">{{ organization_name|default('TheatreCMS') }}</a>
 							</div>
 							<div class="flex items-center space-x-4">
 								<div class="text-sm text-gray-600">Signed in as
@@ -161,12 +160,12 @@
 			<script>
 				document.addEventListener('DOMContentLoaded', function () {
 var toggle = document.getElementById('sidebarToggle');
-if (! toggle) 
+if (! toggle)
 return;
 
 toggle.addEventListener('click', function () {
 var aside = document.querySelector('aside');
-if (! aside) 
+if (! aside)
 return;
 
 aside.classList.toggle('hidden');
