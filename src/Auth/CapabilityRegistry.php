@@ -5,9 +5,9 @@ namespace TheatreCMS\Auth;
 class CapabilityRegistry
 {
     /**
-     * @var array<string, int[]> capability => Delight\Auth\Role constants that grant it
+     * @var array<int, string[]> Delight\Auth\Role constant => capabilities it grants
      */
-    private array $capabilities = [];
+    private array $roleCapabilities = [];
 
     private static ?self $instance = null;
 
@@ -26,11 +26,20 @@ class CapabilityRegistry
     }
 
     /**
-     * @param int[] $roles Delight\Auth\Role constants that grant this capability
+     * @param string[] $capabilities capabilities granted to this Delight\Auth\Role constant
      */
-    public function register(string $capability, array $roles): void
+    public function register(int $role, array $capabilities): void
     {
-        $this->capabilities[$capability] = $roles;
+        $this->roleCapabilities[$role] = $capabilities;
+    }
+
+    /**
+     * @return string[] the capabilities granted to this Delight\Auth\Role constant, or an empty
+     *                   array if the role was never registered
+     */
+    public function capabilitiesFor(int $role): array
+    {
+        return $this->roleCapabilities[$role] ?? [];
     }
 
     /**
@@ -39,6 +48,13 @@ class CapabilityRegistry
      */
     public function rolesFor(string $capability): array
     {
-        return $this->capabilities[$capability] ?? [];
+        $roles = [];
+        foreach ($this->roleCapabilities as $role => $capabilities) {
+            if (in_array($capability, $capabilities, true)) {
+                $roles[] = $role;
+            }
+        }
+
+        return $roles;
     }
 }

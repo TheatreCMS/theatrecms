@@ -38,7 +38,7 @@ class AuthorizationServiceTest extends TestCase
     public function testCanIsTrueWhenCurrentUserHasGrantingRole(): void
     {
         $registry = new CapabilityRegistry();
-        $registry->register('manage_users', [Role::ADMIN]);
+        $registry->register(Role::ADMIN, ['manage_users']);
         $service = new AuthorizationService($this->auth, $registry);
 
         $_SESSION[Auth::SESSION_FIELD_LOGGED_IN] = true;
@@ -50,7 +50,7 @@ class AuthorizationServiceTest extends TestCase
     public function testCanIsFalseWhenCurrentUserLacksGrantingRole(): void
     {
         $registry = new CapabilityRegistry();
-        $registry->register('manage_users', [Role::ADMIN]);
+        $registry->register(Role::ADMIN, ['manage_users']);
         $service = new AuthorizationService($this->auth, $registry);
 
         $_SESSION[Auth::SESSION_FIELD_LOGGED_IN] = true;
@@ -62,7 +62,7 @@ class AuthorizationServiceTest extends TestCase
     public function testUserCanChecksAnArbitraryUserById(): void
     {
         $registry = new CapabilityRegistry();
-        $registry->register('manage_users', [Role::ADMIN]);
+        $registry->register(Role::ADMIN, ['manage_users']);
         $service = new AuthorizationService($this->auth, $registry);
 
         $adminId = $this->auth->admin()->createUserWithUniqueUsername('admin@example.com', 'password123', 'admin');
