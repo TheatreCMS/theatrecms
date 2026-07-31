@@ -46,22 +46,16 @@
         </div>
 
         <div>
-            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <input
                     id="username"
-                    name="username"
                     type="text"
-                    required
-                    aria-describedby="username-error"
-                    {% if errors.username is defined %}aria-invalid="true"{% endif %}
-                    value="{{ old.username|default(user.username) }}"
-                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 {% if errors.username is defined %}border-red-500{% endif %}"
+                    value="{{ user.username }}"
+                    class="w-full border rounded px-3 py-2 bg-gray-50 text-gray-500 cursor-not-allowed"
+                    readonly
+                    disabled
             >
-            {% if errors.username is defined %}
-                <p id="username-error" class="text-red-600 text-sm mt-1">{{ errors.username }}</p>
-            {% else %}
-                <p id="username-error" class="sr-only" aria-hidden="true"></p>
-            {% endif %}
+            <p class="text-xs text-gray-500 mt-1">Usernames are display-only and cannot be changed from the admin UI.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

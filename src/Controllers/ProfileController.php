@@ -54,7 +54,6 @@ class ProfileController extends BaseController
 
         $data = $this->parseArgs($body, [
             'email' => null,
-            'username' => null,
             'current_password' => null,
             'password' => null,
             'password_confirmation' => null,
@@ -63,16 +62,11 @@ class ProfileController extends BaseController
         $errors = [];
 
         $email = trim((string) $data['email']);
-        $username = trim((string) $data['username']);
 
         if ($email === '') {
             $errors['email'] = 'Email is required.';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Invalid email address.';
-        }
-
-        if ($username === '') {
-            $errors['username'] = 'Username is required.';
         }
 
         if (!empty($data['password']) || !empty($data['password_confirmation'])) {
@@ -92,11 +86,6 @@ class ProfileController extends BaseController
             $errors['email'] = 'A user with that email already exists.';
         }
 
-        $existingByUsername = $this->repository->findByUsername($username);
-        if ($existingByUsername && $existingByUsername->getId() !== $user->getId()) {
-            $errors['username'] = 'Username is already taken.';
-        }
-
         if (!empty($errors)) {
             if ($isHtmx) {
                 return $this->freshAlertResponse($response, 'error', (string) reset($errors));
@@ -114,7 +103,7 @@ class ProfileController extends BaseController
                 $this->auth->changePassword((string) $data['current_password'], (string) $data['password']);
             }
 
-            $user->setEmail($email)->setUsername($username);
+            $user->setEmail($email);
             $this->repository->update($user);
         } catch (InvalidPasswordException $e) {
             $errors['current_password'] = 'Your current password is incorrect.';

@@ -3,6 +3,7 @@
 namespace TheatreCMS\Tests\Unit;
 
 use Delight\Auth\Auth;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -12,6 +13,7 @@ use TheatreCMS\Controllers\ProfileController;
 use TheatreCMS\Models\User;
 use TheatreCMS\Repositories\UserRepository;
 
+#[AllowMockObjectsWithoutExpectations]
 class ProfileControllerTest extends TestCase
 {
     private UserRepository|MockObject $repo;
@@ -99,7 +101,6 @@ class ProfileControllerTest extends TestCase
         $request = $this->createMock(Request::class);
         $request->method('getParsedBody')->willReturn([
             'email' => 'old@example.com',
-            'username' => 'olduser',
             'current_password' => 'password123',
             'password' => 'abc12345',
             'password_confirmation' => 'different',
@@ -138,7 +139,7 @@ class ProfileControllerTest extends TestCase
 
         $this->assertEquals(302, $result->getStatusCode());
         $this->assertEquals('new@example.com', $user->getEmail());
-        $this->assertEquals('newuser', $user->getUsername());
+        $this->assertEquals('olduser', $user->getUsername());
     }
 
     public function testUpdateRejectsWrongCurrentPassword(): void
@@ -164,7 +165,6 @@ class ProfileControllerTest extends TestCase
         $request = $this->createMock(Request::class);
         $request->method('getParsedBody')->willReturn([
             'email' => 'old@example.com',
-            'username' => 'olduser',
             'current_password' => 'wrong-password',
             'password' => 'abc12345',
             'password_confirmation' => 'abc12345',

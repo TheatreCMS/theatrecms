@@ -171,7 +171,6 @@ class UsersController extends BaseController
         $data = $this->parseArgs($data, [
             'userId' => 0,
             'email' => null,
-            'username' => null,
             'password' => null,
             'password_confirmation' => null,
             'role' => 'user',
@@ -190,17 +189,12 @@ class UsersController extends BaseController
         }
 
         $email = trim((string) $data['email']);
-        $username = trim((string) $data['username']);
         $role = (string) $data['role'];
 
         if ($email === '') {
             $errors['email'] = 'Email is required.';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Invalid email address.';
-        }
-
-        if ($username === '') {
-            $errors['username'] = 'Username is required.';
         }
 
         if (!$this->isValidRole($role)) {
@@ -225,11 +219,6 @@ class UsersController extends BaseController
             $errors['email'] = 'A user with that email already exists.';
         }
 
-        $existingByUsername = $this->repository->findByUsername($username);
-        if ($existingByUsername && $existingByUsername->getId() !== $userId) {
-            $errors['username'] = 'Username is already taken.';
-        }
-
         if (!empty($errors)) {
             if ($isHtmx) {
                 $firstError = reset($errors);
@@ -249,8 +238,7 @@ class UsersController extends BaseController
         }
 
         try {
-            $user->setEmail($email)
-                ->setUsername($username);
+            $user->setEmail($email);
 
             $this->repository->update($user);
             $this->repository->syncRoleByUserId($userId, $role);
