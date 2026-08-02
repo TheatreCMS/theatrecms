@@ -1,0 +1,19 @@
+site:
+    organization_name: "Your Org"
+    name: "Your Theatre"
+    site_url: 'https://your-domain.example'
+    logo_url: /assets/images/logo.svg
+    contact_email: 'admin@your-domain.example'
+    social:
+        facebook: ''
+        twitter: ''
+        instagram: ''
+
+database:
+    driver: pdo_mysql
+    host: db
+    port: 3306
+    dbname: db
+    user: db
+    password: db
+    charset: utf8mb4

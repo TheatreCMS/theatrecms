@@ -1,6 +1,6 @@
 # Deployment Guide
 
-TheatreCMS is a custom PHP application (Slim 4 + Doctrine ORM 3 + [delight-im/auth](https://github.com/delight-im/PHP-Auth) + Twig) rather than a mainstream framework, so it doesn't come with the batteries a Laravel/Symfony deploy would have out of the box: there's no migration runner, no admin-bootstrap command, and no committed `config.yaml.example`. This guide walks through provisioning a new production instance end-to-end, including the manual steps those gaps require.
+TheatreCMS is a custom PHP application (Slim 4 + Doctrine ORM 3 + [delight-im/auth](https://github.com/delight-im/PHP-Auth) + Twig) rather than a mainstream framework, so it doesn't come with the batteries a Laravel/Symfony deploy would have out of the box: there's no migration runner and no admin-bootstrap command. This guide walks through provisioning a new production instance end-to-end, including the manual steps those gaps require.
 
 **THIS IS ALPHA SOFTWARE** — see the [project README](README.md). Review the hardening steps below carefully before exposing an instance publicly.
 
@@ -28,7 +28,13 @@ No JS build step is required — `www/assets` and `www/themes/default` are pre-b
 
 ## 3. Create `app/config.yaml`
 
-This file is gitignored and **not shipped in the repo**, so it must be hand-authored on every new instance. It's read by `app/settings.php` (database connection, Doctrine, Twig, active theme) and `src/Settings/SiteSettings.php` (site branding, editable later from `/admin/settings`).
+This file is gitignored and **not shipped with real values**, so it must be created on every new instance. It's read by `app/settings.php` (database connection, Doctrine, Twig, active theme) and `src/Settings/SiteSettings.php` (site branding, editable later from `/admin/settings`).
+
+Copy the committed example and fill in real values:
+
+```bash
+cp app/config.yaml.example app/config.yaml
+```
 
 ```yaml
 site:
