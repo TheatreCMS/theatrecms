@@ -6,10 +6,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
-use TheatreCMS\Repositories\BaseRepository;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
+use TheatreCMS\Repositories\PaginatedRepositoryInterface;
 use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
@@ -141,7 +141,7 @@ class BaseController
      */
     protected function buildPaginatedViewData(
         Request $request,
-        BaseRepository $repository,
+        PaginatedRepositoryInterface $repository,
         string $itemKey,
         string $basePath,
         array $context = []

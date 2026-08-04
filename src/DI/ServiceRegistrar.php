@@ -152,6 +152,12 @@ class ServiceRegistrar
                 return new $repositoryClass($c->get(EntityManager::class));
             });
         }
+
+        $container->set(UserRepository::class, static function (ContainerInterface $c): UserRepository {
+            $entityManager = $c->get(EntityManager::class);
+
+            return new UserRepository($entityManager->getConnection(), $c->get(Auth::class));
+        });
     }
 
     /**
@@ -305,7 +311,7 @@ class ServiceRegistrar
 
         foreach ($files as $file) {
             $name = pathinfo($file, PATHINFO_FILENAME);
-            if ($name === 'BaseRepository') {
+            if ($name === 'BaseRepository' || $name === 'UserRepository') {
                 continue;
             }
 

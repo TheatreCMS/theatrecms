@@ -81,8 +81,7 @@ class ProfileControllerTest extends TestCase
         $userId = $this->auth->admin()->createUserWithUniqueUsername('old@example.com', 'password123', 'olduser');
         $this->loginAs($userId);
 
-        $user = new User('old@example.com');
-        $user->setUsername('olduser');
+        $user = new User($userId, 'old@example.com', 'olduser', 0, null);
 
         $this->repo->expects($this->once())->method('fetch')->with($userId)->willReturn($user);
 
@@ -118,11 +117,10 @@ class ProfileControllerTest extends TestCase
         $userId = $this->auth->admin()->createUserWithUniqueUsername('old@example.com', 'password123', 'olduser');
         $this->loginAs($userId);
 
-        $user = new User('old@example.com');
-        $user->setUsername('olduser');
+        $user = new User($userId, 'old@example.com', 'olduser', 0, null);
 
         $this->repo->expects($this->once())->method('fetch')->with($userId)->willReturn($user);
-        $this->repo->expects($this->once())->method('update')->with($user);
+        $this->repo->expects($this->once())->method('updateEmail')->with($userId, 'new@example.com');
 
         $controller = new ProfileController($this->repo, $this->twig, $this->auth);
 
@@ -138,7 +136,6 @@ class ProfileControllerTest extends TestCase
         $result = $controller->update($request, $response);
 
         $this->assertEquals(302, $result->getStatusCode());
-        $this->assertEquals('new@example.com', $user->getEmail());
         $this->assertEquals('olduser', $user->getUsername());
     }
 
@@ -147,8 +144,7 @@ class ProfileControllerTest extends TestCase
         $userId = $this->auth->admin()->createUserWithUniqueUsername('old@example.com', 'password123', 'olduser');
         $this->loginAs($userId);
 
-        $user = new User('old@example.com');
-        $user->setUsername('olduser');
+        $user = new User($userId, 'old@example.com', 'olduser', 0, null);
 
         $this->repo->method('fetch')->with($userId)->willReturn($user);
 

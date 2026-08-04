@@ -73,12 +73,12 @@ FLUSH PRIVILEGES;
 
 There is no migration-tracking table in this project. The schema comes from three sources and **must be applied in this order**:
 
-1. `sql/php-auth.sql` — DDL for the `users` table and 7 `users_*` auth tables, owned by `delight-im/auth` (these are excluded from Doctrine's schema tool via the filter in `app/bootstrap.php`).
+1. `vendor/delight-im/auth/Database/MySQL.sql` — DDL for the `users` table and 7 `users_*` auth tables, owned by `delight-im/auth`. The application reads these records through DBAL, while Doctrine excludes the auth tables from schema management.
 2. The Doctrine schema tool — creates all content-entity tables from `src/Models/*` (Season, Production, Page, Post, Person, Venue, Sponsor, Menu, etc.).
 3. `migrations/*.sql` — hand-written patch files with no runner, applied in filename/date order.
 
 ```bash
-mysql -u theatrecms -p theatrecms_prod < sql/php-auth.sql
+mysql -u theatrecms -p theatrecms_prod < vendor/delight-im/auth/Database/MySQL.sql
 ./doctrine orm:schema-tool:create
 mysql -u theatrecms -p theatrecms_prod < migrations/20260325_create_posts_table.sql
 mysql -u theatrecms -p theatrecms_prod < migrations/20260327_create_pages_table.sql

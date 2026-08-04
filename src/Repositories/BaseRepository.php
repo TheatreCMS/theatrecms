@@ -2,14 +2,10 @@
 
 namespace TheatreCMS\Repositories;
 
-use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Season;
-use TheatreCMS\Models\User;
-use TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 
-abstract class BaseRepository
+abstract class BaseRepository implements PaginatedRepositoryInterface
 {
     protected string $entityClass;
 

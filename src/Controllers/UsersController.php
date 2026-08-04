@@ -238,9 +238,7 @@ class UsersController extends BaseController
         }
 
         try {
-            $user->setEmail($email);
-
-            $this->repository->update($user);
+            $this->repository->updateEmail($userId, $email);
             $this->repository->syncRoleByUserId($userId, $role);
 
             if (!empty($data['password'])) {

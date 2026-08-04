@@ -103,8 +103,7 @@ class ProfileController extends BaseController
                 $this->auth->changePassword((string) $data['current_password'], (string) $data['password']);
             }
 
-            $user->setEmail($email);
-            $this->repository->update($user);
+            $this->repository->updateEmail($user->getId(), $email);
         } catch (InvalidPasswordException $e) {
             $errors['current_password'] = 'Your current password is incorrect.';
 

@@ -15,7 +15,6 @@
  */
 
 use DI\Container;
-use Delight\Auth\Auth;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
@@ -24,7 +23,6 @@ use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
-use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 
@@ -57,21 +55,17 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 
     $connection = DriverManager::getConnection($settings['doctrine']['connection']);
 
-    // ignore the users and users_? tables for schema updates since it's managed by the Auth library
-    // and we don't want Doctrine trying to modify it
+    // Delight Auth owns the users table and all users_* tables.
     $connection->getConfiguration()->setSchemaAssetsFilter(static function (string|AbstractAsset $assetName): bool {
         if ($assetName instanceof AbstractAsset) {
             $assetName = $assetName->getName();
         }
-        return (bool) preg_match("~^(?!user|users_)~", $assetName);
+        return !preg_match('~^users(?:_|$)~', $assetName);
     });
     return new EntityManager($connection, $config);
 });
 
 ServiceRegistrar::register($container);
-
-// Add the Auth
-$container->get(UserRepository::class)->setAuth($container->get(Auth::class));
 
 $hookManager = $container->get(HookManager::class);
 HookManager::setInstance($hookManager);

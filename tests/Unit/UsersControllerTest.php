@@ -79,8 +79,7 @@ class UsersControllerTest extends TestCase
     {
         $controller = new UsersController($this->repo, $this->twig, $this->auth);
 
-        $user = new User('old@example.com');
-        $user->setUsername('olduser');
+        $user = new User(1, 'old@example.com', 'olduser', 0, null);
         $this->loginAs(99);
 
         $this->repo->expects($this->once())->method('fetch')->with(1)->willReturn($user);
@@ -116,13 +115,12 @@ class UsersControllerTest extends TestCase
     {
         $controller = new UsersController($this->repo, $this->twig, $this->auth);
 
-        $user = new User('old@example.com');
-        $user->setUsername('olduser');
+        $user = new User(1, 'old@example.com', 'olduser', 0, null);
         $this->loginAs(99);
 
         $this->repo->expects($this->once())->method('fetch')->with(1)->willReturn($user);
         $this->repo->expects($this->once())->method('findByEmail')->with('new@example.com')->willReturn(null);
-        $this->repo->expects($this->once())->method('update')->with($user);
+        $this->repo->expects($this->once())->method('updateEmail')->with(1, 'new@example.com');
         $this->repo->expects($this->once())->method('syncRoleByUserId')->with(1, 'user');
 
         $request = $this->createMock(RequestInterface::class);
@@ -139,8 +137,6 @@ class UsersControllerTest extends TestCase
         $result = $controller->update($request, $response);
 
         $this->assertEquals(302, $result->getStatusCode());
-        $this->assertEquals('new@example.com', $user->getEmail());
         $this->assertEquals('olduser', $user->getUsername());
     }
 }
-
