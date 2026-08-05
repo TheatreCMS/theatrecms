@@ -72,6 +72,11 @@
                 </div>
 
                 <div class="relative overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-md">
+                    <datalist id="creator-people-options">
+                        {% for person in people %}
+                            <option value="{{ person.name }}" data-person-id="{{ person.id }}"></option>
+                        {% endfor %}
+                    </datalist>
                     <table class="w-full text-sm text-left text-gray-700">
                         <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 border-b border-gray-200">
                         <tr>
@@ -85,15 +90,20 @@
                             {% for entry in creatorEntries %}
                                 <tr class="bg-white border-b border-gray-100" data-creator-row>
                                     <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                        <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                            <option value="">Select a person</option>
-                                            {% for person in people %}
-                                                <option value="{{ person.id }}" {% if person.id == entry.personId %}selected{% endif %}>{{ person.name }}</option>
-                                            {% endfor %}
-                                        </select>
+                                        <div class="space-y-2">
+                                            <label class="sr-only" for="creator-person-{{ loop.index0 }}" data-creator-search-label>Person</label>
+                                            <input type="text" name="creatorSearch[]" id="creator-person-{{ loop.index0 }}"
+                                                   value="{{ entry.personName|default('') }}"
+                                                   list="creator-people-options"
+                                                   autocomplete="off"
+                                                   data-creator-search
+                                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                                   placeholder="Search person">
+                                            <input type="hidden" name="creatorIds[]" value="{{ entry.personId|default('') }}" data-creator-id>
+                                        </div>
                                     </th>
                                     <td class="px-4 py-3">
-                                        <label class="sr-only" for="creator-role-{{ loop.index0 }}">Role</label>
+                                        <label class="sr-only" for="creator-role-{{ loop.index0 }}" data-creator-role-label>Role</label>
                                         <input type="text" name="creatorRoles[]" id="creator-role-{{ loop.index0 }}"
                                                value="{{ entry.role|default('') }}"
                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -107,15 +117,19 @@
                         {% else %}
                             <tr class="bg-white border-b border-gray-100" data-creator-row>
                                 <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                    <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                        <option value="">Select a person</option>
-                                        {% for person in people %}
-                                            <option value="{{ person.id }}">{{ person.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <div class="space-y-2">
+                                        <label class="sr-only" for="creator-person-empty" data-creator-search-label>Person</label>
+                                        <input type="text" name="creatorSearch[]" id="creator-person-empty"
+                                               list="creator-people-options"
+                                               autocomplete="off"
+                                               data-creator-search
+                                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                               placeholder="Search person">
+                                        <input type="hidden" name="creatorIds[]" value="" data-creator-id>
+                                    </div>
                                 </th>
                                 <td class="px-4 py-3">
-                                    <label class="sr-only" for="creator-role-empty">Role</label>
+                                    <label class="sr-only" for="creator-role-empty" data-creator-role-label>Role</label>
                                     <input type="text" name="creatorRoles[]" id="creator-role-empty"
                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                            placeholder="Role (optional)">
@@ -127,15 +141,19 @@
                         {% endif %}
                         <tr class="hidden bg-white border-b border-gray-100" data-creator-template>
                             <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                    <option value="">Select a person</option>
-                                    {% for person in people %}
-                                        <option value="{{ person.id }}">{{ person.name }}</option>
-                                    {% endfor %}
-                                </select>
+                                <div class="space-y-2">
+                                    <label class="sr-only" for="creator-person-template" data-creator-search-label>Person</label>
+                                    <input type="text" name="creatorSearch[]" id="creator-person-template"
+                                           list="creator-people-options"
+                                           autocomplete="off"
+                                           data-creator-search
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                           placeholder="Search person">
+                                    <input type="hidden" name="creatorIds[]" value="" data-creator-id>
+                                </div>
                             </th>
                             <td class="px-4 py-3">
-                                <label class="sr-only" for="creator-role-template">Role</label>
+                                <label class="sr-only" for="creator-role-template" data-creator-role-label>Role</label>
                                 <input type="text" name="creatorRoles[]" id="creator-role-template"
                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                        placeholder="Role (optional)">
@@ -185,13 +203,17 @@
                     const getVisibleRows = () => Array.from(rowsBody.querySelectorAll(`tr[data-${namespace}-row]`));
 
                     const resetRowInputs = (row) => {
-                        const select = row.querySelector('select');
-                        if (select) {
-                            select.value = '';
+                        const hiddenIdInput = row.querySelector('input[data-creator-id]');
+                        if (hiddenIdInput) {
+                            hiddenIdInput.value = '';
                         }
-                        const input = row.querySelector('input[type="text"]');
-                        if (input) {
-                            input.value = '';
+                        const searchInput = row.querySelector('input[data-creator-search]');
+                        if (searchInput) {
+                            searchInput.value = '';
+                        }
+                        const roleInput = row.querySelector('input[name="creatorRoles[]"]');
+                        if (roleInput) {
+                            roleInput.value = '';
                         }
                     };
 
@@ -219,32 +241,69 @@
                         newRow.setAttribute(`data-${namespace}-row`, '');
                         newRow.classList.remove('hidden');
 
-                        const select = newRow.querySelector('select');
-                        if (select) {
-                            select.value = '';
+                        const hiddenIdInput = newRow.querySelector('input[data-creator-id]');
+                        if (hiddenIdInput) {
+                            hiddenIdInput.value = '';
                         }
 
-                        const input = newRow.querySelector('input[type="text"]');
-                        if (input) {
-                            const newId = `${namespace}-role-${getVisibleRows().length}`;
-                            input.id = newId;
-                            input.value = '';
-                            const label = newRow.querySelector('label');
-                            if (label) {
-                                label.setAttribute('for', newId);
+                        const searchInput = newRow.querySelector('input[data-creator-search]');
+                        if (searchInput) {
+                            const newSearchId = `${namespace}-person-${getVisibleRows().length}`;
+                            searchInput.id = newSearchId;
+                            searchInput.value = '';
+                            const searchLabel = newRow.querySelector('label[data-creator-search-label]');
+                            if (searchLabel) {
+                                searchLabel.setAttribute('for', newSearchId);
+                            }
+                        }
+
+                        const roleInput = newRow.querySelector('input[name="creatorRoles[]"]');
+                        if (roleInput) {
+                            const newRoleId = `${namespace}-role-${getVisibleRows().length}`;
+                            roleInput.id = newRoleId;
+                            roleInput.value = '';
+                            const roleLabel = newRow.querySelector('label[data-creator-role-label]');
+                            if (roleLabel) {
+                                roleLabel.setAttribute('for', newRoleId);
                             }
                         }
 
                         return newRow;
                     };
 
-                    getVisibleRows().forEach((row) => attachDeleteHandler(row));
+                    const syncCreatorSelection = (row) => {
+                        const searchInput = row.querySelector('input[data-creator-search]');
+                        const hiddenIdInput = row.querySelector('input[data-creator-id]');
+                        if (!searchInput || !hiddenIdInput) {
+                            return;
+                        }
+
+                        const matchingOption = Array.from(document.querySelectorAll('#creator-people-options option')).find((option) => option.value === searchInput.value);
+                        hiddenIdInput.value = matchingOption?.dataset.personId || '';
+                    };
+
+                    const attachCreatorSearchHandlers = (row) => {
+                        const searchInput = row.querySelector('input[data-creator-search]');
+                        if (!searchInput) {
+                            return;
+                        }
+
+                        searchInput.addEventListener('input', () => syncCreatorSelection(row));
+                        searchInput.addEventListener('change', () => syncCreatorSelection(row));
+                    };
+
+                    getVisibleRows().forEach((row) => {
+                        attachDeleteHandler(row);
+                        attachCreatorSearchHandlers(row);
+                        syncCreatorSelection(row);
+                    });
 
                     const ensureRowPresent = () => {
                         if (getVisibleRows().length === 0) {
                             const row = createRow();
                             if (row) {
                                 attachDeleteHandler(row);
+                                attachCreatorSearchHandlers(row);
                                 rowsBody.insertBefore(row, templateRow);
                             }
                         }
@@ -258,6 +317,7 @@
                             const row = createRow();
                             if (row) {
                                 attachDeleteHandler(row);
+                                attachCreatorSearchHandlers(row);
                                 rowsBody.insertBefore(row, templateRow);
                             }
                         });

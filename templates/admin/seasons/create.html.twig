@@ -76,7 +76,7 @@
                         <tbody data-sponsorship-rows>
                         <tr class="bg-white border-b border-gray-100" data-sponsorship-row>
                             <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                <select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select name="sponsorshipSponsorIds[]" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Select a sponsor</option>
                                     {% for sponsor in sponsorsList %}
                                         <option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
@@ -89,7 +89,7 @@
                         </tr>
                         <tr class="hidden bg-white border-b border-gray-100" data-sponsorship-template>
                             <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                <select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select name="sponsorshipSponsorIds[]" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Select a sponsor</option>
                                     {% for sponsor in sponsorsList %}
                                         <option value="{{ sponsor.id }}">{{ sponsor.name }}</option>

@@ -42,9 +42,11 @@ class WorksController extends BaseController
         $creatorEntries = [];
         if ($work) {
             foreach ($work->getWorkCreators() as $wc) {
+                $person = $wc->person();
                 $creatorEntries[] = [
-                    'personId' => $wc->person()->getId(),
-                    'role'     => $wc->role(),
+                    'personId'   => $person->getId(),
+                    'personName' => $person->getName(),
+                    'role'       => $wc->role(),
                 ];
             }
         }

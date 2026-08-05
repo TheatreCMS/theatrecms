@@ -85,7 +85,7 @@
 
         <div>
             <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-            <select id="role" name="role" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select id="role" name="role" class="searchable-select w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 {% set selectedRole = old.role|default(userRole|default('user')) %}
                 <option value="user" {% if selectedRole == 'user' %}selected{% endif %} {% if currentUserId == user.id %}disabled{% endif %}>User</option>
                 <option value="admin" {% if selectedRole == 'admin' %}selected{% endif %}>Admin</option>

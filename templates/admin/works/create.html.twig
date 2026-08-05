@@ -81,7 +81,7 @@
                         <tbody data-creator-rows>
                         <tr class="bg-white border-b border-gray-100" data-creator-row>
                             <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select name="creatorIds[]" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Select a person</option>
                                     {% for p in people %}
                                         <option value="{{ p.id }}">{{ p.name }}</option>
@@ -100,7 +100,7 @@
                         </tr>
                         <tr class="hidden bg-white border-b border-gray-100" data-creator-template>
                             <th scope="row" class="px-4 py-3 font-medium text-gray-900">
-                                <select name="creatorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select name="creatorIds[]" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Select a person</option>
                                     {% for p in people %}
                                         <option value="{{ p.id }}">{{ p.name }}</option>

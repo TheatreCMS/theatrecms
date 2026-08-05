@@ -145,7 +145,7 @@
             <div>
                 <label for="perf-status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select name="status" id="perf-status"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="scheduled">Scheduled</option>
                     <option value="cancelled">Cancelled</option>
                 </select>
@@ -154,7 +154,7 @@
             <div>
                 <label for="perf-venue" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
                 <select name="venueId" id="perf-venue"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">— Default —</option>
                     {% for venue in venues %}
                         <option value="{{ venue.id }}">{{ venue.name }}</option>

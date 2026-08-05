@@ -94,7 +94,7 @@
 					<span class="text-red-500">*</span>
 				</label>
 				{% if seasons is not empty %}
-					<select name="seasonId" id="seasonId" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+					<select name="seasonId" id="seasonId" required class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
 						<option value="">Select a season</option>
 						{% for s in seasons %}
 							<option value="{{ s.id }}">{{ s.label|default(s.slug|default(s.id)) }}</option>
@@ -114,7 +114,7 @@
 				{% if venues is empty %}
 					<div class="text-xs text-gray-500 mt-1">No venues yet — add a venue from the Venues section before scheduling productions.</div>
 				{% else %}
-					<select name="venueId" id="venueId" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+					<select name="venueId" id="venueId" required class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
 						<option value="">Select a venue</option>
 						{% for v in venues %}
 							<option value="{{ v.id }}">{{ v.name }}</option>
@@ -209,7 +209,7 @@
 					<tbody>
 						<tr class="bg-neutral-primary-soft border-b  border-default">
 							<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-								<select aria-label="Person" class="w-full rounded-md border-gray-300 shadow-sm" name="creatives[][personId]">
+								<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="creatives[][personId]">
 									<option value="">Select a person</option>
 									{% for p in people %}
 										<option value="{{ p.id }}">{{ p.name }}</option>
@@ -255,7 +255,7 @@
 							<tbody data-sponsorship-rows>
 								<tr class="bg-white border-b border-gray-100" data-sponsorship-row>
 									<th scope="row" class="px-4 py-3 font-medium text-gray-900">
-										<select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+										<select name="sponsorshipSponsorIds[]" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
 											<option value="">Select a sponsor</option>
 											{% for sponsor in sponsorsList %}
 												<option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
@@ -268,7 +268,7 @@
 								</tr>
 								<tr class="hidden bg-white border-b border-gray-100" data-sponsorship-template>
 									<th scope="row" class="px-4 py-3 font-medium text-gray-900">
-										<select name="sponsorshipSponsorIds[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+										<select name="sponsorshipSponsorIds[]" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
 											<option value="">Select a sponsor</option>
 											{% for sponsor in sponsorsList %}
 												<option value="{{ sponsor.id }}">{{ sponsor.name }}</option>
