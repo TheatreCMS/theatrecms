@@ -216,7 +216,7 @@ class ProductionController extends BaseController
             'productionTeamIds' => [],
             'productionTeamRoles' => [],
             'sponsorshipSponsorIds' => [],
-            'venueId' => 0,
+            'venueId' => null,
         ]);
 
         /**
@@ -224,15 +224,18 @@ class ProductionController extends BaseController
          */
         $item = $this->repository->fetch($data['productionId']);
         $season = $this->entityManager->getRepository(Season::class)->find($data['seasonId']);
-        $venue = $this->entityManager->getRepository(Venue::class)->find($data['venueId']);
-        if (!$venue) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Unable to save production. Please check your input.',
-                ]);
+        $venue = null;
+        if (!empty($data['venueId'])) {
+            $venue = $this->entityManager->getRepository(Venue::class)->find((int)$data['venueId']);
+            if (!$venue) {
+                if ($request->getHeaderLine('HX-Request')) {
+                    return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                        'type'    => 'error',
+                        'message' => 'Unable to save production. Please check your input.',
+                    ]);
+                }
+                return $response->withStatus(400);
             }
-            return $response->withStatus(400);
         }
         $worksRepository = $this->entityManager->getRepository(Work::class);
 

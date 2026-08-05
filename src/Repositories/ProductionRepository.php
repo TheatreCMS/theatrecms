@@ -26,6 +26,7 @@ class ProductionRepository extends BaseRepository
         $args = array_merge([
             'name' => null,
             'seasonId' => null,
+            'venueId' => null,
             'opening' => null,
             'closing' => null,
             'description' => null,
@@ -54,14 +55,13 @@ class ProductionRepository extends BaseRepository
             throw new \InvalidArgumentException('Season not found.');
         }
 
+        $venue = null;
         $venueId = (int)($args['venueId'] ?? 0);
-        if (!$venueId) {
-            throw new \InvalidArgumentException('Venue ID is required.');
-        }
-
-        $venue = $this->em->getRepository(Venue::class)->find($venueId);
-        if (!$venue) {
-            throw new \InvalidArgumentException('Venue not found.');
+        if ($venueId > 0) {
+            $venue = $this->em->getRepository(Venue::class)->find($venueId);
+            if (!$venue) {
+                throw new \InvalidArgumentException('Venue not found.');
+            }
         }
 
         $production = new Production($name, $season);
