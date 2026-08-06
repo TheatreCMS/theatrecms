@@ -1,0 +1,60 @@
+<div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+	<h2 class="text-lg font-semibold text-gray-900">Add New Venue</h2>
+	<button type="button" onclick="document.getElementById('quick-create-modal').close()" class="text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Close">
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+	</button>
+</div>
+
+<div id="modal-flash" class="px-6 pt-4"></div>
+
+<form id="quick-create-form"
+      hx-post="/admin/venues/quick-create"
+      hx-target="#modal-flash"
+      hx-swap="innerHTML"
+      class="px-6 pb-6 space-y-4">
+	<div>
+		<label for="qc-name" class="block text-sm font-medium text-gray-700 mb-1">Venue Name <span class="text-red-500">*</span></label>
+		<input type="text" name="name" id="qc-name" required
+		       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+		       placeholder="e.g. The Mainstage Theater">
+	</div>
+
+	<div>
+		<label for="qc-address" class="block text-sm font-medium text-gray-700 mb-1">Street Address <span class="text-red-500">*</span></label>
+		<input type="text" name="address" id="qc-address" required
+		       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+		       placeholder="123 Main St">
+	</div>
+
+	<div class="grid grid-cols-2 gap-4">
+		<div>
+			<label for="qc-city" class="block text-sm font-medium text-gray-700 mb-1">City <span class="text-red-500">*</span></label>
+			<input type="text" name="city" id="qc-city" required
+			       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+		</div>
+		<div>
+			<label for="qc-state" class="block text-sm font-medium text-gray-700 mb-1">State <span class="text-red-500">*</span></label>
+			<input type="text" name="state" id="qc-state" required
+			       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+		</div>
+	</div>
+
+	<div class="w-1/2">
+		<label for="qc-postcode" class="block text-sm font-medium text-gray-700 mb-1">Postcode <span class="text-red-500">*</span></label>
+		<input type="text" name="postcode" id="qc-postcode" required
+		       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+	</div>
+
+	<p class="text-xs text-gray-500">Capacity, website, accessibility info, and other details can be added later from the Venues section.</p>
+
+	<div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+		<button type="button" onclick="document.getElementById('quick-create-modal').close()"
+		        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+			Cancel
+		</button>
+		<button type="submit"
+		        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+			Add Venue
+		</button>
+	</div>
+</form>
