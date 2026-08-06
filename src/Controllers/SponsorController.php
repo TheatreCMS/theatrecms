@@ -119,6 +119,45 @@ class SponsorController extends BaseController
         return $response->withHeader('Location', '/admin/sponsors');
     }
 
+    public function quickCreate(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/sponsors/_quick_create_modal.html.twig');
+    }
+
+    public function quickStore(Request $request, Response $response, array $args = []): Response
+    {
+        $data = $request->getParsedBody();
+        $name = trim($data['name'] ?? '');
+
+        if (empty($name)) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => 'A name is required to create a sponsor.',
+            ]);
+        }
+
+        $sponsor = $this->sponsorRepository->create([
+            'name'       => $name,
+            'websiteUrl' => trim($data['websiteUrl'] ?? '') ?: null,
+            'logoUrl'    => null,
+        ]);
+
+        $trigger = json_encode([
+            'entityCreated' => [
+                'id'   => $sponsor->getId(),
+                'name' => $sponsor->getName(),
+                'type' => 'sponsor',
+            ],
+        ]);
+
+        $response = $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+            'type'    => 'success',
+            'message' => $sponsor->getName() . ' was added.',
+        ]);
+
+        return $response->withHeader('HX-Trigger', $trigger);
+    }
+
     public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
