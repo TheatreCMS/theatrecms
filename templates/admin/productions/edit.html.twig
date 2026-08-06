@@ -84,19 +84,25 @@
 
 					{% if works is empty %}
 						<div class="md:col-span-2 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-							<div class="flex">
-								<div class="flex-shrink-0">
-									<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
-										<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
-									</svg>
-								</div>
-								<div class="ml-3">
-									<h3 class="text-sm font-medium text-yellow-800">No works available</h3>
-									<div class="mt-1 text-sm text-yellow-700">
-										There are no works in the system to attach to this production. You can add works from the Works
-										                                        section before creating a production.
+							<div class="flex items-start justify-between gap-4">
+								<div class="flex gap-3">
+									<div class="flex-shrink-0">
+										<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
+											<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+										</svg>
+									</div>
+									<div class="ml-3">
+										<h3 class="text-sm font-medium text-yellow-800">No works available</h3>
+										<div class="mt-1 text-sm text-yellow-700">There are no works in the system yet.</div>
 									</div>
 								</div>
+								<button type="button"
+								        class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200"
+								        hx-get="/admin/works/quick-create"
+								        hx-target="#quick-create-modal-content"
+								        hx-swap="innerHTML">
+									+ Create First Work
+								</button>
 							</div>
 						</div>
 					{% endif %}
@@ -129,10 +135,19 @@
 					</div>
 
 					<div class="md:col-span-2">
-						<label for="venueId" class="block text-sm font-medium text-gray-700 mb-1">Performance Venue</label>
+						<div class="flex items-center justify-between mb-1">
+							<label for="venueId" class="block text-sm font-medium text-gray-700">Performance Venue</label>
+							<button type="button"
+							        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+							        hx-get="/admin/venues/quick-create"
+							        hx-target="#quick-create-modal-content"
+							        hx-swap="innerHTML">
+								+ New Venue
+							</button>
+						</div>
 						<p class="text-xs text-gray-500 mb-2">Optional. Leave this blank if your organization only uses one performance space or if you do not need venue-level tracking.</p>
 						{% if venues is empty %}
-							<div class="text-xs text-gray-500 mt-1">No venues available. You can keep this production without a venue and assign one later.</div>
+							<div id="venueId-empty-placeholder" class="text-xs text-gray-500 mt-1">No venues available. You can keep this production without a venue and assign one later.</div>
 						{% else %}
 							<select name="venueId" id="venueId" class="searchable-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
 								<option value="">Select a venue</option>
@@ -186,7 +201,16 @@
 					</div>
 
 					<div class="md:col-span-2">
-						<label for="works" class="block text-sm font-medium text-gray-700 mb-1">Works</label>
+						<div class="flex items-center justify-between mb-1">
+							<label for="works" class="block text-sm font-medium text-gray-700">Works</label>
+							<button type="button"
+							        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+							        hx-get="/admin/works/quick-create"
+							        hx-target="#quick-create-modal-content"
+							        hx-swap="innerHTML">
+								+ New Work
+							</button>
+						</div>
 						<select multiple="multiple" name="works[]" id="works" class="w-full rounded-md border-gray-300 shadow-sm">
 							{% for w in works %}
 								<option value="{{ w.id }}" {% if w.id in selectedWorkIds %} selected {% endif %}>{{ w.title }}</option>
@@ -205,19 +229,26 @@
 
 				{% if people is empty %}
 					<div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-						<div class="flex">
-							<div class="flex-shrink-0">
-								<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
-									<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
-								</svg>
-							</div>
-							<div class="ml-3">
-								<h3 class="text-sm font-medium text-yellow-800">No people available</h3>
-								<div class="mt-1 text-sm text-yellow-700">
-									There are no people in the system. Add people from the People section before
-									                                    assigning creatives or performers.
+						<div class="flex items-start justify-between gap-4">
+							<div class="flex gap-3">
+								<div class="flex-shrink-0">
+									<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
+										<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
+									</svg>
+								</div>
+								<div class="ml-3">
+									<h3 class="text-sm font-medium text-yellow-800">No people available</h3>
+									<div class="mt-1 text-sm text-yellow-700">There are no people in the system yet.</div>
 								</div>
 							</div>
+							<button type="button"
+							        class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200"
+							        onclick="document.body.dataset.qcPersonTarget = 'performer'"
+							        hx-get="/admin/people/quick-create"
+							        hx-target="#quick-create-modal-content"
+							        hx-swap="innerHTML">
+								+ Add First Person
+							</button>
 						</div>
 					</div>
 				{% endif %}
@@ -236,30 +267,22 @@
 										Role
 									</th>
 									<th>
-										<button type="button" id="add-performer">Add Performer</button>
+										<div class="flex items-center justify-end gap-2 px-2">
+											<button type="button"
+											        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+											        onclick="document.body.dataset.qcPersonTarget = 'performer'"
+											        hx-get="/admin/people/quick-create"
+											        hx-target="#quick-create-modal-content"
+											        hx-swap="innerHTML">
+												+ New Person
+											</button>
+											<button type="button" id="add-performer" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">Add Performer</button>
+										</div>
 									</th>
 								</tr>
 							</thead>
 							<tbody data-performer-rows>
-								{% if performers is empty %}
-									<tr class="bg-neutral-primary-soft border-b border-default" data-performer-row>
-										<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
-											<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="performerIds[]">
-												<option value="">Select a person</option>
-												{% for p in people %}
-													<option value="{{ p.id }}">{{ p.name }}</option>
-												{% endfor %}
-											</select>
-										</th>
-										<td class="px-6 py-4">
-											<label class="sr-only" for="performer-role-empty">Role</label>
-											<input class="w-full rounded-md border-gray-300 shadow-sm" type="text" id="performer-role-empty" name="performerRoles[]" placeholder="e.g. Hamlet">
-										</td>
-										<td class="px-6 py-4 text-right">
-											<a href="#" class="delete-performer font-medium text-fg-brand hover:underline">Delete</a>
-										</td>
-									</tr>
-								{% else %}
+								{% if performers is not empty %}
 									{% for p in performers %}
 										<tr class="bg-neutral-primary-soft border-b border-default" data-performer-row>
 											<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
@@ -315,7 +338,17 @@
 										Role
 									</th>
 									<th>
-										<button type="button" id="add-productionTeam">Add Member</button>
+										<div class="flex items-center justify-end gap-2 px-2">
+											<button type="button"
+											        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+											        onclick="document.body.dataset.qcPersonTarget = 'productionTeam'"
+											        hx-get="/admin/people/quick-create"
+											        hx-target="#quick-create-modal-content"
+											        hx-swap="innerHTML">
+												+ New Person
+											</button>
+											<button type="button" id="add-productionTeam" class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">Add Member</button>
+										</div>
 									</th>
 								</tr>
 							</thead>
@@ -395,14 +428,23 @@
 							<h2 class="text-lg font-semibold text-gray-900 mb-1">Production Sponsorships</h2>
 							<p class="text-sm text-gray-600">Select sponsors that are attached to this production.</p>
 						</div>
-						<button type="button" id="add-sponsorship" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if sponsorsList is empty %}opacity-50 cursor-not-allowed{% endif %}" {% if sponsorsList is empty %} disabled {% endif %}>
-							Add Sponsorship
-						</button>
+						<div class="flex items-center gap-2">
+							<button type="button"
+							        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+							        hx-get="/admin/sponsors/quick-create"
+							        hx-target="#quick-create-modal-content"
+							        hx-swap="innerHTML">
+								+ New Sponsor
+							</button>
+							<button type="button" id="add-sponsorship" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if sponsorsList is empty %}opacity-50 cursor-not-allowed{% endif %}" {% if sponsorsList is empty %} disabled {% endif %}>
+								Add Sponsorship
+							</button>
+						</div>
 					</div>
 
 					{% if sponsorsList is empty %}
-						<div class="rounded-md bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
-							There are no sponsors yet. Add sponsors from the Sponsors section before assigning them here.
+						<div id="sponsorship-empty-placeholder" class="rounded-md bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
+							No sponsors yet. Use the <strong>+ New Sponsor</strong> button above to add one.
 						</div>
 					{% else %}
 						<div class="relative overflow-x-auto bg-white border border-gray-200 shadow-sm rounded-md">
@@ -520,7 +562,8 @@ const uploadFeaturedImagePreview = document.getElementById('upload-featured-imag
 
 const editorData = {{ editorDescription is not null ? editorDescription|raw : 'null' }};
 
-const setupDynamicRows = (namespace) => {
+const setupDynamicRows = (namespace, options) => {
+const requireMinimumRow = !options || options.requireMinimumRow !== false;
 const rowsBody = document.querySelector (`tbody[data-${namespace}-rows]`);
 const templateRow = rowsBody ? rowsBody.querySelector (`tr[data-${namespace}-template]`) : null;
 const addButton = document.getElementById (`add-${namespace}`);
@@ -551,7 +594,7 @@ return;
 deleteLink.addEventListener('click', function (event) {
 event.preventDefault();
 const visibleRows = getVisibleRows();
-if (visibleRows.length<= 1) {
+if (requireMinimumRow && visibleRows.length<= 1) {
                                 resetRowInputs(row);
                                 return;
                             }
@@ -599,7 +642,9 @@ rowsBody.insertBefore(row, templateRow);
 }
 };
 
+if (requireMinimumRow) {
 ensureRowPresent();
+}
 
 if (addButton) {
 addButton.addEventListener('click', function (event) {
@@ -613,7 +658,7 @@ rowsBody.insertBefore(row, templateRow);
 }
 };
 
-setupDynamicRows('performer');
+setupDynamicRows('performer', {requireMinimumRow: false});
 setupDynamicRows('productionTeam');
 setupDynamicRows('sponsorship');
 
@@ -680,7 +725,14 @@ isSaving = false;
 });
 });
 
-form.addEventListener('htmx:afterRequest', function () {
+form.addEventListener('htmx:afterRequest', function (event) {
+// This listener is attached to the form to catch its own hx-post submission,
+// but htmx:afterRequest bubbles from any descendant — including the "+ New …"
+// quick-create buttons nested inside this form. Ignore those so quick-create
+// clicks don't yank the page up to #flash-messages.
+if (event.detail && event.detail.elt !== form) {
+return;
+}
 isSaving = false;
 document.getElementById('flash-messages') ?. scrollIntoView({behavior: 'smooth', block: 'nearest'});
 });
@@ -695,4 +747,23 @@ byUrl: '/admin/productions/images/fetch'
 }));
 });
 </script>
+<script type="module">
+	import {initQuickCreateHandlers, buildVenueFallback, buildSponsorshipTableFallback} from '/assets/js/production-quick-create.js';
+
+	initQuickCreateHandlers({
+		person: {
+			type: 'rowset-group',
+			contextAttr: 'qcPersonTarget',
+			candidates: [
+				{namespace: 'performer', selectName: 'performerIds[]'},
+				{namespace: 'productionTeam', selectName: 'productionTeamIds[]'},
+			],
+		},
+		work: {type: 'multiselect', id: 'works'},
+		venue: {type: 'single', selectName: 'venueId', buildFallback: buildVenueFallback},
+		sponsor: {type: 'rowset', namespace: 'sponsorship', selectName: 'sponsorshipSponsorIds[]', buildFallback: buildSponsorshipTableFallback},
+	});
+</script>
+
+{% include 'admin/productions/_quick_create_modal.html.twig' %}
 {% endblock %}
