@@ -20,6 +20,7 @@ const ROUTES_DIR = APP_DIR . '/routes';
 require_once ROOT_DIR . "/vendor/autoload.php";
 
 use TheatreCMS\Controllers\LoginController;
+use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
@@ -29,6 +30,7 @@ use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Csrf\Guard;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
@@ -42,6 +44,35 @@ AppFactory::setContainer($container);
 $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
+
+// Slim doesn't treat "/admin" and "/admin/" as the same route by default, so a
+// trailing slash 404s even though the non-trailing-slash route exists. Normalize
+// it here: redirect GET requests to the canonical (no trailing slash) URL, and
+// just rewrite the URI in place for other methods so a submitted form isn't lost.
+$app->add(function (Request $request, RequestHandlerInterface $handler) {
+    $uri = $request->getUri();
+    $path = $uri->getPath();
+
+    if ($path !== '/' && str_ends_with($path, '/')) {
+        $newPath = rtrim($path, '/');
+
+        if ($request->getMethod() === 'GET') {
+            // Redirect with a path-only (no scheme/host/port) Location so this
+            // still works correctly behind a reverse proxy (e.g. DDEV) that may
+            // not report the externally-visible scheme/port back to Slim.
+            $query = $uri->getQuery();
+            $location = $newPath . ($query !== '' ? '?' . $query : '');
+
+            return (new \Slim\Psr7\Response())
+                ->withHeader('Location', $location)
+                ->withStatus(301);
+        }
+
+        $request = $request->withUri($uri->withPath($newPath));
+    }
+
+    return $handler->handle($request);
+});
 
 $resolver = $container->get(TemplateResolver::class);
 $contentTypes = $container->get(ContentTypeRegistry::class);
@@ -80,7 +111,8 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
     $twig = $container->get(Twig::class);
 
     return $twig->render($response, 'admin/index.html.twig');
-})->add(new RequireTwigMiddleware($container));
+})->add(new RequireTwigMiddleware($container))
+  ->add($container->get(AuthMiddleware::class));
 
 require ROUTES_DIR . '/frontend/pages.php';
 
