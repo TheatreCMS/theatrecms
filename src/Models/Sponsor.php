@@ -21,10 +21,10 @@ class Sponsor extends ModelBase
     private string $name;
 
     #[Column(name: 'logo_url', type: 'string', nullable: true)]
-    private string $logoUrl;
+    private ?string $logoUrl = null;
 
     #[Column(name: 'website_url', type: 'string', nullable: true)]
-    private string $websiteUrl;
+    private ?string $websiteUrl = null;
 
     #[OneToMany(mappedBy: 'sponsor', targetEntity: Sponsorship::class)]
     private Collection $sponsorships;
@@ -51,24 +51,24 @@ class Sponsor extends ModelBase
         return $this;
     }
 
-    public function getLogoUrl(): string
+    public function getLogoUrl(): ?string
     {
         return $this->logoUrl;
     }
 
-    public function setLogoUrl(string $logoUrl): self
+    public function setLogoUrl(?string $logoUrl): self
     {
         $this->logoUrl = $logoUrl;
 
         return $this;
     }
 
-    public function getWebsiteUrl(): string
+    public function getWebsiteUrl(): ?string
     {
         return $this->websiteUrl;
     }
 
-    public function setWebsiteUrl(string $websiteUrl): self
+    public function setWebsiteUrl(?string $websiteUrl): self
     {
         $this->websiteUrl = $websiteUrl;
 

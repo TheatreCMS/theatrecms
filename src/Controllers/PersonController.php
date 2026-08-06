@@ -85,6 +85,45 @@ class PersonController extends BaseController
         return $response->withHeader('Location', '/admin/people');
     }
 
+    public function quickCreate(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/people/_quick_create_modal.html.twig');
+    }
+
+    public function quickStore(Request $request, Response $response, array $args = []): Response
+    {
+        $data = $request->getParsedBody();
+
+        if (empty($data)) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => 'Unable to create person. Please check your input.',
+            ]);
+        }
+
+        $data = $this->parseArgs($data, [
+            'firstName' => null,
+            'lastName'  => null,
+        ]);
+
+        $person = $this->repository->create($data);
+
+        $trigger = json_encode([
+            'entityCreated' => [
+                'id'   => $person->getId(),
+                'name' => $person->getName(),
+                'type' => 'person',
+            ],
+        ]);
+
+        $response = $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+            'type'    => 'success',
+            'message' => $person->getName() . ' was added.',
+        ]);
+
+        return $response->withHeader('HX-Trigger', $trigger);
+    }
+
     public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();

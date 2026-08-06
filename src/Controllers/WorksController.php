@@ -88,6 +88,59 @@ class WorksController extends BaseController
         return $response->withHeader('Location', '/admin/works');
     }
 
+    public function quickCreate(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/works/_quick_create_modal.html.twig', [
+            'people' => $this->personRepo->fetchAll(),
+        ]);
+    }
+
+    public function quickStore(Request $request, Response $response, array $args = []): Response
+    {
+        $data = $request->getParsedBody();
+        $title = trim($data['title'] ?? '');
+
+        if (empty($title)) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => 'A title is required to create a work.',
+            ]);
+        }
+
+        $workData = ['title' => $title];
+        $creatorId = intval($data['creatorId'] ?? 0);
+        if ($creatorId > 0) {
+            $workData['creators'] = [[
+                'id'   => $creatorId,
+                'role' => trim($data['creatorRole'] ?? ''),
+            ]];
+        }
+
+        $work = $this->repository->create($workData);
+
+        if (!$work instanceof Work) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => 'Unable to create work. Please try again.',
+            ]);
+        }
+
+        $trigger = json_encode([
+            'entityCreated' => [
+                'id'   => $work->getId(),
+                'name' => $work->getTitle(),
+                'type' => 'work',
+            ],
+        ]);
+
+        $response = $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+            'type'    => 'success',
+            'message' => '"' . $work->getTitle() . '" was added.',
+        ]);
+
+        return $response->withHeader('HX-Trigger', $trigger);
+    }
+
     public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();

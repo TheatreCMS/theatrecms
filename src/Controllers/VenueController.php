@@ -93,6 +93,48 @@ class VenueController extends BaseController
         return $response->withHeader('Location', '/admin/venues');
     }
 
+    public function quickCreate(Request $request, Response $response, array $args = []): Response
+    {
+        return $this->twig->render($response, 'admin/venues/_quick_create_modal.html.twig');
+    }
+
+    public function quickStore(Request $request, Response $response, array $args = []): Response
+    {
+        $data = $request->getParsedBody();
+
+        if (empty($data)) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => 'Unable to create venue. Please check your input.',
+            ]);
+        }
+
+        $data = $this->parseArgs($data, [
+            'name'     => null,
+            'address'  => null,
+            'city'     => null,
+            'state'    => null,
+            'postcode' => null,
+        ]);
+
+        $venue = $this->repository->create($data);
+
+        $trigger = json_encode([
+            'entityCreated' => [
+                'id'   => $venue->getId(),
+                'name' => $venue->getName(),
+                'type' => 'venue',
+            ],
+        ]);
+
+        $response = $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+            'type'    => 'success',
+            'message' => $venue->getName() . ' was added.',
+        ]);
+
+        return $response->withHeader('HX-Trigger', $trigger);
+    }
+
     public function update(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();

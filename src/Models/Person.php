@@ -70,13 +70,13 @@ class Person extends ModelBase implements JsonSerializable
         return $this;
     }
 
-    public function setBiography(string $biography): self
+    public function setBiography(?string $biography): self
     {
         $this->biography = $biography;
         return $this;
     }
 
-    public function setHeadshotUrl(string $headshotUrl): self
+    public function setHeadshotUrl(?string $headshotUrl): self
     {
         $this->headshotUrl = $headshotUrl;
         return $this;

@@ -166,10 +166,43 @@ class ProductionController extends BaseController
         $data = $this->parseArgs($data, [
             'sponsorshipSponsorIds' => [],
             'venueId' => null,
+            'creativeIds' => [],
+            'creativeRoles' => [],
+            'performerIds' => [],
+            'performerRoles' => [],
         ]);
 
         $production = $this->repository->create($data);
         $this->handleFeaturedImageUpload($request, $production);
+
+        $personRepository = $this->entityManager->getRepository(Person::class);
+
+        $attachPeople = function (array $ids, array $roles, callable $add) use ($personRepository) {
+            foreach ($ids as $idx => $personId) {
+                if (empty($personId)) {
+                    continue;
+                }
+
+                $person = $personRepository->find($personId);
+                if (!$person) {
+                    continue;
+                }
+
+                $add($person, $roles[$idx] ?? null);
+            }
+        };
+
+        $attachPeople(
+            is_array($data['creativeIds']) ? $data['creativeIds'] : [],
+            is_array($data['creativeRoles']) ? $data['creativeRoles'] : [],
+            fn (Person $person, ?string $role) => $production->addToCreativeTeam($person, $role)
+        );
+
+        $attachPeople(
+            is_array($data['performerIds']) ? $data['performerIds'] : [],
+            is_array($data['performerRoles']) ? $data['performerRoles'] : [],
+            fn (Person $person, ?string $role) => $production->addPerformer($person, $role)
+        );
 
         $this->syncSponsorships($production, $data['sponsorshipSponsorIds']);
         $this->entityManager->flush();
