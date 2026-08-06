@@ -195,12 +195,10 @@
                     newRow.setAttribute(`data-${namespace}-row`, '');
                     newRow.classList.remove('hidden');
 
-                    const select = newRow.querySelector('select');
-                    if (select) {
-                        select.value = '';
-                    }
-
-                    const input = newRow.querySelector('input[type="text"]');
+                    // Named inputs are the row's own fields (e.g. role text); the searchable-select
+                    // widget's generated text box has no name, so this reliably finds the former
+                    // even before/after that widget exists on the row.
+                    const input = newRow.querySelector('input[type="text"][name]');
                     if (input) {
                         const newId = `${namespace}-role-${getVisibleRows().length}`;
                         input.id = newId;
@@ -208,6 +206,17 @@
                         const label = newRow.querySelector('label');
                         if (label) {
                             label.setAttribute('for', newId);
+                        }
+                    }
+
+                    const select = newRow.querySelector('select');
+                    if (select) {
+                        select.value = '';
+                        // The cloned <select> carries the template's HTML but none of the searchable
+                        // widget's event listeners (cloneNode never copies those), so typing/picking
+                        // a value here would silently do nothing without re-enhancing it fresh.
+                        if (window.enhanceSearchableSelect) {
+                            window.enhanceSearchableSelect(select);
                         }
                     }
 
