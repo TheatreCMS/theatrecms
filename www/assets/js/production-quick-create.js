@@ -76,6 +76,17 @@ function appendOptionToNamespace(namespace, selectName, id, name) {
     });
 }
 
+// The "Add …" button starts disabled when its source list (e.g. people) is
+// empty. Having just created a record for that list, re-enable it.
+function enableAddButton(namespace) {
+    const addButton = document.getElementById(`add-${namespace}`);
+    if (addButton && addButton.disabled) {
+        addButton.disabled = false;
+        addButton.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    return addButton;
+}
+
 // Selects the newly created record into the first row that doesn't already have a
 // selection; if every row is taken, a new row is added (via the section's own
 // "Add …" button) and the selection is placed there instead of overwriting an
@@ -86,14 +97,7 @@ function selectIntoNamespace(namespace, selectName, id, name) {
         return;
     }
 
-    // The "Add …" button starts disabled when its source list (e.g. people) is
-    // empty. Having just created a record for that list, re-enable it before
-    // possibly relying on it below to add a row.
-    const addButton = document.getElementById(`add-${namespace}`);
-    if (addButton && addButton.disabled) {
-        addButton.disabled = false;
-        addButton.classList.remove('opacity-50', 'cursor-not-allowed');
-    }
+    const addButton = enableAddButton(namespace);
 
     const rowSelects = Array.from(rowsBody.querySelectorAll(`tr[data-${namespace}-row] select[name="${selectName}"]`));
     let target = rowSelects.find((select) => !select.value);
@@ -192,6 +196,19 @@ export function buildSponsorshipTableFallback(id, name) {
     }
 }
 
+// Removes the "No works/people available" informational notice once its list is
+// no longer actually empty. Venue and sponsor have no separate notice element —
+// their buildFallback already replaces the notice itself with a real field.
+function hideEmptyNotice(emptyNoticeId) {
+    if (!emptyNoticeId) {
+        return;
+    }
+    const notice = document.getElementById(emptyNoticeId);
+    if (notice) {
+        notice.remove();
+    }
+}
+
 function applyHandler(handler, id, name) {
     if (handler.type === 'single') {
         populateSingleSelect(handler.selectName, id, name, handler.buildFallback);
@@ -203,19 +220,23 @@ function applyHandler(handler, id, name) {
             if (typeof handler.buildFallback === 'function') {
                 handler.buildFallback(id, name);
             }
+            hideEmptyNotice(handler.emptyNoticeId);
             return;
         }
         appendOptionToNamespace(handler.namespace, handler.selectName, id, name);
         selectIntoNamespace(handler.namespace, handler.selectName, id, name);
     } else if (handler.type === 'rowset-group') {
+        // Make the new person available (and pickable) in every section they
+        // could belong to, and unlock each section's "Add …" button now that a
+        // person exists — but don't guess which section they're for by adding
+        // a row ourselves. The user picks that explicitly.
         handler.candidates.forEach((candidate) => {
             appendOptionToNamespace(candidate.namespace, candidate.selectName, id, name);
+            enableAddButton(candidate.namespace);
         });
-
-        const contextValue = handler.contextAttr ? document.body.dataset[handler.contextAttr] : null;
-        const target = handler.candidates.find((candidate) => candidate.namespace === contextValue) || handler.candidates[0];
-        selectIntoNamespace(target.namespace, target.selectName, id, name);
     }
+
+    hideEmptyNotice(handler.emptyNoticeId);
 }
 
 // The project pins htmx 1.9.2, which predates the hx-on:<event> / hx-on::<htmx-event>

@@ -141,7 +141,7 @@
 				</div>
 
 				{% if works is empty %}
-					<div class="rounded-md bg-blue-50 p-4 border border-blue-200">
+					<div id="works-empty-notice" class="rounded-md bg-blue-50 p-4 border border-blue-200">
 						<div class="flex gap-3">
 							<div class="flex-shrink-0">
 								<svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -241,7 +241,7 @@
 				</div>
 
 				{% if people is empty %}
-					<div class="rounded-md bg-blue-50 p-4 border border-blue-200">
+					<div id="people-empty-notice" class="rounded-md bg-blue-50 p-4 border border-blue-200">
 						<div class="flex gap-3">
 							<div class="flex-shrink-0">
 								<svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -418,7 +418,7 @@
 			<a href="/{{ base_path|default('') }}admin/productions" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
 				Cancel
 			</a>
-			<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+			<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if seasons is empty %}opacity-50 cursor-not-allowed{% endif %}" {% if seasons is empty %} disabled title="Create a season first before you can create a production." {% endif %}>
 				Create Production
 			</button>
 		</div>
@@ -636,8 +636,9 @@ byUrl: '/admin/productions/images/fetch'
 				{namespace: 'creative', selectName: 'creativeIds[]'},
 				{namespace: 'performer', selectName: 'performerIds[]'},
 			],
+			emptyNoticeId: 'people-empty-notice',
 		},
-		work: {type: 'rowset', namespace: 'work', selectName: 'works[]'},
+		work: {type: 'rowset', namespace: 'work', selectName: 'works[]', emptyNoticeId: 'works-empty-notice'},
 		venue: {type: 'single', selectName: 'venueId', buildFallback: buildVenueFallback},
 		sponsor: {type: 'rowset', namespace: 'sponsorship', selectName: 'sponsorshipSponsorIds[]', buildFallback: buildSponsorshipTableFallback},
 	});

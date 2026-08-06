@@ -70,7 +70,9 @@ class ProductionController extends BaseController
         return $this->twig->render(
             $response,
             'admin/productions/index.html.twig',
-            $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions')
+            $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions', [
+                'seasons' => $this->seasonRepo->fetchAll(),
+            ])
         );
     }
 
