@@ -9,7 +9,7 @@ class ThemeManager
 {
     private string $themesDir;
     private string $activeTheme;
-    private array $themeData = [];
+    private array  $themeData = [];
 
     public function __construct(string $themesDir, string $activeTheme = 'default')
     {
