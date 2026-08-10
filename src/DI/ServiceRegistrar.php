@@ -46,6 +46,7 @@ use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\MenuExtension;
+use TheatreCMS\Twig\ThemeHeadExtension;
 use Delight\Auth\Auth;
 
 /**
@@ -102,6 +103,7 @@ class ServiceRegistrar
             return new ThemeManager($themesDir, $activeTheme);
         });
 
+        //initialize Twig and configure extensions
         $container->set(Twig::class, static function (ContainerInterface $c): Twig {
             $settings = $c->get('settings');
             $viewSettings = $settings['view'] ?? [];
@@ -121,6 +123,7 @@ class ServiceRegistrar
             $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
+            $twig->addExtension(new ThemeHeadExtension());
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $auth = $c->get(Auth::class);

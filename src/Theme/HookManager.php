@@ -9,6 +9,11 @@ class HookManager
      */
     private array $filters = [];
 
+    /**
+     * @var array<string, array<int, callable[]>>
+     */
+    private array $actions = [];
+
     private static ?self $instance = null;
 
     public static function setInstance(self $instance): void
@@ -59,5 +64,34 @@ class HookManager
         }
 
         return $value;
+    }
+
+    public function addAction(string $tag, callable $callback, int $priority = 10): void
+    {
+        if (!isset($this->actions[$tag])) {
+            $this->actions[$tag] = [];
+        }
+
+        if (!isset($this->actions[$tag][$priority])) {
+            $this->actions[$tag][$priority] = [];
+        }
+
+        $this->actions[$tag][$priority][] = $callback;
+    }
+
+    public function doAction(string $tag, mixed ...$args): void
+    {
+        if (!isset($this->actions[$tag])) {
+            return;
+        }
+
+        $callbacks = $this->actions[$tag];
+        ksort($callbacks);
+
+        foreach ($callbacks as $priority => $handlers) {
+            foreach ($handlers as $handler) {
+                $handler(...$args);
+            }
+        }
     }
 }
