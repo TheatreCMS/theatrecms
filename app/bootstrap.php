@@ -46,12 +46,13 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
         new ArrayAdapter() :
         new FilesystemAdapter(directory: $settings['doctrine']['cache_dir']);
 
-    $config = ORMSetup::createAttributeMetadataConfiguration(
+    $config = ORMSetup::createAttributeMetadataConfig(
         $settings['doctrine']['metadata_dirs'],
         $settings['doctrine']['dev_mode'],
         null,
         $cache
     );
+    $config->enableNativeLazyObjects(true);
 
     $connection = DriverManager::getConnection($settings['doctrine']['connection']);
 
