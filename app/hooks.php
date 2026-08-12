@@ -30,3 +30,30 @@ if (!function_exists('apply_filters')) {
         return HookManager::getInstance()->applyFilters($tag, $value, ...$args);
     }
 }
+
+if (!function_exists('add_action')) {
+    /**
+     * Register a callback to run when an action tag is executed.
+     *
+     * @param string   $tag
+     * @param callable $callback
+     * @param int      $priority
+     */
+    function add_action(string $tag, callable $callback, int $priority = 10): void
+    {
+        HookManager::getInstance()->addAction($tag, $callback, $priority);
+    }
+}
+
+if (!function_exists('do_action')) {
+    /**
+     * Execute callbacks registered against the provided tag.
+     *
+     * @param string $tag
+     * @param mixed  ...$args
+     */
+    function do_action(string $tag, mixed ...$args): void
+    {
+        HookManager::getInstance()->doAction($tag, ...$args);
+    }
+}
