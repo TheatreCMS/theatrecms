@@ -30,7 +30,7 @@
         "guzzlehttp/guzzle": "^7.10",
         "slim/twig-view": "^3.4",
         "delight-im/auth": "^9.0",
-        "clubdeuce/schema-php": "^0.2"
+        "clubdeuce/schema-php": "^0.3"
     },
     "require-dev": {
         "consolidation/robo": "^5.1",

@@ -42,6 +42,7 @@ use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
+use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\EditorJsExtension;
@@ -76,6 +77,14 @@ class ServiceRegistrar
         });
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
+
+        $container->set(StructuredDataBuilder::class, static function (ContainerInterface $c): StructuredDataBuilder {
+            return new StructuredDataBuilder($c->get(SiteSettings::class));
+        });
+
+        $container->set(ThemeHeadExtension::class, static function (ContainerInterface $c): ThemeHeadExtension {
+            return new ThemeHeadExtension($c->get(StructuredDataBuilder::class));
+        });
 
         $container->set(CapabilityRegistry::class, static fn(): CapabilityRegistry => new CapabilityRegistry());
 
@@ -123,7 +132,7 @@ class ServiceRegistrar
             $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
-            $twig->addExtension(new ThemeHeadExtension());
+            $twig->addExtension($c->get(ThemeHeadExtension::class));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $auth = $c->get(Auth::class);

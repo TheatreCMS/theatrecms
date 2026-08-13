@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "33a5b9ae61f62054cbfebc36f42c3671",
+    "content-hash": "b7227111c65a5f0b9f4fa2fa8ecae246",
     "packages": [
         {
             "name": "clubdeuce/schema-php",
-            "version": "0.2.0",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/clubdeuce/schema-php.git",
-                "reference": "3e1a592765fa65a2df8ed1eb8b0e4bf903533fef"
+                "reference": "07bf28eb6d784f2f7f12939023bd5642f5533572"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/clubdeuce/schema-php/zipball/3e1a592765fa65a2df8ed1eb8b0e4bf903533fef",
-                "reference": "3e1a592765fa65a2df8ed1eb8b0e4bf903533fef",
+                "url": "https://api.github.com/repos/clubdeuce/schema-php/zipball/07bf28eb6d784f2f7f12939023bd5642f5533572",
+                "reference": "07bf28eb6d784f2f7f12939023bd5642f5533572",
                 "shasum": ""
             },
             "require": {
@@ -39,9 +39,9 @@
             "description": "A PHP library for Schema.org",
             "support": {
                 "issues": "https://github.com/clubdeuce/schema-php/issues",
-                "source": "https://github.com/clubdeuce/schema-php/tree/0.2.0"
+                "source": "https://github.com/clubdeuce/schema-php/tree/0.3.0"
             },
-            "time": "2026-03-04T18:26:45+00:00"
+            "time": "2026-08-13T19:08:45+00:00"
         },
         {
             "name": "delight-im/auth",
@@ -7207,5 +7207,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
