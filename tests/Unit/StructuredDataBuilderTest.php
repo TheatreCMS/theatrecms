@@ -11,6 +11,7 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
+use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\StructuredDataBuilder;
 
 class StructuredDataBuilderTest extends TestCase
@@ -20,7 +21,7 @@ class StructuredDataBuilderTest extends TestCase
         $siteSettings = $this->createStub(SiteSettings::class);
         $siteSettings->method('get')->willReturn('https://example.com');
 
-        return new StructuredDataBuilder($siteSettings);
+        return new StructuredDataBuilder($siteSettings, new EditorJsHtmlConverter());
     }
 
     private function makePerson(string $first, string $last, string $slug): Person
@@ -76,6 +77,12 @@ class StructuredDataBuilderTest extends TestCase
         $production = new Production('Hamlet', $season, $work);
         $production->setSlug('hamlet');
         $production->setExcerpt('The Prince of Denmark returns.');
+        $production->setDescription(json_encode([
+            'blocks' => [
+                ['type' => 'paragraph', 'data' => ['text' => 'The Prince of Denmark returns.']],
+                ['type' => 'paragraph', 'data' => ['text' => 'A tale of <b>revenge</b> and madness.']],
+            ],
+        ]));
         $production->setOpening(new \DateTime('2026-06-01'));
         $production->setClosing(new \DateTime('2026-06-30'));
         $production->setTicketPurchaseUrl('https://example.com/tickets/hamlet');
@@ -101,6 +108,10 @@ class StructuredDataBuilderTest extends TestCase
         $this->assertEquals('TheaterEvent', $schema['@type']);
         $this->assertEquals('Hamlet', $schema['name']);
         $this->assertEquals('https://example.com/seasons/2026/hamlet', $schema['url']);
+        $this->assertEquals(
+            "The Prince of Denmark returns.\n\nA tale of revenge and madness.",
+            $schema['description']
+        );
         $this->assertCount(1, $schema['workPerformed']);
         $this->assertEquals('Hamlet', $schema['workPerformed'][0]['name']);
         $this->assertEquals('Jane Doe', $schema['performers'][0]['name']);

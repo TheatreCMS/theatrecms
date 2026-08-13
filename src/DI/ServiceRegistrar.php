@@ -78,8 +78,10 @@ class ServiceRegistrar
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
+        $container->set(EditorJsHtmlConverter::class, static fn(): EditorJsHtmlConverter => new EditorJsHtmlConverter());
+
         $container->set(StructuredDataBuilder::class, static function (ContainerInterface $c): StructuredDataBuilder {
-            return new StructuredDataBuilder($c->get(SiteSettings::class));
+            return new StructuredDataBuilder($c->get(SiteSettings::class), $c->get(EditorJsHtmlConverter::class));
         });
 
         $container->set(ThemeHeadExtension::class, static function (ContainerInterface $c): ThemeHeadExtension {
@@ -129,7 +131,7 @@ class ServiceRegistrar
             $themeManager = $c->get(ThemeManager::class);
             $themeManager->configureTwig($twig, $templateDir);
             $themeManager->loadFunctions();
-            $twig->addExtension(new EditorJsExtension(new EditorJsHtmlConverter()));
+            $twig->addExtension(new EditorJsExtension($c->get(EditorJsHtmlConverter::class)));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
             $twig->addExtension($c->get(ThemeHeadExtension::class));

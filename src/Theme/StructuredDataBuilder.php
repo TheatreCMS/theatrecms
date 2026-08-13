@@ -16,11 +16,14 @@ use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
+use TheatreCMS\Text\EditorJsHtmlConverter;
 
 class StructuredDataBuilder
 {
-    public function __construct(private readonly SiteSettings $siteSettings)
-    {
+    public function __construct(
+        private readonly SiteSettings $siteSettings,
+        private readonly EditorJsHtmlConverter $editorJsHtmlConverter
+    ) {
     }
 
     /**
@@ -81,8 +84,9 @@ class StructuredDataBuilder
         $event = new TheaterEvent();
         $event->setName($production->getName());
 
-        if ($production->getExcerpt() !== '') {
-            $event->setDescription($production->getExcerpt());
+        $description = $this->plainTextFromEditorJs($production->getDescription());
+        if ($description !== '') {
+            $event->setDescription($description);
         }
 
         if ($production->hasFeaturedImage()) {
@@ -92,6 +96,7 @@ class StructuredDataBuilder
         $event->setUrl($this->productionUrl($production));
 
         $place = $this->buildPlace($production);
+
         if ($place !== null) {
             $event->setPlace($place);
         }
@@ -248,6 +253,33 @@ class StructuredDataBuilder
         }
 
         return $creativeWork;
+    }
+
+    /**
+     * Convert an EditorJS payload (as stored in the database) into the plain
+     * text schema.org's `description` (Text) property expects.
+     */
+    private function plainTextFromEditorJs(?string $payload): string
+    {
+        if ($payload === null || $payload === '') {
+            return '';
+        }
+
+        $html = $this->editorJsHtmlConverter->toHtml($payload);
+        if ($html === '') {
+            return '';
+        }
+
+        // Turn block/line boundaries into newlines before stripping tags, so
+        // separate paragraphs/list items/headings don't run together.
+        $text = preg_replace('/<(br)\s*\/?>/i', "\n", $html);
+        $text = preg_replace('/<\/(p|h[1-6]|li|blockquote|pre)>/i', "\n", (string) $text);
+        $text = strip_tags((string) $text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace('/[ \t]+/', ' ', $text);
+        $text = preg_replace('/\n[ \t]*\n+/', "\n\n", (string) $text);
+
+        return trim((string) $text);
     }
 
     private function mapEventStatus(string $status): string
