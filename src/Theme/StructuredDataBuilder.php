@@ -4,6 +4,7 @@ namespace TheatreCMS\Theme;
 
 use Clubdeuce\Schema\CreativeWork;
 use Clubdeuce\Schema\EventSeries;
+use Clubdeuce\Schema\Organization;
 use Clubdeuce\Schema\Offer;
 use Clubdeuce\Schema\Person as SchemaPerson;
 use Clubdeuce\Schema\Place;
@@ -14,6 +15,7 @@ use TheatreCMS\Models\Event as Performance;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -33,6 +35,7 @@ class StructuredDataBuilder
     {
         $series = new EventSeries();
         $series->setName($season->getLabel());
+        $series->setUrl($this->url('/seasons/' . $season->getSlug()));
 
         if ($season->getOverview() !== '') {
             $series->setDescription($season->getOverview());
@@ -42,7 +45,11 @@ class StructuredDataBuilder
             $series->setImageUrl($season->getFeaturedImageUrl());
         }
 
-        $series->setUrl($this->url('/seasons/' . $season->getSlug()));
+        if ($season->getSponsorships() !== null) {
+            foreach ($season->getSponsorships() as $sponsorship) {
+                $series->addSponsor($this->buildSponsorOrganization($sponsorship->getSponsor()));
+            }
+        }
 
         foreach ($season->getProductions() as $production) {
             $series->addSubEvent($this->buildTheaterEvent($production));
@@ -253,6 +260,21 @@ class StructuredDataBuilder
         }
 
         return $creativeWork;
+    }
+
+    private function buildSponsorOrganization(Sponsor $sponsor): Organization
+    {
+        $organization = new Organization(['name' => $sponsor->getName()]);
+
+        if ($sponsor->getWebsiteUrl() !== null && $sponsor->getWebsiteUrl() !== '') {
+            $organization->setUrl($sponsor->getWebsiteUrl());
+        }
+
+        if ($sponsor->getLogoUrl() !== null && $sponsor->getLogoUrl() !== '') {
+            $organization->setImageUrl($sponsor->getLogoUrl());
+        }
+
+        return $organization;
     }
 
     /**

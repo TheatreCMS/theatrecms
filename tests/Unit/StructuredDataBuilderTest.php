@@ -8,6 +8,8 @@ use TheatreCMS\Models\Event as Performance;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Sponsorship;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
@@ -114,13 +116,13 @@ class StructuredDataBuilderTest extends TestCase
         );
         $this->assertCount(1, $schema['workPerformed']);
         $this->assertEquals('Hamlet', $schema['workPerformed'][0]['name']);
-        $this->assertEquals('Jane Doe', $schema['performers'][0]['name']);
-        $this->assertEquals('Sam Director', $schema['directors'][0]['name']);
+        $this->assertEquals('Jane Doe', $schema['performer'][0]['name']);
+        $this->assertEquals('Sam Director', $schema['director'][0]['name']);
         $this->assertArrayHasKey('startDate', $schema);
         $this->assertArrayHasKey('endDate', $schema);
         $this->assertArrayHasKey('offers', $schema);
         $this->assertEquals('https://example.com/tickets/hamlet', $schema['offers'][0]['url']);
-        $this->assertArrayNotHasKey('subEvents', $schema);
+        $this->assertArrayNotHasKey('subEvent', $schema);
     }
 
     public function testForProductionWithPerformancesNestsSubEvents(): void
@@ -144,15 +146,15 @@ class StructuredDataBuilderTest extends TestCase
 
         $this->assertArrayNotHasKey('startDate', $schema);
         $this->assertArrayNotHasKey('offers', $schema);
-        $this->assertCount(2, $schema['subEvents']);
-        $this->assertEquals('TheaterEvent', $schema['subEvents'][0]['@type']);
-        $this->assertEquals('EventScheduled', $schema['subEvents'][0]['eventStatus']);
+        $this->assertCount(2, $schema['subEvent']);
+        $this->assertEquals('TheaterEvent', $schema['subEvent'][0]['@type']);
+        $this->assertEquals('EventScheduled', $schema['subEvent'][0]['eventStatus']);
         $this->assertEquals(
             'https://example.com/tickets/hamlet/2026-06-05',
-            $schema['subEvents'][0]['offers'][0]['url']
+            $schema['subEvent'][0]['offers'][0]['url']
         );
-        $this->assertEquals('Hamlet', $schema['subEvents'][0]['workPerformed'][0]['name']);
-        $this->assertEquals('EventCancelled', $schema['subEvents'][1]['eventStatus']);
+        $this->assertEquals('Hamlet', $schema['subEvent'][0]['workPerformed'][0]['name']);
+        $this->assertEquals('EventCancelled', $schema['subEvent'][1]['eventStatus']);
     }
 
     public function testForProductionWithMultipleWorksPerformed(): void
@@ -189,8 +191,31 @@ class StructuredDataBuilderTest extends TestCase
         $this->assertEquals('2026 Season', $schema['name']);
         $this->assertEquals('A season of classic tragedies.', $schema['description']);
         $this->assertEquals('https://example.com/seasons/2026', $schema['url']);
-        $this->assertCount(1, $schema['subEvents']);
-        $this->assertEquals('TheaterEvent', $schema['subEvents'][0]['@type']);
-        $this->assertEquals('Hamlet', $schema['subEvents'][0]['name']);
+        $this->assertCount(1, $schema['subEvent']);
+        $this->assertEquals('TheaterEvent', $schema['subEvent'][0]['@type']);
+        $this->assertEquals('Hamlet', $schema['subEvent'][0]['name']);
+    }
+
+    public function testForSeasonIncludesSponsors(): void
+    {
+        $season = new Season('2026', '2026 Season');
+
+        $sponsor = new Sponsor();
+        $sponsor->setName('Acme Bank');
+        $sponsor->setWebsiteUrl('https://acme.example/sponsorships');
+        $sponsor->setLogoUrl('https://acme.example/logo.png');
+
+        $sponsorship = new Sponsorship($sponsor);
+        $sponsorship->setSeason($season);
+        $season->addSponsorship($sponsorship);
+
+        $schema = $this->makeBuilder()->forSeason($season);
+
+        $this->assertArrayHasKey('sponsor', $schema);
+        $this->assertCount(1, $schema['sponsor']);
+        $this->assertEquals('Organization', $schema['sponsor'][0]['@type']);
+        $this->assertEquals('Acme Bank', $schema['sponsor'][0]['name']);
+        $this->assertEquals('https://acme.example/sponsorships', $schema['sponsor'][0]['url']);
+        $this->assertEquals('https://acme.example/logo.png', $schema['sponsor'][0]['image']);
     }
 }
