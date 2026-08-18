@@ -64,7 +64,14 @@ class StructuredDataBuilder
      */
     public function forProduction(Production $production, iterable $performances = []): array
     {
-        return $this->buildTheaterEvent($production, $performances)->schema();
+        $series = new EventSeries();
+
+        $series->setName($production->getName())
+            ->setStartDate($production->getOpening())
+            ->setEndDate($production->getClosing())
+            ->setSubEvents($this->buildTheaterSubEvents($production, $performances));
+
+        return $series->schema();
     }
 
     /**
@@ -83,15 +90,40 @@ class StructuredDataBuilder
         return $this->buildCreativeWork($work)->schema();
     }
 
+    private function buildTheaterSubEvents(Production $production, iterable $performances = []): array
+    {
+        $performances = is_array($performances) ? $performances : iterator_to_array($performances);
+
+        if (count($performances) > 0) {
+            $events = [];
+
+            foreach ($performances as $performance) {
+                $events[] = $this->buildTheaterEvent($production, $performance);
+            }
+
+            return $events;
+        }
+
+        return [];
+    }
     /**
      * @param iterable<Performance> $performances
      */
-    private function buildTheaterEvent(Production $production, iterable $performances = []): TheaterEvent
+    private function buildTheaterEvent(Production $production, Performance $performance): TheaterEvent
     {
         $event = new TheaterEvent();
-        $event->setName($production->getName());
+        $event->setName($production->getName())
+            ->setDescription($this->plainTextFromEditorJs($production->getDescription()))
+            ->setUrl($this->productionUrl($production))
+            ->setPlace($this->buildPlace($production));
+
+        if ($performance->getStartsAt() !== null) {
+            $mutable = DateTime::createFromImmutable($performance->getStartsAt());
+            $event->setStartDate($mutable);
+        }
 
         $description = $this->plainTextFromEditorJs($production->getDescription());
+
         if ($description !== '') {
             $event->setDescription($description);
         }
@@ -116,27 +148,8 @@ class StructuredDataBuilder
             $event->addDirector($director);
         }
 
-        $worksPerformed = $this->buildWorksPerformed($production);
-        foreach ($worksPerformed as $work) {
-            $event->addWorkPerformed($work);
-        }
-
-        $performances = is_array($performances) ? $performances : iterator_to_array($performances);
-
-        if (count($performances) > 0) {
-            foreach ($performances as $performance) {
-                $event->addSubEvent($this->buildPerformanceSubEvent($production, $performance, $place, $worksPerformed));
-            }
-
-            return $event;
-        }
-
-        if ($production->getOpening() !== null) {
-            $event->setStartDate($production->getOpening());
-        }
-
-        if ($production->getClosing() !== null) {
-            $event->setEndDate($production->getClosing());
+        foreach ($production->getWorks() as $work) {
+            $event->addWork($this->buildCreativeWork($work));
         }
 
         if ($production->getTicketPurchaseUrl() !== '') {
@@ -146,35 +159,6 @@ class StructuredDataBuilder
         }
 
         return $event;
-    }
-
-    /**
-     * @param CreativeWork[] $worksPerformed
-     */
-    private function buildPerformanceSubEvent(Production $production, Performance $performance, ?Place $place, array $worksPerformed): TheaterEvent
-    {
-        $subEvent = new TheaterEvent();
-        $subEvent->setName($performance->getTitle() ?: $production->getName());
-        $subEvent->setUrl($this->productionUrl($production));
-        $subEvent->setStartDate(DateTime::createFromImmutable($performance->getStartsAt()));
-        $subEvent->setEventStatus($this->mapEventStatus($performance->getStatus()));
-
-        if ($place !== null) {
-            $subEvent->setPlace($place);
-        }
-
-        foreach ($worksPerformed as $work) {
-            $subEvent->addWorkPerformed($work);
-        }
-
-        $ticketUrl = $performance->getTicketUrl() ?: $production->getTicketPurchaseUrl();
-        if ($ticketUrl) {
-            $offer = new Offer();
-            $offer->setUrl($ticketUrl);
-            $subEvent->addOffer($offer);
-        }
-
-        return $subEvent;
     }
 
     private function buildPlace(Production $production): ?Place
@@ -245,6 +229,9 @@ class StructuredDataBuilder
         return $works;
     }
 
+    /**
+     * @todo Fix this to use a permalink-style nethodology vs the hardcoded pathing.
+     */
     private function buildCreativeWork(Work $work): CreativeWork
     {
         $creativeWork = new CreativeWork(['name' => $work->getTitle()]);

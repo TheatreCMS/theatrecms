@@ -32,7 +32,7 @@ class ThemeHeadExtension extends \Twig\Extension\AbstractExtension
         $headContent = \TheatreCMS\Theme\HookManager::getInstance()->applyFilters('theme_head', $headContent);
 
         // Add any relevant schema.org structured data to the head
-        $headContent = $this->addStructuredData($headContent, $context);
+        $headContent .= $this->addStructuredData($headContent, $context);
 
         return $headContent;
     }
