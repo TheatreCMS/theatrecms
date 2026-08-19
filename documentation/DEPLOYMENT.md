@@ -1,6 +1,6 @@
 # Deployment Guide
 
-TheatreCMS is a custom PHP application (Slim 4 + Doctrine ORM 3 + [delight-im/auth](https://github.com/delight-im/PHP-Auth) + Twig) rather than a mainstream framework, so it doesn't come with the batteries a Laravel/Symfony deploy would have out of the box: there's no migration runner and no admin-bootstrap command. This guide walks through provisioning a new production instance end-to-end, including the manual steps those gaps require.
+TheatreCMS is a custom PHP application (Slim 4 + Doctrine ORM 3 + [delight-im/auth](https://github.com/delight-im/PHP-Auth) + Twig) rather than a mainstream framework, so it doesn't come with all the batteries a Laravel/Symfony deploy would have out of the box: there's no migration runner. This guide walks through provisioning a new production instance end-to-end, including the manual steps that gap requires.
 
 **THIS IS ALPHA SOFTWARE** — see the [project README](README.md). Review the hardening steps below carefully before exposing an instance publicly.
 
@@ -117,20 +117,15 @@ chmod -R 750 var/ www/uploads
 
 ## 9. Create the first administrator
 
-There is no admin-bootstrap command in this codebase. `POST /admin/register` (`src/Controllers/LoginController.php`) is a public, unauthenticated endpoint that creates a normal user via `delight-im/auth` — but there's no HTML form for it anywhere in `templates/`, so it must be called directly. Assigning the admin role normally requires going through `/admin/users`, which itself requires an existing admin — so for the very first user, promote it directly in the database instead.
+Use the `./create-admin` script at the repo root — it boots the app container (reading `app/config.yaml` the same way `app/bootstrap.php` does) and creates a user with the admin role directly via `UserRepository`, so it works before any admin exists and doesn't depend on `/admin/register`. It's idempotent: if an admin already exists it does nothing unless you pass `--force`.
 
 ```bash
-# a) Register a normal user via the public (formless) endpoint
-curl -X POST https://your-domain.example/admin/register \
-  --data-urlencode "email=admin@your-domain.example" \
-  --data-urlencode "password=<strong password>"
-
-# b) Promote it to admin (Role::ADMIN bitmask = 1, from delight-im/auth's Role class)
-mysql -u theatrecms -p theatrecms_prod -e \
-  "UPDATE users SET roles_mask = roles_mask | 1 WHERE email = 'admin@your-domain.example';"
+./create-admin --email=admin@your-domain.example --username=admin --password='<strong password>'
 ```
 
-Log in at `https://your-domain.example/admin/login` and confirm you can reach `/admin/users` (gated by the `MANAGE_USERS` capability) to verify the role took effect. Create any further users from that in-app UI from here on — not via `/admin/register`.
+Omit any of `--email`, `--username`, `--password` to be prompted for it interactively (password entry is hidden), or supply them via `THEATRECMS_ADMIN_EMAIL` / `THEATRECMS_ADMIN_USERNAME` / `THEATRECMS_ADMIN_PASSWORD` environment variables instead of flags.
+
+Log in at `https://your-domain.example/admin/login` and confirm you can reach `/admin/users` (gated by the `MANAGE_USERS` capability) to verify the role took effect. Create any further users from that in-app UI from here on.
 
 ## 10. Lock down `/admin/register`
 

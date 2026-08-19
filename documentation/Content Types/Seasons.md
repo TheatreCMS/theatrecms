@@ -5,4 +5,4 @@ Seasons are  collections of [[productions]] grouped by dates of the production. 
 - **slug** - used for URL segments, e.g. `season-2025` or `2025-2026`
 - **label** - used when displaying the season name, e.g. `Season 2025`
 - **startDate** - used to chronologically sort collections of seasons and available for display on front end
-- **overview** - a free form text field hat can be displayed on the front end
+- **overview** - an EditorJS-authored rich text field that can be displayed on the front end

@@ -27,6 +27,7 @@ Copyright (C) 2026  TheatreCMS Team
 - Doctrine’s default connection settings live in `app/settings.php` (`driver=pdo_mysql`, host `db`, port `3306`, database `db`, user `db`, password `db`, charset `utf8mb4`). Point these values at your local MySQL instance and ensure a matching schema/database exists before starting the app.
 - For a quick local setup, launch MySQL with `docker run --name theatre-db -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=db -e MYSQL_USER=db -e MYSQL_PASSWORD=db -p 3306:3306 -d mysql:8 && docker exec theatre-db mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS db;"`. Update `app/settings.php` if you change the host, credentials, or port.
 - Keep the database service running whenever you bootstrap Doctrine-managed repositories so migrations and repository lookups can connect successfully.
+- Once the schema is in place (see [`documentation/DEPLOYMENT.md`](documentation/DEPLOYMENT.md)), create the first admin user with `./create-admin` (flags or an interactive prompt for email/username/password; safe to re-run, it no-ops once an admin exists).
 
 ## Dependency injection wiring
 

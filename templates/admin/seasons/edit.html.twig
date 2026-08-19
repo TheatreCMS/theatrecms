@@ -36,11 +36,10 @@
                        value="{{ season.endDate|date('Y-m-d')|default('') }}">
             </div>
 
-            <div class="md:col-span-2">
-                <label for="overview" class="block text-sm font-medium text-gray-700 mb-1">Overview</label>
-                <textarea name="overview" id="overview" rows="4"
-                          class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                          placeholder="Brief description of the season...">{{ season.overview|default('') }}</textarea>
+            <div class="md:col-span-2 space-y-3">
+                <label for="overview" class="block text-sm font-medium text-gray-700">Overview</label>
+                <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <textarea name="overview" id="overview" rows="4" class="hidden" aria-hidden="true">{{ season.overview|default('') }}</textarea>
             </div>
             <input type="hidden" name="seasonId" value="{{ season.id|default(0) }}">
 
@@ -149,11 +148,49 @@
 {% endblock %}
 
 {% block scripts %}
-    <script>
+    <script type="module">
+        import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
+            const overviewField = document.getElementById('overview');
+
+            const rawOverview = {{ season.overview|default('')|json_encode|raw }};
+            let editorData = null;
+
+            if (rawOverview && typeof rawOverview === 'string') {
+                try {
+                    const parsed = JSON.parse(rawOverview);
+                    if (parsed && typeof parsed === 'object' && Array.isArray(parsed.blocks)) {
+                        editorData = parsed;
+                    }
+                } catch (error) {
+                    // Not JSON, likely a legacy plain-text overview saved before the
+                    // editor existed — carry it over as a single paragraph block so
+                    // existing content isn't lost when the season is next saved.
+                }
+
+                if (editorData === null && rawOverview.trim() !== '') {
+                    editorData = {
+                        blocks: [
+                            { type: 'paragraph', data: { text: rawOverview } }
+                        ]
+                    };
+                }
+            }
+
+            const editor = new EditorJS(buildEditorJsConfig({
+                holder: 'editorjs',
+                data: editorData,
+                placeholder: 'Brief description of the season...',
+                imageEndpoints: {
+                    byFile: '/admin/images/upload'
+                }
+            }));
+
+            let isSaving = false;
 
             form.addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -171,10 +208,24 @@
                     return;
                 }
 
-                form.dispatchEvent(new Event('htmxSubmit'));
+                if (isSaving) {
+                    return;
+                }
+                isSaving = true;
+
+                editor.save().then(function(outputData) {
+                    overviewField.value = JSON.stringify(outputData);
+                    form.dispatchEvent(new Event('htmxSubmit'));
+                }).catch(function(error) {
+                    console.error('EditorJS save failed:', error);
+                    document.getElementById('flash-messages').innerHTML = '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
+                        '<p class="text-sm font-medium">Unable to save overview. Please try again.</p></div>';
+                    isSaving = false;
+                });
             });
 
             form.addEventListener('htmx:afterRequest', function() {
+                isSaving = false;
                 document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
 
