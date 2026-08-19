@@ -37,8 +37,9 @@ class StructuredDataBuilder
         $series->setName($season->getLabel());
         $series->setUrl($this->url('/seasons/' . $season->getSlug()));
 
-        if ($season->getOverview() !== '') {
-            $series->setDescription($season->getOverview());
+        $overview = $this->plainTextFromEditorJs($season->getOverview());
+        if ($overview !== '') {
+            $series->setDescription($overview);
         }
 
         if ($season->getFeaturedImageUrl()) {
@@ -52,7 +53,8 @@ class StructuredDataBuilder
         }
 
         foreach ($season->getProductions() as $production) {
-            $series->addSubEvent($this->buildTheaterEvent($production));
+            $subEvent = $this->buildTheaterEventForProduction($production);
+            $series->addSubEvent($subEvent);
         }
 
         return $series->schema();
@@ -312,4 +314,36 @@ class StructuredDataBuilder
 
         return $base . $path;
     }
+
+    private function buildSeriesForProduction(Production $production): EventSeries{
+
+        $series = new EventSeries();
+
+        $series->setName($production->getName())
+            ->setStartDate($production->getOpening())
+            ->setEndDate($production->getClosing())
+            ->setSubEvents($this->buildTheaterSubEvents($production, $production->getPerformances()));
+
+        return $series;
+    }
+
+    private function buildTheaterEventForProduction(Production $production): TheaterEvent {
+        $event = new TheaterEvent();
+
+        $performers = $production->getPerformers();
+
+        foreach($performers as $performer) {
+            $event->addPerformer($this->buildPerson($performer->getPerson()));
+        }
+
+        $event->setName($production->getName())
+            ->setDescription($this->plainTextFromEditorJs($production->getDescription()))
+            ->setUrl($this->productionUrl($production))
+            ->setPlace($this->buildPlace($production))
+            ->setStartDate($production->getOpening())
+            ->setEndDate($production->getClosing());
+
+        return $event;
+    }
+
 }
