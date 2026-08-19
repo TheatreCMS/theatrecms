@@ -1,0 +1,137 @@
+#!/usr/bin/env php
+<?php
+/**
+ *
+ * Copyright (C) 2026  TheatreCMS Team (https://theatrecms.dev)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Creates the first administrator account so a fresh install doesn't have
+ * to go through the manual curl + SQL UPDATE dance described in
+ * documentation/DEPLOYMENT.md. Safe to run repeatedly: once an admin
+ * exists it does nothing unless --force is passed.
+ *
+ * Usage:
+ *   ./create-admin [--email=admin@example.com] [--username=admin] [--password=secret] [--force]
+ *
+ * Any option not supplied falls back to the matching THEATRECMS_ADMIN_*
+ * environment variable, then to an interactive prompt (password entry is
+ * hidden when the terminal supports it).
+ */
+
+use Delight\Auth\DuplicateUsernameException;
+use Delight\Auth\InvalidEmailException;
+use Delight\Auth\InvalidPasswordException;
+use Delight\Auth\UserAlreadyExistsException;
+use TheatreCMS\Repositories\UserRepository;
+
+if (PHP_SAPI !== 'cli') {
+    fwrite(STDERR, "This script must be run from the command line.\n");
+    exit(1);
+}
+
+function promptLine(string $label): string
+{
+    fwrite(STDOUT, $label);
+    return trim((string) fgets(STDIN));
+}
+
+function promptHidden(string $label): string
+{
+    fwrite(STDOUT, $label);
+
+    if (stripos(PHP_OS, 'WIN') === 0 || !function_exists('shell_exec') || shell_exec('command -v stty') === null) {
+        return trim((string) fgets(STDIN));
+    }
+
+    shell_exec('stty -echo');
+    $value = trim((string) fgets(STDIN));
+    shell_exec('stty echo');
+    fwrite(STDOUT, "\n");
+
+    return $value;
+}
+
+/** @var \DI\Container $container */
+$container = require_once __DIR__ . '/app/bootstrap.php';
+
+/** @var UserRepository $userRepository */
+$userRepository = $container->get(UserRepository::class);
+
+$options = getopt('', ['email:', 'username:', 'password:', 'force']);
+
+if ($userRepository->hasAdminUser() && !isset($options['force'])) {
+    fwrite(STDOUT, "An administrator already exists; nothing to do. Pass --force to create another one anyway.\n");
+    exit(0);
+}
+
+$isInteractive = defined('STDIN') && stream_isatty(STDIN);
+
+$email = $options['email'] ?? (getenv('THEATRECMS_ADMIN_EMAIL') ?: null);
+if ($email === null) {
+    if (!$isInteractive) {
+        fwrite(STDERR, "Missing admin email. Pass --email=... or set THEATRECMS_ADMIN_EMAIL.\n");
+        exit(1);
+    }
+    $email = promptLine('Admin email: ');
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    fwrite(STDERR, "Invalid email address: {$email}\n");
+    exit(1);
+}
+
+$username = $options['username'] ?? (getenv('THEATRECMS_ADMIN_USERNAME') ?: null);
+if ($username === null) {
+    if (!$isInteractive) {
+        fwrite(STDERR, "Missing admin username. Pass --username=... or set THEATRECMS_ADMIN_USERNAME.\n");
+        exit(1);
+    }
+    $username = promptLine('Admin username: ');
+}
+
+$password = $options['password'] ?? (getenv('THEATRECMS_ADMIN_PASSWORD') ?: null);
+if ($password === null) {
+    if (!$isInteractive) {
+        fwrite(STDERR, "Missing admin password. Pass --password=... or set THEATRECMS_ADMIN_PASSWORD.\n");
+        exit(1);
+    }
+    $password = promptHidden('Admin password: ');
+    $confirmation = promptHidden('Confirm password: ');
+    if ($password !== $confirmation) {
+        fwrite(STDERR, "Passwords do not match.\n");
+        exit(1);
+    }
+}
+
+try {
+    $userId = $userRepository->create([
+        'email' => $email,
+        'username' => $username,
+        'password' => $password,
+        'role' => 'admin',
+    ]);
+} catch (UserAlreadyExistsException) {
+    fwrite(STDERR, "A user with that email already exists.\n");
+    exit(1);
+} catch (DuplicateUsernameException) {
+    fwrite(STDERR, "That username is already taken.\n");
+    exit(1);
+} catch (InvalidEmailException) {
+    fwrite(STDERR, "Invalid email address.\n");
+    exit(1);
+} catch (InvalidPasswordException) {
+    fwrite(STDERR, "Invalid password (it cannot be empty).\n");
+    exit(1);
+}
+
+fwrite(STDOUT, "Created admin user #{$userId} ({$email}).\n");
+exit(0);
