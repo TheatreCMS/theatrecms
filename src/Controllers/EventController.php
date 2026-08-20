@@ -189,6 +189,7 @@ class EventController extends BaseController
             'productionId' => null,
             'venueId' => null,
             'startsAt' => null,
+            'endsAt' => null,
             'status' => 'scheduled',
             'ticketUrl' => null,
             'notes' => null,
@@ -241,6 +242,8 @@ class EventController extends BaseController
         try {
             $startsAt = new \DateTimeImmutable($data['startsAt']);
             $item->setStartsAt($startsAt);
+
+            $item->setEndsAt(!empty($data['endsAt']) ? new \DateTimeImmutable($data['endsAt']) : null);
         } catch (\Exception $e) {
             if ($request->getHeaderLine('HX-Request')) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [

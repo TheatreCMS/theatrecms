@@ -154,9 +154,11 @@ class StructuredDataBuilder
             $event->addWork($this->buildCreativeWork($work));
         }
 
-        if ($production->getTicketPurchaseUrl() !== '') {
+        $ticketUrl = $performance->getEffectiveTicketUrl();
+
+        if ($ticketUrl !== null && $ticketUrl !== '') {
             $offer = new Offer();
-            $offer->setUrl($production->getTicketPurchaseUrl());
+            $offer->setUrl($ticketUrl);
             $event->addOffer($offer);
         }
 

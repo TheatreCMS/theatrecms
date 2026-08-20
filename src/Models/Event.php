@@ -23,6 +23,9 @@ class Event extends ModelBase
     #[Column(name: 'starts_at', type: 'datetime_immutable', nullable: false)]
     private \DateTimeImmutable $startsAt;
 
+    #[Column(name: 'ends_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $endsAt = null;
+
     #[Column(type: 'string', nullable: false)]
     private string $status;
 
@@ -62,6 +65,11 @@ class Event extends ModelBase
         return $this->startsAt;
     }
 
+    public function getEndsAt(): ?\DateTimeImmutable
+    {
+        return $this->endsAt;
+    }
+
     public function getStatus(): string
     {
         return $this->status;
@@ -70,6 +78,16 @@ class Event extends ModelBase
     public function getTicketUrl(): ?string
     {
         return $this->ticketUrl;
+    }
+
+    /**
+     * The ticket URL to actually use for this performance: its own, if set,
+     * otherwise the parent production's (e.g. when tickets for this specific
+     * performance aren't sold separately).
+     */
+    public function getEffectiveTicketUrl(): ?string
+    {
+        return $this->ticketUrl ?: $this->production?->getTicketPurchaseUrl();
     }
 
     public function getNotes(): ?string
@@ -97,6 +115,13 @@ class Event extends ModelBase
     public function setStartsAt(\DateTimeImmutable $startsAt): self
     {
         $this->startsAt = $startsAt;
+
+        return $this;
+    }
+
+    public function setEndsAt(?\DateTimeImmutable $endsAt): self
+    {
+        $this->endsAt = $endsAt;
 
         return $this;
     }

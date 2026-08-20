@@ -86,6 +86,7 @@ mysql -u theatrecms -p theatrecms_prod < migrations/20260702_create_menus_tables
 mysql -u theatrecms -p theatrecms_prod < migrations/20260709_rename_seasons_hero_image_to_featured_image.sql
 mysql -u theatrecms -p theatrecms_prod < migrations/20260805_make_production_venue_nullable.sql
 mysql -u theatrecms -p theatrecms_prod < migrations/20260820_add_position_to_production_works.sql
+mysql -u theatrecms -p theatrecms_prod < migrations/20260820_add_ends_at_to_events.sql
 ```
 
 `./doctrine` is the Doctrine ORM console script at the repo root; it boots the app container and reads `app/config.yaml` via `app/bootstrap.php`. When new migration files are added to `migrations/` in future releases, apply any not yet run, in date order, before starting the upgraded app.

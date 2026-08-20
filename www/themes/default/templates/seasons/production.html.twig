@@ -88,8 +88,8 @@
                                     {% for performance in performances %}
                                         <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
                                             <p class="text-sm font-medium text-gray-900">
-                                                {% if performance.ticketUrl %}
-                                                    <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
+                                                {% if performance.effectiveTicketUrl %}
+                                                    <a href="{{ performance.effectiveTicketUrl }}" target="_blank" rel="noopener noreferrer" class="hover:underline">
                                                         <time datetime="{{ performance.startsAt|date('c') }}">{{ performance.startsAt|date('D, F j, Y g:i A') }}</time>
                                                     </a>
                                                 {% else %}
@@ -99,9 +99,9 @@
                                             <p class="text-xs text-gray-500">
                                                 {% if performance.venue %}{{ performance.venue.name }}{% elseif production.venue %}{{ production.venue.name }}{% else %}Venue TBA{% endif %}
                                             </p>
-                                            {% if performance.ticketUrl %}
+                                            {% if performance.effectiveTicketUrl %}
                                                 <p class="mt-1">
-                                                    <a href="{{ performance.ticketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
+                                                    <a href="{{ performance.effectiveTicketUrl }}" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">Tickets</a>
                                                 </p>
                                             {% endif %}
                                         </li>

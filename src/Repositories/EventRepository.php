@@ -28,6 +28,7 @@ class EventRepository extends BaseRepository
             'productionId' => null,
             'venueId' => null,
             'startsAt' => null,
+            'endsAt' => null,
             'status' => 'scheduled',
             'ticketUrl' => null,
             'notes' => null,
@@ -238,6 +239,11 @@ class EventRepository extends BaseRepository
             $event->setVenue($venue);
         }
 
+        $endsAt = $this->normalizeOptionalDateTime($args['endsAt'] ?? null);
+        if ($endsAt !== null) {
+            $event->setEndsAt($endsAt);
+        }
+
         if (!empty($args['ticketUrl'])) {
             $event->setTicketUrl($args['ticketUrl']);
         }
@@ -271,6 +277,27 @@ class EventRepository extends BaseRepository
             return new \DateTimeImmutable((string) $startsAt);
         } catch (\Exception $e) {
             throw new \InvalidArgumentException('Invalid startsAt date format.');
+        }
+    }
+
+    private function normalizeOptionalDateTime(mixed $value): ?\DateTimeImmutable
+    {
+        if (empty($value)) {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeImmutable) {
+            return $value;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return \DateTimeImmutable::createFromInterface($value);
+        }
+
+        try {
+            return new \DateTimeImmutable((string) $value);
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException('Invalid endsAt date format.');
         }
     }
 
