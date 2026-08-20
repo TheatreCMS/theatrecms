@@ -34,6 +34,11 @@
 			</button>
 		</li>
 		<li class="me-2" role="presentation">
+			<button id="tab-works-btn" data-tabs-target="#tab-works" type="button" role="tab" aria-controls="tab-works" aria-selected="{{ activeTab == 'works' ? 'true' : 'false' }}" class="inline-block p-4 border-b-2 rounded-t-lg {% if activeTab == 'works' %}border-blue-600 text-blue-600 active{% else %}border-transparent hover:text-gray-600 hover:border-gray-300{% endif %}">
+				Works
+			</button>
+		</li>
+		<li class="me-2" role="presentation">
 			<button id="tab-people-btn" data-tabs-target="#tab-people" type="button" role="tab" aria-controls="tab-people" aria-selected="{{ activeTab == 'people' ? 'true' : 'false' }}" class="inline-block p-4 border-b-2 rounded-t-lg {% if activeTab == 'people' %}border-blue-600 text-blue-600 active{% else %}border-transparent hover:text-gray-600 hover:border-gray-300{% endif %}">
 				People
 			</button>
@@ -78,31 +83,6 @@
 										                                        from the Seasons section first.
 									</div>
 								</div>
-							</div>
-						</div>
-					{% endif %}
-
-					{% if works is empty %}
-						<div class="md:col-span-2 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-							<div class="flex items-start justify-between gap-4">
-								<div class="flex gap-3">
-									<div class="flex-shrink-0">
-										<svg class="h-5 w-5 text-yellow-600" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 20 20" fill="currentColor" aria-hidden="true">
-											<path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.681-1.36 3.446 0l5.516 9.8A1.75 1.75 0 0 1 16.016 16H3.984A1.75 1.75 0 0 1 2.74 12.899l5.517-9.8zM11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-1-8a.75.75 0 0 0-.75.75v4.5a.75.75 0 0 0 1.5 0v-4.5A.75.75 0 0 0 10 5z" clip-rule="evenodd"/>
-										</svg>
-									</div>
-									<div class="ml-3">
-										<h3 class="text-sm font-medium text-yellow-800">No works available</h3>
-										<div class="mt-1 text-sm text-yellow-700">There are no works in the system yet.</div>
-									</div>
-								</div>
-								<button type="button"
-								        class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-md hover:bg-yellow-200"
-								        hx-get="/admin/works/quick-create"
-								        hx-target="#quick-create-modal-content"
-								        hx-swap="innerHTML">
-									+ Create First Work
-								</button>
 							</div>
 						</div>
 					{% endif %}
@@ -200,65 +180,80 @@
 						<input type="url" name="ticketPurchaseUrl" id="ticketPurchaseUrl" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://example.com/tickets" value="{{ production.ticketPurchaseUrl }}">
 					</div>
 
-					<div class="md:col-span-2">
-						<div class="flex items-center justify-between mb-1">
-							<label id="works-picker-label" class="block text-sm font-medium text-gray-700">Works</label>
-							<button type="button"
-							        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
-							        hx-get="/admin/works/quick-create"
-							        hx-target="#quick-create-modal-content"
-							        hx-swap="innerHTML">
-								+ New Work
-							</button>
-						</div>
-
-						<div class="works-picker" data-works-picker aria-labelledby="works-picker-label">
-							<div class="flex flex-col sm:flex-row gap-3 items-start">
-								<div class="flex-1 min-w-0 w-full flex flex-col border border-gray-300 rounded-md bg-white">
-									<div class="p-2 border-b border-gray-200">
-										<input type="search" placeholder="Search works…" aria-label="Search available works"
-										       class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
-										       data-works-search>
-									</div>
-									<ul class="flex-1 max-h-64 overflow-y-auto p-1 space-y-0.5" role="listbox" aria-multiselectable="true"
-									    aria-label="Available works" data-works-available></ul>
-									<p class="hidden p-3 text-sm text-gray-400 italic" data-works-available-empty>No matching works.</p>
-								</div>
-
-								<div class="flex-1 min-w-0 w-full flex flex-col border border-gray-300 rounded-md bg-white">
-									<div class="p-2 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wide">
-										Selected <span data-works-selected-count>(0)</span>
-									</div>
-									<ul class="flex-1 max-h-64 overflow-y-auto p-1 space-y-0.5" role="listbox" aria-multiselectable="true"
-									    aria-label="Selected works" data-works-selected></ul>
-									<p class="hidden p-3 text-sm text-gray-400 italic" data-works-selected-empty>No works assigned yet. Click or drag a work from the left.</p>
-								</div>
-							</div>
-							<p class="mt-1 text-xs text-gray-500">Click, drag, or focus an item and press Enter to add or remove it. Drag items within Selected (or focus one and press Alt+&uarr;/Alt+&darr;) to reorder them.</p>
-							<div class="sr-only" aria-live="polite" data-works-announcer></div>
-
-							<select multiple="multiple" name="works[]" id="works" class="hidden" aria-hidden="true" tabindex="-1" data-works-source>
-								{# Selected works first, in their saved display order, so the initial DOM order (which native
-								   form submission relies on) matches production.works instead of the unordered fetchAll() below. #}
-								{% for w in production.works|default([]) %}
-									<option value="{{ w.id }}" selected>{{ w.title }}</option>
-								{% endfor %}
-								{% for w in works %}
-									{% if w.id not in selectedWorkIds %}
-										<option value="{{ w.id }}">{{ w.title }}</option>
-									{% endif %}
-								{% endfor %}
-							</select>
-						</div>
-					</div>
-
 					{% include 'admin/productions/_featured_image_section.html.twig' %}
 
 				</div>
 			</div>
 			{# /tab-details #}
 
-			{# ── Tab 2: People ──────────────────────────────────────────────── #}
+			{# ── Tab 2: Works ───────────────────────────────────────────────── #}
+			<div id="tab-works" role="tabpanel" aria-labelledby="tab-works-btn" class="{% if activeTab != 'works' %}hidden{% endif %}">
+
+				<div class="space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+					<div class="flex items-start justify-between gap-4">
+						<div>
+							<h2 class="text-lg font-semibold text-gray-900 mb-1">Works Performed</h2>
+							<p class="text-sm text-gray-600">Select the works performed as part of this production, in the order they should be listed (e.g. a one-act festival or a choir's setlist).</p>
+						</div>
+						<button type="button"
+						        class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+						        hx-get="/admin/works/quick-create"
+						        hx-target="#quick-create-modal-content"
+						        hx-swap="innerHTML">
+							+ New Work
+						</button>
+					</div>
+
+					{% if works is empty %}
+						<div class="rounded-md bg-yellow-50 border border-yellow-200 p-4 text-sm text-yellow-800">
+							No works in the system yet. Use the <strong>+ New Work</strong> button above to add one.
+						</div>
+					{% endif %}
+
+					<div class="works-picker" data-works-picker aria-label="Works">
+						<div class="flex flex-col sm:flex-row gap-3 items-start">
+							<div class="flex-1 min-w-0 w-full flex flex-col border border-gray-300 rounded-md bg-white">
+								<div class="p-2 border-b border-gray-200">
+									<input type="search" placeholder="Search works…" aria-label="Search available works"
+									       class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+									       data-works-search>
+								</div>
+								<ul class="flex-1 max-h-64 overflow-y-auto p-1 space-y-0.5" role="listbox" aria-multiselectable="true"
+								    aria-label="Available works" data-works-available></ul>
+								<p class="hidden p-3 text-sm text-gray-400 italic" data-works-available-empty>No matching works.</p>
+							</div>
+
+							<div class="flex-1 min-w-0 w-full flex flex-col border border-gray-300 rounded-md bg-white">
+								<div class="p-2 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wide">
+									Selected <span data-works-selected-count>(0)</span>
+								</div>
+								<ul class="flex-1 max-h-64 overflow-y-auto p-1 space-y-0.5" role="listbox" aria-multiselectable="true"
+								    aria-label="Selected works" data-works-selected></ul>
+								<p class="hidden p-3 text-sm text-gray-400 italic" data-works-selected-empty>No works assigned yet. Click or drag a work from the left.</p>
+							</div>
+						</div>
+						<p class="mt-1 text-xs text-gray-500">Click, drag, or focus an item and press Enter to add or remove it. Drag items within Selected (or focus one and press Alt+&uarr;/Alt+&darr;) to reorder them.</p>
+						<div class="sr-only" aria-live="polite" data-works-announcer></div>
+
+						<select multiple="multiple" name="works[]" id="works" class="hidden" aria-hidden="true" tabindex="-1" data-works-source>
+							{# Selected works first, in their saved display order, so the initial DOM order (which native
+							   form submission relies on) matches production.works instead of the unordered fetchAll() below. #}
+							{% for w in production.works|default([]) %}
+								<option value="{{ w.id }}" selected>{{ w.title }}</option>
+							{% endfor %}
+							{% for w in works %}
+								{% if w.id not in selectedWorkIds %}
+									<option value="{{ w.id }}">{{ w.title }}</option>
+								{% endif %}
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+
+			</div>
+			{# /tab-works #}
+
+			{# ── Tab 3: People ──────────────────────────────────────────────── #}
 			<div id="tab-people" role="tabpanel" aria-labelledby="tab-people-btn" class="{% if activeTab != 'people' %}hidden{% endif %}">
 
 				{% if people is empty %}
@@ -453,7 +448,7 @@
 			</div>
 			{# /tab-people #}
 
-			{# ── Tab 3: Sponsors ────────────────────────────────────────────── #}
+			{# ── Tab 4: Sponsors ────────────────────────────────────────────── #}
 			<div id="tab-sponsors" role="tabpanel" aria-labelledby="tab-sponsors-btn" class="{% if activeTab != 'sponsors' %}hidden{% endif %}">
 
 				<div class="space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
@@ -557,7 +552,7 @@
 
 		</form>
 
-		{# ── Tab 4: Performances (outside the main form — has its own HTMX forms) #}
+		{# ── Tab 5: Performances (outside the main form — has its own HTMX forms) #}
 		<div id="tab-performances" role="tabpanel" aria-labelledby="tab-performances-btn" class="{% if activeTab != 'performances' %}hidden{% endif %}">
 			{% include 'admin/productions/_events.html.twig' with {
                 events: events|default([]),
