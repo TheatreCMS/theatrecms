@@ -2,7 +2,7 @@
 
 namespace TheatreCMS\Repositories;
 
-use TheatreCMS\Enums\PostStatus;
+use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Post;
 use Doctrine\ORM\QueryBuilder;
 
@@ -14,7 +14,7 @@ class PostRepository extends BaseRepository
     {
         $args = array_merge([
             'title' => null,
-            'status' => PostStatus::DRAFT->value,
+            'status' => ContentStatus::DRAFT->value,
             'content' => null,
             'slug' => null,
             'featuredImageUrl' => null,
@@ -28,7 +28,7 @@ class PostRepository extends BaseRepository
             throw new \InvalidArgumentException('Content is required.');
         }
 
-        $status = PostStatus::tryFrom($args['status']);
+        $status = ContentStatus::tryFrom($args['status']);
         if ($status === null) {
             throw new \InvalidArgumentException('Invalid status.');
         }
@@ -56,7 +56,7 @@ class PostRepository extends BaseRepository
             ->select('p')
             ->from(Post::class, 'p')
             ->where('p.status = :status')
-            ->setParameter('status', PostStatus::PUBLISHED)
+            ->setParameter('status', ContentStatus::PUBLISHED)
             ->orderBy('p.publishedAt', 'DESC')
             ->getQuery()
             ->getResult();

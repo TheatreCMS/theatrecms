@@ -8,19 +8,19 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
-use TheatreCMS\Enums\PostStatus;
+use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Traits\HasContentStatus;
 
 #[Entity, Table(name: 'posts')]
 class Post extends ModelBase
 {
+    use HasContentStatus;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
     #[Column(type: 'string', length: 255, nullable: false)]
     private string $title;
-
-    #[Column(type: 'string', length: 32, nullable: false, enumType: PostStatus::class)]
-    private PostStatus $status;
 
     #[Column(type: 'text', nullable: false)]
     private string $content;
@@ -37,7 +37,7 @@ class Post extends ModelBase
     #[Column(name: 'published_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $publishedAt = null;
 
-    public function __construct(string $title, PostStatus $status, string $content)
+    public function __construct(string $title, ContentStatus $status, string $content)
     {
         $this->title = $title;
         $this->status = $status;
@@ -45,7 +45,7 @@ class Post extends ModelBase
         $this->createdAt = new DateTimeImmutable();
         $this->modifiedAt = new DateTimeImmutable();
 
-        if ($status === PostStatus::PUBLISHED) {
+        if ($status === ContentStatus::PUBLISHED) {
             $this->publishedAt = new DateTimeImmutable();
         }
     }
@@ -63,18 +63,6 @@ class Post extends ModelBase
     public function setTitle(string $title): self
     {
         $this->title = $title;
-
-        return $this;
-    }
-
-    public function getStatus(): PostStatus
-    {
-        return $this->status;
-    }
-
-    public function setStatus(PostStatus $status): self
-    {
-        $this->status = $status;
 
         return $this;
     }
@@ -135,10 +123,5 @@ class Post extends ModelBase
         $this->publishedAt = $publishedAt;
 
         return $this;
-    }
-
-    public function isPublished(): bool
-    {
-        return $this->status === PostStatus::PUBLISHED;
     }
 }

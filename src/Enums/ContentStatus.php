@@ -2,7 +2,13 @@
 
 namespace TheatreCMS\Enums;
 
-enum PostStatus: string
+/**
+ * Shared editorial status for content types that need a draft/published
+ * workflow — currently Posts and Pages. Seasons, Productions, and Events are
+ * expected to adopt this same enum (via TheatreCMS\Traits\HasContentStatus)
+ * rather than each defining their own parallel status type.
+ */
+enum ContentStatus: string
 {
     case DRAFT = 'draft';
     case PUBLISHED = 'published';

@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Repositories\PageRepository;
 
 /**
@@ -25,13 +26,21 @@ class PageController extends BaseController
         return $this->twig->render(
             $response,
             'admin/pages/index.html.twig',
-            $this->buildPaginatedViewData($request, $this->repository, 'pages', '/admin/pages')
+            $this->buildPaginatedViewData(
+                $request,
+                $this->repository,
+                'pages',
+                '/admin/pages',
+                ['statuses' => ContentStatus::labels()]
+            )
         );
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render($response, 'admin/pages/create.html.twig');
+        return $this->twig->render($response, 'admin/pages/create.html.twig', [
+            'statuses' => ContentStatus::labels(),
+        ]);
     }
 
     public function edit(Request $request, Response $response, array $args = []): Response
@@ -43,7 +52,8 @@ class PageController extends BaseController
         }
 
         return $this->twig->render($response, 'admin/pages/edit.html.twig', [
-            'page' => $page,
+            'page'     => $page,
+            'statuses' => ContentStatus::labels(),
         ]);
     }
 
@@ -58,7 +68,13 @@ class PageController extends BaseController
             }
         }
 
-        $data = $this->buildPaginatedViewData($request, $this->repository, 'pages', '/admin/pages');
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'pages',
+            '/admin/pages',
+            ['statuses' => ContentStatus::labels()]
+        );
 
         if ($request->getHeaderLine('HX-Request')) {
             return $this->twig->render($response, 'admin/pages/_list.html.twig', $data);
@@ -84,6 +100,7 @@ class PageController extends BaseController
         try {
             $this->repository->create([
                 'title'   => $data['title'] ?? null,
+                'status'  => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
             ]);
         } catch (\InvalidArgumentException $e) {
@@ -120,7 +137,7 @@ class PageController extends BaseController
         }
 
         $data = $this->parseArgs($data, [
-            'pageId' => 0, 'title' => null, 'content' => null, 'slug' => null,
+            'pageId' => 0, 'title' => null, 'status' => ContentStatus::DRAFT->value, 'content' => null, 'slug' => null,
         ]);
 
         $page = $this->repository->fetch((int) $data['pageId']);
@@ -143,7 +160,18 @@ class PageController extends BaseController
             return $response->withStatus(400);
         }
 
+        $status = ContentStatus::tryFrom($data['status']);
+        if ($status === null) {
+            if ($isHtmx) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type' => 'error', 'message' => 'Invalid status.',
+                ]);
+            }
+            return $response->withStatus(400);
+        }
+
         $page->setTitle($data['title']);
+        $page->setStatus($status);
         $page->setContent($data['content']);
         $page->touchModified();
 
