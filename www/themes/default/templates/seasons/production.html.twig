@@ -229,7 +229,7 @@
                             <p class="font-medium text-gray-900">
                                 <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>
                             </p>
-                            <p class="text-sm text-gray-700 leading-relaxed">{{ wc.person.biography }}</p>
+                            <div class="text-sm text-gray-700 leading-relaxed">{{ wc.person.biography|raw }}</div>
                         </div>
                     </div>
                 </section>

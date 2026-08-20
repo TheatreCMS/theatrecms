@@ -207,7 +207,7 @@ class StructuredDataBuilder
         $schemaPerson = new SchemaPerson(['name' => $person->getName()]);
 
         if ($person->getBiography() !== '') {
-            $schemaPerson->setDescription($person->getBiography());
+            $schemaPerson->setDescription($this->plainTextFromHtml($person->getBiography()));
         }
 
         if ($person->getHeadshotUrl() !== '') {
@@ -278,7 +278,16 @@ class StructuredDataBuilder
             return '';
         }
 
-        $html = $this->editorJsHtmlConverter->toHtml($payload);
+        return $this->plainTextFromHtml($this->editorJsHtmlConverter->toHtml($payload));
+    }
+
+    /**
+     * Convert an HTML fragment (e.g. a biography saved by the rich-text
+     * person editor) into the plain text schema.org's `description` (Text)
+     * property expects.
+     */
+    private function plainTextFromHtml(string $html): string
+    {
         if ($html === '') {
             return '';
         }

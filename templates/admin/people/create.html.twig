@@ -22,8 +22,9 @@
             </div>
 
             <div class="md:col-span-2">
-                <label for="biography" class="block text-sm font-medium text-gray-700 mb-1">Biography</label>
-                <textarea name="biography" id="biography" rows="6" class="w-full rounded-md border-gray-300 shadow-sm" placeholder="Short biography..."></textarea>
+                <label for="biography-editor" class="block text-sm font-medium text-gray-700 mb-1">Biography</label>
+                <div id="biography-editor" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
+                <textarea name="biography" id="biography" rows="6" class="hidden" aria-hidden="true"></textarea>
             </div>
 
             <div class="md:col-span-2">
@@ -38,4 +39,8 @@
         </div>
     </form>
 
+    <script type="module">
+        import { initRichTextEditor } from '/assets/js/richtext-editor.js';
+        initRichTextEditor('biography-editor', 'biography');
+    </script>
 {% endblock %}

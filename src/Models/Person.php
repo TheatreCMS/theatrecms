@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
+use TheatreCMS\Text\RichTextSanitizer;
 
 #[Entity, Table(name: 'people')]
 class Person extends ModelBase implements JsonSerializable
@@ -72,7 +73,7 @@ class Person extends ModelBase implements JsonSerializable
 
     public function setBiography(?string $biography): self
     {
-        $this->biography = $biography;
+        $this->biography = $biography === null ? null : RichTextSanitizer::toSafeHtml($biography);
         return $this;
     }
 
