@@ -202,7 +202,7 @@
 
 					<div class="md:col-span-2">
 						<div class="flex items-center justify-between mb-1">
-							<label for="works" class="block text-sm font-medium text-gray-700">Works</label>
+							<label id="works-picker-label" class="block text-sm font-medium text-gray-700">Works</label>
 							<button type="button"
 							        class="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
 							        hx-get="/admin/works/quick-create"
@@ -211,11 +211,45 @@
 								+ New Work
 							</button>
 						</div>
-						<select multiple="multiple" name="works[]" id="works" class="w-full rounded-md border-gray-300 shadow-sm">
-							{% for w in works %}
-								<option value="{{ w.id }}" {% if w.id in selectedWorkIds %} selected {% endif %}>{{ w.title }}</option>
-							{% endfor %}
-						</select>
+
+						<div class="works-picker" data-works-picker aria-labelledby="works-picker-label">
+							<div class="flex flex-col sm:flex-row gap-3 items-start">
+								<div class="flex-1 min-w-0 w-full flex flex-col border border-gray-300 rounded-md bg-white">
+									<div class="p-2 border-b border-gray-200">
+										<input type="search" placeholder="Search works…" aria-label="Search available works"
+										       class="w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-blue-500 focus:ring-blue-500"
+										       data-works-search>
+									</div>
+									<ul class="flex-1 max-h-64 overflow-y-auto p-1 space-y-0.5" role="listbox" aria-multiselectable="true"
+									    aria-label="Available works" data-works-available></ul>
+									<p class="hidden p-3 text-sm text-gray-400 italic" data-works-available-empty>No matching works.</p>
+								</div>
+
+								<div class="flex-1 min-w-0 w-full flex flex-col border border-gray-300 rounded-md bg-white">
+									<div class="p-2 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wide">
+										Selected <span data-works-selected-count>(0)</span>
+									</div>
+									<ul class="flex-1 max-h-64 overflow-y-auto p-1 space-y-0.5" role="listbox" aria-multiselectable="true"
+									    aria-label="Selected works" data-works-selected></ul>
+									<p class="hidden p-3 text-sm text-gray-400 italic" data-works-selected-empty>No works assigned yet. Click or drag a work from the left.</p>
+								</div>
+							</div>
+							<p class="mt-1 text-xs text-gray-500">Click, drag, or focus an item and press Enter to add or remove it. Drag items within Selected (or focus one and press Alt+&uarr;/Alt+&darr;) to reorder them.</p>
+							<div class="sr-only" aria-live="polite" data-works-announcer></div>
+
+							<select multiple="multiple" name="works[]" id="works" class="hidden" aria-hidden="true" tabindex="-1" data-works-source>
+								{# Selected works first, in their saved display order, so the initial DOM order (which native
+								   form submission relies on) matches production.works instead of the unordered fetchAll() below. #}
+								{% for w in production.works|default([]) %}
+									<option value="{{ w.id }}" selected>{{ w.title }}</option>
+								{% endfor %}
+								{% for w in works %}
+									{% if w.id not in selectedWorkIds %}
+										<option value="{{ w.id }}">{{ w.title }}</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+						</div>
 					</div>
 
 					{% include 'admin/productions/_featured_image_section.html.twig' %}
@@ -773,6 +807,7 @@ byUrl: '/admin/productions/images/fetch'
 		sponsor: {type: 'rowset', namespace: 'sponsorship', selectName: 'sponsorshipSponsorIds[]', buildFallback: buildSponsorshipTableFallback},
 	});
 </script>
+<script src="/assets/js/works-picker.js"></script>
 
 {% include 'admin/productions/_quick_create_modal.html.twig' %}
 {% endblock %}

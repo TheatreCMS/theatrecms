@@ -11,8 +11,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
-use Doctrine\ORM\Mapping\ManyToMany;
-use Doctrine\ORM\Mapping\JoinTable;
+use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use DateTime;
 use TheatreCMS\Traits\SupportsFeaturedImage;
@@ -69,14 +68,10 @@ class Production extends ModelBase
     #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable: true)]
     private ?Venue $venue = null;
 
-    // Many productions have many works
-    #[ManyToMany(targetEntity: Work::class, cascade: ['persist'])]
-    #[JoinTable(
-        name: 'production_works',
-        joinColumns: [new JoinColumn(name: 'production_id', referencedColumnName: 'id')],
-        inverseJoinColumns: [new JoinColumn(name: 'work_id', referencedColumnName: 'id')]
-    )]
-    private Collection $works;
+    // Many productions have many works, in a user-defined display order (e.g. a choir's setlist).
+    #[OneToMany(targetEntity: ProductionWork::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
+    #[OrderBy(['position' => 'ASC'])]
+    private Collection $productionWorks;
 
     #[OneToMany(targetEntity: Sponsorship::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $sponsorships;
@@ -91,11 +86,11 @@ class Production extends ModelBase
      */
     public function __construct(string $name, Season $season, $works = null)
     {
-        $this->name         = $name;
-        $this->season       = $season;
-        $this->works        = new ArrayCollection();
-        $this->people       = new ArrayCollection();
-        $this->sponsorships = new ArrayCollection();
+        $this->name            = $name;
+        $this->season          = $season;
+        $this->productionWorks = new ArrayCollection();
+        $this->people          = new ArrayCollection();
+        $this->sponsorships    = new ArrayCollection();
 
         if ($works instanceof Work) {
             $this->addWork($works);
@@ -321,23 +316,35 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function getWorks(): Collection
+    public function getProductionWorks(): Collection
     {
-        return $this->works;
+        return $this->productionWorks;
     }
 
-    public function addWork(Work $work): self
+    /**
+     * @return Collection<int, Work> the assigned works, in display order
+     */
+    public function getWorks(): Collection
     {
-        if (!$this->works->contains($work)) {
-            $this->works[] = $work;
+        return $this->productionWorks->map(fn(ProductionWork $productionWork) => $productionWork->getWork());
+    }
+
+    public function addWork(Work $work, ?int $position = null): self
+    {
+        foreach ($this->productionWorks as $productionWork) {
+            if ($productionWork->getWork() === $work) {
+                return $this;
+            }
         }
+
+        $this->productionWorks->add(new ProductionWork($this, $work, $position ?? $this->productionWorks->count()));
 
         return $this;
     }
 
     public function setWorks(array $works): self
     {
-        $this->works->clear();
+        $this->productionWorks->clear();
 
         foreach ($works as $work) {
             if ($work instanceof Work) {

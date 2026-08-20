@@ -272,25 +272,6 @@ class ProductionController extends BaseController
                 return $response->withStatus(400);
             }
         }
-        $worksRepository = $this->entityManager->getRepository(Work::class);
-
-        $workIds = $data['works'];
-        if (!is_array($workIds)) {
-            $workIds = !empty($workIds) ? explode(',', (string) $workIds) : [];
-        }
-
-        $workIds = array_filter(array_map('trim', array_map('strval', $workIds)), static function (string $workId): bool {
-            return $workId !== '';
-        });
-
-        $works = [];
-        foreach ($workIds as $workId) {
-            $work = $worksRepository->find((int) $workId);
-            if ($work instanceof Work) {
-                $works[] = $work;
-            }
-        }
-
         try {
             $opening = new \DateTime($data['opening']);
             $closing = new \DateTime($data['closing']);
@@ -312,8 +293,9 @@ class ProductionController extends BaseController
             ->setClosing($closing)
             ->setDescription($data['description'])
             ->setPromoVideoUrl($data['promoVideoUrl'])
-            ->setTicketPurchaseUrl($data['ticketPurchaseUrl'])
-            ->setWorks($works);
+            ->setTicketPurchaseUrl($data['ticketPurchaseUrl']);
+
+        $this->syncWorks($item, $data['works']);
 
         $this->handleFeaturedImageUpload($request, $item);
 
@@ -439,6 +421,52 @@ class ProductionController extends BaseController
         $metadata->addPropertyConstraint('name', new NotBlank());
         $metadata->addPropertyConstraint('opening', new Date());
         $metadata->addPropertyConstraint('closing', new Date());
+    }
+
+    /**
+     * Reconciles a production's works against the submitted (ordered) list of work IDs,
+     * preserving the display order the user arranged in the works picker and removing
+     * any join rows for works that are no longer selected.
+     */
+    private function syncWorks(Production $production, array|string $workIds): void
+    {
+        if (!is_array($workIds)) {
+            $workIds = !empty($workIds) ? explode(',', (string) $workIds) : [];
+        }
+
+        $workIds = array_filter(array_map('trim', array_map('strval', $workIds)), static function (string $workId): bool {
+            return $workId !== '';
+        });
+        $workIds = array_values(array_unique(array_map('intval', $workIds)));
+
+        $existing = [];
+        foreach ($production->getProductionWorks() as $productionWork) {
+            $existing[$productionWork->getWork()->getId()] = $productionWork;
+        }
+
+        foreach ($existing as $workId => $productionWork) {
+            if (!in_array($workId, $workIds, true)) {
+                $production->getProductionWorks()->removeElement($productionWork);
+                $this->entityManager->remove($productionWork);
+                unset($existing[$workId]);
+            }
+        }
+
+        $worksRepository = $this->entityManager->getRepository(Work::class);
+
+        foreach ($workIds as $position => $workId) {
+            if (isset($existing[$workId])) {
+                $existing[$workId]->setPosition($position);
+                continue;
+            }
+
+            $work = $worksRepository->find($workId);
+            if (!$work instanceof Work) {
+                continue;
+            }
+
+            $production->addWork($work, $position);
+        }
     }
 
     private function syncSponsorships(Production $production, array|string $sponsorIds): void
