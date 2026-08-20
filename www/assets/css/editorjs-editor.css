@@ -1,0 +1,66 @@
+/* Base styles for the EditorJS editing surface itself (the "input"), not its
+   rendered frontend output. Tailwind's Preflight reset strips default heading
+   styles, so without this a Header block looks identical to plain paragraph
+   text while you're editing it. This is the corollary of WordPress's
+   editor-style.css: it exists purely to give WYSIWYG parity between what an
+   editor sees while typing and how the content actually reads once rendered
+   on the frontend (see the .prose rules in site.css) — loaded on every admin
+   page since EditorJS itself is (see templates/layouts/admin.html.twig).
+
+   Scoped under .codex-editor (EditorJS's own root class) so nothing here
+   leaks into the rest of the admin UI. */
+
+.codex-editor h1.ce-header {
+    margin: 1.5rem 0 0.75rem;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #111827;
+}
+
+.codex-editor h2.ce-header {
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #111827;
+}
+
+.codex-editor h3.ce-header {
+    margin: 1.25rem 0 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #111827;
+}
+
+.codex-editor h4.ce-header {
+    margin: 1rem 0 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #111827;
+}
+
+.codex-editor h5.ce-header,
+.codex-editor h6.ce-header {
+    margin: 1rem 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #111827;
+}
+
+.codex-editor .ce-block:first-child h1.ce-header,
+.codex-editor .ce-block:first-child h2.ce-header,
+.codex-editor .ce-block:first-child h3.ce-header,
+.codex-editor .ce-block:first-child h4.ce-header,
+.codex-editor .ce-block:first-child h5.ce-header,
+.codex-editor .ce-block:first-child h6.ce-header {
+    margin-top: 0;
+}
+
+.codex-editor .ce-paragraph {
+    line-height: 1.7;
+    color: #1f2937;
+}

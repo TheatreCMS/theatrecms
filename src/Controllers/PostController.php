@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
-use TheatreCMS\Enums\PostStatus;
+use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Services\ImageUploadService;
 
@@ -37,7 +37,7 @@ class PostController extends BaseController
                 $this->repository,
                 'posts',
                 '/admin/posts',
-                ['statuses' => PostStatus::labels()]
+                ['statuses' => ContentStatus::labels()]
             )
         );
     }
@@ -45,7 +45,7 @@ class PostController extends BaseController
     public function create(Request $request, Response $response, array $args = []): Response
     {
         return $this->twig->render($response, 'admin/posts/create.html.twig', [
-            'statuses' => PostStatus::labels(),
+            'statuses' => ContentStatus::labels(),
         ]);
     }
 
@@ -59,7 +59,7 @@ class PostController extends BaseController
 
         return $this->twig->render($response, 'admin/posts/edit.html.twig', [
             'post'     => $post,
-            'statuses' => PostStatus::labels(),
+            'statuses' => ContentStatus::labels(),
         ]);
     }
 
@@ -80,8 +80,8 @@ class PostController extends BaseController
             'posts',
             '/admin/posts',
             [
-                'statuses' => PostStatus::labels(),
-                'status_labels' => PostStatus::labels(),
+                'statuses' => ContentStatus::labels(),
+                'status_labels' => ContentStatus::labels(),
             ]
         );
 
@@ -136,7 +136,7 @@ class PostController extends BaseController
         try {
             $this->repository->create([
                 'title' => $data['title'] ?? null,
-                'status' => $data['status'] ?? PostStatus::DRAFT->value,
+                'status' => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
                 'featuredImageUrl' => $data['featuredImageUrl'] ?? null,
             ]);
@@ -178,7 +178,7 @@ class PostController extends BaseController
         $data = $this->parseArgs($data, [
             'postId' => 0,
             'title' => null,
-            'status' => PostStatus::DRAFT->value,
+            'status' => ContentStatus::DRAFT->value,
             'content' => null,
             'slug' => null,
             'publishedAt' => null,
@@ -212,7 +212,7 @@ class PostController extends BaseController
             return $response->withStatus(400);
         }
 
-        $status = PostStatus::tryFrom($data['status']);
+        $status = ContentStatus::tryFrom($data['status']);
         if ($status === null) {
             if ($request->getHeaderLine('HX-Request')) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
@@ -232,7 +232,7 @@ class PostController extends BaseController
         if (!empty($data['publishedAt'])) {
             $parsedDate = DateTimeImmutable::createFromFormat('Y-m-d\TH:i', $data['publishedAt']);
             $post->setPublishedAt($parsedDate ?: null);
-        } elseif ($status === PostStatus::PUBLISHED && $post->getPublishedAt() === null) {
+        } elseif ($status === ContentStatus::PUBLISHED && $post->getPublishedAt() === null) {
             $post->setPublishedAt(new DateTimeImmutable());
         } else {
             $post->setPublishedAt(null);

@@ -14,7 +14,7 @@ if (isset($app)) {
         $repository = $container->get(PageRepository::class);
         $page = $repository->fetchBySlug($args['slug']);
 
-        if (!$page) {
+        if (!$page || !$page->isPublished()) {
             $response->getBody()->write('Page not found');
 
             return $response->withStatus(404);

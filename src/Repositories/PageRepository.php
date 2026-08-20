@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Repositories;
 
+use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Page;
 
 class PageRepository extends BaseRepository
@@ -12,6 +13,7 @@ class PageRepository extends BaseRepository
     {
         $args = array_merge([
             'title' => null,
+            'status' => ContentStatus::DRAFT->value,
             'content' => null,
             'slug' => null,
         ], $args);
@@ -24,7 +26,12 @@ class PageRepository extends BaseRepository
             throw new \InvalidArgumentException('Content is required.');
         }
 
-        $page = new Page($args['title'], $args['content']);
+        $status = ContentStatus::tryFrom($args['status']);
+        if ($status === null) {
+            throw new \InvalidArgumentException('Invalid status.');
+        }
+
+        $page = new Page($args['title'], $status, $args['content']);
         $slugSource = $args['slug'] ?? $args['title'];
         $page->setSlug($this->generateUniqueSlug($slugSource));
 

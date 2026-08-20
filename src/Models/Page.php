@@ -8,10 +8,14 @@ use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
+use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Traits\HasContentStatus;
 
 #[Entity, Table(name: 'pages')]
 class Page extends ModelBase
 {
+    use HasContentStatus;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
@@ -27,9 +31,10 @@ class Page extends ModelBase
     #[Column(name: 'modified_at', type: 'datetime_immutable')]
     private DateTimeImmutable $modifiedAt;
 
-    public function __construct(string $title, string $content)
+    public function __construct(string $title, ContentStatus $status, string $content)
     {
         $this->title = $title;
+        $this->status = $status;
         $this->content = $content;
         $this->createdAt = new DateTimeImmutable();
         $this->modifiedAt = new DateTimeImmutable();
