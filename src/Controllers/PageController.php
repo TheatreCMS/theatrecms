@@ -98,7 +98,7 @@ class PageController extends BaseController
         }
 
         try {
-            $this->repository->create([
+            $page = $this->repository->create([
                 'title'   => $data['title'] ?? null,
                 'status'  => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
@@ -113,13 +113,15 @@ class PageController extends BaseController
             return $response->withStatus(400);
         }
 
+        $editUrl = '/admin/pages/edit/' . $page->getId();
+
         if ($isHtmx) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type' => 'success', 'message' => 'Page created successfully.',
-            ]);
+            // The create form always submits via HTMX; HX-Redirect tells htmx to
+            // navigate the whole page rather than swap the (unrendered) response body.
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/pages');
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function update(Request $request, Response $response, array $args = []): Response

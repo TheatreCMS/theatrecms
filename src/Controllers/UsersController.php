@@ -137,7 +137,7 @@ class UsersController extends BaseController
         }
 
         try {
-            $this->repository->create($data);
+            $userId = $this->repository->create($data);
         } catch (\Throwable $e) {
             if ($isHtmx) {
                 return $this->freshAlertResponse($response, 'error', 'Unable to create user. Please check your input.');
@@ -149,11 +149,13 @@ class UsersController extends BaseController
             ]);
         }
 
+        $editUrl = '/admin/users/edit/' . $userId;
+
         if ($isHtmx) {
-            return $this->freshAlertResponse($response, 'success', 'User created successfully.');
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/users')->withStatus(302);
+        return $response->withHeader('Location', $editUrl)->withStatus(302);
     }
 
     public function update(Request $request, Response $response, array $args = []): Response

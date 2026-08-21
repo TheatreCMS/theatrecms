@@ -83,16 +83,14 @@ class PersonController extends BaseController
             'headshotUrl' => null,
         ]);
 
-        $this->repository->create($data);
+        $person = $this->repository->create($data);
+        $editUrl = '/admin/people/edit/' . $person->getId();
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Person created successfully.',
-            ]);
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/people');
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function quickCreate(Request $request, Response $response, array $args = []): Response

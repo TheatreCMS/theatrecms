@@ -81,16 +81,14 @@ class VenueController extends BaseController
             'mapUrl' => null,
         ]);
 
-        $this->repository->create($data);
+        $venue = $this->repository->create($data);
+        $editUrl = '/admin/venues/edit/' . $venue->getId();
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Venue created successfully.',
-            ]);
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/venues');
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function quickCreate(Request $request, Response $response, array $args = []): Response

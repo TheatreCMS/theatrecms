@@ -91,16 +91,25 @@ class WorksController extends BaseController
             $data['creators'] = $creatorEntries;
         }
 
-        $this->repository->create($data);
+        $work = $this->repository->create($data);
 
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Work created successfully.',
-            ]);
+        if (!$work instanceof Work) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to create work. Please try again.',
+                ]);
+            }
+            return $response->withStatus(400);
         }
 
-        return $response->withHeader('Location', '/admin/works');
+        $editUrl = '/admin/works/edit/' . $work->getId();
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $response->withHeader('HX-Redirect', $editUrl);
+        }
+
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function quickCreate(Request $request, Response $response, array $args = []): Response

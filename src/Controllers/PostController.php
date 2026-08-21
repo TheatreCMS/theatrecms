@@ -142,7 +142,7 @@ class PostController extends BaseController
         }
 
         try {
-            $this->repository->create([
+            $post = $this->repository->create([
                 'title' => $data['title'] ?? null,
                 'status' => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
@@ -159,14 +159,13 @@ class PostController extends BaseController
             return $response->withStatus(400);
         }
 
+        $editUrl = '/admin/posts/edit/' . $post->getId();
+
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Post created successfully.',
-            ]);
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/posts');
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function update(Request $request, Response $response, array $args = []): Response

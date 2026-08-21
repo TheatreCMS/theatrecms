@@ -107,16 +107,14 @@ class SponsorController extends BaseController
             'websiteUrl' => null,
         ]);
 
-        $this->sponsorRepository->create($data);
+        $sponsor = $this->sponsorRepository->create($data);
+        $editUrl = '/admin/sponsors/edit/' . $sponsor->getId();
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Sponsor created successfully.',
-            ]);
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/sponsors');
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function quickCreate(Request $request, Response $response, array $args = []): Response

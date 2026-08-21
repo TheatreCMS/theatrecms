@@ -209,14 +209,13 @@ class ProductionController extends BaseController
         $this->syncSponsorships($production, $data['sponsorshipSponsorIds']);
         $this->entityManager->flush();
 
+        $editUrl = '/admin/productions/edit/' . $production->getId();
+
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                'type'    => 'success',
-                'message' => 'Production created successfully.',
-            ]);
+            return $response->withHeader('HX-Redirect', $editUrl);
         }
 
-        return $response->withHeader('Location', '/admin/productions');
+        return $response->withHeader('Location', $editUrl);
     }
 
     public function update(Request $request, Response $response, array $args = []): Response
