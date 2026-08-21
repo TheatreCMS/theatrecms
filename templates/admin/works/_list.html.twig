@@ -1,9 +1,36 @@
 <div id="workListContainer">
     <table class="w-full text-sm text-left rtl:text-right text-body">
         <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+            {% set qParam = pagination.search ? '&q=' ~ pagination.search|url_encode : '' %}
             <tr>
-                <th scope="col" class="px-6 py-3 font-medium">Title</th>
-                <th scope="col" class="px-6 py-3 font-medium">Author</th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    {% set nextDirection = (pagination.sort == 'title' and pagination.direction == 'asc') ? 'desc' : 'asc' %}
+                    <a href="/admin/works?sort=title&direction={{ nextDirection }}{{ qParam }}"
+                        hx-get="/admin/works?sort=title&direction={{ nextDirection }}{{ qParam }}"
+                        hx-target="#workListContainer"
+                        hx-swap="outerHTML"
+                        hx-push-url="true"
+                        class="inline-flex items-center gap-1 hover:underline">
+                        Title
+                        {% if pagination.sort == 'title' %}
+                            <span aria-hidden="true">{{ pagination.direction == 'asc' ? '▲' : '▼' }}</span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th scope="col" class="px-6 py-3 font-medium">
+                    {% set nextDirection = (pagination.sort == 'author' and pagination.direction == 'asc') ? 'desc' : 'asc' %}
+                    <a href="/admin/works?sort=author&direction={{ nextDirection }}{{ qParam }}"
+                        hx-get="/admin/works?sort=author&direction={{ nextDirection }}{{ qParam }}"
+                        hx-target="#workListContainer"
+                        hx-swap="outerHTML"
+                        hx-push-url="true"
+                        class="inline-flex items-center gap-1 hover:underline">
+                        Author
+                        {% if pagination.sort == 'author' %}
+                            <span aria-hidden="true">{{ pagination.direction == 'asc' ? '▲' : '▼' }}</span>
+                        {% endif %}
+                    </a>
+                </th>
                 <th scope="col" class="px-6 py-3 font-medium">Actions</th>
             </tr>
         </thead>

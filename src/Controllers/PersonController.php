@@ -17,11 +17,21 @@ class PersonController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render(
-            $response,
-            'admin/people/index.html.twig',
-            $this->buildPaginatedViewData($request, $this->repository, 'people', '/admin/people')
+        [$search] = $this->resolveListQuery($request, []);
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'people',
+            '/admin/people',
+            [],
+            $search
         );
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/people/_list.html.twig', $data);
+        }
+
+        return $this->twig->render($response, 'admin/people/index.html.twig', $data);
     }
 
     public function create(Request $request, Response $response, array $args = []): Response

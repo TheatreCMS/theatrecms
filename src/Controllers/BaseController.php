@@ -136,6 +136,31 @@ class BaseController
     }
 
     /**
+     * Read and whitelist the `q` (search), `sort`, and `direction` query params shared by
+     * every filterable/sortable admin list view.
+     *
+     * @param string[] $sortableColumns
+     * @return array{0: string, 1: string, 2: string} [search, sort, direction]
+     */
+    protected function resolveListQuery(Request $request, array $sortableColumns): array
+    {
+        $queryParams = $request->getQueryParams();
+        $search = trim((string) ($queryParams['q'] ?? ''));
+
+        $sort = (string) ($queryParams['sort'] ?? '');
+        if (!in_array($sort, $sortableColumns, true)) {
+            $sort = '';
+        }
+
+        $direction = strtolower((string) ($queryParams['direction'] ?? 'asc'));
+        if ($direction !== 'desc') {
+            $direction = 'asc';
+        }
+
+        return [$search, $sort, $direction];
+    }
+
+    /**
      * @param array<string, mixed> $context
      * @return array<string, mixed>
      */
@@ -144,17 +169,20 @@ class BaseController
         PaginatedRepositoryInterface $repository,
         string $itemKey,
         string $basePath,
-        array $context = []
+        array $context = [],
+        string $search = '',
+        string $sort = '',
+        string $direction = 'asc'
     ): array {
         $page = $this->resolveRequestedPage($request);
-        $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE);
+        $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE, $search, $sort, $direction);
         $pageCount = max(1, (int) ceil($result['total'] / self::DEFAULT_PAGE_SIZE));
 
         if ($result['total'] === 0) {
             $page = 1;
         } elseif ($page > $pageCount) {
             $page = $pageCount;
-            $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE);
+            $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE, $search, $sort, $direction);
         }
 
         return array_merge($context, [
@@ -164,7 +192,10 @@ class BaseController
                 $page,
                 self::DEFAULT_PAGE_SIZE,
                 (int) $result['total'],
-                count($result['items'])
+                count($result['items']),
+                $search,
+                $sort,
+                $direction
             ),
         ]);
     }
@@ -196,7 +227,10 @@ class BaseController
         int $page,
         int $perPage,
         int $total,
-        int $currentCount
+        int $currentCount,
+        string $search = '',
+        string $sort = '',
+        string $direction = 'asc'
     ): array {
         $pageCount = max(1, (int) ceil($total / $perPage));
         $from = $total === 0 ? 0 : (($page - 1) * $perPage) + 1;
@@ -218,6 +252,9 @@ class BaseController
             'pages' => range($windowStart, $windowEnd),
             'from' => $from,
             'to' => $to,
+            'search' => $search,
+            'sort' => $sort,
+            'direction' => $direction,
         ];
     }
 

@@ -59,8 +59,13 @@ class UserRepository implements PaginatedRepositoryInterface
     /**
      * @return array{items: User[], total: int, page: int, perPage: int}
      */
-    public function fetchPage(int $page = 1, int $perPage = 25): array
-    {
+    public function fetchPage(
+        int $page = 1,
+        int $perPage = 25,
+        string $search = '',
+        string $sort = '',
+        string $direction = 'asc'
+    ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
         $offset = ($page - 1) * $perPage;

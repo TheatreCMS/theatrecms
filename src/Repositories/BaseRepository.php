@@ -39,18 +39,23 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
     /**
      * @return array{items: array<int, object>, total: int, page: int, perPage: int}
      */
-    public function fetchPage(int $page = 1, int $perPage = 25): array
-    {
+    public function fetchPage(
+        int $page = 1,
+        int $perPage = 25,
+        string $search = '',
+        string $sort = '',
+        string $direction = 'asc'
+    ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
 
         return [
-            'items' => $this->createListQueryBuilder()
+            'items' => $this->createListQueryBuilder('e', $search, $sort, $direction)
                 ->setFirstResult(($page - 1) * $perPage)
                 ->setMaxResults($perPage)
                 ->getQuery()
                 ->getResult(),
-            'total' => $this->countAll(),
+            'total' => $this->countAll('e', $search),
             'page' => $page,
             'perPage' => $perPage,
         ];
@@ -87,13 +92,21 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         ];
     }
 
-    protected function createListQueryBuilder(string $alias = 'e'): QueryBuilder
-    {
+    protected function createListQueryBuilder(
+        string $alias = 'e',
+        string $search = '',
+        string $sort = '',
+        string $direction = 'asc'
+    ): QueryBuilder {
         $builder = $this->em->createQueryBuilder()
             ->select($alias)
             ->from($this->entityClass, $alias);
 
-        $this->applyListOrder($builder, $alias);
+        $this->applySearchFilter($builder, $alias, $search);
+
+        if ($sort === '' || !$this->applyRequestedSort($builder, $alias, $sort, $direction)) {
+            $this->applyListOrder($builder, $alias);
+        }
 
         return $builder;
     }
@@ -103,13 +116,33 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         $builder->orderBy(sprintf('%s.id', $alias), 'ASC');
     }
 
-    protected function countAll(string $alias = 'e'): int
+    /**
+     * Restrict the list/count query builders to items matching the given search term.
+     * No-op by default; override in repositories that support searching.
+     */
+    protected function applySearchFilter(QueryBuilder $builder, string $alias, string $search): void
     {
-        return (int) $this->em->createQueryBuilder()
+    }
+
+    /**
+     * Apply a user-requested sort column/direction to the list query builder.
+     * Returns true if the sort key was recognized and applied, false to fall back to applyListOrder().
+     * No-op by default; override in repositories that support user-driven sorting.
+     */
+    protected function applyRequestedSort(QueryBuilder $builder, string $alias, string $sort, string $direction): bool
+    {
+        return false;
+    }
+
+    protected function countAll(string $alias = 'e', string $search = ''): int
+    {
+        $builder = $this->em->createQueryBuilder()
             ->select(sprintf('COUNT(%s.id)', $alias))
-            ->from($this->entityClass, $alias)
-            ->getQuery()
-            ->getSingleScalarResult();
+            ->from($this->entityClass, $alias);
+
+        $this->applySearchFilter($builder, $alias, $search);
+
+        return (int) $builder->getQuery()->getSingleScalarResult();
     }
 
     protected function generateUniqueSlug(string $string): string

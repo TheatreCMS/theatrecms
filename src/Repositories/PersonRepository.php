@@ -44,4 +44,16 @@ final class PersonRepository extends BaseRepository
             ->addOrderBy(sprintf('%s.firstName', $alias), 'ASC')
             ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
     }
+
+    protected function applySearchFilter(QueryBuilder $builder, string $alias, string $search): void
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return;
+        }
+
+        $builder->andWhere(sprintf('%s.firstName LIKE :search OR %s.lastName LIKE :search', $alias, $alias))
+            ->setParameter('search', '%' . $search . '%');
+    }
 }

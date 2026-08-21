@@ -6,10 +6,52 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Work;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\QueryBuilder;
 
 class WorkRepository extends BaseRepository
 {
     protected string $entityClass = Work::class;
+
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
+    {
+        $builder->orderBy(sprintf('%s.title', $alias), 'ASC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
+    }
+
+    protected function applySearchFilter(QueryBuilder $builder, string $alias, string $search): void
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return;
+        }
+
+        $builder->andWhere(sprintf('%s.title LIKE :search', $alias))
+            ->setParameter('search', '%' . $search . '%');
+    }
+
+    protected function applyRequestedSort(QueryBuilder $builder, string $alias, string $sort, string $direction): bool
+    {
+        $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+
+        if ($sort === 'title') {
+            $builder->orderBy(sprintf('%s.title', $alias), $direction)
+                ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
+            return true;
+        }
+
+        if ($sort === 'author') {
+            $builder->leftJoin(sprintf('%s.workCreators', $alias), 'wc')
+                ->leftJoin('wc.person', 'p')
+                ->groupBy(sprintf('%s.id', $alias))
+                ->orderBy('MIN(p.lastName)', $direction)
+                ->addOrderBy('MIN(p.firstName)', $direction)
+                ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
+            return true;
+        }
+
+        return false;
+    }
 
     public function create(array $args): bool|Work
     {

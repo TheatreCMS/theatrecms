@@ -11,6 +11,8 @@ use Slim\Views\Twig;
 
 class WorksController extends BaseController
 {
+    private const SORTABLE_COLUMNS = ['title', 'author'];
+
     private PersonRepository $personRepo;
 
     public function __construct(WorkRepository $repository, Twig $twig, PersonRepository $personRepo)
@@ -22,11 +24,24 @@ class WorksController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render(
-            $response,
-            'admin/works/index.html.twig',
-            $this->buildPaginatedViewData($request, $this->repository, 'works', '/admin/works')
+        [$search, $sort, $direction] = $this->resolveListQuery($request, self::SORTABLE_COLUMNS);
+
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'works',
+            '/admin/works',
+            [],
+            $search,
+            $sort,
+            $direction
         );
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/works/_list.html.twig', $data);
+        }
+
+        return $this->twig->render($response, 'admin/works/index.html.twig', $data);
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
