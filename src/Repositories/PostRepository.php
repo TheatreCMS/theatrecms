@@ -50,6 +50,37 @@ class PostRepository extends BaseRepository
             ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
     }
 
+    protected function applySearchFilter(QueryBuilder $builder, string $alias, string $search): void
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return;
+        }
+
+        $builder->andWhere(sprintf('%s.title LIKE :search', $alias))
+            ->setParameter('search', '%' . $search . '%');
+    }
+
+    protected function applyRequestedSort(QueryBuilder $builder, string $alias, string $sort, string $direction): bool
+    {
+        $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+
+        if ($sort === 'title') {
+            $builder->orderBy(sprintf('%s.title', $alias), $direction)
+                ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
+            return true;
+        }
+
+        if ($sort === 'publishedAt') {
+            $builder->orderBy(sprintf('%s.publishedAt', $alias), $direction)
+                ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
+            return true;
+        }
+
+        return false;
+    }
+
     public function fetchPublished(): array
     {
         return $this->em->createQueryBuilder()

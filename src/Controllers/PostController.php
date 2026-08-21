@@ -17,6 +17,8 @@ use TheatreCMS\Services\ImageUploadService;
  */
 class PostController extends BaseController
 {
+    private const SORTABLE_COLUMNS = ['title', 'publishedAt'];
+
     private ImageUploadService $imageUploadService;
 
     public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig, ImageUploadService $imageUploadService)
@@ -29,17 +31,23 @@ class PostController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render(
-            $response,
-            'admin/posts/index.html.twig',
-            $this->buildPaginatedViewData(
-                $request,
-                $this->repository,
-                'posts',
-                '/admin/posts',
-                ['statuses' => ContentStatus::labels()]
-            )
+        [$search, $sort, $direction] = $this->resolveListQuery($request, self::SORTABLE_COLUMNS);
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'posts',
+            '/admin/posts',
+            ['statuses' => ContentStatus::labels()],
+            $search,
+            $sort,
+            $direction
         );
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/posts/_list.html.twig', $data);
+        }
+
+        return $this->twig->render($response, 'admin/posts/index.html.twig', $data);
     }
 
     public function create(Request $request, Response $response, array $args = []): Response
