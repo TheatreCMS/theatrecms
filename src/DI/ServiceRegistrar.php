@@ -43,6 +43,7 @@ use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\StructuredDataBuilder;
+use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\EditorJsExtension;
@@ -77,6 +78,8 @@ class ServiceRegistrar
         });
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
+
+        $container->set(TemplateResolver::class, static fn(): TemplateResolver => new TemplateResolver());
 
         $container->set(EditorJsHtmlConverter::class, static fn(): EditorJsHtmlConverter => new EditorJsHtmlConverter());
 

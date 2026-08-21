@@ -2,12 +2,17 @@
 
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\PageRepository;
+use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
+/**
+ * @var TemplateResolver $resolver
+ */
+
 if (isset($app)) {
-    $app->get('/{slug}', function (Request $request, Response $response, array $args) use ($app) {
+    $app->get('/{slug}', function (Request $request, Response $response, array $args) use ($app, $resolver) {
         $container = $app->getContainer();
 
         /** @var PageRepository $repository */
@@ -25,6 +30,6 @@ if (isset($app)) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
 
-        return $twig->render($response, 'pages/single.html.twig', ['page' => $page]);
+        return $resolver->renderSingle($twig, $response, 'pages', $page->getSlug(), ['page' => $page]);
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

@@ -17,7 +17,7 @@ if (isset($app)) {
     $app->group('/seasons', function ($group) use ($resolver){
         $container = $group->getContainer();
 
-        $group->get('/{slug}/{productionSlug}', function (Request $request, Response $response, array $args) use ($container) {
+        $group->get('/{slug}/{productionSlug}', function (Request $request, Response $response, array $args) use ($container, $resolver) {
             /** @var  ProductionRepository $productionRepository */
             $productionRepository = $container->get(ProductionRepository::class);
             $production = $productionRepository->getBySlug($args['productionSlug']);
@@ -37,7 +37,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $twig->render($response, 'seasons/production.html.twig', [
+            return $resolver->renderSingle($twig, $response, 'productions', $production->getSlug(), [
                 'production' => $production,
                 'performances' => $performances,
             ]);
@@ -59,16 +59,10 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            $template = $resolver->resolve($twig,
-                'seasons/single-' . $season->getSlug() . '.html.twig',  // most specific
-                'seasons/single.html.twig',
-                'index.html.twig'                                         // fallback
-            );
-
-            return $twig->render($response, $template, ['season' => $season]);
+            return $resolver->renderSingle($twig, $response, 'seasons', $season->getSlug(), ['season' => $season]);
         });
 
-        $group->get('', function (Request $request, Response $response) use ($container) {
+        $group->get('', function (Request $request, Response $response) use ($container, $resolver) {
             $repository = $container->get(SeasonRepository::class);
             /** @var SeasonRepository $repository */
             $seasons = $repository->fetchAll();
@@ -77,7 +71,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $twig->render($response, 'seasons/list.html.twig', ['seasons' => $seasons]);
+            return $resolver->renderList($twig, $response, 'seasons', ['seasons' => $seasons]);
         });
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

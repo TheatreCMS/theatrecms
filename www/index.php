@@ -39,7 +39,7 @@ $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
 
-$resolver = new TemplateResolver();
+$resolver = $container->get(TemplateResolver::class);
 
 // Load external route files
 require ROUTES_DIR . '/admin/seasons.php';

@@ -1,0 +1,22 @@
+{#
+    Renders the <li> items for a resolved menu tree (see MenuExtension::renderMenu()).
+    `items` is a list of {label, url, children} nodes; `options` is passed through
+    from render_menu() for themes/future use but isn't consumed here.
+
+    Intentionally renders only the <li> items, not an outer <ul> — themes provide
+    their own wrapping <ul> (with whatever classes/markup they need) around
+    {{ render_menu('location') }}.
+#}
+{% macro items(nodes) %}
+    {% for item in nodes %}
+        <li class="menu-item{{ item.children is not empty ? ' menu-item--has-children' : '' }}">
+            <a href="{{ item.url }}">{{ item.label }}</a>
+            {% if item.children is not empty %}
+                <ul class="sub-menu">
+                    {{ _self.items(item.children) }}
+                </ul>
+            {% endif %}
+        </li>
+    {% endfor %}
+{% endmacro %}
+{{ _self.items(items) }}
