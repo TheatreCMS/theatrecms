@@ -9,6 +9,9 @@ site:
         twitter: ''
         instagram: ''
 
+# The active theme, matching a subdirectory name under www/themes.
+theme: default
+
 database:
     driver: pdo_mysql
     host: db

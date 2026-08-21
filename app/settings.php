@@ -86,7 +86,8 @@ return [
             'dir' => APP_ROOT . '/www/themes',
 
             // The active theme to use. Should correspond to a subdirectory in the themes dir.
-            'active' => 'default'
+            // Configured via the top-level `theme` key in app/config.yaml.
+            'active' => $config['theme'] ?? 'default'
         ]
     ]
 ];
