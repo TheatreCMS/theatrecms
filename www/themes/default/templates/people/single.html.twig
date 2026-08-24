@@ -22,7 +22,7 @@
 
         <section class="prose prose-gray max-w-none">
             {% if person.biography %}
-                {{ person.biography|raw }}
+                {{ the_content(person) }}
             {% else %}
                 <p class="italic text-gray-500">Biography coming soon.</p>
             {% endif %}

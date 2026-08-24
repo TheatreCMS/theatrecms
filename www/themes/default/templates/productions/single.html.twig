@@ -70,7 +70,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <section class="lg:col-span-2 space-y-6 leading-relaxed text-gray-700">
                 {% if production.description %}
-                    {{ production.description|editorjs_to_html }}
+                    {{ the_content(production) }}
                 {% else %}
                     <p class="italic text-gray-500">Description coming soon.</p>
                 {% endif %}
@@ -206,11 +206,7 @@
             {% endif %}
             {% for work in production.works %}
                 {% if work.description %}
-                    {% for paragraph in work.description|split('\n\n') %}
-                        {% if paragraph|trim %}
-                            <p>{{ paragraph|trim }}</p>
-                        {% endif %}
-                    {% endfor %}
+                    {{ the_content(work) }}
                 {% endif %}
             {% endfor %}
         </section>
@@ -229,7 +225,7 @@
                             <p class="font-medium text-gray-900">
                                 <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>
                             </p>
-                            <div class="text-sm text-gray-700 leading-relaxed">{{ wc.person.biography|raw }}</div>
+                            <div class="text-sm text-gray-700 leading-relaxed">{{ the_content(wc.person) }}</div>
                         </div>
                     </div>
                 </section>

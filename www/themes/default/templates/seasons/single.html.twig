@@ -13,7 +13,7 @@
     <div class="season-layout {% if season.overview %}has-sidebar{% endif %}">
         {% if season.overview %}
             <div class="season-overview">
-                {{ season.overview|editorjs_to_html }}
+                {{ the_content(season) }}
             </div>
         {% endif %}
 

@@ -21,7 +21,7 @@
 
         <section class="space-y-4 leading-relaxed text-gray-700">
             {% if work.description %}
-                {{ work.description|editorjs_to_html }}
+                {{ the_content(work) }}
             {% else %}
                 <p class="italic text-gray-500">Description coming soon.</p>
             {% endif %}
