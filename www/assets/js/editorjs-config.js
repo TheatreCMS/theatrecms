@@ -59,6 +59,12 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
             }
         },
         image: createImageTool(imageEndpoints),
+        linkTool: {
+            class: LinkTool,
+            config: {
+                endpoint: '/admin/link-preview/fetch',
+            },
+        },
         table: {
             class: Table,
             inlineToolbar: true,

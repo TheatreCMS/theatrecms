@@ -16,6 +16,7 @@
  * - list (ordered/unordered)
  * - quote
  * - image
+ * - linkTool (bookmark-style link/card preview, @editorjs/link's block type)
  * - delimiter (renders an <hr />)
  * - checklist
  * - code
@@ -183,6 +184,7 @@ class EditorJsHtmlConverter
             'quote'         => $this->renderQuote($data),
             'image'         => $this->renderImage($data),
             'imageGallery'  => $this->renderGallery($data),
+            'linkTool'      => $this->renderBookmark($data),
             'delimiter'     => '<hr />',
             'sponsorBlock'  => '<div class="editorjs-sponsor-block"></div>',
             'scheduleBlock' => '<div class="editorjs-schedule-block"></div>',
@@ -396,6 +398,66 @@ class EditorJsHtmlConverter
         }
 
         return $gallery;
+    }
+
+    /**
+     * Render a "linkTool" block (@editorjs/link's LinkTool) as a bookmark-style
+     * link card.
+     *
+     * Uses the same markup/class names as Ghost's kg-bookmark-card so themes
+     * that already ship Ghost's cards.css (as this project's default theme
+     * does) render it correctly with no additional styling needed.
+     *
+     * @param array $data Expecting ['link' => string, 'meta' => ['title' => string, 'description' => string, 'image' => ['url' => string], 'publisher' => string, 'icon' => string]]
+     * @return string HTML bookmark card or empty string when the link is missing/unsafe
+     */
+    private function renderBookmark(array $data): string
+    {
+        $url = $this->sanitizeUrl((string) ($data['link'] ?? ''));
+        if ($url === '') {
+            return '';
+        }
+
+        $meta = is_array($data['meta'] ?? null) ? $data['meta'] : [];
+
+        $title = $this->sanitizeText((string) ($meta['title'] ?? ''));
+        if ($title === '') {
+            $title = htmlspecialchars((string) (parse_url($url, PHP_URL_HOST) ?: $url), ENT_QUOTES, 'UTF-8');
+        }
+
+        $description = $this->sanitizeText((string) ($meta['description'] ?? ''));
+        $publisher = $this->sanitizeText((string) ($meta['publisher'] ?? $meta['author'] ?? ''));
+        $iconUrl = $this->sanitizeUrl((string) ($meta['icon'] ?? ''));
+        $imageUrl = $this->sanitizeUrl((string) ($meta['image']['url'] ?? ''));
+
+        $content = '<div class="kg-bookmark-title">' . $title . '</div>';
+
+        if ($description !== '') {
+            $content .= '<div class="kg-bookmark-description">' . $description . '</div>';
+        }
+
+        if ($publisher !== '' || $iconUrl !== '') {
+            $content .= '<div class="kg-bookmark-metadata">';
+            if ($iconUrl !== '') {
+                $content .= '<img class="kg-bookmark-icon" src="' . htmlspecialchars($iconUrl, ENT_QUOTES, 'UTF-8') . '" alt="">';
+            }
+            if ($publisher !== '') {
+                $content .= '<span class="kg-bookmark-author">' . $publisher . '</span>';
+            }
+            $content .= '</div>';
+        }
+
+        $thumbnail = '';
+        if ($imageUrl !== '') {
+            $thumbnail = '<div class="kg-bookmark-thumbnail"><img src="' . htmlspecialchars($imageUrl, ENT_QUOTES, 'UTF-8') . '" alt="" loading="lazy"></div>';
+        }
+
+        $escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+
+        return '<figure class="kg-card kg-bookmark-card"><a class="kg-bookmark-container" href="' . $escapedUrl . '">'
+            . '<div class="kg-bookmark-content">' . $content . '</div>'
+            . $thumbnail
+            . '</a></figure>';
     }
 
     /**

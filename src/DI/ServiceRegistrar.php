@@ -12,6 +12,7 @@ use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Controllers\ImageUploadController;
+use TheatreCMS\Controllers\LinkPreviewController;
 use TheatreCMS\Controllers\MenuController;
 use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Controllers\PostController;
@@ -39,6 +40,7 @@ use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ImageUploadService;
+use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\Theme\HookManager;
@@ -110,6 +112,8 @@ class ServiceRegistrar
         });
 
         $container->set(ImageUploadService::class, static fn(): ImageUploadService => new ImageUploadService(APP_ROOT . '/www'));
+
+        $container->set(LinkPreviewService::class, static fn(): LinkPreviewService => new LinkPreviewService(new \GuzzleHttp\Client()));
 
         $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
 
@@ -317,6 +321,9 @@ class ServiceRegistrar
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
                 return new ImageUploadController($c->get(ImageUploadService::class));
+            },
+            LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {
+                return new LinkPreviewController($c->get(LinkPreviewService::class));
             },
             SettingsController::class => static function (ContainerInterface $c): SettingsController {
                 return new SettingsController(

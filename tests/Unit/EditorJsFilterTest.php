@@ -174,6 +174,72 @@ class EditorJsFilterTest extends TestCase
         $this->assertStringContainsString('link', $html);
     }
 
+    public function testConverterRendersBookmarkCardWithFullMetadata(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'linkTool',
+                    'data' => [
+                        'link' => 'https://www.avlt.info/dirty-laundry/',
+                        'meta' => [
+                            'title' => 'Dirty Laundry',
+                            'description' => 'Written by Mathilde Dratwa, directed by Drew Eberly.',
+                            'image' => ['url' => 'https://storage.ghost.io/dirty-laundry-thumb.jpg'],
+                            'publisher' => 'Available Light Theatre',
+                            'icon' => 'https://storage.ghost.io/avlt-icon.jpg',
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<figure class="kg-card kg-bookmark-card">', $html);
+        $this->assertStringContainsString('<a class="kg-bookmark-container" href="https://www.avlt.info/dirty-laundry/">', $html);
+        $this->assertStringContainsString('<div class="kg-bookmark-title">Dirty Laundry</div>', $html);
+        $this->assertStringContainsString('<div class="kg-bookmark-description">Written by Mathilde Dratwa, directed by Drew Eberly.</div>', $html);
+        $this->assertStringContainsString('<span class="kg-bookmark-author">Available Light Theatre</span>', $html);
+        $this->assertStringContainsString('<img class="kg-bookmark-icon" src="https://storage.ghost.io/avlt-icon.jpg" alt="">', $html);
+        $this->assertStringContainsString('<div class="kg-bookmark-thumbnail"><img src="https://storage.ghost.io/dirty-laundry-thumb.jpg" alt="" loading="lazy"></div>', $html);
+    }
+
+    public function testConverterRendersBookmarkCardWithMinimalMetadata(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'linkTool',
+                    'data' => [
+                        'link' => 'https://example.com/some-page',
+                        'meta' => [],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<div class="kg-bookmark-title">example.com</div>', $html);
+        $this->assertStringNotContainsString('kg-bookmark-description', $html);
+        $this->assertStringNotContainsString('kg-bookmark-metadata', $html);
+        $this->assertStringNotContainsString('kg-bookmark-thumbnail', $html);
+    }
+
+    public function testConverterDropsBookmarkCardWithUnsafeLink(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'linkTool',
+                    'data' => [
+                        'link' => 'javascript:alert(1)',
+                        'meta' => ['title' => 'Evil'],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
     public function testConverterStripsDisallowedAttributesFromAnchor(): void
     {
         $html = $this->converter->toHtml(json_encode([
