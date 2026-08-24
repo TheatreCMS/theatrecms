@@ -23,6 +23,7 @@ use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -87,10 +88,13 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
             : 'upcoming';
     }
 
+    $siteName = $container->get(SiteSettings::class)->get('name', 'Home');
+
     return $twig->render($response, 'index.html.twig', [
         'posts' => $posts,
         'featuredProduction' => $featuredProduction,
         'featuredProductionStatus' => $featuredProductionStatus,
+        'page' => ['title' => $siteName],
     ]);
 });
 $app->run();

@@ -23,6 +23,6 @@ if (isset($app)) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
 
-        return $resolver->renderList($twig, $response, 'productions', ['productions' => $productions]);
+        return $resolver->renderList($twig, $response, 'productions', 'Productions', ['productions' => $productions]);
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

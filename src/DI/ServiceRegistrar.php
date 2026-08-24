@@ -40,15 +40,19 @@ use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
+use TheatreCMS\Theme\TitleResolver;
 use TheatreCMS\Twig\CapabilityExtension;
+use TheatreCMS\Twig\ContentExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
+use TheatreCMS\Twig\TitleExtension;
 use Delight\Auth\Auth;
 
 /**
@@ -79,9 +83,17 @@ class ServiceRegistrar
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
-        $container->set(TemplateResolver::class, static fn(): TemplateResolver => new TemplateResolver());
+        $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
+
+        $container->set(TemplateResolver::class, static function (ContainerInterface $c): TemplateResolver {
+            return new TemplateResolver($c->get(TitleResolver::class));
+        });
 
         $container->set(EditorJsHtmlConverter::class, static fn(): EditorJsHtmlConverter => new EditorJsHtmlConverter());
+
+        $container->set(ContentResolver::class, static function (ContainerInterface $c): ContentResolver {
+            return new ContentResolver($c->get(EditorJsHtmlConverter::class));
+        });
 
         $container->set(StructuredDataBuilder::class, static function (ContainerInterface $c): StructuredDataBuilder {
             return new StructuredDataBuilder($c->get(SiteSettings::class), $c->get(EditorJsHtmlConverter::class));
@@ -138,6 +150,8 @@ class ServiceRegistrar
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
             $twig->addExtension($c->get(ThemeHeadExtension::class));
+            $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
+            $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $auth = $c->get(Auth::class);

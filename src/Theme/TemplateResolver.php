@@ -20,6 +20,10 @@ use Slim\Views\Twig;
  */
 class TemplateResolver
 {
+    public function __construct(private readonly TitleResolver $titleResolver)
+    {
+    }
+
     public function resolve(Twig $twig, string ...$candidates): string
     {
         if (empty($candidates)) {
@@ -64,25 +68,43 @@ class TemplateResolver
     /**
      * Resolve and render a single content-item view in one step.
      *
+     * Also adds a generic `page` object (currently just `title`, resolved via
+     * `TitleResolver`) to the context, so every theme's `layouts/base.html.twig` can rely
+     * on `page.title` regardless of which content type is being rendered — without
+     * clobbering routes (like `pages/{slug}`) that already pass their own richer `page`
+     * entity in `$context`.
+     *
      * @param array<string, mixed> $context
      */
     public function renderSingle(
         Twig $twig,
         Response $response,
         string $type,
-        string $slug,
+        object $entity,
         array $context = []
     ): Response {
+        $slug = method_exists($entity, 'getSlug') ? (string) $entity->getSlug() : '';
+        $context += ['page' => ['title' => $this->titleResolver->resolve($entity)]];
+
         return $twig->render($response, $this->resolveSingle($twig, $type, $slug), $context);
     }
 
     /**
-     * Resolve and render a content-type list/archive view in one step.
+     * Resolve and render a content-type list/archive view in one step, with the same
+     * `page` context object `renderSingle()` adds (there being no single entity to derive
+     * a title from, the caller supplies the page title directly).
      *
      * @param array<string, mixed> $context
      */
-    public function renderList(Twig $twig, Response $response, string $type, array $context = []): Response
-    {
+    public function renderList(
+        Twig $twig,
+        Response $response,
+        string $type,
+        string $pageTitle,
+        array $context = []
+    ): Response {
+        $context += ['page' => ['title' => $pageTitle]];
+
         return $twig->render($response, $this->resolveList($twig, $type), $context);
     }
 }

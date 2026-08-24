@@ -38,7 +38,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $resolver->renderSingle($twig, $response, 'works', $work->getSlug(), ['work' => $work]);
+            return $resolver->renderSingle($twig, $response, 'works', $work, ['work' => $work]);
         });
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

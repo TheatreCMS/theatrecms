@@ -11,6 +11,9 @@ parameters:
   # Autoload Composer to make classes available to PHPStan
   bootstrapFiles:
     - vendor/autoload.php
+    # Declares the global add_filter()/apply_filters()/add_action()/do_action() helpers
+    # (WordPress-style hooks) so PHPStan recognizes them when src/ code calls them.
+    - app/hooks.php
 
   # Exclude generated or vendor code from analysis explicitly (defensive)
   excludePaths:

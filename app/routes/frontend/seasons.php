@@ -37,7 +37,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $resolver->renderSingle($twig, $response, 'productions', $production->getSlug(), [
+            return $resolver->renderSingle($twig, $response, 'productions', $production, [
                 'production' => $production,
                 'performances' => $performances,
             ]);
@@ -59,7 +59,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $resolver->renderSingle($twig, $response, 'seasons', $season->getSlug(), ['season' => $season]);
+            return $resolver->renderSingle($twig, $response, 'seasons', $season, ['season' => $season]);
         });
 
         $group->get('', function (Request $request, Response $response) use ($container, $resolver) {
@@ -71,7 +71,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $resolver->renderList($twig, $response, 'seasons', ['seasons' => $seasons]);
+            return $resolver->renderList($twig, $response, 'seasons', 'Seasons', ['seasons' => $seasons]);
         });
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }
