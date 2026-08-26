@@ -46,6 +46,7 @@ use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
+use TheatreCMS\Theme\SlugResolver;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
@@ -55,6 +56,7 @@ use TheatreCMS\Twig\ContentExtension;
 use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\MenuExtension;
+use TheatreCMS\Twig\SlugExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
 use Delight\Auth\Auth;
@@ -88,6 +90,8 @@ class ServiceRegistrar
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
         $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
+
+        $container->set(SlugResolver::class, static fn(): SlugResolver => new SlugResolver());
 
         $container->set(DateResolver::class, static fn(): DateResolver => new DateResolver());
 
@@ -159,6 +163,7 @@ class ServiceRegistrar
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
             $twig->addExtension($c->get(ThemeHeadExtension::class));
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
+            $twig->addExtension(new SlugExtension($c->get(SlugResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());

@@ -21,12 +21,6 @@
                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
         </div>
 
-        <div>
-            <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <input type="text" name="slug" id="slug" maxlength="255" value="{{ post.slug }}"
-                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
-        </div>
-
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                 <select name="status" id="status" class="w-full rounded-md border-gray-300 shadow-sm">
@@ -35,6 +29,12 @@
                     {% endfor %}
                 </select>
             </div>
+
+        <div>
+            <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+            <input type="text" name="slug" id="slug" maxlength="255" value="{{ post.slug }}"
+                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+        </div>
 
             <div>
                 <label for="publishedAt" class="block text-sm font-medium text-gray-700 mb-1">Publish Date</label>
