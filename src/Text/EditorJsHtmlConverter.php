@@ -17,6 +17,7 @@
  * - quote
  * - image
  * - linkTool (bookmark-style link/card preview, @editorjs/link's block type)
+ * - ctaCard (call-to-action card: text + button on a colored background)
  * - delimiter (renders an <hr />)
  * - checklist
  * - code
@@ -45,6 +46,15 @@ class EditorJsHtmlConverter
 {
     private const INLINE_TAGS = [
         'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br', 'a',
+    ];
+
+    /**
+     * Ghost's kg-cta-bg-* background presets (see cards.min.css). Whitelisted
+     * so a block's stored `backgroundColor` can only ever select one of these
+     * real, styled classes.
+     */
+    private const CTA_BACKGROUND_PRESETS = [
+        'purple', 'blue', 'green', 'yellow', 'red', 'pink', 'grey', 'white', 'none',
     ];
 
     /**
@@ -185,6 +195,7 @@ class EditorJsHtmlConverter
             'image'         => $this->renderImage($data),
             'imageGallery'  => $this->renderGallery($data),
             'linkTool'      => $this->renderBookmark($data),
+            'ctaCard'       => $this->renderCtaCard($data),
             'delimiter'     => '<hr />',
             'sponsorBlock'  => '<div class="editorjs-sponsor-block"></div>',
             'scheduleBlock' => '<div class="editorjs-schedule-block"></div>',
@@ -458,6 +469,46 @@ class EditorJsHtmlConverter
             . '<div class="kg-bookmark-content">' . $content . '</div>'
             . $thumbnail
             . '</a></figure>';
+    }
+
+    /**
+     * Render a "ctaCard" block: a short message plus a button on a colored
+     * background.
+     *
+     * Uses Ghost's kg-cta-card markup (immersive, centered variant) so themes
+     * that already ship Ghost's cards.css render it correctly. The button's
+     * color comes from the site's --ghost-accent-color CSS variable where
+     * defined, with a safe fallback so the button is never invisible.
+     *
+     * @param array $data Expecting ['text' => string, 'buttonText' => string, 'buttonUrl' => string, 'backgroundColor' => string]
+     * @return string HTML CTA card or empty string when the text or button link is missing/unsafe
+     */
+    private function renderCtaCard(array $data): string
+    {
+        $text = $this->sanitizeText((string) ($data['text'] ?? ''));
+        $buttonUrl = $this->sanitizeUrl((string) ($data['buttonUrl'] ?? ''));
+
+        if ($text === '' || $buttonUrl === '') {
+            return '';
+        }
+
+        $buttonText = $this->sanitizeText((string) ($data['buttonText'] ?? ''));
+        if ($buttonText === '') {
+            $buttonText = 'Learn more';
+        }
+
+        $background = (string) ($data['backgroundColor'] ?? 'purple');
+        if (!in_array($background, self::CTA_BACKGROUND_PRESETS, true)) {
+            $background = 'purple';
+        }
+
+        $escapedUrl = htmlspecialchars($buttonUrl, ENT_QUOTES, 'UTF-8');
+
+        return '<div class="kg-card kg-cta-card kg-cta-bg-' . $background . ' kg-cta-immersive kg-cta-centered">'
+            . '<div class="kg-cta-content"><div class="kg-cta-content-inner">'
+            . '<div class="kg-cta-text"><p>' . $text . '</p></div>'
+            . '<a href="' . $escapedUrl . '" class="kg-cta-button kg-style-accent" style="background-color: var(--ghost-accent-color, #7c55ec); color: #fff;">' . $buttonText . '</a>'
+            . '</div></div></div>';
     }
 
     /**

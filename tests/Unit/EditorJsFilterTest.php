@@ -240,6 +240,98 @@ class EditorJsFilterTest extends TestCase
         $this->assertSame('', $html);
     }
 
+    public function testConverterRendersCtaCard(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'ctaCard',
+                    'data' => [
+                        'text' => 'Reserve your seats now through the CAPA ticketing portal.',
+                        'buttonText' => 'Go to CAPA Ticketing →',
+                        'buttonUrl' => 'https://tickets.capa.com/overview/10611?ref=avlt.info',
+                        'backgroundColor' => 'purple',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<div class="kg-card kg-cta-card kg-cta-bg-purple kg-cta-immersive kg-cta-centered">', $html);
+        $this->assertStringContainsString('<div class="kg-cta-text"><p>Reserve your seats now through the CAPA ticketing portal.</p></div>', $html);
+        $this->assertStringContainsString('<a href="https://tickets.capa.com/overview/10611?ref=avlt.info" class="kg-cta-button kg-style-accent"', $html);
+        $this->assertStringContainsString('Go to CAPA Ticketing', $html);
+    }
+
+    public function testConverterRejectsUnknownCtaCardBackgroundPreset(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'ctaCard',
+                    'data' => [
+                        'text' => 'Message',
+                        'buttonText' => 'Go',
+                        'buttonUrl' => 'https://example.com',
+                        'backgroundColor' => 'javascript:alert(1)" onclick="evil()',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('kg-cta-bg-purple', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
+
+    public function testConverterDefaultsCtaCardButtonTextWhenMissing(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'ctaCard',
+                    'data' => [
+                        'text' => 'Message',
+                        'buttonUrl' => 'https://example.com',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('>Learn more</a>', $html);
+    }
+
+    public function testConverterDropsCtaCardWithoutButtonUrl(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'ctaCard',
+                    'data' => [
+                        'text' => 'Message with no link',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
+    public function testConverterDropsCtaCardWithoutText(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'ctaCard',
+                    'data' => [
+                        'buttonUrl' => 'https://example.com',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
     public function testConverterStripsDisallowedAttributesFromAnchor(): void
     {
         $html = $this->converter->toHtml(json_encode([

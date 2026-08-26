@@ -76,6 +76,10 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         sponsorBlock: {
             class: SponsorBlock,
         },
+        ctaCard: {
+            class: CtaCard,
+            inlineToolbar: INLINE_TOOLBAR_ITEMS,
+        },
         scheduleBlock: {
             class: ScheduleBlock,
         },

@@ -43,6 +43,7 @@ use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\ContentResolver;
+use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\StructuredDataBuilder;
@@ -51,6 +52,7 @@ use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ContentExtension;
+use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
@@ -86,6 +88,8 @@ class ServiceRegistrar
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
 
         $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
+
+        $container->set(DateResolver::class, static fn(): DateResolver => new DateResolver());
 
         $container->set(TemplateResolver::class, static function (ContainerInterface $c): TemplateResolver {
             return new TemplateResolver($c->get(TitleResolver::class));
@@ -155,6 +159,7 @@ class ServiceRegistrar
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
             $twig->addExtension($c->get(ThemeHeadExtension::class));
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
+            $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
