@@ -10,11 +10,15 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\Traits\HasTimestamps;
 
 #[Entity, Table(name: 'posts')]
 class Post extends ModelBase
 {
     use HasContentStatus;
+    use HasTimestamps;
+    use HasModifiedTimestamp;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
@@ -27,15 +31,6 @@ class Post extends ModelBase
 
     #[Column(name: 'featured_image_url', type: 'string', length: 255, nullable: true)]
     private ?string $featuredImageUrl = null;
-
-    #[Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
-
-    #[Column(name: 'modified_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $modifiedAt;
-
-    #[Column(name: 'published_at', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeImmutable $publishedAt = null;
 
     public function __construct(string $title, ContentStatus $status, string $content)
     {
@@ -87,40 +82,6 @@ class Post extends ModelBase
     public function setFeaturedImageUrl(?string $featuredImageUrl): self
     {
         $this->featuredImageUrl = $featuredImageUrl;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getModifiedAt(): DateTimeImmutable
-    {
-        return $this->modifiedAt;
-    }
-
-    public function setModifiedAt(DateTimeImmutable $modifiedAt): self
-    {
-        $this->modifiedAt = $modifiedAt;
-
-        return $this;
-    }
-
-    public function touchModified(): self
-    {
-        return $this->setModifiedAt(new DateTimeImmutable());
-    }
-
-    public function getPublishedAt(): ?DateTimeImmutable
-    {
-        return $this->publishedAt;
-    }
-
-    public function setPublishedAt(?DateTimeImmutable $publishedAt): self
-    {
-        $this->publishedAt = $publishedAt;
 
         return $this;
     }
