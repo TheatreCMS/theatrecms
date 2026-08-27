@@ -22,7 +22,8 @@
                 class="text-red-600 hover:text-red-900"
                 hx-delete="/admin/people/{{ p.id }}?page={{ pagination.page }}"
                 hx-target="#peopleListContainer"
-                hx-swap="outerHTML">
+                hx-swap="outerHTML"
+                hx-confirm="Delete this person? This cannot be undone.">
                 Delete
             </button>
         </td>

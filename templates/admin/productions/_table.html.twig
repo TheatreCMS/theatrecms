@@ -19,7 +19,8 @@
                 class="text-red-600 hover:text-red-900"
                 hx-delete="/admin/productions/{{ p.id }}?page={{ pagination.page }}"
                 hx-target="#productionListContainer"
-                hx-swap="outerHTML">
+                hx-swap="outerHTML"
+                hx-confirm="Delete this production? This cannot be undone.">
                 Delete
             </button>
         </td>

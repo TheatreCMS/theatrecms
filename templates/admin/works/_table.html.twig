@@ -14,7 +14,8 @@
                 class="text-red-600 hover:text-red-900"
                 hx-delete="/admin/works/{{ work.id }}?page={{ pagination.page }}"
                 hx-target="#workListContainer"
-                hx-swap="outerHTML">
+                hx-swap="outerHTML"
+                hx-confirm="Delete this work? This cannot be undone.">
                 Delete
             </button>
         </td>

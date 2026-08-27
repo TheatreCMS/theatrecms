@@ -4,7 +4,7 @@
         <td class="px-6 py-4">{% if s.websiteUrl %}<a href="{{ s.websiteUrl }}" target="_blank" rel="noopener">{{ s.websiteUrl }}</a>{% endif %}</td>
         <td class="px-6 py-4">
             <a href="/admin/sponsors/edit/{{ s.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
-            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/sponsors/{{ s.id }}?page={{ pagination.page }}" hx-target="#sponsorListContainer" hx-swap="outerHTML">Delete</button>
+            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="/admin/sponsors/{{ s.id }}?page={{ pagination.page }}" hx-target="#sponsorListContainer" hx-swap="outerHTML" hx-confirm="Delete this sponsor? This cannot be undone.">Delete</button>
         </td>
     </tr>
 {% else %}
