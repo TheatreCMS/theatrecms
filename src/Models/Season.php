@@ -10,10 +10,13 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
+use TheatreCMS\Traits\HasSponsors;
 
 #[Entity, Table(name: 'seasons')]
 class Season extends ModelBase implements \JsonSerializable
 {
+    use HasSponsors;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 
@@ -84,11 +87,6 @@ class Season extends ModelBase implements \JsonSerializable
         return $this->productions;
     }
 
-    public function getSponsorships(): Collection
-    {
-        return $this->sponsorships;
-    }
-
     public function setLabel(string $label): self
     {
         $this->label = $label;
@@ -128,15 +126,6 @@ class Season extends ModelBase implements \JsonSerializable
     {
         if (!$this->productions->contains($production)) {
             $this->productions->add($production);
-        }
-
-        return $this;
-    }
-
-    public function addSponsorship(Sponsorship $sponsorship): self
-    {
-        if (!$this->sponsorships->contains($sponsorship)) {
-            $this->sponsorships->add($sponsorship);
         }
 
         return $this;

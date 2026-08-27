@@ -50,6 +50,7 @@ use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Theme\PermalinkResolver;
 use TheatreCMS\Theme\SlugResolver;
+use TheatreCMS\Theme\SponsorsResolver;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
@@ -62,6 +63,7 @@ use TheatreCMS\Twig\FeaturedImageExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
+use TheatreCMS\Twig\SponsorsExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
 use Delight\Auth\Auth;
@@ -99,6 +101,8 @@ class ServiceRegistrar
         $container->set(SlugResolver::class, static fn(): SlugResolver => new SlugResolver());
 
         $container->set(FeaturedImageResolver::class, static fn(): FeaturedImageResolver => new FeaturedImageResolver());
+
+        $container->set(SponsorsResolver::class, static fn(): SponsorsResolver => new SponsorsResolver());
 
         $container->set(ContentTypeRegistry::class, static function (ContainerInterface $c): ContentTypeRegistry {
             $settings = $c->get('settings');
@@ -183,6 +187,7 @@ class ServiceRegistrar
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
             $twig->addExtension(new SlugExtension($c->get(SlugResolver::class)));
             $twig->addExtension(new FeaturedImageExtension($c->get(FeaturedImageResolver::class)));
+            $twig->addExtension(new SponsorsExtension($c->get(SponsorsResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));

@@ -14,12 +14,14 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use DateTime;
+use TheatreCMS\Traits\HasSponsors;
 use TheatreCMS\Traits\SupportsFeaturedImage;
 
 #[Entity, Table(name: 'productions')]
 class Production extends ModelBase
 {
     use SupportsFeaturedImage;
+    use HasSponsors;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
@@ -195,20 +197,6 @@ class Production extends ModelBase
     public function getPeople(): Collection
     {
         return $this->people;
-    }
-
-    public function getSponsorships(): Collection
-    {
-        return $this->sponsorships;
-    }
-
-    public function addSponsorship(Sponsorship $sponsorship): self
-    {
-        if (!$this->sponsorships->contains($sponsorship)) {
-            $this->sponsorships[] = $sponsorship;
-        }
-
-        return $this;
     }
 
     public function setName(string $name): self
