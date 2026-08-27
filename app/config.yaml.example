@@ -12,13 +12,19 @@ site:
 # The active theme, matching a subdirectory name under www/themes.
 theme: default
 
-# Override the URL prefix used for a built-in content type's frontend routes.
-# Keys are content-type identifiers (seasons, productions, people, works, posts);
-# values are the URL path segment to use instead of the default (which matches the
-# key). For example, a theatre whose site calls its season listing "Shows" can serve
-# it under /shows instead of /seasons:
+# Override the URL prefix and/or display label used for a built-in content type's
+# frontend routes and page titles. Keys are content-type identifiers (seasons,
+# productions, people, works, posts). The shorthand form below sets the URL prefix
+# and derives the label from it (capitalized); use the expanded form to set an
+# independent label. For example, a theatre whose site calls its season listing
+# "Shows" can serve it under /shows, with "Shows" used in menu links and page
+# <title>s, instead of /seasons and "Seasons":
 # content_types:
 #     seasons: shows
+#     # Equivalent to the above, but lets the label differ from the URL prefix:
+#     # seasons:
+#     #     url_prefix: shows
+#     #     label: Shows
 
 database:
     driver: pdo_mysql

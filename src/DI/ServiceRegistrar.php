@@ -143,7 +143,8 @@ class ServiceRegistrar
                 $c->get(PostRepository::class),
                 $c->get(ProductionRepository::class),
                 $c->get(SeasonRepository::class),
-                $c->get(PermalinkResolver::class)
+                $c->get(PermalinkResolver::class),
+                $c->get(ContentTypeRegistry::class)
             );
         });
 

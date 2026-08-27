@@ -1,10 +1,10 @@
 {% extends 'layouts/base.html.twig' %}
 
-{% block title %}Productions - {{ parent() }}{% endblock %}
+{% block title %}{{ page.title }} - {{ parent() }}{% endblock %}
 
 {% block content %}
     <header class="space-y-2">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Productions</h1>
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">{{ page.title }}</h1>
         <p class="text-sm sm:text-base text-gray-600">Explore current and upcoming productions.</p>
     </header>
 

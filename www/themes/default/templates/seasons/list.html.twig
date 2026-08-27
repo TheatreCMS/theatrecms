@@ -1,9 +1,9 @@
 {% extends 'layouts/base.html.twig' %}
 
-{% block title %}Seasons - {{ parent() }}{% endblock %}
+{% block title %}{{ page.title }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <h1>Our Seasons</h1>
+    <h1>Our {{ page.title }}</h1>
     <ul>
         {% for season in seasons %}
             <li>

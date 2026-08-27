@@ -16,7 +16,7 @@ use Slim\Views\Twig;
  */
 
 if (isset($app)) {
-    $app->group('/' . $contentTypes->prefix('seasons'), function ($group) use ($resolver){
+    $app->group('/' . $contentTypes->prefix('seasons'), function ($group) use ($resolver, $contentTypes){
         $container = $group->getContainer();
 
         $group->get('/{slug}/{productionSlug}', function (Request $request, Response $response, array $args) use ($container, $resolver) {
@@ -64,7 +64,7 @@ if (isset($app)) {
             return $resolver->renderSingle($twig, $response, 'seasons', $season, ['season' => $season]);
         });
 
-        $group->get('', function (Request $request, Response $response) use ($container, $resolver) {
+        $group->get('', function (Request $request, Response $response) use ($container, $resolver, $contentTypes) {
             $repository = $container->get(SeasonRepository::class);
             /** @var SeasonRepository $repository */
             $seasons = $repository->fetchAll();
@@ -73,7 +73,9 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $resolver->renderList($twig, $response, 'seasons', 'Seasons', ['seasons' => $seasons]);
+            $title = $contentTypes->label('seasons');
+
+            return $resolver->renderList($twig, $response, 'seasons', $title, ['seasons' => $seasons]);
         });
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

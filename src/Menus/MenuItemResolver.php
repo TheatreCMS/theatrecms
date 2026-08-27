@@ -8,6 +8,7 @@ use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\PermalinkResolver;
 
 /**
@@ -32,21 +33,13 @@ class MenuItemResolver
         'season' => 'seasons',
     ];
 
-    /**
-     * @var array<string, string>
-     */
-    private const ARCHIVE_LABELS = [
-        'post' => 'All Posts',
-        'production' => 'All Productions',
-        'season' => 'All Seasons',
-    ];
-
     public function __construct(
         private readonly PageRepository $pageRepository,
         private readonly PostRepository $postRepository,
         private readonly ProductionRepository $productionRepository,
         private readonly SeasonRepository $seasonRepository,
-        private readonly PermalinkResolver $permalinkResolver
+        private readonly PermalinkResolver $permalinkResolver,
+        private readonly ContentTypeRegistry $contentTypes
     ) {
     }
 
@@ -75,8 +68,8 @@ class MenuItemResolver
             return $item->getLabel();
         }
 
-        if (!$item->getTargetId() && isset(self::ARCHIVE_LABELS[$item->getLinkType()->value])) {
-            return self::ARCHIVE_LABELS[$item->getLinkType()->value];
+        if (!$item->getTargetId() && isset(self::ARCHIVE_TYPES[$item->getLinkType()->value])) {
+            return 'All ' . $this->contentTypes->label(self::ARCHIVE_TYPES[$item->getLinkType()->value]);
         }
 
         return $this->resolveSourceTitle($item) ?? '(untitled)';

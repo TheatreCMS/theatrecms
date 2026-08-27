@@ -29,4 +29,36 @@ class ContentTypeRegistryTest extends TestCase
 
         $this->assertSame('widgets', $registry->prefix('widgets'));
     }
+
+    public function testDefaultLabelMatchesCapitalizedTypeName(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        $this->assertSame('Seasons', $registry->label('seasons'));
+    }
+
+    public function testShorthandOverrideDerivesLabelFromPrefix(): void
+    {
+        $registry = new ContentTypeRegistry(['seasons' => 'shows']);
+
+        $this->assertSame('shows', $registry->prefix('seasons'));
+        $this->assertSame('Shows', $registry->label('seasons'));
+    }
+
+    public function testExpandedOverrideSetsIndependentLabel(): void
+    {
+        $registry = new ContentTypeRegistry([
+            'seasons' => ['url_prefix' => 'shows', 'label' => 'Our Shows'],
+        ]);
+
+        $this->assertSame('shows', $registry->prefix('seasons'));
+        $this->assertSame('Our Shows', $registry->label('seasons'));
+    }
+
+    public function testUnknownTypeLabelFallsBackToCapitalizedType(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        $this->assertSame('Widgets', $registry->label('widgets'));
+    }
 }

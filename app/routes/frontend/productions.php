@@ -14,7 +14,7 @@ use Slim\Views\Twig;
  */
 
 if (isset($app)) {
-    $app->get('/' . $contentTypes->prefix('productions'), function (Request $request, Response $response) use ($app, $resolver) {
+    $app->get('/' . $contentTypes->prefix('productions'), function (Request $request, Response $response) use ($app, $resolver, $contentTypes) {
         $container = $app->getContainer();
 
         /** @var ProductionRepository $repository */
@@ -25,6 +25,8 @@ if (isset($app)) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
 
-        return $resolver->renderList($twig, $response, 'productions', 'Productions', ['productions' => $productions]);
+        $title = $contentTypes->label('productions');
+
+        return $resolver->renderList($twig, $response, 'productions', $title, ['productions' => $productions]);
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }
