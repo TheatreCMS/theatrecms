@@ -7,7 +7,7 @@
     <ul>
         {% for season in seasons %}
             <li>
-                <a href="/seasons/{{ season.slug }}">
+                <a href="{{ the_permalink(season) }}">
                     {% if season.featuredImageUrl %}
                         <img src="{{ season.featuredImageUrl }}" alt="{{ season.label }}" class="season-featured-image-thumb">
                     {% endif %}

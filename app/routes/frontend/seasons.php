@@ -4,6 +4,7 @@ use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -11,10 +12,11 @@ use Slim\Views\Twig;
 
 /**
  * @var TemplateResolver $resolver
+ * @var ContentTypeRegistry $contentTypes
  */
 
 if (isset($app)) {
-    $app->group('/seasons', function ($group) use ($resolver){
+    $app->group('/' . $contentTypes->prefix('seasons'), function ($group) use ($resolver){
         $container = $group->getContainer();
 
         $group->get('/{slug}/{productionSlug}', function (Request $request, Response $response, array $args) use ($container, $resolver) {

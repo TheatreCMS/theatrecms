@@ -9,7 +9,7 @@
             {% if work.workCreators|length > 0 %}
                 <p class="text-sm text-gray-600">
                     {% for wc in work.workCreators %}
-                        {{ wc.role }}: <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>{% if not loop.last %} · {% endif %}
+                        {{ wc.role }}: <a href="{{ the_permalink(wc.person) }}" class="hover:underline">{{ wc.person.name }}</a>{% if not loop.last %} · {% endif %}
                     {% endfor %}
                 </p>
             {% endif %}

@@ -24,6 +24,7 @@ use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Settings\SiteSettings;
+use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -41,6 +42,7 @@ $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
 
 $resolver = $container->get(TemplateResolver::class);
+$contentTypes = $container->get(ContentTypeRegistry::class);
 
 // Load external route files
 require ROUTES_DIR . '/admin/seasons.php';

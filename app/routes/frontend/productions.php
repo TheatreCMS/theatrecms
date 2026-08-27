@@ -2,6 +2,7 @@
 
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -9,10 +10,11 @@ use Slim\Views\Twig;
 
 /**
  * @var TemplateResolver $resolver
+ * @var ContentTypeRegistry $contentTypes
  */
 
 if (isset($app)) {
-    $app->get('/productions', function (Request $request, Response $response) use ($app, $resolver) {
+    $app->get('/' . $contentTypes->prefix('productions'), function (Request $request, Response $response) use ($app, $resolver) {
         $container = $app->getContainer();
 
         /** @var ProductionRepository $repository */

@@ -24,7 +24,7 @@
             {% if allCreators|length > 0 %}
                 <p class="text-sm text-gray-600">
                     {% for wc in allCreators %}
-                        {{ wc.role }}: <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>{% if not loop.last %} · {% endif %}
+                        {{ wc.role }}: <a href="{{ the_permalink(wc.person) }}" class="hover:underline">{{ wc.person.name }}</a>{% if not loop.last %} · {% endif %}
                     {% endfor %}
                 </p>
             {% endif %}
@@ -158,7 +158,7 @@
                             {% endif %}
                             <div>
                                 <p class="font-medium text-gray-900 text-sm">
-                                    <a href="/people/{{ pp.person.slug }}" class="hover:underline">{{ pp.person.name }}</a>
+                                    <a href="{{ the_permalink(pp.person) }}" class="hover:underline">{{ pp.person.name }}</a>
                                 </p>
                                 <p class="text-xs text-gray-500">{{ pp.role }}</p>
                             </div>
@@ -185,7 +185,7 @@
                             {% endif %}
                             <div>
                                 <p class="font-medium text-gray-900 text-sm">
-                                    <a href="/people/{{ pp.person.slug }}" class="hover:underline">{{ pp.person.name }}</a>
+                                    <a href="{{ the_permalink(pp.person) }}" class="hover:underline">{{ pp.person.name }}</a>
                                 </p>
                                 <p class="text-xs text-gray-500">{{ pp.role }}</p>
                             </div>
@@ -223,7 +223,7 @@
                         {% endif %}
                         <div class="space-y-1">
                             <p class="font-medium text-gray-900">
-                                <a href="/people/{{ wc.person.slug }}" class="hover:underline">{{ wc.person.name }}</a>
+                                <a href="{{ the_permalink(wc.person) }}" class="hover:underline">{{ wc.person.name }}</a>
                             </p>
                             <div class="text-sm text-gray-700 leading-relaxed">{{ the_content(wc.person) }}</div>
                         </div>

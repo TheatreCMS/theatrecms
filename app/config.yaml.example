@@ -12,6 +12,14 @@ site:
 # The active theme, matching a subdirectory name under www/themes.
 theme: default
 
+# Override the URL prefix used for a built-in content type's frontend routes.
+# Keys are content-type identifiers (seasons, productions, people, works, posts);
+# values are the URL path segment to use instead of the default (which matches the
+# key). For example, a theatre whose site calls its season listing "Shows" can serve
+# it under /shows instead of /seasons:
+# content_types:
+#     seasons: shows
+
 database:
     driver: pdo_mysql
     host: db

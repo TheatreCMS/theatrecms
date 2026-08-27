@@ -8,6 +8,7 @@ use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Theme\PermalinkResolver;
 
 /**
  * Resolves a MenuItem's rendered URL and label by looking up its linked
@@ -17,18 +18,18 @@ use TheatreCMS\Repositories\SeasonRepository;
 class MenuItemResolver
 {
     /**
-     * Conventional listing-page URLs for each content type's archive. A menu
-     * item of a given type with no targetId links to that type's archive
-     * rather than a specific piece of content — no separate "archive" enum
-     * case or DB column needed. Pages are deliberately excluded: they're
-     * always individually linked, with no archive/listing page.
+     * Content-type keys (see `ContentTypeRegistry`) for each linkable menu item type. A
+     * menu item of a given type with no targetId links to that type's archive rather
+     * than a specific piece of content — no separate "archive" enum case or DB column
+     * needed. Pages are deliberately excluded: they're always individually linked, with
+     * no archive/listing page.
      *
      * @var array<string, string>
      */
-    private const ARCHIVE_URLS = [
-        'post' => '/posts',
-        'production' => '/productions',
-        'season' => '/seasons',
+    private const ARCHIVE_TYPES = [
+        'post' => 'posts',
+        'production' => 'productions',
+        'season' => 'seasons',
     ];
 
     /**
@@ -44,7 +45,8 @@ class MenuItemResolver
         private readonly PageRepository $pageRepository,
         private readonly PostRepository $postRepository,
         private readonly ProductionRepository $productionRepository,
-        private readonly SeasonRepository $seasonRepository
+        private readonly SeasonRepository $seasonRepository,
+        private readonly PermalinkResolver $permalinkResolver
     ) {
     }
 
@@ -54,8 +56,8 @@ class MenuItemResolver
      */
     public function resolveUrl(MenuItem $item): ?string
     {
-        if (!$item->getTargetId() && isset(self::ARCHIVE_URLS[$item->getLinkType()->value])) {
-            return self::ARCHIVE_URLS[$item->getLinkType()->value];
+        if (!$item->getTargetId() && isset(self::ARCHIVE_TYPES[$item->getLinkType()->value])) {
+            return $this->permalinkResolver->archiveUrl(self::ARCHIVE_TYPES[$item->getLinkType()->value]);
         }
 
         return match ($item->getLinkType()) {
@@ -109,7 +111,7 @@ class MenuItemResolver
 
         $page = $this->pageRepository->fetch($item->getTargetId());
 
-        return $page ? '/' . $page->getSlug() : null;
+        return $page ? $this->permalinkResolver->resolve($page) : null;
     }
 
     private function resolvePostUrl(MenuItem $item): ?string
@@ -120,7 +122,7 @@ class MenuItemResolver
 
         $post = $this->postRepository->fetch($item->getTargetId());
 
-        return $post ? '/posts/' . $post->getSlug() : null;
+        return $post ? $this->permalinkResolver->resolve($post) : null;
     }
 
     private function resolveProductionUrl(MenuItem $item): ?string
@@ -131,7 +133,7 @@ class MenuItemResolver
 
         $production = $this->productionRepository->fetch($item->getTargetId());
 
-        return $production ? '/seasons/' . $production->getSeason()->getSlug() . '/' . $production->getSlug() : null;
+        return $production ? $this->permalinkResolver->resolve($production) : null;
     }
 
     private function resolveSeasonUrl(MenuItem $item): ?string
@@ -142,6 +144,6 @@ class MenuItemResolver
 
         $season = $this->seasonRepository->fetch($item->getTargetId());
 
-        return $season ? '/seasons/' . $season->getSlug() : null;
+        return $season ? $this->permalinkResolver->resolve($season) : null;
     }
 }

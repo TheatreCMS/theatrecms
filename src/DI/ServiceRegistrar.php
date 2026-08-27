@@ -43,9 +43,11 @@ use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\ContentResolver;
+use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
+use TheatreCMS\Theme\PermalinkResolver;
 use TheatreCMS\Theme\SlugResolver;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\TemplateResolver;
@@ -56,6 +58,7 @@ use TheatreCMS\Twig\ContentExtension;
 use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\MenuExtension;
+use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
@@ -92,6 +95,15 @@ class ServiceRegistrar
         $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
 
         $container->set(SlugResolver::class, static fn(): SlugResolver => new SlugResolver());
+
+        $container->set(ContentTypeRegistry::class, static function (ContainerInterface $c): ContentTypeRegistry {
+            $settings = $c->get('settings');
+            return new ContentTypeRegistry($settings['content_types'] ?? []);
+        });
+
+        $container->set(PermalinkResolver::class, static function (ContainerInterface $c): PermalinkResolver {
+            return new PermalinkResolver($c->get(ContentTypeRegistry::class));
+        });
 
         $container->set(DateResolver::class, static fn(): DateResolver => new DateResolver());
 
@@ -130,7 +142,8 @@ class ServiceRegistrar
                 $c->get(PageRepository::class),
                 $c->get(PostRepository::class),
                 $c->get(ProductionRepository::class),
-                $c->get(SeasonRepository::class)
+                $c->get(SeasonRepository::class),
+                $c->get(PermalinkResolver::class)
             );
         });
 
@@ -164,6 +177,7 @@ class ServiceRegistrar
             $twig->addExtension($c->get(ThemeHeadExtension::class));
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
             $twig->addExtension(new SlugExtension($c->get(SlugResolver::class)));
+            $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());

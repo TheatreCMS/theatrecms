@@ -88,6 +88,12 @@ return [
             // The active theme to use. Should correspond to a subdirectory in the themes dir.
             // Configured via the top-level `theme` key in app/config.yaml.
             'active' => $config['theme'] ?? 'default'
-        ]
+        ],
+
+        // Per-site overrides for the URL prefix of a built-in content type's frontend
+        // routes (e.g. serving Seasons under `/shows` instead of `/seasons`). See
+        // `TheatreCMS\Theme\ContentTypeRegistry` and the `content_types` key in
+        // app/config.yaml.
+        'content_types' => $config['content_types'] ?? []
     ]
 ];
