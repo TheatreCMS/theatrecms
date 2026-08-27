@@ -30,6 +30,6 @@ if (isset($app)) {
         /** @var Twig $twig */
         $twig = $container->get(Twig::class);
 
-        return $resolver->renderSingle($twig, $response, 'pages', $page, ['page' => $page, 'posts' => [$page] ]);
+        return $resolver->renderSingle($twig, $response, 'pages', $page, ['page' => $page]);
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

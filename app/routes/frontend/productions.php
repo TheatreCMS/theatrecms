@@ -27,6 +27,6 @@ if (isset($app)) {
 
         $title = $contentTypes->label('productions');
 
-        return $resolver->renderList($twig, $response, 'productions', $title, ['productions' => $productions]);
+        return $resolver->renderList($twig, $response, 'productions', $title, $productions, ['productions' => $productions]);
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

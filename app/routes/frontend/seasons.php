@@ -75,7 +75,7 @@ if (isset($app)) {
 
             $title = $contentTypes->label('seasons');
 
-            return $resolver->renderList($twig, $response, 'seasons', $title, ['seasons' => $seasons]);
+            return $resolver->renderList($twig, $response, 'seasons', $title, $seasons, ['seasons' => $seasons]);
         });
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

@@ -68,11 +68,14 @@ class TemplateResolver
     /**
      * Resolve and render a single content-item view in one step.
      *
-     * Also adds a generic `page` object (currently just `title`, resolved via
-     * `TitleResolver`) to the context, so every theme's `layouts/base.html.twig` can rely
-     * on `page.title` regardless of which content type is being rendered — without
-     * clobbering routes (like `pages/{slug}`) that already pass their own richer `page`
-     * entity in `$context`.
+     * Also adds two generic context keys so every theme's fallback templates can rely on
+     * them regardless of which content type is being rendered, without clobbering routes
+     * (like `pages/{slug}`) that already pass their own richer keys in `$context`:
+     * - `page` (currently just `title`, resolved via `TitleResolver`), used by
+     *   `layouts/base.html.twig`.
+     * - `posts` (the entity wrapped in a 1-element array), used by the generic
+     *   `index.html.twig` fallback that both bundled themes rely on when no type-specific
+     *   single template exists yet.
      *
      * @param array<string, mixed> $context
      */
@@ -84,16 +87,25 @@ class TemplateResolver
         array $context = []
     ): Response {
         $slug = method_exists($entity, 'getSlug') ? (string) $entity->getSlug() : '';
-        $context += ['page' => ['title' => $this->titleResolver->resolve($entity)]];
+        $context += [
+            'posts' => [$entity],
+            'page' => ['title' => $this->titleResolver->resolve($entity)],
+        ];
 
         return $twig->render($response, $this->resolveSingle($twig, $type, $slug), $context);
     }
 
     /**
-     * Resolve and render a content-type list/archive view in one step, with the same
-     * `page` context object `renderSingle()` adds (there being no single entity to derive
-     * a title from, the caller supplies the page title directly).
+     * Resolve and render a content-type list/archive view in one step.
      *
+     * Adds the same two generic context keys `renderSingle()` adds:
+     * - `page` (there being no single entity to derive a title from, the caller supplies
+     *   the page title directly).
+     * - `posts` (the raw `$items` collection), used by the generic `index.html.twig`
+     *   fallback that both bundled themes rely on when no type-specific list template
+     *   exists yet.
+     *
+     * @param array<int, object> $items
      * @param array<string, mixed> $context
      */
     public function renderList(
@@ -101,9 +113,13 @@ class TemplateResolver
         Response $response,
         string $type,
         string $pageTitle,
+        array $items,
         array $context = []
     ): Response {
-        $context += ['page' => ['title' => $pageTitle]];
+        $context += [
+            'posts' => $items,
+            'page' => ['title' => $pageTitle],
+        ];
 
         return $twig->render($response, $this->resolveList($twig, $type), $context);
     }
