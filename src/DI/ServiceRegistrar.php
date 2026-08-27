@@ -47,6 +47,7 @@ use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
+use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Theme\PermalinkResolver;
 use TheatreCMS\Theme\SlugResolver;
 use TheatreCMS\Theme\StructuredDataBuilder;
@@ -57,6 +58,7 @@ use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ContentExtension;
 use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
+use TheatreCMS\Twig\FeaturedImageExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
@@ -95,6 +97,8 @@ class ServiceRegistrar
         $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
 
         $container->set(SlugResolver::class, static fn(): SlugResolver => new SlugResolver());
+
+        $container->set(FeaturedImageResolver::class, static fn(): FeaturedImageResolver => new FeaturedImageResolver());
 
         $container->set(ContentTypeRegistry::class, static function (ContainerInterface $c): ContentTypeRegistry {
             $settings = $c->get('settings');
@@ -178,6 +182,7 @@ class ServiceRegistrar
             $twig->addExtension($c->get(ThemeHeadExtension::class));
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
             $twig->addExtension(new SlugExtension($c->get(SlugResolver::class)));
+            $twig->addExtension(new FeaturedImageExtension($c->get(FeaturedImageResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
