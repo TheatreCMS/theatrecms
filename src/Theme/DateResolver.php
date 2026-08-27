@@ -2,7 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Season;
 
 /**
  * Resolves a display date string for content entities.
@@ -15,11 +15,8 @@ class DateResolver
     public function resolve(mixed $entity, string $format = 'F j, Y'): string
     {
         $date = match (true) {
-            $entity instanceof Post => $entity->getPublishedAt() ?? $entity->getCreatedAt(),
-            default => throw new \InvalidArgumentException(sprintf(
-                'DateResolver does not know how to resolve a date for %s.',
-                is_object($entity) ? get_class($entity) : get_debug_type($entity)
-            )),
+            $entity instanceof(Season::class) => $entity->getStartDate(),
+            default => $entity->getPublishedAt() ?? $entity->getCreatedAt()
         };
 
         $resolvedDate = $date->format($format);
