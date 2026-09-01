@@ -10,6 +10,7 @@
             {{ season.endDate ? season.endDate|date('M d, Y') : 'N/A' }}
         </td>
         <td class="px-6 py-4">
+            <a href="{{ the_permalink(season) }}" class="text-gray-600 hover:text-gray-900 mr-4">View</a>
             <a href="/admin/seasons/edit/{{ season.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
             <button
                 type="button"
