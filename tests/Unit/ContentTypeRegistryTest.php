@@ -61,4 +61,31 @@ class ContentTypeRegistryTest extends TestCase
 
         $this->assertSame('Widgets', $registry->label('widgets'));
     }
+
+    public function testArchiveEnabledByDefault(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        $this->assertTrue($registry->hasArchive('seasons'));
+        $this->assertTrue($registry->hasArchive('widgets'));
+    }
+
+    public function testArchiveDisabledFromConfig(): void
+    {
+        $registry = new ContentTypeRegistry([
+            'seasons' => ['has_archive' => false],
+        ]);
+
+        $this->assertFalse($registry->hasArchive('seasons'));
+    }
+
+    public function testArchiveDisabledAlongsideUrlPrefixOverride(): void
+    {
+        $registry = new ContentTypeRegistry([
+            'seasons' => ['url_prefix' => 'shows', 'has_archive' => false],
+        ]);
+
+        $this->assertSame('shows', $registry->prefix('seasons'));
+        $this->assertFalse($registry->hasArchive('seasons'));
+    }
 }

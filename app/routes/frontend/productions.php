@@ -13,7 +13,7 @@ use Slim\Views\Twig;
  * @var ContentTypeRegistry $contentTypes
  */
 
-if (isset($app)) {
+if (isset($app) && $contentTypes->hasArchive('productions')) {
     $app->get('/' . $contentTypes->prefix('productions'), function (Request $request, Response $response) use ($app, $resolver, $contentTypes) {
         $container = $app->getContainer();
 

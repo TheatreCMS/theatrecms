@@ -25,6 +25,13 @@ theme: default
 #     # seasons:
 #     #     url_prefix: shows
 #     #     label: Shows
+#
+# Every content type's archive (listing) page is served by default. Set
+# has_archive: false to disable one — its listing route 404s, while
+# single-entity routes (e.g. /seasons/{slug}) keep working:
+# content_types:
+#     seasons:
+#         has_archive: false
 
 database:
     driver: pdo_mysql

@@ -11,6 +11,10 @@ namespace TheatreCMS\Theme;
  * in `app/config.yaml` — e.g. a theatre that calls its season listing "Shows" can serve
  * it under `/shows` with "Shows" as the label everywhere (URLs, menu links, permalinks,
  * and page `<title>`s), without any code or template changes.
+ *
+ * A content type's archive (listing) page is enabled by default; setting `has_archive:
+ * false` on a type disables it (its frontend route 404s) without affecting single-entity
+ * routes, e.g. a site can turn off `/seasons` while keeping `/seasons/{slug}` working.
  */
 class ContentTypeRegistry
 {
@@ -47,8 +51,14 @@ class ContentTypeRegistry
     private array $labels;
 
     /**
+     * @var array<string, bool>
+     */
+    private array $hasArchive = [];
+
+    /**
      * @param array<string, mixed> $overrides Content type => URL prefix (shorthand string)
-     *                                         or `['url_prefix' => ..., 'label' => ...]`, from config.
+     *                                         or `['url_prefix' => ..., 'label' => ..., 'has_archive' => ...]`,
+     *                                         from config.
      */
     public function __construct(array $overrides = [])
     {
@@ -75,6 +85,10 @@ class ContentTypeRegistry
             if (isset($override['label'])) {
                 $this->labels[$type] = (string) $override['label'];
             }
+
+            if (isset($override['has_archive'])) {
+                $this->hasArchive[$type] = (bool) $override['has_archive'];
+            }
         }
     }
 
@@ -94,5 +108,15 @@ class ContentTypeRegistry
     public function label(string $type): string
     {
         return $this->labels[$type] ?? ucfirst($type);
+    }
+
+    /**
+     * Whether a content type's archive (listing) page should be served. Defaults to true
+     * for every type, including unknown/custom ones; disabled via `has_archive: false`
+     * in the type's `content_types` config entry.
+     */
+    public function hasArchive(string $type): bool
+    {
+        return $this->hasArchive[$type] ?? true;
     }
 }

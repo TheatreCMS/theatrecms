@@ -64,18 +64,20 @@ if (isset($app)) {
             return $resolver->renderSingle($twig, $response, 'seasons', $season, ['season' => $season]);
         });
 
-        $group->get('', function (Request $request, Response $response) use ($container, $resolver, $contentTypes) {
-            $repository = $container->get(SeasonRepository::class);
-            /** @var SeasonRepository $repository */
-            $seasons = $repository->fetchAll();
-            $seasons = apply_filters('theatrecms/seasons', $seasons, $request);
+        if ($contentTypes->hasArchive('seasons')) {
+            $group->get('', function (Request $request, Response $response) use ($container, $resolver, $contentTypes) {
+                $repository = $container->get(SeasonRepository::class);
+                /** @var SeasonRepository $repository */
+                $seasons = $repository->fetchAll();
+                $seasons = apply_filters('theatrecms/seasons', $seasons, $request);
 
-            /** @var Twig $twig */
-            $twig = $container->get(Twig::class);
+                /** @var Twig $twig */
+                $twig = $container->get(Twig::class);
 
-            $title = $contentTypes->label('seasons');
+                $title = $contentTypes->label('seasons');
 
-            return $resolver->renderList($twig, $response, 'seasons', $title, $seasons, ['seasons' => $seasons]);
-        });
+                return $resolver->renderList($twig, $response, 'seasons', $title, $seasons, ['seasons' => $seasons]);
+            });
+        }
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }
