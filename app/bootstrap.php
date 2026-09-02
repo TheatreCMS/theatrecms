@@ -1,4 +1,5 @@
 <?php
+
 /**
  *
  * Copyright (C) 2026  TheatreCMS Team (https://theatrecms.dev)
@@ -26,9 +27,9 @@ use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 
-
-if( !defined('APP_ROOT') )
-    define ('APP_ROOT', dirname(__DIR__));
+if (!defined('APP_ROOT')) {
+    define('APP_ROOT', dirname(__DIR__));
+}
 
 require_once APP_ROOT . '/vendor/autoload.php';
 require_once APP_ROOT . '/app/hooks.php';
@@ -42,15 +43,15 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 
     // Use the ArrayAdapter or the FilesystemAdapter depending on the value of the 'dev_mode' setting
     // You can substitute the FilesystemAdapter for any other cache you prefer from the symfony/cache library
-    $cache = $settings['doctrine']['dev_mode'] ?
-        new ArrayAdapter() :
-        new FilesystemAdapter(directory: $settings['doctrine']['cache_dir']);
+    $cache = $settings['doctrine']['dev_mode']
+        ? new ArrayAdapter()
+        : new FilesystemAdapter(directory: $settings['doctrine']['cache_dir']);
 
     $config = ORMSetup::createAttributeMetadataConfig(
         $settings['doctrine']['metadata_dirs'],
         $settings['doctrine']['dev_mode'],
         null,
-        $cache
+        $cache,
     );
     $config->enableNativeLazyObjects(true);
 

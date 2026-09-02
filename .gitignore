@@ -37,3 +37,7 @@ opencode.json
 
 # Local editor settings
 .vscode/settings.json
+
+# PHP CS Fixer configuration
+/.php-cs-fixer.cache
+/.php-cs-fixer.php
