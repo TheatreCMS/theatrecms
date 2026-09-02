@@ -67,13 +67,21 @@ class ProductionController extends BaseController
 
     public function index(Request $request, Response $response, array $args = []): Response
     {
-        return $this->twig->render(
-            $response,
-            'admin/productions/index.html.twig',
-            $this->buildPaginatedViewData($request, $this->repository, 'productions', '/admin/productions', [
-                'seasons' => $this->seasonRepo->fetchAll(),
-            ])
+        [$search] = $this->resolveListQuery($request, []);
+        $data = $this->buildPaginatedViewData(
+            $request,
+            $this->repository,
+            'productions',
+            '/admin/productions',
+            ['seasons' => $this->seasonRepo->fetchAll()],
+            $search
         );
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/productions/_list.html.twig', $data);
+        }
+
+        return $this->twig->render($response, 'admin/productions/index.html.twig', $data);
     }
 
     public function create(Request $request, Response $response, array $args = []): Response

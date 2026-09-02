@@ -21,6 +21,18 @@ class ProductionRepository extends BaseRepository
             ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
     }
 
+    protected function applySearchFilter(QueryBuilder $builder, string $alias, string $search): void
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return;
+        }
+
+        $builder->andWhere(sprintf('%s.name LIKE :search', $alias))
+            ->setParameter('search', '%' . $search . '%');
+    }
+
     public function create(array $args): Production
     {
         $args = array_merge([
