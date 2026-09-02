@@ -35,5 +35,19 @@
     </div>
 {% endif %}
 
+<div class="mb-4">
+    <input
+        type="search"
+        name="q"
+        value="{{ pagination.search }}"
+        placeholder="Search by name..."
+        class="w-full max-w-sm rounded border border-default px-3 py-2 text-sm"
+        hx-get="/admin/productions"
+        hx-trigger="input changed delay:300ms, search"
+        hx-target="#productionListContainer"
+        hx-swap="outerHTML"
+        hx-push-url="true">
+</div>
+
 {% include 'admin/productions/_list.html.twig' with {'productions': productions, 'pagination': pagination} %}
 {% endblock %}
