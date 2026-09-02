@@ -51,6 +51,7 @@ use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Theme\PermalinkResolver;
 use TheatreCMS\Theme\SlugResolver;
 use TheatreCMS\Theme\SponsorsResolver;
+use TheatreCMS\Theme\StartDateResolver;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
@@ -64,6 +65,7 @@ use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
 use TheatreCMS\Twig\SponsorsExtension;
+use TheatreCMS\Twig\StartDateExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
 use Delight\Auth\Auth;
@@ -114,6 +116,8 @@ class ServiceRegistrar
         });
 
         $container->set(DateResolver::class, static fn(): DateResolver => new DateResolver());
+
+        $container->set(StartDateResolver::class, static fn(): StartDateResolver => new StartDateResolver());
 
         $container->set(TemplateResolver::class, static function (ContainerInterface $c): TemplateResolver {
             return new TemplateResolver($c->get(TitleResolver::class));
@@ -190,6 +194,7 @@ class ServiceRegistrar
             $twig->addExtension(new SponsorsExtension($c->get(SponsorsResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
+            $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 

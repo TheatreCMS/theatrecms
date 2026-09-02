@@ -56,6 +56,9 @@ class Production extends ModelBase
     #[OneToMany(targetEntity: ProductionPerson::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     private Collection $people;
 
+    #[OneToMany(targetEntity: Event::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
+    private Collection $performances;
+
     #[Column(name: 'promo_video_url', type: 'string', nullable: true)]
     private string $promoVideoUrl;
 
@@ -93,6 +96,7 @@ class Production extends ModelBase
         $this->productionWorks = new ArrayCollection();
         $this->people          = new ArrayCollection();
         $this->sponsorships    = new ArrayCollection();
+        $this->performances    = new ArrayCollection();
 
         if ($works instanceof Work) {
             $this->addWork($works);
@@ -341,5 +345,10 @@ class Production extends ModelBase
         }
 
         return $this;
+    }
+
+    public function getPerformances(): Collection
+    {
+        return $this->performances;
     }
 }
