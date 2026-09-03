@@ -52,6 +52,7 @@ class Production extends ModelBase
     private ?string $contentAdvisory = null;
 
     #[OneToMany(targetEntity: ProductionPerson::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
+    #[OrderBy(['roleType' => 'ASC', 'position' => 'ASC'])]
     private Collection $people;
 
     #[OneToMany(targetEntity: Event::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
@@ -290,9 +291,9 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function addToCreativeTeam(Person $person, ?string $role = null): self
+    public function addToCreativeTeam(Person $person, ?string $role = null, ?int $position = null): self
     {
-        $productionPerson = new ProductionPerson($this, $person);
+        $productionPerson = new ProductionPerson($this, $person, $position ?? $this->getCreativeTeam()->count());
         $productionPerson->setRoleType(RoleType::Creative);
         $productionPerson->setRole($role);
         $this->people->add($productionPerson);
@@ -300,9 +301,9 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function addPerformer(Person $person, ?string $role = null): self
+    public function addPerformer(Person $person, ?string $role = null, ?int $position = null): self
     {
-        $productionPerson = new ProductionPerson($this, $person);
+        $productionPerson = new ProductionPerson($this, $person, $position ?? $this->getPerformers()->count());
         $productionPerson->setRoleType(RoleType::Cast);
         $productionPerson->setRole($role);
         $this->people->add($productionPerson);
@@ -310,9 +311,9 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function addToProductionTeam(Person $person, ?string $role = null): self
+    public function addToProductionTeam(Person $person, ?string $role = null, ?int $position = null): self
     {
-        $productionPerson = new ProductionPerson($this, $person);
+        $productionPerson = new ProductionPerson($this, $person, $position ?? $this->getProductionTeam()->count());
         $productionPerson->setRoleType(RoleType::ProductionTeam);
         $productionPerson->setRole($role);
         $this->people->add($productionPerson);

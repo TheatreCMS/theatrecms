@@ -342,7 +342,7 @@ class ProductionController extends BaseController
             $role = $creativeRoles[$idx] ?? null;
 
             if (isset($existingCreatives[$creativeId])) {
-                $existingCreatives[$creativeId]->setRole($role);
+                $existingCreatives[$creativeId]->setRole($role)->setPosition($idx);
                 unset($existingCreatives[$creativeId]);
                 continue;
             }
@@ -352,7 +352,7 @@ class ProductionController extends BaseController
                 continue;
             }
 
-            $item->addToCreativeTeam($person, $role);
+            $item->addToCreativeTeam($person, $role, $idx);
         }
 
         foreach ($performerIds as $idx => $performerId) {
@@ -363,7 +363,7 @@ class ProductionController extends BaseController
             $role = $performerRoles[$idx] ?? null;
 
             if (isset($existingPerformers[$performerId])) {
-                $existingPerformers[$performerId]->setRole($role);
+                $existingPerformers[$performerId]->setRole($role)->setPosition($idx);
                 unset($existingPerformers[$performerId]);
                 continue;
             }
@@ -373,7 +373,7 @@ class ProductionController extends BaseController
                 continue;
             }
 
-            $item->addPerformer($person, $role);
+            $item->addPerformer($person, $role, $idx);
         }
 
         foreach ($productionTeamIds as $idx => $memberId) {
@@ -384,7 +384,7 @@ class ProductionController extends BaseController
             $role = $productionTeamRoles[$idx] ?? null;
 
             if (isset($existingProductionTeam[$memberId])) {
-                $existingProductionTeam[$memberId]->setRole($role);
+                $existingProductionTeam[$memberId]->setRole($role)->setPosition($idx);
                 unset($existingProductionTeam[$memberId]);
                 continue;
             }
@@ -394,7 +394,7 @@ class ProductionController extends BaseController
                 continue;
             }
 
-            $item->addToProductionTeam($person, $role);
+            $item->addToProductionTeam($person, $role, $idx);
         }
 
         foreach ($existingCreatives as $staleCreative) {

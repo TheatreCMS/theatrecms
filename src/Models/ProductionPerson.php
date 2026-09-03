@@ -37,10 +37,18 @@ class ProductionPerson
     #[Column(type: 'string', nullable: true)]
     private ?string $role = null;
 
-    public function __construct(Production $production, Person $person)
+    /**
+     * Display order of this person within their role type's list on the
+     * production (e.g. the Performers list), lowest first.
+     */
+    #[Column(type: 'integer')]
+    private int $position;
+
+    public function __construct(Production $production, Person $person, int $position = 0)
     {
         $this->production = $production;
         $this->person = $person;
+        $this->position = $position;
     }
 
     public function getProduction(): Production
@@ -74,6 +82,18 @@ class ProductionPerson
     public function setRole(?string $role): self
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): self
+    {
+        $this->position = $position;
 
         return $this;
     }

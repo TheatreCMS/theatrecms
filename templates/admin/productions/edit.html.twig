@@ -290,6 +290,9 @@
 						<table class="w-full text-sm text-left rtl:text-right text-body">
 							<thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
 								<tr>
+									<th scope="col" class="w-10 px-3 py-3">
+										<span class="sr-only">Reorder</span>
+									</th>
 									<th scope="col" class="px-6 py-3 font-medium">
 										Performers
 									</th>
@@ -315,6 +318,9 @@
 								{% if performers is not empty %}
 									{% for p in performers %}
 										<tr class="bg-neutral-primary-soft border-b border-default" data-performer-row>
+											<td class="px-3 py-4">
+												<span class="drag-handle cursor-move text-gray-400" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>
+											</td>
 											<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
 												<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="performerIds[]">
 													<option value="">Select a person</option>
@@ -336,6 +342,9 @@
 									{% endfor %}
 								{% endif %}
 								<tr class="hidden bg-neutral-primary-soft border-b border-default" data-performer-template>
+									<td class="px-3 py-4">
+										<span class="drag-handle cursor-move text-gray-400" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>
+									</td>
 									<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
 											<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="performerIds[]">
 											<option value="">Select a person</option>
@@ -361,6 +370,9 @@
 						<table class="w-full text-sm text-left rtl:text-right text-body">
 							<thead class="text-sm text-body bg-neutral-secondary-medium border-b border-default-medium">
 								<tr>
+									<th scope="col" class="w-10 px-3 py-3">
+										<span class="sr-only">Reorder</span>
+									</th>
 									<th scope="col" class="px-6 py-3 font-medium">
 										Production Team
 									</th>
@@ -385,6 +397,9 @@
 							<tbody data-productionTeam-rows>
 								{% if productionTeam is empty %}
 									<tr class="bg-neutral-primary-soft border-b border-default" data-productionTeam-row>
+										<td class="px-3 py-4">
+											<span class="drag-handle cursor-move text-gray-400" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>
+										</td>
 										<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
 											<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="productionTeamIds[]">
 												<option value="">Select a person</option>
@@ -404,6 +419,9 @@
 								{% else %}
 									{% for m in productionTeam %}
 										<tr class="bg-neutral-primary-soft border-b border-default" data-productionTeam-row>
+											<td class="px-3 py-4">
+												<span class="drag-handle cursor-move text-gray-400" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>
+											</td>
 											<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
 												<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="productionTeamIds[]">
 													<option value="">Select a person</option>
@@ -425,6 +443,9 @@
 									{% endfor %}
 								{% endif %}
 								<tr class="hidden bg-neutral-primary-soft border-b border-default" data-productionTeam-template>
+									<td class="px-3 py-4">
+										<span class="drag-handle cursor-move text-gray-400" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg></span>
+									</td>
 									<th scope="row" class="px-6 py-4 font-medium text-heading whitespace-nowrap">
 											<select aria-label="Person" class="searchable-select w-full rounded-md border-gray-300 shadow-sm" name="productionTeamIds[]">
 											<option value="">Select a person</option>
@@ -566,6 +587,7 @@
 
 	</div>
 	{# /prod-tab-content #}
+	<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 	<script type="module">
 		import {buildEditorJsConfig} from '/assets/js/editorjs-config.js';
 
@@ -710,6 +732,22 @@ rowsBody.insertBefore(row, templateRow);
 setupDynamicRows('performer', {requireMinimumRow: false});
 setupDynamicRows('productionTeam');
 setupDynamicRows('sponsorship');
+
+// Drag-to-reorder for the Performers and Production Team lists; submission order
+// (DOM order of the name="...Ids[]"/"...Roles[]" fields) becomes display order.
+['performer', 'productionTeam'].forEach(function (namespace) {
+const rowsBody = document.querySelector(`tbody[data-${namespace}-rows]`);
+if (! rowsBody || ! window.Sortable) {
+return;
+}
+
+new Sortable(rowsBody, {
+handle: '.drag-handle',
+animation: 150,
+filter: `[data-${namespace}-template]`,
+preventOnFilter: false
+});
+});
 
 let isSaving = false;
 form.addEventListener('submit', function (event) {
