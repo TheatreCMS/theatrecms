@@ -11,6 +11,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
+use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Traits\HasSponsors;
 
@@ -39,6 +40,7 @@ class Season extends ModelBase implements \JsonSerializable
     private ?\DateTime $endDate = null;
 
     #[OneToMany(targetEntity: Production::class, mappedBy: 'season', cascade: ['persist', 'remove'])]
+    #[OrderBy(['opening' => 'ASC'])]
     private Collection $productions;
 
     #[OneToMany(mappedBy: 'season', targetEntity: Sponsorship::class)]
