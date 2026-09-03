@@ -49,6 +49,7 @@ use TheatreCMS\Theme\AddressResolver;
 use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
+use TheatreCMS\Theme\ExcerptResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\FeaturedImageResolver;
@@ -65,6 +66,7 @@ use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ContentExtension;
 use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
+use TheatreCMS\Twig\ExcerptExtension;
 use TheatreCMS\Twig\FeaturedImageExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
@@ -210,6 +212,7 @@ class ServiceRegistrar
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->addExtension(new AddressExtension($c->get(AddressResolver::class)));
+            $twig->addExtension(new ExcerptExtension($c->get(ExcerptResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $auth = $c->get(Auth::class);
