@@ -248,6 +248,7 @@ class ProductionController extends BaseController
             'opening' => null,
             'closing' => null,
             'description' => null,
+            'excerpt' => null,
             'promoVideoUrl' => null,
             'ticketPurchaseUrl' => null,
             'works' => [],
@@ -301,6 +302,7 @@ class ProductionController extends BaseController
             ->setOpening($opening)
             ->setClosing($closing)
             ->setDescription($data['description'])
+            ->setExcerpt($data['excerpt'])
             ->setPromoVideoUrl($data['promoVideoUrl'])
             ->setTicketPurchaseUrl($data['ticketPurchaseUrl']);
 
