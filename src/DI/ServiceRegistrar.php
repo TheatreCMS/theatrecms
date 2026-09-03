@@ -45,6 +45,7 @@ use TheatreCMS\Services\ImageBackfillService;
 use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Theme\AddressResolver;
 use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
@@ -59,6 +60,7 @@ use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
+use TheatreCMS\Twig\AddressExtension;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ContentExtension;
 use TheatreCMS\Twig\DateExtension;
@@ -207,6 +209,7 @@ class ServiceRegistrar
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
+            $twig->addExtension(new AddressExtension($c->get(AddressResolver::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $auth = $c->get(Auth::class);
