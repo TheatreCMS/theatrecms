@@ -7,6 +7,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
 use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\ImageRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PaginatedRepositoryInterface;
@@ -24,10 +25,10 @@ class BaseController
     protected const DEFAULT_PAGE_SIZE = 25;
 
     protected EntityManagerInterface $entityManager;
-    protected PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository $repository;
+    protected PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|ImageRepository $repository;
     protected Twig $twig;
 
-    public function repository(): PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository
+    public function repository(): PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|ImageRepository
     {
         return $this->repository;
     }

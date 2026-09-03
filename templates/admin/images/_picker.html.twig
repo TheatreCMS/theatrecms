@@ -1,0 +1,55 @@
+<div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+	<h2 class="text-lg font-semibold text-gray-900">Choose an Image</h2>
+	<button type="button" onclick="document.getElementById('image-picker-modal').close()" class="text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Close">
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+	</button>
+</div>
+
+<div class="px-6 pt-4">
+	<div id="image-picker-result" class="mb-3"></div>
+
+	<form
+		hx-post="/admin/images/library-upload"
+		hx-target="#image-picker-result"
+		hx-swap="innerHTML"
+		hx-encoding="multipart/form-data"
+		class="flex items-center gap-3 mb-4 p-3 rounded-md border border-dashed border-gray-300 bg-gray-50"
+	>
+		<label for="image-picker-upload" class="text-sm font-medium text-gray-700">Upload new:</label>
+		<input type="file" name="file" id="image-picker-upload" accept="image/*" required class="text-sm">
+		<button type="submit" class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Upload</button>
+	</form>
+
+	<input
+		type="search"
+		placeholder="Search images by filename…"
+		value="{{ pagination.search|default('') }}"
+		hx-get="/admin/images/picker?target={{ target|default('') }}"
+		hx-trigger="keyup changed delay:300ms"
+		hx-target="#image-picker-modal-content"
+		hx-swap="innerHTML"
+		name="q"
+		class="w-full mb-4 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+	>
+</div>
+
+<div class="px-6 pb-6 max-h-96 overflow-y-auto">
+	{% if images is empty %}
+		<p class="text-sm text-gray-500">No images found.</p>
+	{% else %}
+		<div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+			{% for image in images %}
+				<button
+					type="button"
+					class="group relative aspect-square rounded-md border border-gray-200 overflow-hidden hover:ring-2 hover:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					hx-get="/admin/images/{{ image.id }}/select"
+					hx-target="#image-picker-result"
+					hx-swap="innerHTML"
+					title="{{ image.filename }}"
+				>
+					<img src="{{ image.url }}" alt="{{ image.altText|default(image.filename) }}" class="h-full w-full object-cover">
+				</button>
+			{% endfor %}
+		</div>
+	{% endif %}
+</div>

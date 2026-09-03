@@ -60,6 +60,10 @@
                 <label for="mapUrl" class="block text-sm font-medium text-gray-700 mb-1">Map URL</label>
                 <input type="url" name="mapUrl" id="mapUrl" class="w-full rounded-md border-gray-300 shadow-sm" value="{{ venue.mapUrl }}">
             </div>
+
+            {% include 'admin/partials/_featured_image_field.html.twig' with {
+                entityType: 'venue', entityId: venue.id, featuredImageUrl: venue.featuredImageUrl, featuredImageId: venue.featuredImage.id|default(null)
+            } %}
         </div>
 
         <div class="flex items-center justify-end space-x-3 pt-4 border-t">
@@ -68,4 +72,13 @@
         </div>
     </form>
 
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+    <script type="module">
+        import { initFeaturedImagePicker } from '/assets/js/featured-image-picker.js';
+        initFeaturedImagePicker();
+    </script>
+    {% include 'admin/partials/_image_picker_modal.html.twig' %}
 {% endblock %}

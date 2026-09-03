@@ -87,9 +87,13 @@ mysql -u theatrecms -p theatrecms_prod < migrations/20260709_rename_seasons_hero
 mysql -u theatrecms -p theatrecms_prod < migrations/20260805_make_production_venue_nullable.sql
 mysql -u theatrecms -p theatrecms_prod < migrations/20260820_add_position_to_production_works.sql
 mysql -u theatrecms -p theatrecms_prod < migrations/20260820_add_ends_at_to_events.sql
+mysql -u theatrecms -p theatrecms_prod < migrations/20260903_create_images_table.sql
+mysql -u theatrecms -p theatrecms_prod < migrations/20260903_add_featured_image_id_to_content_tables.sql
 ```
 
 `./doctrine` is the Doctrine ORM console script at the repo root; it boots the app container and reads `app/config.yaml` via `app/bootstrap.php`. When new migration files are added to `migrations/` in future releases, apply any not yet run, in date order, before starting the upgraded app.
+
+**Do not apply `migrations/20260903_drop_featured_image_url_columns.sql` on a fresh install** — `orm:schema-tool:create` already builds the `productions`/`posts`/`seasons` tables without a `featured_image_url` column, so there is nothing for it to drop. That migration (and `./backfill-images`, the root-level script that registers pre-existing `www/uploads/` files as `images` rows and repoints old `featured_image_url` values at them) only apply when **upgrading** an existing instance that has data in those legacy columns. For an upgrade: apply the two migrations above, run `./backfill-images` (safe to run more than once), deploy the new application code, run `./backfill-images` once more to catch anything uploaded during the deploy window, then — once the instance is confirmed healthy — apply `20260903_drop_featured_image_url_columns.sql` in a follow-up step.
 
 ## 6. Harden settings for production
 

@@ -6,6 +6,8 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 
 #[Entity, Table(name: 'venues')]
@@ -43,6 +45,10 @@ class Venue extends ModelBase
 
     #[Column(name: 'map_url', type: 'string', nullable: true)]
     private ?string $mapUrl;
+
+    #[ManyToOne(targetEntity: Image::class)]
+    #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
+    private ?Image $featuredImage = null;
 
     public function __construct(string $name, string $address, string $city, string $state, string $postcode)
     {
@@ -173,5 +179,26 @@ class Venue extends ModelBase
     {
         $this->mapUrl = $mapUrl;
         return $this;
+    }
+
+    public function getFeaturedImage(): ?Image
+    {
+        return $this->featuredImage;
+    }
+
+    public function setFeaturedImage(?Image $featuredImage): self
+    {
+        $this->featuredImage = $featuredImage;
+        return $this;
+    }
+
+    public function getFeaturedImageUrl(): ?string
+    {
+        return $this->featuredImage?->getUrl();
+    }
+
+    public function hasFeaturedImage(): bool
+    {
+        return $this->featuredImage !== null;
     }
 }

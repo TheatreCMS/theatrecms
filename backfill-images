@@ -1,0 +1,56 @@
+#!/usr/bin/env php
+<?php
+/**
+ *
+ * Copyright (C) 2026  TheatreCMS Team (https://theatrecms.dev)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * One-time backfill for the media library feature: registers pre-existing
+ * files under www/uploads/ as `images` rows, then repoints the legacy
+ * `featured_image_url` columns on productions/posts/seasons at the matching
+ * row's id. See documentation/DEPLOYMENT.md for when to run this relative to
+ * the accompanying migrations.
+ *
+ * Safe to run more than once.
+ *
+ * Usage:
+ *   ./backfill-images [--dry-run]
+ */
+
+use TheatreCMS\Services\ImageBackfillService;
+
+if (PHP_SAPI !== 'cli') {
+    fwrite(STDERR, "This script must be run from the command line.\n");
+    exit(1);
+}
+
+/** @var \DI\Container $container */
+$container = require_once __DIR__ . '/app/bootstrap.php';
+
+$options = getopt('', ['dry-run']);
+$dryRun = isset($options['dry-run']);
+
+/** @var ImageBackfillService $backfillService */
+$backfillService = $container->get(ImageBackfillService::class);
+
+$created = $backfillService->scanUploads($dryRun);
+$repointed = $backfillService->repointAll($dryRun);
+
+$prefix = $dryRun ? '[dry run] Would create' : 'Created';
+fwrite(STDOUT, sprintf("%s %d image row(s) from www/uploads/.\n", $prefix, $created));
+
+$repointPrefix = $dryRun ? '[dry run] Would repoint' : 'Repointed';
+foreach ($repointed as $table => $count) {
+    fwrite(STDOUT, sprintf("%s %d %s row(s) to their matching image.\n", $repointPrefix, $count, $table));
+}
+
+exit(0);

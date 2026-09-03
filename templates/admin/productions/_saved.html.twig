@@ -1,2 +1,4 @@
 {% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': 'Production saved successfully.'} %}
-{% include 'admin/productions/_featured_image_section.html.twig' with {'oob': true} %}
+{% include 'admin/partials/_featured_image_field.html.twig' with {
+    entityType: 'production', entityId: production.id, featuredImageUrl: production.featuredImageUrl, featuredImageId: production.featuredImage.id|default(null), oob: true
+} %}

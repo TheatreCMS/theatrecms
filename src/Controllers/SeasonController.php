@@ -2,16 +2,15 @@
 
 namespace TheatreCMS\Controllers;
 
+use TheatreCMS\Models\Image;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Sponsorship;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
-use TheatreCMS\Services\ImageUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 
 /**
@@ -23,20 +22,17 @@ use Slim\Views\Twig;
 class SeasonController extends BaseController
 {
     private SponsorRepository $sponsorRepo;
-    private ImageUploadService $imageUploadService;
 
     public function __construct(
         SeasonRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        SponsorRepository $sponsorRepo,
-        ImageUploadService $imageUploadService
+        SponsorRepository $sponsorRepo
     ) {
         $this->repository    = $repository;
         $this->entityManager = $em;
         $this->twig          = $twig;
         $this->sponsorRepo   = $sponsorRepo;
-        $this->imageUploadService = $imageUploadService;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -104,13 +100,15 @@ class SeasonController extends BaseController
             return $response->withStatus(404);
         }
 
-        $this->imageUploadService->delete($season->getFeaturedImageUrl());
-        $season->setFeaturedImageUrl(null);
+        $season->setFeaturedImage(null);
         $this->repository()->update($season);
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/seasons/_featured_image_removed.html.twig', [
-                'season' => $season,
+            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
+                'entityType'       => 'season',
+                'entityId'         => $season->getId(),
+                'featuredImageUrl' => $season->getFeaturedImageUrl(),
+                'featuredImageId'  => null,
             ]);
         }
 
@@ -132,6 +130,7 @@ class SeasonController extends BaseController
         }
 
         $season = $this->repository->create($data);
+        $this->applyFeaturedImage($season, $data['featuredImageId'] ?? null);
         $this->syncSponsorships($season, $data['sponsorshipSponsorIds'] ?? []);
         $this->entityManager->flush();
 
@@ -153,14 +152,9 @@ class SeasonController extends BaseController
             'startDate' => null,
             'endDate' => null,
             'overview' => null,
-            'featuredImageUrl' => null,
+            'featuredImageId' => null,
             'sponsorshipSponsorIds' => [],
         ], $data);
-
-        $featuredImageUploadUrl = $this->storeFeaturedImageUpload($request);
-        if ($featuredImageUploadUrl !== null) {
-            $data['featuredImageUrl'] = $featuredImageUploadUrl;
-        }
 
         $seasonId = $data['seasonId'] ?? null;
 
@@ -184,7 +178,7 @@ class SeasonController extends BaseController
             $item->setStartDate($start);
             $item->setEndDate($end);
             $item->setOverview($data['overview']);
-            $item->setFeaturedImageUrl($data['featuredImageUrl'] !== '' ? $data['featuredImageUrl'] : null);
+            $this->applyFeaturedImage($item, $data['featuredImageId']);
             $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);
             $this->repository()->update($item);
 
@@ -245,19 +239,14 @@ class SeasonController extends BaseController
         }
     }
 
-    private function storeFeaturedImageUpload(Request $request): ?string
+    private function applyFeaturedImage(Season $season, mixed $featuredImageId): void
     {
-        $uploadedFiles = $request->getUploadedFiles();
-        $featuredImage = $uploadedFiles['featuredImage'] ?? null;
-
-        if (!$featuredImage instanceof UploadedFileInterface || $featuredImage->getError() === UPLOAD_ERR_NO_FILE) {
-            return null;
+        if (empty($featuredImageId)) {
+            $season->setFeaturedImage(null);
+            return;
         }
 
-        if ($featuredImage->getError() !== UPLOAD_ERR_OK || !$this->imageUploadService->isImage($featuredImage)) {
-            return null;
-        }
-
-        return $this->imageUploadService->store($featuredImage);
+        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $season->setFeaturedImage($image);
     }
 }

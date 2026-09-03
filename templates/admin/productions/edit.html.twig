@@ -60,7 +60,7 @@
 		id="prod-tab-content">
 
 		{# The main form wraps the first three tab panels so their fields are submitted together. #}
-		<form action="/{{ base_path|default('') }}admin/productions/edit" method="POST" enctype="multipart/form-data" class="space-y-6" hx-post="/{{ base_path|default('') }}admin/productions/edit" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
+		<form action="/{{ base_path|default('') }}admin/productions/edit" method="POST" class="space-y-6" hx-post="/{{ base_path|default('') }}admin/productions/edit" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
 			<input
 			type="hidden" name="productionId" value="{{ production.id }}">
 
@@ -180,7 +180,9 @@
 						<input type="url" name="ticketPurchaseUrl" id="ticketPurchaseUrl" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="https://example.com/tickets" value="{{ production.ticketPurchaseUrl }}">
 					</div>
 
-					{% include 'admin/productions/_featured_image_section.html.twig' %}
+					{% include 'admin/partials/_featured_image_field.html.twig' with {
+						entityType: 'production', entityId: production.id, featuredImageUrl: production.featuredImageUrl, featuredImageId: production.featuredImage.id|default(null)
+					} %}
 
 				</div>
 			</div>
@@ -586,8 +588,6 @@ const form = document.querySelector('form');
 const nameInput = document.getElementById('name');
 const seasonInput = document.getElementById('seasonId');
 const descriptionField = document.getElementById('description');
-const posterInput = document.getElementById('poster');
-const uploadFeaturedImagePreview = document.getElementById('upload-featured-image-preview');
 
 const editorData = {{ editorDescription is not null ? editorDescription|raw : 'null' }};
 
@@ -700,36 +700,6 @@ setupDynamicRows('performer', {requireMinimumRow: false});
 setupDynamicRows('productionTeam');
 setupDynamicRows('sponsorship');
 
-if (posterInput && uploadFeaturedImagePreview) {
-let activeObjectUrl = null;
-
-posterInput.addEventListener('change', function (event) {
-const input = event.target;
-
-if (activeObjectUrl) {
-URL.revokeObjectURL(activeObjectUrl);
-activeObjectUrl = null;
-}
-
-if (!input || !input.files || input.files.length === 0) {
-uploadFeaturedImagePreview.src = '';
-uploadFeaturedImagePreview.classList.add('hidden');
-return;
-}
-
-const file = input.files[0];
-if (!file.type || file.type.indexOf('image/') !== 0) {
-uploadFeaturedImagePreview.src = '';
-uploadFeaturedImagePreview.classList.add('hidden');
-return;
-}
-
-activeObjectUrl = URL.createObjectURL(file);
-uploadFeaturedImagePreview.src = activeObjectUrl;
-uploadFeaturedImagePreview.classList.remove('hidden');
-});
-}
-
 let isSaving = false;
 form.addEventListener('submit', function (event) {
 event.preventDefault();
@@ -803,6 +773,11 @@ byUrl: '/admin/productions/images/fetch'
 	});
 </script>
 <script src="/assets/js/works-picker.js"></script>
+<script type="module">
+	import {initFeaturedImagePicker} from '/assets/js/featured-image-picker.js';
+	initFeaturedImagePicker();
+</script>
 
 {% include 'admin/productions/_quick_create_modal.html.twig' %}
+{% include 'admin/partials/_image_picker_modal.html.twig' %}
 {% endblock %}

@@ -1,0 +1,21 @@
+<div id="images-grid">
+	{% if images is empty %}
+		<p class="text-sm text-gray-500 px-6 py-8">No images uploaded yet.</p>
+	{% else %}
+		<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 p-6">
+			{% for image in images %}
+				<div class="rounded-md border border-gray-200 overflow-hidden bg-white">
+					<div class="aspect-square bg-gray-50">
+						<img src="{{ image.url }}" alt="{{ image.altText|default(image.filename) }}" class="h-full w-full object-cover">
+					</div>
+					<div class="p-2">
+						<p class="text-xs text-gray-700 truncate" title="{{ image.filename }}">{{ image.filename }}</p>
+						<p class="text-xs text-gray-400">{{ image.uploadedAt|date('Y-m-d') }}</p>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+	{% endif %}
+
+	{% include 'admin/partials/_pagination.html.twig' %}
+</div>

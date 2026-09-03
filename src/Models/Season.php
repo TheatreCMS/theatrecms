@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Traits\HasSponsors;
@@ -26,15 +28,16 @@ class Season extends ModelBase implements \JsonSerializable
     #[Column(type: 'text', nullable: true)]
     private ?string $overview = null;
 
-    #[Column(name: 'featured_image_url', type: 'string', nullable: true)]
-    private ?string $featuredImageUrl = null;
+    #[ManyToOne(targetEntity: Image::class)]
+    #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
+    private ?Image $featuredImage = null;
 
     #[Column(name: 'start_date', type: 'datetime', nullable: false)]
     private ?\DateTime $startDate = null;
 
     #[Column(name: 'end_date', type: 'datetime', nullable: false)]
     private ?\DateTime $endDate = null;
-    
+
     #[OneToMany(targetEntity: Production::class, mappedBy: 'season', cascade: ['persist', 'remove'])]
     private Collection $productions;
 
@@ -77,9 +80,26 @@ class Season extends ModelBase implements \JsonSerializable
         return $this->endDate;
     }
 
+    public function getFeaturedImage(): ?Image
+    {
+        return $this->featuredImage;
+    }
+
+    public function setFeaturedImage(?Image $featuredImage): self
+    {
+        $this->featuredImage = $featuredImage;
+
+        return $this;
+    }
+
     public function getFeaturedImageUrl(): ?string
     {
-        return $this->featuredImageUrl;
+        return $this->featuredImage?->getUrl();
+    }
+
+    public function hasFeaturedImage(): bool
+    {
+        return $this->featuredImage !== null;
     }
 
     public function getProductions(): Collection
@@ -111,13 +131,6 @@ class Season extends ModelBase implements \JsonSerializable
     public function setEndDate(\DateTime $endDate): self
     {
         $this->endDate = $endDate;
-
-        return $this;
-    }
-
-    public function setFeaturedImageUrl(?string $featuredImageUrl): self
-    {
-        $this->featuredImageUrl = $featuredImageUrl;
 
         return $this;
     }

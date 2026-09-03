@@ -6,6 +6,7 @@ namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Models\Image;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Twig\FeaturedImageExtension;
@@ -15,7 +16,7 @@ class FeaturedImageResolverTest extends TestCase
     public function testResolvesFeaturedImageUrlFromEntity(): void
     {
         $post = new Post('A Post', ContentStatus::PUBLISHED, 'body');
-        $post->setFeaturedImageUrl('/uploads/a-post.jpg');
+        $post->setFeaturedImage(new Image('/uploads/a-post.jpg', 'a-post.jpg'));
 
         $this->assertSame('/uploads/a-post.jpg', (new FeaturedImageResolver())->resolve($post));
     }
@@ -37,7 +38,7 @@ class FeaturedImageResolverTest extends TestCase
     public function testExtensionReturnsStringUrl(): void
     {
         $post = new Post('A Post', ContentStatus::PUBLISHED, 'body');
-        $post->setFeaturedImageUrl('/uploads/a-post.jpg');
+        $post->setFeaturedImage(new Image('/uploads/a-post.jpg', 'a-post.jpg'));
 
         $result = (new FeaturedImageExtension(new FeaturedImageResolver()))->theFeaturedImageUrl($post);
 

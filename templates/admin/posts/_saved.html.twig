@@ -1,3 +1,4 @@
 {% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': 'Post saved successfully.'} %}
-{% include 'admin/posts/_featured_image_section.html.twig' with {'oob': true} %}
-{% include 'admin/posts/_featured_image_url_field.html.twig' with {'oob': true} %}
+{% include 'admin/partials/_featured_image_field.html.twig' with {
+    entityType: 'post', entityId: post.id, featuredImageUrl: post.featuredImageUrl, featuredImageId: post.featuredImage.id|default(null), oob: true
+} %}

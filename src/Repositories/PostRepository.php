@@ -17,7 +17,6 @@ class PostRepository extends BaseRepository
             'status' => ContentStatus::DRAFT->value,
             'content' => null,
             'slug' => null,
-            'featuredImageUrl' => null,
         ], $args);
 
         if (empty($args['title'])) {
@@ -36,7 +35,6 @@ class PostRepository extends BaseRepository
         $post = new Post($args['title'], $status, $args['content']);
         $slugSource = $args['slug'] ?? $args['title'];
         $post->setSlug($this->generateUniqueSlug($slugSource));
-        $post->setFeaturedImageUrl($args['featuredImageUrl']);
 
         $this->em->persist($post);
         $this->em->flush();

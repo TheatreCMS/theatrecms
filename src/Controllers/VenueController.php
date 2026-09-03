@@ -2,6 +2,9 @@
 
 namespace TheatreCMS\Controllers;
 
+use Doctrine\ORM\EntityManagerInterface;
+use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\VenueRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -9,9 +12,10 @@ use Slim\Views\Twig;
 
 class VenueController extends BaseController
 {
-    public function __construct(VenueRepository $repository, Twig $twig)
+    public function __construct(VenueRepository $repository, EntityManagerInterface $em, Twig $twig)
     {
         $this->repository = $repository;
+        $this->entityManager = $em;
         $this->twig       = $twig;
     }
 
@@ -79,9 +83,12 @@ class VenueController extends BaseController
             'accessibilityInfo' => null,
             'websiteUrl' => null,
             'mapUrl' => null,
+            'featuredImageId' => null,
         ]);
 
         $venue = $this->repository->create($data);
+        $this->applyFeaturedImage($venue, $data['featuredImageId']);
+        $this->entityManager->flush();
         $editUrl = '/admin/venues/edit/' . $venue->getId();
 
         if ($request->getHeaderLine('HX-Request')) {
@@ -159,6 +166,7 @@ class VenueController extends BaseController
             'accessibilityInfo' => null,
             'websiteUrl' => null,
             'mapUrl' => null,
+            'featuredImageId' => null,
         ]);
 
         $venue = $this->repository->fetch(intval($data['venueId']));
@@ -184,6 +192,8 @@ class VenueController extends BaseController
             ->setWebsiteUrl($data['websiteUrl'])
             ->setMapUrl($data['mapUrl']);
 
+        $this->applyFeaturedImage($venue, $data['featuredImageId']);
+
         $this->repository->update($venue);
 
         if ($request->getHeaderLine('HX-Request')) {
@@ -194,5 +204,45 @@ class VenueController extends BaseController
         }
 
         return $response->withHeader('Location', '/admin/venues');
+    }
+
+    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
+    {
+        $venue = $this->repository->fetch((int) ($args['id'] ?? 0));
+
+        if ($venue === null) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Venue not found.',
+                ]);
+            }
+            return $response->withStatus(404);
+        }
+
+        $venue->setFeaturedImage(null);
+        $this->repository->update($venue);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
+                'entityType'      => 'venue',
+                'entityId'        => $venue->getId(),
+                'featuredImageUrl' => $venue->getFeaturedImageUrl(),
+                'featuredImageId' => null,
+            ]);
+        }
+
+        return $response->withHeader('Location', '/admin/venues/edit/' . $venue->getId());
+    }
+
+    private function applyFeaturedImage(Venue $venue, mixed $featuredImageId): void
+    {
+        if (empty($featuredImageId)) {
+            $venue->setFeaturedImage(null);
+            return;
+        }
+
+        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $venue->setFeaturedImage($image);
     }
 }

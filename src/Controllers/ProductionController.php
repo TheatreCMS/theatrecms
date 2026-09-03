@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Controllers;
 
+use TheatreCMS\Models\Image;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -20,7 +21,6 @@ use TheatreCMS\Repositories\WorkRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -34,8 +34,6 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
-    private const UPLOADS_SUBPATH = '/uploads/';
-
     private SeasonRepository $seasonRepo;
     private PersonRepository $personRepo;
     private WorkRepository $worksRepo;
@@ -146,13 +144,15 @@ class ProductionController extends BaseController
             return $response->withStatus(404);
         }
 
-        $this->deleteFeaturedImageFile($production->getFeaturedImageUrl());
-        $production->setFeaturedImageUrl(null);
+        $production->setFeaturedImage(null);
         $this->repository->update($production);
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/productions/_featured_image_removed.html.twig', [
-                'production' => $production,
+            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
+                'entityType'       => 'production',
+                'entityId'         => $production->getId(),
+                'featuredImageUrl' => $production->getFeaturedImageUrl(),
+                'featuredImageId'  => null,
             ]);
         }
 
@@ -180,10 +180,11 @@ class ProductionController extends BaseController
             'creativeRoles' => [],
             'performerIds' => [],
             'performerRoles' => [],
+            'featuredImageId' => null,
         ]);
 
         $production = $this->repository->create($data);
-        $this->handleFeaturedImageUpload($request, $production);
+        $this->applyFeaturedImage($production, $data['featuredImageId']);
 
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -259,6 +260,7 @@ class ProductionController extends BaseController
             'productionTeamRoles' => [],
             'sponsorshipSponsorIds' => [],
             'venueId' => null,
+            'featuredImageId' => null,
         ]);
 
         /**
@@ -304,7 +306,7 @@ class ProductionController extends BaseController
 
         $this->syncWorks($item, $data['works']);
 
-        $this->handleFeaturedImageUpload($request, $item);
+        $this->applyFeaturedImage($item, $data['featuredImageId']);
 
         $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
@@ -520,61 +522,14 @@ class ProductionController extends BaseController
         }
     }
 
-    private function handleFeaturedImageUpload(Request $request, Production $production): void
+    private function applyFeaturedImage(Production $production, mixed $featuredImageId): void
     {
-        $uploadedFiles = $request->getUploadedFiles();
-        $poster = $uploadedFiles['poster'] ?? null;
-
-        if (!$poster instanceof UploadedFileInterface || $poster->getError() !== UPLOAD_ERR_OK) {
+        if (empty($featuredImageId)) {
+            $production->setFeaturedImage(null);
             return;
         }
 
-        if (!$this->isImageUpload($poster)) {
-            return;
-        }
-
-        try {
-            $production->saveFeaturedImageFromUpload($poster);
-        } catch (\InvalidArgumentException | \RuntimeException) {
-            // Ignore invalid uploads; let other validation flow handle feedback.
-        }
-    }
-
-    private function deleteFeaturedImageFile(?string $url): void
-    {
-        if (!$url) {
-            return;
-        }
-
-        $path = $this->resolveFeaturedImagePath($url);
-        if ($path && file_exists($path)) {
-            @unlink($path);
-        }
-    }
-
-    private function resolveFeaturedImagePath(string $url): ?string
-    {
-        if (!str_starts_with($url, self::UPLOADS_SUBPATH)) {
-            return null;
-        }
-
-        $relative = ltrim($url, '/');
-        if ($relative === '' || str_contains($relative, '..')) {
-            return null;
-        }
-
-        return $this->getPublicRoot() . '/' . $relative;
-    }
-
-    private function getPublicRoot(): string
-    {
-        $root = defined('APP_ROOT') ? APP_ROOT : dirname(__DIR__, 2);
-        return rtrim($root, '/\\') . '/www';
-    }
-
-    private function isImageUpload(UploadedFileInterface $file): bool
-    {
-        $mediaType = $file->getClientMediaType();
-        return is_string($mediaType) && str_starts_with($mediaType, 'image/');
+        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $production->setFeaturedImage($image);
     }
 }

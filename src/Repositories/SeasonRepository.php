@@ -25,7 +25,6 @@ class SeasonRepository extends BaseRepository
            'startDate'        => null,
            'endDate'          => null,
            'overview'         => null,
-           'featuredImageUrl' => null,
         ], $args);
 
         try {
@@ -51,7 +50,6 @@ class SeasonRepository extends BaseRepository
         }
 
         $season->setOverview($args['overview']);
-        $season->setFeaturedImageUrl($args['featuredImageUrl']);
 
         $this->em->persist($season);
         $this->em->flush();

@@ -1,3 +1,4 @@
 {% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': 'Season saved successfully.'} %}
-{% include 'admin/seasons/_featured_image_section.html.twig' with {'oob': true} %}
-{% include 'admin/seasons/_featured_image_url_field.html.twig' with {'oob': true} %}
+{% include 'admin/partials/_featured_image_field.html.twig' with {
+    entityType: 'season', entityId: season.id, featuredImageUrl: season.featuredImageUrl, featuredImageId: season.featuredImage.id|default(null), oob: true
+} %}

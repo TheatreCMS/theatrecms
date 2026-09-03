@@ -11,6 +11,7 @@ use Slim\Views\TwigMiddleware;
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
+use TheatreCMS\Controllers\ImagesController;
 use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Controllers\LinkPreviewController;
 use TheatreCMS\Controllers\MenuController;
@@ -29,6 +30,7 @@ use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\ImageRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
@@ -39,6 +41,7 @@ use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Services\ImageBackfillService;
 use TheatreCMS\Services\ImageUploadService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -144,6 +147,14 @@ class ServiceRegistrar
         });
 
         $container->set(ImageUploadService::class, static fn(): ImageUploadService => new ImageUploadService(APP_ROOT . '/www'));
+
+        $container->set(ImageBackfillService::class, static function (ContainerInterface $c): ImageBackfillService {
+            return new ImageBackfillService(
+                $c->get(EntityManager::class)->getConnection(),
+                $c->get(ImageRepository::class),
+                APP_ROOT . '/www/uploads'
+            );
+        });
 
         $container->set(LinkPreviewService::class, static fn(): LinkPreviewService => new LinkPreviewService(new \GuzzleHttp\Client()));
 
@@ -292,8 +303,7 @@ class ServiceRegistrar
                     $c->get(SeasonRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
-                    $c->get(SponsorRepository::class),
-                    $c->get(ImageUploadService::class)
+                    $c->get(SponsorRepository::class)
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
@@ -309,8 +319,7 @@ class ServiceRegistrar
                 return new PostController(
                     $c->get(PostRepository::class),
                     $c->get(EntityManager::class),
-                    $c->get(Twig::class),
-                    $c->get(ImageUploadService::class)
+                    $c->get(Twig::class)
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
@@ -336,6 +345,7 @@ class ServiceRegistrar
             VenueController::class => static function (ContainerInterface $c): VenueController {
                 return new VenueController(
                     $c->get(VenueRepository::class),
+                    $c->get(EntityManager::class),
                     $c->get(Twig::class)
                 );
             },
@@ -361,6 +371,13 @@ class ServiceRegistrar
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
                 return new ImageUploadController($c->get(ImageUploadService::class));
+            },
+            ImagesController::class => static function (ContainerInterface $c): ImagesController {
+                return new ImagesController(
+                    $c->get(ImageRepository::class),
+                    $c->get(Twig::class),
+                    $c->get(ImageUploadService::class)
+                );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {
                 return new LinkPreviewController($c->get(LinkPreviewService::class));

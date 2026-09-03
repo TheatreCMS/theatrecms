@@ -6,11 +6,11 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Post;
 use TheatreCMS\Repositories\PostRepository;
-use TheatreCMS\Services\ImageUploadService;
 
 /**
  * @method PostRepository repository()
@@ -19,14 +19,11 @@ class PostController extends BaseController
 {
     private const SORTABLE_COLUMNS = ['title', 'publishedAt'];
 
-    private ImageUploadService $imageUploadService;
-
-    public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig, ImageUploadService $imageUploadService)
+    public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig)
     {
         $this->repository = $repository;
         $this->entityManager = $em;
         $this->twig       = $twig;
-        $this->imageUploadService = $imageUploadService;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -114,13 +111,15 @@ class PostController extends BaseController
             return $response->withStatus(404);
         }
 
-        $this->imageUploadService->delete($post->getFeaturedImageUrl());
-        $post->setFeaturedImageUrl(null);
+        $post->setFeaturedImage(null);
         $this->repository->update($post);
 
         if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/posts/_featured_image_removed.html.twig', [
-                'post' => $post,
+            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
+                'entityType'       => 'post',
+                'entityId'         => $post->getId(),
+                'featuredImageUrl' => $post->getFeaturedImageUrl(),
+                'featuredImageId'  => null,
             ]);
         }
 
@@ -146,8 +145,9 @@ class PostController extends BaseController
                 'title' => $data['title'] ?? null,
                 'status' => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
-                'featuredImageUrl' => $data['featuredImageUrl'] ?? null,
             ]);
+            $this->applyFeaturedImage($post, $data['featuredImageId'] ?? null);
+            $this->entityManager->flush();
         } catch (\InvalidArgumentException $e) {
             if ($request->getHeaderLine('HX-Request')) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
@@ -189,13 +189,8 @@ class PostController extends BaseController
             'content' => null,
             'slug' => null,
             'publishedAt' => null,
-            'featuredImageUrl' => null,
+            'featuredImageId' => null,
         ]);
-
-        $featuredImageUploadUrl = $this->storeFeaturedImageUpload($request);
-        if ($featuredImageUploadUrl !== null) {
-            $data['featuredImageUrl'] = $featuredImageUploadUrl;
-        }
 
         $post = $this->repository->fetch($data['postId']);
 
@@ -233,7 +228,7 @@ class PostController extends BaseController
         $post->setTitle($data['title']);
         $post->setStatus($status);
         $post->setContent($data['content']);
-        $post->setFeaturedImageUrl($data['featuredImageUrl'] !== '' ? $data['featuredImageUrl'] : null);
+        $this->applyFeaturedImage($post, $data['featuredImageId']);
         $post->touchModified();
 
         if (!empty($data['publishedAt'])) {
@@ -260,19 +255,14 @@ class PostController extends BaseController
         return $response->withHeader('Location', '/admin/posts');
     }
 
-    private function storeFeaturedImageUpload(Request $request): ?string
+    private function applyFeaturedImage(Post $post, mixed $featuredImageId): void
     {
-        $uploadedFiles = $request->getUploadedFiles();
-        $featuredImage = $uploadedFiles['featuredImage'] ?? null;
-
-        if (!$featuredImage instanceof UploadedFileInterface || $featuredImage->getError() === UPLOAD_ERR_NO_FILE) {
-            return null;
+        if (empty($featuredImageId)) {
+            $post->setFeaturedImage(null);
+            return;
         }
 
-        if ($featuredImage->getError() !== UPLOAD_ERR_OK || !$this->imageUploadService->isImage($featuredImage)) {
-            return null;
-        }
-
-        return $this->imageUploadService->store($featuredImage);
+        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $post->setFeaturedImage($image);
     }
 }

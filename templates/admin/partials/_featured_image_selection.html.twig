@@ -1,0 +1,9 @@
+{# Response for both "upload new" and "pick existing" in the image picker modal.
+   Uses HTMX out-of-band swaps to update the preview + hidden field that live in the
+   underlying entity form (outside the modal), even though this itself is rendered
+   into #image-picker-result (inside the modal). #}
+<div hx-swap-oob="true" id="featured-image-preview">
+    <img src="{{ image.url }}" alt="{{ image.altText|default('Selected image') }}" class="max-h-40 w-auto object-contain">
+</div>
+<input hx-swap-oob="true" type="hidden" name="featuredImageId" id="featuredImageId" value="{{ image.id }}">
+<p class="text-sm text-green-700">{{ image.filename }} selected.</p>

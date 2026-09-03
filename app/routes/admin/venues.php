@@ -15,6 +15,7 @@ if (isset($app)) {
         $group->get('/quick-create',   [VenueController::class, 'quickCreate']);
         $group->post('/edit',          [VenueController::class, 'update']);
         $group->get('/edit/{id}',      [VenueController::class, 'edit']);
+        $group->delete('/{id}/featured-image', [VenueController::class, 'removeFeaturedImage']);
         $group->delete('/{id}',        [VenueController::class, 'destroy']);
         $group->get('',                [VenueController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))
