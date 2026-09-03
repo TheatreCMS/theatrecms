@@ -116,6 +116,16 @@ class Production extends ModelBase
         return $this->opening;
     }
 
+    /**
+     * Satisfies DateResolver's generic `the_date()` fallback (`getPublishedAt() ??
+     * getCreatedAt()`) for content types without their own status/timestamp workflow.
+     * A production's "publish" date, for display purposes, is when it opens.
+     */
+    public function getPublishedAt(): ?DateTime
+    {
+        return $this->opening;
+    }
+
     public function setOpening(?DateTime $opening): self
     {
         $this->opening = $opening;
