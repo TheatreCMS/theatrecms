@@ -8,7 +8,6 @@
 {% set sponsorsList = sponsors|default([]) %}
 {% set venues = venues|default([]) %}
 {% set existingSponsorships = production.sponsorships|default([]) %}
-{% set editorDescription = production.description ? production.description|raw : null %}
 {% set activeTab = activeTab|default('details') %}
 {% set selectedWorkIds = [] %}
 {% for selectedWork in production.works|default([]) %}
@@ -589,7 +588,19 @@ const nameInput = document.getElementById('name');
 const seasonInput = document.getElementById('seasonId');
 const descriptionField = document.getElementById('description');
 
-const editorData = {{ editorDescription is not null ? editorDescription|raw : 'null' }};
+const rawDescription = {{ production.description|default('')|json_encode(constant('JSON_HEX_TAG'))|raw }};
+let editorData = null;
+
+if (rawDescription && typeof rawDescription === 'string') {
+	try {
+		const parsed = JSON.parse(rawDescription);
+		if (parsed && typeof parsed === 'object' && Array.isArray(parsed.blocks)) {
+			editorData = parsed;
+		}
+	} catch (error) {
+		console.warn('Existing production description is not valid EditorJS JSON; opening with empty editor.', error);
+	}
+}
 
 const setupDynamicRows = (namespace, options) => {
 const requireMinimumRow = !options || options.requireMinimumRow !== false;
