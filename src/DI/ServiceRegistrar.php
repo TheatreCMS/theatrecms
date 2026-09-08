@@ -68,6 +68,7 @@ use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\ExcerptExtension;
 use TheatreCMS\Twig\FeaturedImageExtension;
+use TheatreCMS\Twig\HooksExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
@@ -213,6 +214,7 @@ class ServiceRegistrar
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->addExtension(new AddressExtension($c->get(AddressResolver::class)));
             $twig->addExtension(new ExcerptExtension($c->get(ExcerptResolver::class)));
+            $twig->addExtension(new HooksExtension());
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
 
             $auth = $c->get(Auth::class);
