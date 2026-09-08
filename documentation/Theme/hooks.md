@@ -33,6 +33,16 @@ Priorities work like WordPress (lower values run earlier). You can register call
 
 Feel free to register new tags inside the theme or application code by calling `apply_filters()` manually wherever you need to expose a new extension point.
 
+### Calling `apply_filters()` directly from a Twig template
+
+`apply_filters()` is also exposed as a Twig function (see `src/Twig/HooksExtension.php`), so a template can declare its own extension point inline without needing a dedicated `the_x()` Twig function + resolver pair for every insertion point:
+
+```twig
+{{ apply_filters('theatrecms/schedule_details_footer', '', upcoming)|raw }}
+```
+
+The result isn't auto-marked as safe HTML — `apply_filters()` is generic and not every tag resolves to markup — so add `|raw` at the call site when the filtered value is meant to be inserted as HTML, same as anywhere else in these templates.
+
 ### Implementation notes
 
 The `HookManager` persists callbacks by tag and priority, while `apply_filters()` loops through the registered callbacks in priority order. Theme authors can mutate the filtered value directly, and successive hooks will receive the mutated value.
