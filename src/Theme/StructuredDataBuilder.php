@@ -16,6 +16,7 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -67,11 +68,16 @@ class StructuredDataBuilder
      */
     public function forProduction(Production $production, iterable $performances = []): array
     {
+        $performances = is_array($performances) ? $performances : iterator_to_array($performances);
+
+        if (count($performances) === 0) {
+            return $this->buildTheaterEventForProduction($production)->schema();
+        }
+
         $series = new EventSeries();
 
         $series->setName($production->getName())
-            ->setStartDate($production->getOpening())
-            ->setEndDate($production->getClosing())
+            ->setUrl($this->productionUrl($production))
             ->setSubEvents($this->buildTheaterSubEvents($production, $performances));
 
         return $series->schema();
@@ -109,16 +115,14 @@ class StructuredDataBuilder
 
         return [];
     }
-    /**
-     * @param iterable<Performance> $performances
-     */
+
     private function buildTheaterEvent(Production $production, Performance $performance): TheaterEvent
     {
         $event = new TheaterEvent();
         $event->setName($production->getName())
             ->setDescription($this->plainTextFromEditorJs($production->getDescription()))
             ->setUrl($this->productionUrl($production))
-            ->setPlace($this->buildPlace($production));
+            ->setEventStatus($this->mapEventStatus($performance->getStatus()));
 
         if ($performance->getStartsAt() !== null) {
             $mutable = DateTime::createFromImmutable($performance->getStartsAt());
@@ -135,9 +139,7 @@ class StructuredDataBuilder
             $event->setImageUrl($production->getFeaturedImageUrl());
         }
 
-        $event->setUrl($this->productionUrl($production));
-
-        $place = $this->buildPlace($production);
+        $place = $this->buildPlace($performance->getEffectiveVenue());
 
         if ($place !== null) {
             $event->setPlace($place);
@@ -152,7 +154,7 @@ class StructuredDataBuilder
         }
 
         foreach ($production->getWorks() as $work) {
-            $event->addWork($this->buildCreativeWork($work));
+            $event->addWorkPerformed($this->buildCreativeWork($work));
         }
 
         $ticketUrl = $performance->getEffectiveTicketUrl();
@@ -166,10 +168,8 @@ class StructuredDataBuilder
         return $event;
     }
 
-    private function buildPlace(Production $production): ?Place
+    private function buildPlace(?Venue $venue): ?Place
     {
-        $venue = $production->getVenue();
-
         if ($venue === null) {
             return null;
         }
@@ -218,20 +218,6 @@ class StructuredDataBuilder
         $schemaPerson->setUrl($this->url('/people/' . $person->getSlug()));
 
         return $schemaPerson;
-    }
-
-    /**
-     * @return CreativeWork[]
-     */
-    private function buildWorksPerformed(Production $production): array
-    {
-        $works = [];
-
-        foreach ($production->getWorks() as $work) {
-            $works[] = $this->buildCreativeWork($work);
-        }
-
-        return $works;
     }
 
     /**
@@ -314,35 +300,46 @@ class StructuredDataBuilder
         return $base . $path;
     }
 
-    private function buildSeriesForProduction(Production $production): EventSeries{
-
-        $series = new EventSeries();
-
-        $series->setName($production->getName())
-            ->setStartDate($production->getOpening())
-            ->setEndDate($production->getClosing())
-            ->setSubEvents($this->buildTheaterSubEvents($production, $production->getPerformances()));
-
-        return $series;
-    }
-
-    private function buildTheaterEventForProduction(Production $production): TheaterEvent {
+    private function buildTheaterEventForProduction(Production $production): TheaterEvent
+    {
         $event = new TheaterEvent();
-
-        $performers = $production->getPerformers();
-
-        foreach($performers as $performer) {
-            $event->addPerformer($this->buildPerson($performer->getPerson()));
-        }
 
         $event->setName($production->getName())
             ->setDescription($this->plainTextFromEditorJs($production->getDescription()))
             ->setUrl($this->productionUrl($production))
-            ->setPlace($this->buildPlace($production))
             ->setStartDate($production->getOpening())
             ->setEndDate($production->getClosing());
 
+        if ($production->hasFeaturedImage()) {
+            $event->setImageUrl($production->getFeaturedImageUrl());
+        }
+
+        $place = $this->buildPlace($production->getVenue());
+
+        if ($place !== null) {
+            $event->setPlace($place);
+        }
+
+        foreach ($production->getPerformers() as $productionPerson) {
+            $event->addPerformer($this->buildPerson($productionPerson->getPerson()));
+        }
+
+        foreach ($this->findDirectors($production) as $director) {
+            $event->addDirector($director);
+        }
+
+        foreach ($production->getWorks() as $work) {
+            $event->addWorkPerformed($this->buildCreativeWork($work));
+        }
+
+        $ticketUrl = $production->getTicketPurchaseUrl();
+
+        if ($ticketUrl !== '') {
+            $offer = new Offer();
+            $offer->setUrl($ticketUrl);
+            $event->addOffer($offer);
+        }
+
         return $event;
     }
-
 }

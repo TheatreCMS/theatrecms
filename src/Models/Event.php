@@ -105,6 +105,16 @@ class Event extends ModelBase
         return $this->venue;
     }
 
+    /**
+     * The venue to actually use for this performance: its own, if set,
+     * otherwise the parent production's (e.g. when every performance plays
+     * at the production's default venue).
+     */
+    public function getEffectiveVenue(): ?Venue
+    {
+        return $this->venue ?? $this->production?->getVenue();
+    }
+
     public function setProduction(?Production $production): self
     {
         $this->production = $production;
