@@ -1,6 +1,7 @@
 <?php
 namespace TheatreCMS\Twig;
 
+use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use Twig\TwigFunction;
 
@@ -31,10 +32,53 @@ class ThemeHeadExtension extends \Twig\Extension\AbstractExtension
         // Apply filters to allow themes and plugins to modify the head content
         $headContent = \TheatreCMS\Theme\HookManager::getInstance()->applyFilters('theme_head', $headContent);
 
-        // Add any relevant schema.org structured data to the head
-        $headContent .= $this->addStructuredData($headContent, $context);
+        // Emit the computed SEO meta tags, if TemplateResolver populated them.
+        $headContent .= $this->renderSeoTags($context);
+
+        // Add any relevant schema.org structured data to the head (this already
+        // incorporates $headContent into its return value, so assign rather than append).
+        $headContent = $this->addStructuredData($headContent, $context);
 
         return $headContent;
+    }
+
+    private function renderSeoTags(array $context): string
+    {
+        $seo = $context['seo'] ?? null;
+
+        if (!$seo instanceof SeoMeta) {
+            return '';
+        }
+
+        $tags = [];
+
+        if ($seo->description !== '') {
+            $tags[] = sprintf('<meta name="description" content="%s">', htmlspecialchars($seo->description));
+        }
+
+        if ($seo->canonicalUrl !== '') {
+            $tags[] = sprintf('<link rel="canonical" href="%s">', htmlspecialchars($seo->canonicalUrl));
+        }
+
+        $tags[] = sprintf('<meta property="og:title" content="%s">', htmlspecialchars($seo->title));
+
+        if ($seo->description !== '') {
+            $tags[] = sprintf('<meta property="og:description" content="%s">', htmlspecialchars($seo->description));
+        }
+
+        $tags[] = sprintf('<meta property="og:type" content="%s">', htmlspecialchars($seo->ogType));
+
+        if ($seo->canonicalUrl !== '') {
+            $tags[] = sprintf('<meta property="og:url" content="%s">', htmlspecialchars($seo->canonicalUrl));
+        }
+
+        if ($seo->ogImage !== '') {
+            $tags[] = sprintf('<meta property="og:image" content="%s">', htmlspecialchars($seo->ogImage));
+        }
+
+        $tags[] = sprintf('<meta name="twitter:card" content="%s">', htmlspecialchars($seo->twitterCard));
+
+        return implode("\n", $tags) . "\n";
     }
 
     private function addStructuredData(string $headContent, array $context): string

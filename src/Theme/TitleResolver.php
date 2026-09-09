@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
@@ -34,6 +35,7 @@ class TitleResolver
             $entity instanceof Person => $entity->getName(),
             $entity instanceof Venue => $entity->getName(),
             $entity instanceof Sponsor => $entity->getName(),
+            $entity instanceof Event => $entity->getTitle() ?? '',
             default => throw new \InvalidArgumentException(sprintf(
                 'TitleResolver does not know how to resolve a title for %s.',
                 is_object($entity) ? get_class($entity) : get_debug_type($entity)

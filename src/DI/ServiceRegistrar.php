@@ -55,6 +55,8 @@ use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Theme\PermalinkResolver;
 use TheatreCMS\Theme\QueriedObject;
+use TheatreCMS\Theme\SeoDescriptionResolver;
+use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\SlugResolver;
 use TheatreCMS\Theme\SponsorsResolver;
 use TheatreCMS\Theme\StartDateResolver;
@@ -131,8 +133,25 @@ class ServiceRegistrar
 
         $container->set(QueriedObject::class, static fn(): QueriedObject => new QueriedObject());
 
+        $container->set(SeoDescriptionResolver::class, static function (ContainerInterface $c): SeoDescriptionResolver {
+            return new SeoDescriptionResolver($c->get(EditorJsHtmlConverter::class));
+        });
+
+        $container->set(SeoTagBuilder::class, static function (ContainerInterface $c): SeoTagBuilder {
+            return new SeoTagBuilder(
+                $c->get(SiteSettings::class),
+                $c->get(TitleResolver::class),
+                $c->get(PermalinkResolver::class),
+                $c->get(SeoDescriptionResolver::class)
+            );
+        });
+
         $container->set(TemplateResolver::class, static function (ContainerInterface $c): TemplateResolver {
-            return new TemplateResolver($c->get(TitleResolver::class), $c->get(QueriedObject::class));
+            return new TemplateResolver(
+                $c->get(TitleResolver::class),
+                $c->get(QueriedObject::class),
+                $c->get(SeoTagBuilder::class)
+            );
         });
 
         $container->set(EditorJsHtmlConverter::class, static fn(): EditorJsHtmlConverter => new EditorJsHtmlConverter());

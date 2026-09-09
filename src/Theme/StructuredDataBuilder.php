@@ -19,6 +19,7 @@ use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Text\PlainText;
 
 class StructuredDataBuilder
 {
@@ -288,20 +289,7 @@ class StructuredDataBuilder
      */
     private function plainTextFromHtml(string $html): string
     {
-        if ($html === '') {
-            return '';
-        }
-
-        // Turn block/line boundaries into newlines before stripping tags, so
-        // separate paragraphs/list items/headings don't run together.
-        $text = preg_replace('/<(br)\s*\/?>/i', "\n", $html);
-        $text = preg_replace('/<\/(p|h[1-6]|li|blockquote|pre)>/i', "\n", (string) $text);
-        $text = strip_tags((string) $text);
-        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $text = preg_replace('/[ \t]+/', ' ', $text);
-        $text = preg_replace('/\n[ \t]*\n+/', "\n\n", (string) $text);
-
-        return trim((string) $text);
+        return PlainText::fromHtml($html);
     }
 
     private function mapEventStatus(string $status): string

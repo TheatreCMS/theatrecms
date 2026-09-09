@@ -90,6 +90,37 @@
         </div>
     </fieldset>
 
+    <fieldset class="space-y-4">
+        <legend class="text-lg font-semibold text-gray-700 border-b pb-2 w-full">SEO Defaults</legend>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="seo_title_separator" class="block text-sm font-medium text-gray-700 mb-1">Title Separator</label>
+                <input type="text" name="seo_title_separator" id="seo_title_separator"
+                       value="{{ settings.seo.title_separator|default('—') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="—">
+                <p class="mt-1 text-xs text-gray-500">Placed between a page's title and the site name, e.g. "Page Title {{ settings.seo.title_separator|default('—') }} Site Name".</p>
+            </div>
+
+            <div>
+                <label for="seo_default_social_image" class="block text-sm font-medium text-gray-700 mb-1">Default Social Image</label>
+                <input type="text" name="seo_default_social_image" id="seo_default_social_image"
+                       value="{{ settings.seo.default_social_image|default('') }}"
+                       class="w-full rounded-md border-gray-300 shadow-sm"
+                       placeholder="/assets/images/social-share.jpg">
+                <p class="mt-1 text-xs text-gray-500">Used for og:image when a page has no image of its own.</p>
+            </div>
+
+            <div class="md:col-span-2">
+                <label for="seo_default_meta_description" class="block text-sm font-medium text-gray-700 mb-1">Default Meta Description</label>
+                <textarea name="seo_default_meta_description" id="seo_default_meta_description" rows="2"
+                          class="w-full rounded-md border-gray-300 shadow-sm"
+                          placeholder="A short description of your organization, used when a page has none of its own.">{{ settings.seo.default_meta_description|default('') }}</textarea>
+            </div>
+        </div>
+    </fieldset>
+
     <div class="flex items-center justify-end space-x-3 pt-4 border-t">
         <button type="submit"
                 class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">

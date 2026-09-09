@@ -24,6 +24,11 @@ class SiteSettings
             'twitter'   => '',
             'instagram' => '',
         ],
+        'seo'               => [
+            'title_separator'          => '—',
+            'default_meta_description' => '',
+            'default_social_image'     => '',
+        ],
     ];
 
     public function __construct(private readonly string $configPath)
@@ -67,6 +72,13 @@ class SiteSettings
         $current['social']['facebook']  = $data['social_facebook']  ?? $current['social']['facebook']  ?? '';
         $current['social']['twitter']   = $data['social_twitter']   ?? $current['social']['twitter']   ?? '';
         $current['social']['instagram'] = $data['social_instagram'] ?? $current['social']['instagram'] ?? '';
+
+        $current['seo']['title_separator']          = $data['seo_title_separator']
+            ?? $current['seo']['title_separator']          ?? '';
+        $current['seo']['default_meta_description'] = $data['seo_default_meta_description']
+            ?? $current['seo']['default_meta_description'] ?? '';
+        $current['seo']['default_social_image']      = $data['seo_default_social_image']
+            ?? $current['seo']['default_social_image']      ?? '';
 
         $yaml = Yaml::dump(['site' => $current], 4);
         file_put_contents($this->configPath, $yaml);

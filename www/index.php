@@ -25,6 +25,7 @@ use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Theme\ContentTypeRegistry;
+use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -98,6 +99,7 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
         'featuredProduction' => $featuredProduction,
         'featuredProductionStatus' => $featuredProductionStatus,
         'page' => ['title' => $siteName],
+        'seo' => $container->get(SeoTagBuilder::class)->forHome(),
     ]);
 });
 $app->run();
