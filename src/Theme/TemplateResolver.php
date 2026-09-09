@@ -20,8 +20,10 @@ use Slim\Views\Twig;
  */
 class TemplateResolver
 {
-    public function __construct(private readonly TitleResolver $titleResolver)
-    {
+    public function __construct(
+        private readonly TitleResolver $titleResolver,
+        private readonly QueriedObject $queriedObject
+    ) {
     }
 
     public function resolve(Twig $twig, string ...$candidates): string
@@ -92,6 +94,8 @@ class TemplateResolver
             'page' => ['title' => $this->titleResolver->resolve($entity)],
         ];
 
+        $this->queriedObject->setSingle($type, $entity);
+
         return $twig->render($response, $this->resolveSingle($twig, $type, $slug), $context);
     }
 
@@ -120,6 +124,8 @@ class TemplateResolver
             'posts' => $items,
             'page' => ['title' => $pageTitle],
         ];
+
+        $this->queriedObject->setArchive($type);
 
         return $twig->render($response, $this->resolveList($twig, $type), $context);
     }

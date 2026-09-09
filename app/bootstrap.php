@@ -26,6 +26,7 @@ use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\MenuLocationRegistry;
+use TheatreCMS\Theme\QueriedObject;
 
 if (!defined('APP_ROOT')) {
     define('APP_ROOT', dirname(__DIR__));
@@ -34,6 +35,7 @@ if (!defined('APP_ROOT')) {
 require_once APP_ROOT . '/vendor/autoload.php';
 require_once APP_ROOT . '/app/hooks.php';
 require_once APP_ROOT . '/app/menu-locations.php';
+require_once APP_ROOT . '/app/template-tags.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
 
@@ -74,6 +76,9 @@ HookManager::setInstance($hookManager);
 
 $menuLocationRegistry = $container->get(MenuLocationRegistry::class);
 MenuLocationRegistry::setInstance($menuLocationRegistry);
+
+$queriedObject = $container->get(QueriedObject::class);
+QueriedObject::setInstance($queriedObject);
 
 $capabilityRegistry = $container->get(CapabilityRegistry::class);
 CapabilityRegistry::setInstance($capabilityRegistry);
