@@ -32,7 +32,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
     const tools = {
         paragraph: paragraphConfig,
         quote: {
-            class: Quote,
+            class: QuoteColorScheme,
             inlineToolbar: true,
         },
         underline: {
@@ -52,7 +52,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
                 tools: {
                     header: Header,
                     list: EditorjsList,
-                    quote: Quote,
+                    quote: QuoteColorScheme,
                     paragraph: paragraphConfig,
                 },
                 EditorJsLibrary: EditorJS //ref EditorJS - This means only one global thing

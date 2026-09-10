@@ -240,6 +240,62 @@ class EditorJsFilterTest extends TestCase
         $this->assertSame('', $html);
     }
 
+    public function testConverterDefaultsQuoteColorSchemeWhenMissing(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'quote',
+                    'data' => [
+                        'text' => 'The show must go on.',
+                        'caption' => 'Freddie Mercury',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<blockquote class="kg-card kg-callout-card kg-callout-card-blue">', $html);
+        $this->assertStringContainsString('<p>The show must go on.</p>', $html);
+        $this->assertStringContainsString('<cite>Freddie Mercury</cite>', $html);
+    }
+
+    public function testConverterRendersQuoteWithValidColorScheme(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'quote',
+                    'data' => [
+                        'text' => 'All the world\'s a stage.',
+                        'caption' => 'Shakespeare',
+                        'colorScheme' => 'purple',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<blockquote class="kg-card kg-callout-card kg-callout-card-purple">', $html);
+    }
+
+    public function testConverterRejectsUnknownQuoteColorScheme(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'quote',
+                    'data' => [
+                        'text' => 'Message',
+                        'colorScheme' => 'javascript:alert(1)" onclick="evil()',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('kg-callout-card-blue', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
+
     public function testConverterRendersCtaCard(): void
     {
         $html = $this->converter->toHtml(json_encode([

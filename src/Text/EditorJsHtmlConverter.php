@@ -58,6 +58,15 @@ class EditorJsHtmlConverter
     ];
 
     /**
+     * Ghost's kg-callout-card-* background presets (see cards.min.css and the
+     * avlt theme's overrides). Whitelisted so a quote block's stored
+     * `colorScheme` can only ever select one of these real, styled classes.
+     */
+    private const QUOTE_COLOR_SCHEME_PRESETS = [
+        'grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent',
+    ];
+
+    /**
      * Convert an Editor.js payload to an HTML string.
      *
      * Accepts either a JSON string, a decoded array, or null. When given a
@@ -291,7 +300,7 @@ class EditorJsHtmlConverter
     /**
      * Render a quote block.
      *
-     * @param array $data Expecting ['text' => string, 'caption' => string|null]
+     * @param array $data Expecting ['text' => string, 'caption' => string|null, 'colorScheme' => string|null]
      * @return string HTML blockquote or empty string
      */
     private function renderQuote(array $data): string
@@ -307,7 +316,16 @@ class EditorJsHtmlConverter
             $body .= sprintf('<cite>%s</cite>', $caption);
         }
 
-        return sprintf('<blockquote class="kg-card kg-callout-card kg-callout-card-blue">%s</blockquote>', $body);
+        $colorScheme = (string) ($data['colorScheme'] ?? 'blue');
+        if (!in_array($colorScheme, self::QUOTE_COLOR_SCHEME_PRESETS, true)) {
+            $colorScheme = 'blue';
+        }
+
+        return sprintf(
+            '<blockquote class="kg-card kg-callout-card kg-callout-card-%s">%s</blockquote>',
+            $colorScheme,
+            $body
+        );
     }
 
     /**
