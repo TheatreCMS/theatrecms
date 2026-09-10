@@ -15,6 +15,7 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\StructuredDataBuilder;
+use TheatreCMS\Theme\ThemeManager;
 
 class StructuredDataBuilderTest extends TestCase
 {
@@ -23,7 +24,9 @@ class StructuredDataBuilderTest extends TestCase
         $siteSettings = $this->createStub(SiteSettings::class);
         $siteSettings->method('get')->willReturn('https://example.com');
 
-        return new StructuredDataBuilder($siteSettings, new EditorJsHtmlConverter());
+        $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
+
+        return new StructuredDataBuilder($siteSettings, new EditorJsHtmlConverter($themeManager));
     }
 
     private function makePerson(string $first, string $last, string $slug): Person

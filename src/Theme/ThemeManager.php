@@ -9,7 +9,7 @@ class ThemeManager
 {
     private string $themesDir;
     private string $activeTheme;
-    private array  $themeData = [];
+    private array $themeData = [];
 
     public function __construct(string $themesDir, string $activeTheme = 'default')
     {
@@ -36,6 +36,53 @@ class ThemeManager
                 : [];
         }
         return $this->themeData;
+    }
+
+    /**
+     * Read the active theme's declared color palette from `theme.json`
+     * (`settings.color.palette`, mirroring WordPress's theme.json convention).
+     *
+     * Each entry is normalized to ['slug' => ..., 'label' => ..., 'color' => ...].
+     * Entries missing a slug, or whose color doesn't match a safe CSS color
+     * pattern (hex / rgb(a) / hsl(a)), are dropped — this is the one place
+     * both server-rendered HTML and the admin editor end up trusting a
+     * theme-declared value for, so it must not pass through unchecked.
+     *
+     * @return array<int, array{slug: string, label: string, color: string}>
+     */
+    public function getColorPalette(): array
+    {
+        $palette = $this->getMetadata()['settings']['color']['palette'] ?? [];
+        if (!is_array($palette)) {
+            return [];
+        }
+
+        $colorPattern = '/^(#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})'
+            . '|(rgb|hsl)a?\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*(,\s*[\d.]+\s*)?\))$/';
+
+        $normalized = [];
+        foreach ($palette as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $slug = trim((string) ($entry['slug'] ?? ''));
+            $color = trim((string) ($entry['color'] ?? ''));
+
+            if ($slug === '' || $color === '' || !preg_match($colorPattern, $color)) {
+                continue;
+            }
+
+            $label = trim((string) ($entry['label'] ?? ''));
+
+            $normalized[] = [
+                'slug' => $slug,
+                'label' => $label !== '' ? $label : $slug,
+                'color' => $color,
+            ];
+        }
+
+        return $normalized;
     }
 
     /**

@@ -6,17 +6,49 @@ namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\EditorJsExtension;
 use Twig\Markup;
 
 class EditorJsFilterTest extends TestCase
 {
     private EditorJsHtmlConverter $converter;
+    private string $fixtureThemesDir;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->converter = new EditorJsHtmlConverter();
+
+        // A self-contained theme.json fixture, independent of the real
+        // shipped default/avlt palettes, so these tests don't break if
+        // those are edited later. "blue" is deliberately first so it
+        // doubles as the "no colorScheme stored" default-fallback case.
+        $this->fixtureThemesDir = sys_get_temp_dir() . '/theatrecms-test-themes-' . uniqid();
+        mkdir($this->fixtureThemesDir . '/fixture', 0777, true);
+        file_put_contents(
+            $this->fixtureThemesDir . '/fixture/theme.json',
+            json_encode([
+                'settings' => [
+                    'color' => [
+                        'palette' => [
+                            ['slug' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
+                            ['slug' => 'purple', 'label' => 'Purple', 'color' => '#a855f7'],
+                        ],
+                    ],
+                ],
+            ])
+        );
+
+        $themeManager = new ThemeManager($this->fixtureThemesDir, 'fixture');
+        $this->converter = new EditorJsHtmlConverter($themeManager);
+    }
+
+    protected function tearDown(): void
+    {
+        @unlink($this->fixtureThemesDir . '/fixture/theme.json');
+        @rmdir($this->fixtureThemesDir . '/fixture');
+        @rmdir($this->fixtureThemesDir);
+        parent::tearDown();
     }
 
     public function testConverterRendersMultipleBlockTypes(): void
@@ -254,7 +286,7 @@ class EditorJsFilterTest extends TestCase
             ],
         ]));
 
-        $this->assertStringContainsString('<blockquote class="kg-card kg-callout-card kg-callout-card-blue">', $html);
+        $this->assertStringContainsString('<blockquote class="kg-card kg-callout-card" style="background-color: #3b82f6;">', $html);
         $this->assertStringContainsString('<p>The show must go on.</p>', $html);
         $this->assertStringContainsString('<cite>Freddie Mercury</cite>', $html);
     }
@@ -274,7 +306,7 @@ class EditorJsFilterTest extends TestCase
             ],
         ]));
 
-        $this->assertStringContainsString('<blockquote class="kg-card kg-callout-card kg-callout-card-purple">', $html);
+        $this->assertStringContainsString('<blockquote class="kg-card kg-callout-card" style="background-color: #a855f7;">', $html);
     }
 
     public function testConverterRejectsUnknownQuoteColorScheme(): void
@@ -291,7 +323,7 @@ class EditorJsFilterTest extends TestCase
             ],
         ]));
 
-        $this->assertStringContainsString('kg-callout-card-blue', $html);
+        $this->assertStringContainsString('background-color: #3b82f6;', $html);
         $this->assertStringNotContainsString('onclick', $html);
         $this->assertStringNotContainsString('javascript:', $html);
     }

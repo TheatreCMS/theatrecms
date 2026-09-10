@@ -4,5 +4,18 @@
   "version": "1.0.0",
   "author": "TheatreCMS",
   "description": "The default theme for TheatreCMS",
-  "requires": "1.0.0"
+  "requires": "1.0.0",
+  "settings": {
+    "color": {
+      "palette": [
+        { "slug": "grey", "label": "Grey", "color": "#94a3b8" },
+        { "slug": "blue", "label": "Blue", "color": "#3b82f6" },
+        { "slug": "green", "label": "Green", "color": "#22c55e" },
+        { "slug": "yellow", "label": "Yellow", "color": "#eab308" },
+        { "slug": "red", "label": "Red", "color": "#ef4444" },
+        { "slug": "pink", "label": "Pink", "color": "#ec4899" },
+        { "slug": "purple", "label": "Purple", "color": "#a855f7" }
+      ]
+    }
+  }
 }

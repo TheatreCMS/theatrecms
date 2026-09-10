@@ -14,6 +14,7 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\ContentResolver;
+use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\ContentExtension;
 use Twig\Markup;
 
@@ -24,7 +25,8 @@ class ContentResolverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->resolver = new ContentResolver(new EditorJsHtmlConverter());
+        $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
+        $this->resolver = new ContentResolver(new EditorJsHtmlConverter($themeManager));
     }
 
     private function editorJsPayload(string $text): string

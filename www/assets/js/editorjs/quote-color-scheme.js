@@ -2,14 +2,15 @@
  * QuoteColorScheme
  *
  * Extends the vendored @editorjs/quote `Quote` class with a `colorScheme`
- * field so editors can pick a preset background for the quote block.
+ * field so editors can pick a color for the quote block's background.
  *
- * Mirrors Ghost's kg-callout-card-* classes (see
- * EditorJsHtmlConverter::QUOTE_COLOR_SCHEME_PRESETS) so the frontend
- * renderer can emit markup that reuses the theme's existing cards CSS. The
- * admin app doesn't load that compiled theme CSS, so the swatches/preview
- * below are hand-picked rgba approximations for in-editor use only (same
- * approach already used by cta-card.js's BACKGROUND_PRESETS).
+ * The available colors are NOT hardcoded here: they come from the active
+ * theme's `theme.json` (`settings.color.palette`, mirroring WordPress's
+ * theme.json convention), injected server-side as `window.THEATRECMS_COLOR_PALETTE`
+ * and passed into this tool's `config.colorPalette` (see editorjs-config.js).
+ * This keeps the picker's options a property of the active theme rather than
+ * of core code, and matches what EditorJsHtmlConverter::renderQuote() resolves
+ * server-side when rendering the saved `colorScheme` slug.
  *
  * Usage:
  *   import QuoteColorScheme from './quote-color-scheme.js'; // or global script tag
@@ -19,28 +20,17 @@
  *       quote: {
  *         class: QuoteColorScheme,
  *         inlineToolbar: true,
+ *         config: { colorPalette: window.THEATRECMS_COLOR_PALETTE || [] },
  *       }
  *     }
  *   });
  */
 
 class QuoteColorScheme extends Quote {
-    static get COLOR_SCHEME_PRESETS() {
-        return [
-            { key: 'grey', label: 'Grey', swatch: 'rgba(124,139,154,.35)' },
-            { key: 'white', label: 'White', swatch: '#ffffff' },
-            { key: 'blue', label: 'Blue', swatch: 'rgba(33,172,232,.35)' },
-            { key: 'green', label: 'Green', swatch: 'rgba(52,183,67,.35)' },
-            { key: 'yellow', label: 'Yellow', swatch: 'rgba(240,165,15,.4)' },
-            { key: 'red', label: 'Red', swatch: 'rgba(209,46,46,.35)' },
-            { key: 'pink', label: 'Pink', swatch: 'rgba(225,71,174,.35)' },
-            { key: 'purple', label: 'Purple', swatch: 'rgba(135,85,236,.35)' },
-            { key: 'accent', label: 'Accent', swatch: '#6366f1' },
-        ];
-    }
-
-    static get DEFAULT_COLOR_SCHEME() {
-        return 'blue';
+    // Used only when a theme hasn't declared a settings.color.palette in its
+    // theme.json, so the picker never has zero options.
+    static get FALLBACK_COLOR_PALETTE() {
+        return [{ slug: 'grey', label: 'Grey', color: '#94a3b8' }];
     }
 
     static get sanitize() {
@@ -50,9 +40,14 @@ class QuoteColorScheme extends Quote {
     constructor(params) {
         super(params);
 
+        const configuredPalette = (params.config && params.config.colorPalette) || [];
+        this.colorPalette = configuredPalette.length > 0
+            ? configuredPalette
+            : QuoteColorScheme.FALLBACK_COLOR_PALETTE;
+
         const requested = params.data && params.data.colorScheme;
-        const isValid = QuoteColorScheme.COLOR_SCHEME_PRESETS.some((preset) => preset.key === requested);
-        this.data.colorScheme = isValid ? requested : QuoteColorScheme.DEFAULT_COLOR_SCHEME;
+        const isValid = this.colorPalette.some((preset) => preset.slug === requested);
+        this.data.colorScheme = isValid ? requested : this.colorPalette[0].slug;
 
         this._wrapperEl = null;
     }
@@ -71,19 +66,19 @@ class QuoteColorScheme extends Quote {
 
     renderSettings() {
         const alignmentItems = super.renderSettings();
-        const colorItems = QuoteColorScheme.COLOR_SCHEME_PRESETS.map((preset) => ({
-            icon: this._swatchIcon(preset.swatch),
+        const colorItems = this.colorPalette.map((preset) => ({
+            icon: this._swatchIcon(preset.color),
             label: this.api.i18n.t(`${preset.label} color`),
-            onActivate: () => this._setColorScheme(preset.key),
-            isActive: this.data.colorScheme === preset.key,
+            onActivate: () => this._setColorScheme(preset.slug),
+            isActive: this.data.colorScheme === preset.slug,
             closeOnActivate: false,
         }));
 
         return [...alignmentItems, { type: 'separator' }, ...colorItems];
     }
 
-    _setColorScheme(key) {
-        this.data.colorScheme = key;
+    _setColorScheme(slug) {
+        this.data.colorScheme = slug;
         this._applyColorPreview();
         this.block.dispatchChange();
     }
@@ -93,11 +88,11 @@ class QuoteColorScheme extends Quote {
             return;
         }
 
-        const preset = QuoteColorScheme.COLOR_SCHEME_PRESETS.find((p) => p.key === this.data.colorScheme)
-            || QuoteColorScheme.COLOR_SCHEME_PRESETS[0];
+        const preset = this.colorPalette.find((p) => p.slug === this.data.colorScheme)
+            || this.colorPalette[0];
 
-        this._wrapperEl.style.background = preset.swatch;
-        this._wrapperEl.style.boxShadow = preset.key === 'white' ? 'inset 0 0 0 1px rgba(124,139,154,.35)' : 'none';
+        this._wrapperEl.style.background = preset.color;
+        this._wrapperEl.style.boxShadow = 'none';
         this._wrapperEl.style.borderRadius = '8px';
         this._wrapperEl.style.padding = '1em 1.2em';
     }

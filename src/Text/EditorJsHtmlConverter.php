@@ -42,6 +42,8 @@
 
 namespace TheatreCMS\Text;
 
+use TheatreCMS\Theme\ThemeManager;
+
 class EditorJsHtmlConverter
 {
     private const INLINE_TAGS = [
@@ -58,13 +60,18 @@ class EditorJsHtmlConverter
     ];
 
     /**
-     * Ghost's kg-callout-card-* background presets (see cards.min.css and the
-     * avlt theme's overrides). Whitelisted so a quote block's stored
-     * `colorScheme` can only ever select one of these real, styled classes.
+     * Used only when the active theme's theme.json doesn't declare a
+     * settings.color.palette, so a quote block always has something to
+     * render. Keep in sync with QuoteColorScheme.FALLBACK_COLOR_PALETTE in
+     * www/assets/js/editorjs/quote-color-scheme.js.
      */
-    private const QUOTE_COLOR_SCHEME_PRESETS = [
-        'grey', 'white', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'accent',
+    private const FALLBACK_COLOR_PALETTE = [
+        ['slug' => 'grey', 'label' => 'Grey', 'color' => '#94a3b8'],
     ];
+
+    public function __construct(private readonly ThemeManager $themeManager)
+    {
+    }
 
     /**
      * Convert an Editor.js payload to an HTML string.
@@ -316,16 +323,40 @@ class EditorJsHtmlConverter
             $body .= sprintf('<cite>%s</cite>', $caption);
         }
 
-        $colorScheme = (string) ($data['colorScheme'] ?? 'blue');
-        if (!in_array($colorScheme, self::QUOTE_COLOR_SCHEME_PRESETS, true)) {
-            $colorScheme = 'blue';
-        }
+        $colorScheme = (string) ($data['colorScheme'] ?? '');
+        $color = $this->resolveQuoteColor($colorScheme);
 
         return sprintf(
-            '<blockquote class="kg-card kg-callout-card kg-callout-card-%s">%s</blockquote>',
-            $colorScheme,
+            '<blockquote class="kg-card kg-callout-card" style="background-color: %s;">%s</blockquote>',
+            htmlspecialchars($color, ENT_QUOTES, 'UTF-8'),
             $body
         );
+    }
+
+    /**
+     * Resolve a quote block's stored `colorScheme` slug to an actual CSS
+     * color value, drawn from the active theme's `theme.json`
+     * (`settings.color.palette`). Falls back to the palette's first entry
+     * when the slug is missing/unknown, and to FALLBACK_COLOR_PALETTE when
+     * the active theme hasn't declared a palette at all.
+     *
+     * @param string $colorScheme
+     * @return string CSS color value (already validated by ThemeManager)
+     */
+    private function resolveQuoteColor(string $colorScheme): string
+    {
+        $palette = $this->themeManager->getColorPalette();
+        if ($palette === []) {
+            $palette = self::FALLBACK_COLOR_PALETTE;
+        }
+
+        foreach ($palette as $entry) {
+            if ($entry['slug'] === $colorScheme) {
+                return $entry['color'];
+            }
+        }
+
+        return $palette[0]['color'];
     }
 
     /**

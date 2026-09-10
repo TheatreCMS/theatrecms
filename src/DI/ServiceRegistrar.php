@@ -158,7 +158,9 @@ class ServiceRegistrar
             );
         });
 
-        $container->set(EditorJsHtmlConverter::class, static fn(): EditorJsHtmlConverter => new EditorJsHtmlConverter());
+        $container->set(EditorJsHtmlConverter::class, static function (ContainerInterface $c): EditorJsHtmlConverter {
+            return new EditorJsHtmlConverter($c->get(ThemeManager::class));
+        });
 
         $container->set(ContentResolver::class, static function (ContainerInterface $c): ContentResolver {
             return new ContentResolver($c->get(EditorJsHtmlConverter::class));
@@ -245,6 +247,7 @@ class ServiceRegistrar
             $twig->addExtension(new HooksExtension());
             $twig->addExtension(new ConditionalTagsExtension());
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
+            $twig->getEnvironment()->addGlobal('theme_color_palette', $themeManager->getColorPalette());
 
             $auth = $c->get(Auth::class);
             $twig->getEnvironment()->addGlobal('current_user', [

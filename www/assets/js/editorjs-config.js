@@ -29,11 +29,16 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         },
     };
 
+    const quoteConfig = {
+        colorPalette: window.THEATRECMS_COLOR_PALETTE || [],
+    };
+
     const tools = {
         paragraph: paragraphConfig,
         quote: {
             class: QuoteColorScheme,
             inlineToolbar: true,
+            config: quoteConfig,
         },
         underline: {
             class: Underline,
@@ -52,7 +57,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
                 tools: {
                     header: Header,
                     list: EditorjsList,
-                    quote: QuoteColorScheme,
+                    quote: { class: QuoteColorScheme, config: quoteConfig },
                     paragraph: paragraphConfig,
                 },
                 EditorJsLibrary: EditorJS //ref EditorJS - This means only one global thing
