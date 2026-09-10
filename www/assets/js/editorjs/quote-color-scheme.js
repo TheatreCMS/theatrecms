@@ -10,7 +10,7 @@
  * and passed into this tool's `config.colorPalette` (see editorjs-config.js).
  * This keeps the picker's options a property of the active theme rather than
  * of core code, and matches what EditorJsHtmlConverter::renderQuote() resolves
- * server-side when rendering the saved `colorScheme` slug.
+ * server-side when rendering the saved `colorScheme` name.
  *
  * Usage:
  *   import QuoteColorScheme from './quote-color-scheme.js'; // or global script tag
@@ -30,7 +30,7 @@ class QuoteColorScheme extends Quote {
     // Used only when a theme hasn't declared a settings.color.palette in its
     // theme.json, so the picker never has zero options.
     static get FALLBACK_COLOR_PALETTE() {
-        return [{ slug: 'grey', label: 'Grey', color: '#94a3b8' }];
+        return [{ name: 'grey', label: 'Grey', color: '#94a3b8' }];
     }
 
     static get sanitize() {
@@ -46,8 +46,8 @@ class QuoteColorScheme extends Quote {
             : QuoteColorScheme.FALLBACK_COLOR_PALETTE;
 
         const requested = params.data && params.data.colorScheme;
-        const isValid = this.colorPalette.some((preset) => preset.slug === requested);
-        this.data.colorScheme = isValid ? requested : this.colorPalette[0].slug;
+        const isValid = this.colorPalette.some((preset) => preset.name === requested);
+        this.data.colorScheme = isValid ? requested : this.colorPalette[0].name;
 
         this._wrapperEl = null;
     }
@@ -69,16 +69,16 @@ class QuoteColorScheme extends Quote {
         const colorItems = this.colorPalette.map((preset) => ({
             icon: this._swatchIcon(preset.color),
             label: this.api.i18n.t(`${preset.label} color`),
-            onActivate: () => this._setColorScheme(preset.slug),
-            isActive: this.data.colorScheme === preset.slug,
+            onActivate: () => this._setColorScheme(preset.name),
+            isActive: this.data.colorScheme === preset.name,
             closeOnActivate: false,
         }));
 
         return [...alignmentItems, { type: 'separator' }, ...colorItems];
     }
 
-    _setColorScheme(slug) {
-        this.data.colorScheme = slug;
+    _setColorScheme(name) {
+        this.data.colorScheme = name;
         this._applyColorPreview();
         this.block.dispatchChange();
     }
@@ -88,7 +88,7 @@ class QuoteColorScheme extends Quote {
             return;
         }
 
-        const preset = this.colorPalette.find((p) => p.slug === this.data.colorScheme)
+        const preset = this.colorPalette.find((p) => p.name === this.data.colorScheme)
             || this.colorPalette[0];
 
         this._wrapperEl.style.background = preset.color;

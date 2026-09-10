@@ -42,13 +42,13 @@ class ThemeManager
      * Read the active theme's declared color palette from `theme.json`
      * (`settings.color.palette`, mirroring WordPress's theme.json convention).
      *
-     * Each entry is normalized to ['slug' => ..., 'label' => ..., 'color' => ...].
-     * Entries missing a slug, or whose color doesn't match a safe CSS color
+     * Each entry is normalized to ['name' => ..., 'label' => ..., 'color' => ...].
+     * Entries missing a name, or whose color doesn't match a safe CSS color
      * pattern (hex / rgb(a) / hsl(a)), are dropped — this is the one place
      * both server-rendered HTML and the admin editor end up trusting a
      * theme-declared value for, so it must not pass through unchecked.
      *
-     * @return array<int, array{slug: string, label: string, color: string}>
+     * @return array<int, array{name: string, label: string, color: string}>
      */
     public function getColorPalette(): array
     {
@@ -66,18 +66,18 @@ class ThemeManager
                 continue;
             }
 
-            $slug = trim((string) ($entry['slug'] ?? ''));
+            $name = trim((string) ($entry['name'] ?? ''));
             $color = trim((string) ($entry['color'] ?? ''));
 
-            if ($slug === '' || $color === '' || !preg_match($colorPattern, $color)) {
+            if ($name === '' || $color === '' || !preg_match($colorPattern, $color)) {
                 continue;
             }
 
             $label = trim((string) ($entry['label'] ?? ''));
 
             $normalized[] = [
-                'slug' => $slug,
-                'label' => $label !== '' ? $label : $slug,
+                'name' => $name,
+                'label' => $label !== '' ? $label : $name,
                 'color' => $color,
             ];
         }

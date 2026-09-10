@@ -51,8 +51,8 @@ class ThemeManagerTest extends TestCase
             'settings' => [
                 'color' => [
                     'palette' => [
-                        ['slug' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
-                        ['slug' => 'green', 'color' => '#22c55e'],
+                        ['name' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
+                        ['name' => 'green', 'color' => '#22c55e'],
                     ],
                 ],
             ],
@@ -62,22 +62,22 @@ class ThemeManagerTest extends TestCase
 
         $this->assertSame(
             [
-                ['slug' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
-                ['slug' => 'green', 'label' => 'green', 'color' => '#22c55e'],
+                ['name' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
+                ['name' => 'green', 'label' => 'green', 'color' => '#22c55e'],
             ],
             $palette
         );
     }
 
-    public function testGetColorPaletteDropsEntriesMissingSlugOrColor(): void
+    public function testGetColorPaletteDropsEntriesMissingNameOrColor(): void
     {
         $themeManager = $this->makeTheme('drops-incomplete', [
             'settings' => [
                 'color' => [
                     'palette' => [
-                        ['label' => 'No slug', 'color' => '#3b82f6'],
-                        ['slug' => 'no-color'],
-                        ['slug' => 'blue', 'color' => '#3b82f6'],
+                        ['label' => 'No name', 'color' => '#3b82f6'],
+                        ['name' => 'no-color'],
+                        ['name' => 'blue', 'color' => '#3b82f6'],
                     ],
                 ],
             ],
@@ -86,7 +86,7 @@ class ThemeManagerTest extends TestCase
         $palette = $themeManager->getColorPalette();
 
         $this->assertCount(1, $palette);
-        $this->assertSame('blue', $palette[0]['slug']);
+        $this->assertSame('blue', $palette[0]['name']);
     }
 
     public function testGetColorPaletteDropsEntriesWithUnsafeColorValues(): void
@@ -95,19 +95,19 @@ class ThemeManagerTest extends TestCase
             'settings' => [
                 'color' => [
                     'palette' => [
-                        ['slug' => 'danger', 'color' => 'javascript:alert(1)'],
-                        ['slug' => 'danger2', 'color' => 'red; } body { display: none'],
-                        ['slug' => 'hex', 'color' => '#a855f7'],
-                        ['slug' => 'rgba', 'color' => 'rgb(149, 214, 216, .5)'],
+                        ['name' => 'danger', 'color' => 'javascript:alert(1)'],
+                        ['name' => 'danger2', 'color' => 'red; } body { display: none'],
+                        ['name' => 'hex', 'color' => '#a855f7'],
+                        ['name' => 'rgba', 'color' => 'rgb(149, 214, 216, .5)'],
                     ],
                 ],
             ],
         ]);
 
         $palette = $themeManager->getColorPalette();
-        $slugs = array_column($palette, 'slug');
+        $names = array_column($palette, 'name');
 
-        $this->assertSame(['hex', 'rgba'], $slugs);
+        $this->assertSame(['hex', 'rgba'], $names);
     }
 
     public function testGetColorPaletteReturnsEmptyArrayWhenThemeHasNoPalette(): void

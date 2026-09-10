@@ -66,7 +66,7 @@ class EditorJsHtmlConverter
      * www/assets/js/editorjs/quote-color-scheme.js.
      */
     private const FALLBACK_COLOR_PALETTE = [
-        ['slug' => 'grey', 'label' => 'Grey', 'color' => '#94a3b8'],
+        ['name' => 'grey', 'label' => 'Grey', 'color' => '#94a3b8'],
     ];
 
     public function __construct(private readonly ThemeManager $themeManager)
@@ -334,10 +334,10 @@ class EditorJsHtmlConverter
     }
 
     /**
-     * Resolve a quote block's stored `colorScheme` slug to an actual CSS
+     * Resolve a quote block's stored `colorScheme` name to an actual CSS
      * color value, drawn from the active theme's `theme.json`
      * (`settings.color.palette`). Falls back to the palette's first entry
-     * when the slug is missing/unknown, and to FALLBACK_COLOR_PALETTE when
+     * when the name is missing/unknown, and to FALLBACK_COLOR_PALETTE when
      * the active theme hasn't declared a palette at all.
      *
      * @param string $colorScheme
@@ -351,7 +351,7 @@ class EditorJsHtmlConverter
         }
 
         foreach ($palette as $entry) {
-            if ($entry['slug'] === $colorScheme) {
+            if ($entry['name'] === $colorScheme) {
                 return $entry['color'];
             }
         }

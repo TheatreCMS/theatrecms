@@ -31,8 +31,8 @@ class EditorJsFilterTest extends TestCase
                 'settings' => [
                     'color' => [
                         'palette' => [
-                            ['slug' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
-                            ['slug' => 'purple', 'label' => 'Purple', 'color' => '#a855f7'],
+                            ['name' => 'blue', 'label' => 'Blue', 'color' => '#3b82f6'],
+                            ['name' => 'purple', 'label' => 'Purple', 'color' => '#a855f7'],
                         ],
                     ],
                 ],
