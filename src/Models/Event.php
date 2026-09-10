@@ -36,7 +36,7 @@ class Event extends ModelBase
     private ?string $notes = null;
 
     #[ManyToOne(targetEntity: Venue::class)]
-    #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable:true)]
+    #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable: true)]
     private ?Venue $venue = null;
 
     #[Column(type: 'string', nullable: true)]
@@ -83,7 +83,7 @@ class Event extends ModelBase
     /**
      * The ticket URL to actually use for this performance: its own, if set,
      * otherwise the parent production's (e.g. when tickets for this specific
-     * performance aren't sold separately).
+     * performance do not have a separate sales page).
      */
     public function getEffectiveTicketUrl(): ?string
     {

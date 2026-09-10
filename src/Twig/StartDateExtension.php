@@ -21,7 +21,7 @@ class StartDateExtension extends AbstractExtension
         ];
     }
 
-    public function theStartDate(mixed $entity, string $format = 'm-d-Y'): string
+    public function theStartDate(mixed $entity, string $format = 'F j, Y'): string
     {
         $content   = '';
         $startDate = $this->resolver->resolve($entity);

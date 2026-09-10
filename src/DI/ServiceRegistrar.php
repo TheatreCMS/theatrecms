@@ -81,6 +81,8 @@ use TheatreCMS\Twig\StartDateExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
 use Delight\Auth\Auth;
+use TheatreCMS\Theme\EndDateResolver;
+use TheatreCMS\Twig\EndDateExtension;
 
 /**
  * Centralizes the project's dependency-injection wiring.
@@ -131,6 +133,8 @@ class ServiceRegistrar
 
         $container->set(StartDateResolver::class, static fn(): StartDateResolver => new StartDateResolver());
 
+        $container->set(EndDateResolver::class, static fn(): EndDateResolver => new EndDateResolver());
+
         $container->set(QueriedObject::class, static fn(): QueriedObject => new QueriedObject());
 
         $container->set(SeoDescriptionResolver::class, static function (ContainerInterface $c): SeoDescriptionResolver {
@@ -142,7 +146,7 @@ class ServiceRegistrar
                 $c->get(SiteSettings::class),
                 $c->get(TitleResolver::class),
                 $c->get(PermalinkResolver::class),
-                $c->get(SeoDescriptionResolver::class)
+                $c->get(SeoDescriptionResolver::class),
             );
         });
 
@@ -150,7 +154,7 @@ class ServiceRegistrar
             return new TemplateResolver(
                 $c->get(TitleResolver::class),
                 $c->get(QueriedObject::class),
-                $c->get(SeoTagBuilder::class)
+                $c->get(SeoTagBuilder::class),
             );
         });
 
@@ -180,7 +184,7 @@ class ServiceRegistrar
             return new ImageBackfillService(
                 $c->get(EntityManager::class)->getConnection(),
                 $c->get(ImageRepository::class),
-                APP_ROOT . '/www/uploads'
+                APP_ROOT . '/www/uploads',
             );
         });
 
@@ -195,7 +199,7 @@ class ServiceRegistrar
                 $c->get(ProductionRepository::class),
                 $c->get(SeasonRepository::class),
                 $c->get(PermalinkResolver::class),
-                $c->get(ContentTypeRegistry::class)
+                $c->get(ContentTypeRegistry::class),
             );
         });
 
@@ -234,6 +238,7 @@ class ServiceRegistrar
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
+            $twig->addExtension(new EndDateExtension($c->get(EndDateResolver::class)));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->addExtension(new AddressExtension($c->get(AddressResolver::class)));
             $twig->addExtension(new ExcerptExtension($c->get(ExcerptResolver::class)));
@@ -300,21 +305,21 @@ class ServiceRegistrar
                 return new LoginController(
                     $c->get(UserRepository::class),
                     $c->get(Twig::class),
-                    $c->get(Auth::class)
+                    $c->get(Auth::class),
                 );
             },
             UsersController::class => static function (ContainerInterface $c): UsersController {
                 return new UsersController(
                     $c->get(UserRepository::class),
                     $c->get(Twig::class),
-                    $c->get(Auth::class)
+                    $c->get(Auth::class),
                 );
             },
             ProfileController::class => static function (ContainerInterface $c): ProfileController {
                 return new ProfileController(
                     $c->get(UserRepository::class),
                     $c->get(Twig::class),
-                    $c->get(Auth::class)
+                    $c->get(Auth::class),
                 );
             },
             ProductionController::class => static function (ContainerInterface $c): ProductionController {
@@ -327,7 +332,7 @@ class ServiceRegistrar
                     $c->get(WorkRepository::class),
                     $c->get(SponsorRepository::class),
                     $c->get(VenueRepository::class),
-                    $c->get(EventRepository::class)
+                    $c->get(EventRepository::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
@@ -335,7 +340,7 @@ class ServiceRegistrar
                     $c->get(SeasonRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
-                    $c->get(SponsorRepository::class)
+                    $c->get(SponsorRepository::class),
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
@@ -344,21 +349,21 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(ProductionRepository::class),
-                    $c->get(VenueRepository::class)
+                    $c->get(VenueRepository::class),
                 );
             },
             PostController::class => static function (ContainerInterface $c): PostController {
                 return new PostController(
                     $c->get(PostRepository::class),
                     $c->get(EntityManager::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
                 return new PageController(
                     $c->get(PageRepository::class),
                     $c->get(EntityManager::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
                 );
             },
             MenuController::class => static function (ContainerInterface $c): MenuController {
@@ -371,34 +376,34 @@ class ServiceRegistrar
                     $c->get(PageRepository::class),
                     $c->get(PostRepository::class),
                     $c->get(ProductionRepository::class),
-                    $c->get(SeasonRepository::class)
+                    $c->get(SeasonRepository::class),
                 );
             },
             VenueController::class => static function (ContainerInterface $c): VenueController {
                 return new VenueController(
                     $c->get(VenueRepository::class),
                     $c->get(EntityManager::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
                 );
             },
             PersonController::class => static function (ContainerInterface $c): PersonController {
                 return new PersonController(
                     $c->get(PersonRepository::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
                 );
             },
             SponsorController::class => static function (ContainerInterface $c): SponsorController {
                 return new SponsorController(
                     $c->get(SponsorRepository::class),
                     $c->get(Twig::class),
-                    $c->get(ImageUploadService::class)
+                    $c->get(ImageUploadService::class),
                 );
             },
             WorksController::class => static function (ContainerInterface $c): WorksController {
                 return new WorksController(
                     $c->get(WorkRepository::class),
                     $c->get(Twig::class),
-                    $c->get(PersonRepository::class)
+                    $c->get(PersonRepository::class),
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
@@ -408,7 +413,7 @@ class ServiceRegistrar
                 return new ImagesController(
                     $c->get(ImageRepository::class),
                     $c->get(Twig::class),
-                    $c->get(ImageUploadService::class)
+                    $c->get(ImageUploadService::class),
                 );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {
@@ -417,7 +422,7 @@ class ServiceRegistrar
             SettingsController::class => static function (ContainerInterface $c): SettingsController {
                 return new SettingsController(
                     $c->get(SiteSettings::class),
-                    $c->get(Twig::class)
+                    $c->get(Twig::class),
                 );
             },
         ];
