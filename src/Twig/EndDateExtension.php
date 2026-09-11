@@ -23,13 +23,12 @@ class EndDateExtension extends AbstractExtension
 
     public function theEndDate(mixed $entity, string $format = 'F j, Y'): string
     {
-        $content = '';
         $endDate = $this->resolver->resolve($entity);
 
         if ($endDate) {
-            $content = apply_filters('the_end_date', $endDate->format($format), $endDate);
+            return apply_filters('the_end_date', $endDate->format($format), $endDate);
         }
 
-        return $content;
+        return '';
     }
 }
