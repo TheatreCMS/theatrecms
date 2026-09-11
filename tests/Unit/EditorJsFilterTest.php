@@ -328,6 +328,97 @@ class EditorJsFilterTest extends TestCase
         $this->assertStringNotContainsString('javascript:', $html);
     }
 
+    public function testConverterRendersCalloutWithIconAndLabel(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Rehearsals begin next Monday.',
+                        'label' => 'Notice',
+                        'icon' => '📣',
+                        'colorScheme' => 'purple',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<div class="kg-card kg-callout-card" style="background-color: #a855f7;">', $html);
+        $this->assertStringContainsString('<span class="kg-callout-icon">📣</span>', $html);
+        $this->assertStringContainsString('<span class="kg-callout-label">Notice</span>', $html);
+        $this->assertStringContainsString('<p>Rehearsals begin next Monday.</p>', $html);
+    }
+
+    public function testConverterDefaultsCalloutColorSchemeWhenMissing(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Message',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('background-color: #3b82f6;', $html);
+    }
+
+    public function testConverterRejectsUnknownCalloutColorScheme(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Message',
+                        'colorScheme' => 'javascript:alert(1)" onclick="evil()',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('background-color: #3b82f6;', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
+
+    public function testConverterOmitsCalloutHeaderWhenNoIconOrLabel(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Message',
+                        'icon' => '',
+                        'label' => '',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringNotContainsString('kg-callout-header', $html);
+    }
+
+    public function testConverterDropsCalloutWithoutText(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'label' => 'Notice',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
     public function testConverterRendersCtaCard(): void
     {
         $html = $this->converter->toHtml(json_encode([

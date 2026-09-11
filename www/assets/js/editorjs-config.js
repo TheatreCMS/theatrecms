@@ -29,7 +29,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         },
     };
 
-    const quoteConfig = {
+    const colorPaletteConfig = {
         colorPalette: window.THEATRECMS_COLOR_PALETTE || [],
     };
 
@@ -38,7 +38,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         quote: {
             class: QuoteColorScheme,
             inlineToolbar: true,
-            config: quoteConfig,
+            config: colorPaletteConfig,
         },
         underline: {
             class: Underline,
@@ -57,7 +57,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
                 tools: {
                     header: Header,
                     list: EditorjsList,
-                    quote: { class: QuoteColorScheme, config: quoteConfig },
+                    quote: { class: QuoteColorScheme, config: colorPaletteConfig },
                     paragraph: paragraphConfig,
                 },
                 EditorJsLibrary: EditorJS //ref EditorJS - This means only one global thing
@@ -77,6 +77,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         callout: {
             class: Callout,
             inlineToolbar: INLINE_TOOLBAR_ITEMS,
+            config: colorPaletteConfig,
         },
         sponsorBlock: {
             class: SponsorBlock,

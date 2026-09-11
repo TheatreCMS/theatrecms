@@ -1,17 +1,28 @@
 /**
  * Callout Plugin for Editor.js
  *
- * A block tool that renders a styled callout card with
- * editable text and a customizable background color.
+ * A block tool that renders a styled callout card with editable text, an
+ * optional icon/label header, and a background color.
+ *
+ * The available colors are NOT hardcoded here: they come from the active
+ * theme's `theme.json` (`settings.color.palette`, mirroring WordPress's
+ * theme.json convention), injected server-side as `window.THEATRECMS_COLOR_PALETTE`
+ * and passed into this tool's `config.colorPalette` (see editorjs-config.js) —
+ * the same palette the quote block's color picker draws from (see
+ * quote-color-scheme.js). This keeps the picker's options a property of the
+ * active theme rather than of core code, and matches what
+ * EditorJsHtmlConverter::renderCallout() resolves server-side when rendering
+ * the saved `colorScheme` name.
  *
  * Usage:
- *   import Callout from './callout-card-plugin.js';
+ *   import Callout from './callout.js';
  *
  *   const editor = new EditorJS({
  *     tools: {
  *       callout: {
  *         class: Callout,
  *         inlineToolbar: true,
+ *         config: { colorPalette: window.THEATRECMS_COLOR_PALETTE || [] },
  *       }
  *     }
  *   });
@@ -54,26 +65,16 @@ class Callout {
                 mark: true,
                 code: true,
             },
-            backgroundColor: false,
-            textColor: false,
+            colorScheme: false,
             icon: false,
             label: false,
         };
     }
 
-    // ─── Preset palette shown in the color picker ───────────────────────────────
-
-    static get COLOR_PRESETS() {
-        return [
-            { label: 'Amber', bg: '#FFF8E7', border: '#F59E0B', text: '#92400E' },
-            { label: 'Sky', bg: '#EFF6FF', border: '#3B82F6', text: '#1E40AF' },
-            { label: 'Emerald', bg: '#ECFDF5', border: '#10B981', text: '#065F46' },
-            { label: 'Rose', bg: '#FFF1F2', border: '#F43F5E', text: '#9F1239' },
-            { label: 'Violet', bg: '#F5F3FF', border: '#8B5CF6', text: '#4C1D95' },
-            { label: 'Slate', bg: '#F8FAFC', border: '#64748B', text: '#1E293B' },
-            { label: 'Coral', bg: '#FFF4F0', border: '#F97316', text: '#7C2D12' },
-            { label: 'Teal', bg: '#F0FDFA', border: '#14B8A6', text: '#134E4A' },
-        ];
+    // Used only when a theme hasn't declared a settings.color.palette in its
+    // theme.json, so the picker never has zero options.
+    static get FALLBACK_COLOR_PALETTE() {
+        return [{ name: 'grey', label: 'Grey', color: '#94a3b8' }];
     }
 
     // ─── Constructor ─────────────────────────────────────────────────────────────
@@ -90,13 +91,17 @@ class Callout {
         this.readOnly = readOnly;
         this.config = config || {};
 
-        // Merge saved data with sensible defaults
-        const defaultPreset = Callout.COLOR_PRESETS[0];
+        const configuredPalette = this.config.colorPalette || [];
+        this.colorPalette = configuredPalette.length > 0
+            ? configuredPalette
+            : Callout.FALLBACK_COLOR_PALETTE;
+
+        const requested = data.colorScheme;
+        const isValid = this.colorPalette.some((preset) => preset.name === requested);
+
         this.data = {
             text: data.text ?? '',
-            backgroundColor: data.backgroundColor ?? defaultPreset.bg,
-            borderColor: data.borderColor ?? defaultPreset.border,
-            textColor: data.textColor ?? defaultPreset.text,
+            colorScheme: isValid ? requested : this.colorPalette[0].name,
             label: data.label ?? '',
             icon: data.icon ?? '💡',
         };
@@ -131,9 +136,7 @@ class Callout {
             text: this._textArea ? this._textArea.innerHTML : this.data.text,
             label: this._labelInput ? this._labelInput.value : this.data.label,
             icon: this._iconInput ? this._iconInput.value : this.data.icon,
-            backgroundColor: this.data.backgroundColor,
-            borderColor: this.data.borderColor,
-            textColor: this.data.textColor,
+            colorScheme: this.data.colorScheme,
         };
     }
 
@@ -171,6 +174,7 @@ class Callout {
                 this.data.label = input.value;
                 this._syncLabel();
             });
+            this._labelInput = input;
             return input;
         }));
 
@@ -186,31 +190,36 @@ class Callout {
                 this.data.icon = input.value;
                 this._syncIcon();
             });
+            this._iconInput = input;
             return input;
         }));
 
-        // ── Section: Color presets ──────────────────────────────────────────────
-        tray.appendChild(this._settingsSection('Color preset', () => {
+        // ── Section: Color ──────────────────────────────────────────────────────
+        tray.appendChild(this._settingsSection('Color', () => {
             const grid = document.createElement('div');
             grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;';
 
-            Callout.COLOR_PRESETS.forEach(preset => {
+            this.colorPalette.forEach((preset) => {
                 const swatch = document.createElement('button');
+                swatch.type = 'button';
                 swatch.title = preset.label;
+                const isActive = this.data.colorScheme === preset.name;
                 swatch.style.cssText = `
           width:28px;height:28px;border-radius:6px;
-          background:${preset.bg};
-          border:2.5px solid ${preset.border};
+          background:${preset.color};
+          border:2.5px solid ${isActive ? '#6366f1' : 'rgba(124,139,154,.35)'};
           cursor:pointer;transition:transform .15s;
           outline:none;
         `;
                 swatch.addEventListener('mouseenter', () => swatch.style.transform = 'scale(1.18)');
                 swatch.addEventListener('mouseleave', () => swatch.style.transform = 'scale(1)');
                 swatch.addEventListener('click', () => {
-                    this.data.backgroundColor = preset.bg;
-                    this.data.borderColor = preset.border;
-                    this.data.textColor = preset.text;
-                    this._applyColors();
+                    this.data.colorScheme = preset.name;
+                    this._applyBackground();
+                    Array.from(grid.children).forEach((child) => {
+                        child.style.borderColor = 'rgba(124,139,154,.35)';
+                    });
+                    swatch.style.borderColor = '#6366f1';
                 });
                 grid.appendChild(swatch);
             });
@@ -218,39 +227,15 @@ class Callout {
             return grid;
         }));
 
-        // ── Section: Custom colors ──────────────────────────────────────────────
-        tray.appendChild(this._settingsSection('Custom colors', () => {
-            const row = document.createElement('div');
-            row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;';
-
-            const addColorPicker = (label, key) => {
-                const wrap = document.createElement('label');
-                wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#6b7280;';
-                wrap.textContent = label;
-
-                const picker = document.createElement('input');
-                picker.type = 'color';
-                picker.value = this.data[key];
-                picker.style.cssText = 'width:32px;height:32px;border:none;padding:0;cursor:pointer;border-radius:6px;';
-                picker.addEventListener('input', () => {
-                    this.data[key] = picker.value;
-                    this._applyColors();
-                });
-
-                wrap.appendChild(picker);
-                return wrap;
-            };
-
-            row.appendChild(addColorPicker('BG', 'backgroundColor'));
-            row.appendChild(addColorPicker('Border', 'borderColor'));
-            row.appendChild(addColorPicker('Text', 'textColor'));
-            return row;
-        }));
-
         return tray;
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────────────
+
+    /** Resolves the currently selected palette entry (falling back to the first). */
+    _currentPreset() {
+        return this.colorPalette.find((p) => p.name === this.data.colorScheme) || this.colorPalette[0];
+    }
 
     /** Builds the full card DOM. */
     _buildCard() {
@@ -258,12 +243,11 @@ class Callout {
         card.classList.add('ce-callout-card');
         card.style.cssText = `
       border-radius: 10px;
-      border-left: 4px solid ${this.data.borderColor};
-      background: ${this.data.backgroundColor};
-      padding: 14px 18px 14px 16px;
+      background: ${this._currentPreset().color};
+      padding: 14px 18px;
       margin: 4px 0;
       box-shadow: 0 1px 4px rgba(0,0,0,.06);
-      transition: border-color .2s, background .2s;
+      transition: background .2s;
       font-family: inherit;
     `;
 
@@ -284,7 +268,6 @@ class Callout {
       font-size: 0.78em;
       letter-spacing: .06em;
       text-transform: uppercase;
-      color: ${this.data.textColor};
       opacity: .75;
     `;
 
@@ -299,7 +282,6 @@ class Callout {
         body.dataset.placeholder = 'Write your callout text here…';
         body.style.cssText = `
       outline: none;
-      color: ${this.data.textColor};
       font-size: 0.95em;
       line-height: 1.6;
       min-height: 24px;
@@ -323,13 +305,10 @@ class Callout {
         return card;
     }
 
-    /** Re-applies all color CSS properties to the live card. */
-    _applyColors() {
+    /** Re-applies the background color to the live card. */
+    _applyBackground() {
         if (!this._card) return;
-        this._card.style.borderLeftColor = this.data.borderColor;
-        this._card.style.background = this.data.backgroundColor;
-        if (this._textArea) this._textArea.style.color = this.data.textColor;
-        if (this._labelEl) this._labelEl.style.color = this.data.textColor;
+        this._card.style.background = this._currentPreset().color;
     }
 
     /** Syncs the live label element with current data. */
@@ -379,8 +358,7 @@ class Callout {
         pointer-events: none;
       }
       .ce-callout-text br { display: block; }
-      .ce-callout-settings input[type="text"]:focus,
-      .ce-callout-settings input[type="color"]:focus {
+      .ce-callout-settings input[type="text"]:focus {
         border-color: #6366f1;
         box-shadow: 0 0 0 2px rgba(99,102,241,.15);
       }

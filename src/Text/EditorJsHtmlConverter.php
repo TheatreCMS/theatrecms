@@ -15,6 +15,7 @@
  * - header
  * - list (ordered/unordered)
  * - quote
+ * - callout (icon + label + text on a colored background)
  * - image
  * - linkTool (bookmark-style link/card preview, @editorjs/link's block type)
  * - ctaCard (call-to-action card: text + button on a colored background)
@@ -61,9 +62,9 @@ class EditorJsHtmlConverter
 
     /**
      * Used only when the active theme's theme.json doesn't declare a
-     * settings.color.palette, so a quote block always has something to
-     * render. Keep in sync with QuoteColorScheme.FALLBACK_COLOR_PALETTE in
-     * www/assets/js/editorjs/quote-color-scheme.js.
+     * settings.color.palette, so a quote/callout block always has something
+     * to render. Keep in sync with FALLBACK_COLOR_PALETTE in
+     * www/assets/js/editorjs/quote-color-scheme.js and callout.js.
      */
     private const FALLBACK_COLOR_PALETTE = [
         ['name' => 'grey', 'label' => 'Grey', 'color' => '#94a3b8'],
@@ -208,6 +209,7 @@ class EditorJsHtmlConverter
             'header'        => $this->renderHeader($data),
             'list'          => $this->renderList($data),
             'quote'         => $this->renderQuote($data),
+            'callout'       => $this->renderCallout($data),
             'image'         => $this->renderImage($data),
             'imageGallery'  => $this->renderGallery($data),
             'linkTool'      => $this->renderBookmark($data),
@@ -324,7 +326,7 @@ class EditorJsHtmlConverter
         }
 
         $colorScheme = (string) ($data['colorScheme'] ?? '');
-        $color = $this->resolveQuoteColor($colorScheme);
+        $color = $this->resolveThemeColor($colorScheme);
 
         return sprintf(
             '<blockquote class="kg-card kg-callout-card" style="background-color: %s;">%s</blockquote>',
@@ -334,8 +336,48 @@ class EditorJsHtmlConverter
     }
 
     /**
-     * Resolve a quote block's stored `colorScheme` name to an actual CSS
-     * color value, drawn from the active theme's `theme.json`
+     * Render a callout block: an icon + label header over body text, on a
+     * colored background.
+     *
+     * @param array $data Expecting ['text' => string, 'label' => string|null, 'icon' => string|null, 'colorScheme' => string|null]
+     * @return string HTML callout card or empty string
+     */
+    private function renderCallout(array $data): string
+    {
+        $text = $this->sanitizeText($data['text'] ?? '');
+        if ($text === '') {
+            return '';
+        }
+
+        $label = $this->sanitizeText($data['label'] ?? '');
+        $icon = $this->sanitizeText($data['icon'] ?? '');
+
+        $header = '';
+        if ($icon !== '' || $label !== '') {
+            $header = '<div class="kg-callout-header">';
+            if ($icon !== '') {
+                $header .= sprintf('<span class="kg-callout-icon">%s</span>', $icon);
+            }
+            if ($label !== '') {
+                $header .= sprintf('<span class="kg-callout-label">%s</span>', $label);
+            }
+            $header .= '</div>';
+        }
+
+        $colorScheme = (string) ($data['colorScheme'] ?? '');
+        $color = $this->resolveThemeColor($colorScheme);
+
+        return sprintf(
+            '<div class="kg-card kg-callout-card" style="background-color: %s;">%s<p>%s</p></div>',
+            htmlspecialchars($color, ENT_QUOTES, 'UTF-8'),
+            $header,
+            $text
+        );
+    }
+
+    /**
+     * Resolve a block's stored `colorScheme` name to an actual CSS color
+     * value, drawn from the active theme's `theme.json`
      * (`settings.color.palette`). Falls back to the palette's first entry
      * when the name is missing/unknown, and to FALLBACK_COLOR_PALETTE when
      * the active theme hasn't declared a palette at all.
@@ -343,7 +385,7 @@ class EditorJsHtmlConverter
      * @param string $colorScheme
      * @return string CSS color value (already validated by ThemeManager)
      */
-    private function resolveQuoteColor(string $colorScheme): string
+    private function resolveThemeColor(string $colorScheme): string
     {
         $palette = $this->themeManager->getColorPalette();
         if ($palette === []) {
