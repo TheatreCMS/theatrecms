@@ -661,4 +661,17 @@ class EditorJsFilterTest extends TestCase
         $this->assertStringContainsString('data-dots="true"', $html);
     }
 
+    public function testConverterRetainsCiteTagInParagraph(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'paragraph',
+                    'data' => ['text' => 'Now playing: <cite>A Brave New World</cite>.'],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<cite>A Brave New World</cite>', $html);
+    }
 }

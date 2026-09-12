@@ -1,4 +1,4 @@
-const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link'];
+const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite'];
 
 const createImageTool = (imageEndpoints) => {
     const tool = {
@@ -42,6 +42,9 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         },
         underline: {
             class: Underline,
+        },
+        cite: {
+            class: Cite,
         },
         header: {
             class: Header,

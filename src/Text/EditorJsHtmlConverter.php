@@ -26,7 +26,7 @@
  * - code
  *
  * Sanitization and safety:
- * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br, a
+ * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br, a, cite
  * - For <a> tags only the href attribute is kept; the href value is validated
  *   to be http(s) — all other attributes are dropped.
  * - All other HTML is stripped. URLs are validated to be http(s) using PHP's
@@ -50,7 +50,7 @@ use TheatreCMS\Theme\ThemeManager;
 class EditorJsHtmlConverter
 {
     private const INLINE_TAGS = [
-        'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br', 'a',
+        'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br', 'a', 'cite',
     ];
 
     /**
