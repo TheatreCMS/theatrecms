@@ -526,4 +526,139 @@ class EditorJsFilterTest extends TestCase
         $this->assertStringNotContainsString('onclick', $html);
         $this->assertStringNotContainsString('class=', $html);
     }
+
+    public function testConverterRendersCarouselBlock(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            ['url' => 'https://example.com/one.jpg', 'caption' => 'First slide'],
+                            ['url' => 'https://example.com/two.jpg', 'caption' => 'Second slide'],
+                        ],
+                        'autoplay' => true,
+                        'autoplaySpeed' => 5000,
+                        'showArrows' => false,
+                        'showDots' => true,
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<div class="editorjs-carousel" data-autoplay="true" data-autoplay-speed="5000" data-arrows="false" data-dots="true">', $html);
+        $this->assertStringContainsString('<figure class="editorjs-carousel__slide"><img src="https://example.com/one.jpg" alt="First slide" loading="lazy" /><figcaption>First slide</figcaption></figure>', $html);
+        $this->assertStringContainsString('<figure class="editorjs-carousel__slide"><img src="https://example.com/two.jpg" alt="Second slide" loading="lazy" /><figcaption>Second slide</figcaption></figure>', $html);
+    }
+
+    public function testConverterDropsCarouselWithNoSlides(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => ['items' => []],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
+    public function testConverterStripsUnsafeSlideUrl(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            ['url' => 'javascript:alert(1)', 'caption' => 'Evil'],
+                            ['url' => 'https://example.com/valid.jpg', 'caption' => 'Valid'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringNotContainsString('javascript:', $html);
+        $this->assertStringNotContainsString('Evil', $html);
+        $this->assertStringContainsString('https://example.com/valid.jpg', $html);
+    }
+
+    public function testConverterAcceptsRootRelativeUploadUrlsInCarousel(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            ['url' => '/uploads/6de202fb6d519fdb731be4ea.jpg', 'caption' => 'Local upload'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<img src="/uploads/6de202fb6d519fdb731be4ea.jpg"', $html);
+    }
+
+    public function testConverterRejectsProtocolRelativeUrlInCarousel(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            ['url' => '//evil.example.com/x.jpg', 'caption' => 'Off-origin'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
+    public function testConverterAcceptsRootRelativeUploadUrlInImageBlock(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'image',
+                    'data' => [
+                        'file' => ['url' => '/uploads/photo.jpg'],
+                        'caption' => 'A photo',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('<img src="/uploads/photo.jpg"', $html);
+    }
+
+    public function testConverterCarouselDefaultsWhenSettingsOmitted(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            ['url' => 'https://example.com/one.jpg'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('data-autoplay="false"', $html);
+        $this->assertStringContainsString('data-autoplay-speed="3000"', $html);
+        $this->assertStringContainsString('data-arrows="true"', $html);
+        $this->assertStringContainsString('data-dots="true"', $html);
+    }
+
 }

@@ -95,6 +95,12 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
                 uploadEndpoint: '/admin/images/upload',
             },
         },
+        carousel: {
+            class: Carousel,
+            config: {
+                uploadEndpoint: '/admin/images/upload',
+            },
+        },
         textVariant: {
             class: TextVariantTune,
         },

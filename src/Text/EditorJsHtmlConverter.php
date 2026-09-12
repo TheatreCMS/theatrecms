@@ -17,6 +17,8 @@
  * - quote
  * - callout (icon + label + text on a colored background)
  * - image
+ * - imageGallery (grid/list of images)
+ * - carousel (sliding carousel of images, arrows/dots/autoplay)
  * - linkTool (bookmark-style link/card preview, @editorjs/link's block type)
  * - ctaCard (call-to-action card: text + button on a colored background)
  * - delimiter (renders an <hr />)
@@ -212,6 +214,7 @@ class EditorJsHtmlConverter
             'callout'       => $this->renderCallout($data),
             'image'         => $this->renderImage($data),
             'imageGallery'  => $this->renderGallery($data),
+            'carousel'      => $this->renderCarousel($data),
             'linkTool'      => $this->renderBookmark($data),
             'ctaCard'       => $this->renderCtaCard($data),
             'delimiter'     => '<hr />',
@@ -414,7 +417,7 @@ class EditorJsHtmlConverter
     private function renderImage(array $data): string
     {
         $file = $data['file'] ?? [];
-        $url = $this->sanitizeUrl($file['url'] ?? $data['url'] ?? '');
+        $url = $this->sanitizeImageUrl($file['url'] ?? $data['url'] ?? '');
         if ($url === '') {
             return '';
         }
@@ -465,7 +468,7 @@ class EditorJsHtmlConverter
 
         $figures = [];
         foreach ($items as $item) {
-            $url = $this->sanitizeUrl($item['url'] ?? '');
+            $url = $this->sanitizeImageUrl($item['url'] ?? '');
             if ($url === '') {
                 continue;
             }
@@ -500,6 +503,54 @@ class EditorJsHtmlConverter
         }
 
         return $gallery;
+    }
+
+    /**
+     * Render a carousel block: a sliding carousel of images with optional
+     * captions, arrows, dots, and autoplay.
+     *
+     * @param array $data Expecting ['items' => [['url' => string, 'caption' => string], ...], 'autoplay' => bool, 'autoplaySpeed' => int, 'showArrows' => bool, 'showDots' => bool]
+     * @return string HTML carousel wrapper or empty string when no valid slides remain
+     */
+    private function renderCarousel(array $data): string
+    {
+        $items = $data['items'] ?? [];
+        if (!is_array($items) || $items === []) {
+            return '';
+        }
+
+        $slides = [];
+        foreach ($items as $item) {
+            $url = $this->sanitizeImageUrl($item['url'] ?? '');
+            if ($url === '') {
+                continue;
+            }
+            $caption    = $this->sanitizeText($item['caption'] ?? '');
+            $escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
+            $escapedAlt = htmlspecialchars(strip_tags($caption), ENT_QUOTES, 'UTF-8');
+
+            $slide = '<figure class="editorjs-carousel__slide"><img src="' . $escapedUrl . '" alt="' . $escapedAlt . '" loading="lazy" />';
+            if ($caption !== '') {
+                $slide .= '<figcaption>' . $caption . '</figcaption>';
+            }
+            $slide .= '</figure>';
+            $slides[] = $slide;
+        }
+
+        if ($slides === []) {
+            return '';
+        }
+
+        $autoplaySpeed = max(1000, (int) ($data['autoplaySpeed'] ?? 3000));
+
+        return sprintf(
+            '<div class="editorjs-carousel" data-autoplay="%s" data-autoplay-speed="%d" data-arrows="%s" data-dots="%s">%s</div>',
+            !empty($data['autoplay']) ? 'true' : 'false',
+            $autoplaySpeed,
+            array_key_exists('showArrows', $data) ? (!empty($data['showArrows']) ? 'true' : 'false') : 'true',
+            array_key_exists('showDots', $data) ? (!empty($data['showDots']) ? 'true' : 'false') : 'true',
+            implode('', $slides)
+        );
     }
 
     /**
@@ -738,6 +789,32 @@ class EditorJsHtmlConverter
     private function allowedTags(): string
     {
         return '<' . implode('><', self::INLINE_TAGS) . '>';
+    }
+
+    /**
+     * Validate an image `src` value: either a root-relative path (e.g. the
+     * `/uploads/<filename>` URLs produced by {@see \TheatreCMS\Controllers\ImageUploadController})
+     * or a fully-qualified http(s) URL. Root-relative paths can only ever
+     * resolve on this same origin, so they're safe without the stricter
+     * absolute-URL check {@see sanitizeUrl()} applies to things like anchor
+     * hrefs; protocol-relative ("//host/...") values are rejected as they
+     * can point off-origin.
+     *
+     * @param string $value
+     * @return string The path/URL unchanged, or empty string when invalid
+     */
+    private function sanitizeImageUrl(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        if (str_starts_with($value, '/') && !str_starts_with($value, '//')) {
+            return preg_match('/[\s\x00-\x1F<>"\']/', $value) ? '' : $value;
+        }
+
+        return $this->sanitizeUrl($value);
     }
 
     /**

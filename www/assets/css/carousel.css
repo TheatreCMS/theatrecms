@@ -1,0 +1,99 @@
+/* Frontend styles for the "carousel" EditorJS block (www/assets/js/carousel-frontend.js). */
+
+.editorjs-carousel {
+    outline: none;
+}
+
+.editorjs-carousel__viewport {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.editorjs-carousel__track {
+    display: flex;
+    transition: transform 0.4s ease;
+    touch-action: pan-y;
+}
+
+.editorjs-carousel__slide {
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin: 0;
+}
+
+.editorjs-carousel__slide img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.editorjs-carousel__slide figcaption {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+    text-align: center;
+}
+
+.editorjs-carousel__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 9999px;
+    background: rgba(17, 24, 39, 0.55);
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+}
+
+.editorjs-carousel__arrow:hover,
+.editorjs-carousel__arrow:focus {
+    background: rgba(17, 24, 39, 0.8);
+}
+
+.editorjs-carousel__arrow--prev {
+    left: 0.75rem;
+}
+
+.editorjs-carousel__arrow--next {
+    right: 0.75rem;
+}
+
+.editorjs-carousel__dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0 0.25rem;
+}
+
+.editorjs-carousel__dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    border: none;
+    padding: 0;
+    background: #d1d5db;
+    cursor: pointer;
+}
+
+.editorjs-carousel__dot.is-active {
+    background: #4b5563;
+}
+
+@media (max-width: 480px) {
+    .editorjs-carousel__arrow {
+        width: 1.875rem;
+        height: 1.875rem;
+        font-size: 0.875rem;
+    }
+}
