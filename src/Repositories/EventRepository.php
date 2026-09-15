@@ -158,6 +158,31 @@ class EventRepository extends BaseRepository
     }
 
     /**
+     * All events starting within `[$start, $end]`, ordered earliest first, with
+     * `production`, `production.season`, and `venue` eager-loaded so callers (e.g. the
+     * public calendar) can resolve permalinks and effective venues without N+1 queries.
+     * Includes every status (cancelled/postponed included) — hiding by status is a
+     * display concern for callers, not a query-level filter.
+     *
+     * @return Event[]
+     */
+    public function fetchInRange(\DateTimeInterface $start, \DateTimeInterface $end): array
+    {
+        return $this->em->createQueryBuilder()
+            ->select('e', 'p', 's', 'v')
+            ->from(Event::class, 'e')
+            ->leftJoin('e.production', 'p')
+            ->leftJoin('p.season', 's')
+            ->leftJoin('e.venue', 'v')
+            ->where('e.startsAt BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('e.startsAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return \DateTimeImmutable[]
      */
     public static function buildRecurringStartsAt(
