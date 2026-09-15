@@ -16,7 +16,7 @@ use Psr\Http\Message\UploadedFileInterface;
 class MediaUploadService
 {
     private const UPLOADS_SUBPATH = '/uploads/';
-    private const RANDOM_SUFFIX_BYTES = 12;
+    private const MAX_SLUG_LENGTH = 80;
 
     public function __construct(private readonly string $publicRoot)
     {
@@ -24,6 +24,8 @@ class MediaUploadService
 
     /**
      * Moves an uploaded file into the uploads directory and returns its public URL.
+     * The stored filename is a slug of the original name (e.g. "poster.jpg"),
+     * not the original bytes — collisions get a "-1", "-2", ... suffix.
      *
      * @throws \InvalidArgumentException if the file's extension isn't one of
      *         MediaTypeClassifier::allowedExtensions() — callers are expected
@@ -33,10 +35,68 @@ class MediaUploadService
     public function store(UploadedFileInterface $file): string
     {
         $directory = $this->ensureUploadsDirectory();
-        $filename = $this->generateFilename($file);
+        $original = $file->getClientFilename() ?? '';
+        $extension = strtolower(pathinfo($original, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, MediaTypeClassifier::allowedExtensions(), true)) {
+            throw new \InvalidArgumentException('Unsupported file extension.');
+        }
+
+        $filename = $this->generateUniqueFilename(pathinfo($original, PATHINFO_FILENAME), $extension, $directory);
         $file->moveTo($directory . DIRECTORY_SEPARATOR . $filename);
 
         return rtrim(self::UPLOADS_SUBPATH, '/') . '/' . $filename;
+    }
+
+    /**
+     * Computes a filesystem-unique filename for the given desired base name
+     * and extension within $directory, appending "-1", "-2", ... on collision.
+     * Read-only — does not create or touch any file, so it's safe to call for
+     * a dry-run preview.
+     *
+     * $excludeFilename, when given, is treated as not a collision — pass the
+     * file's own current name when renaming it in place, so re-checking a
+     * file already at its target name doesn't see itself as taken and get
+     * needlessly suffixed.
+     */
+    public function generateUniqueFilename(
+        string $desiredBase,
+        string $extension,
+        string $directory,
+        ?string $excludeFilename = null
+    ): string {
+        $base = $this->slugify($desiredBase);
+        if ($base === '') {
+            $base = 'file';
+        }
+
+        $filename = $base . '.' . $extension;
+        $suffix = 1;
+        while ($filename !== $excludeFilename && file_exists($directory . DIRECTORY_SEPARATOR . $filename)) {
+            $filename = $base . '-' . $suffix . '.' . $extension;
+            $suffix++;
+        }
+
+        return $filename;
+    }
+
+    /**
+     * Renames an existing stored upload to $newFilename in the same directory.
+     * Returns the new public URL, or null if the source file doesn't exist.
+     */
+    public function renameTo(string $url, string $newFilename): ?string
+    {
+        $path = $this->resolvePath($url);
+        if ($path === null || !is_file($path)) {
+            return null;
+        }
+
+        $newPath = dirname($path) . DIRECTORY_SEPARATOR . $newFilename;
+        if ($newPath !== $path) {
+            rename($path, $newPath);
+        }
+
+        return dirname($url) . '/' . $newFilename;
     }
 
     /**
@@ -84,15 +144,17 @@ class MediaUploadService
         return rtrim($directory, '/\\');
     }
 
-    private function generateFilename(UploadedFileInterface $file): string
+    /**
+     * Best-effort transliterates accented Latin characters to ASCII (e.g.
+     * "café" -> "cafe"), then lowercases and hyphenates anything that isn't
+     * a-z0-9, capping the result well under the media.filename column budget.
+     */
+    private function slugify(string $string): string
     {
-        $original = $file->getClientFilename() ?? '';
-        $extension = strtolower(pathinfo($original, PATHINFO_EXTENSION));
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $string);
+        $string = strtolower($ascii !== false ? $ascii : $string);
+        $string = preg_replace('/[^a-z0-9]+/', '-', $string) ?? '';
 
-        if (!in_array($extension, MediaTypeClassifier::allowedExtensions(), true)) {
-            throw new \InvalidArgumentException('Unsupported file extension.');
-        }
-
-        return sprintf('%s.%s', bin2hex(random_bytes(self::RANDOM_SUFFIX_BYTES)), $extension);
+        return mb_substr(trim($string, '-'), 0, self::MAX_SLUG_LENGTH);
     }
 }

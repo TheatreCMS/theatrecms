@@ -44,6 +44,7 @@ use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ImageBackfillService;
 use TheatreCMS\Services\ImageVariantGenerator;
+use TheatreCMS\Services\MediaFilenameBackfillService;
 use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
@@ -213,6 +214,16 @@ class ServiceRegistrar
                 $c->get(EntityManager::class),
                 $c->get(ImageVariantGenerator::class),
                 $c->get(ImageSizeRegistry::class),
+            );
+        });
+
+        $container->set(MediaFilenameBackfillService::class, static function (
+            ContainerInterface $c
+        ): MediaFilenameBackfillService {
+            return new MediaFilenameBackfillService(
+                $c->get(EntityManager::class),
+                $c->get(MediaUploadService::class),
+                $c->get(ImageVariantGenerator::class),
             );
         });
 

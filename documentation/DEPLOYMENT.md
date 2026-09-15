@@ -97,6 +97,8 @@ mysql -u theatrecms -p theatrecms_prod < migrations/20260903_add_featured_image_
 
 `migrations/20260915_create_media_variants_table.sql` adds the table behind registered thumbnail sizes (see `documentation/Theme/image-sizes.md`) — safe to apply on both a fresh install and an upgrade, since no pre-existing data needs migrating into it. After applying it (and, on an upgrade, after `./backfill-images` has registered any pre-existing uploads), run `./regenerate-media-thumbnails` to generate the registered sizes for every image already in the media library; re-run it with `--size=<name>` whenever a new size is registered later.
 
+`./rename-media-filenames [--dry-run]` renames existing media library files from their stored name to a slugified version of the original upload filename (e.g. `/uploads/3ddfb7a0765f10f8c7b6c495.jpg` -> `/uploads/pride-and-prejudice-poster.jpg`), for SEO-friendly URLs, regenerating thumbnail variants under the new name for images. Safe to run more than once; rows with no known original filename (e.g. ones registered by `./backfill-images` from a pre-existing file) are skipped. Run it any time after `./backfill-images` on an upgrade, or whenever new uploads accumulate under the old scheme from before this feature existed. Review with `--dry-run` first — old URLs stop resolving once renamed, since this setup has no redirect layer.
+
 ## 6. Harden settings for production
 
 `app/settings.php` currently hardcodes several dev-only values regardless of environment. Edit them directly on the deploy target:

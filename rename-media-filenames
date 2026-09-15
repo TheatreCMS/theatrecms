@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+/**
+ *
+ * Copyright (C) 2026  TheatreCMS Team (https://theatrecms.dev)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Renames existing media library files from their current name to a
+ * slugified version of their original upload filename, for SEO-friendly
+ * URLs (e.g. /uploads/3ddfb7a0765f10f8c7b6c495.jpg ->
+ * /uploads/pride-and-prejudice-poster.jpg). Also regenerates registered
+ * thumbnail sizes under the new name for images. Rows with no known
+ * original filename are skipped.
+ *
+ * Safe to run more than once.
+ *
+ * Usage:
+ *   ./rename-media-filenames [--dry-run]
+ */
+
+use TheatreCMS\Services\MediaFilenameBackfillService;
+
+if (PHP_SAPI !== 'cli') {
+    fwrite(STDERR, "This script must be run from the command line.\n");
+    exit(1);
+}
+
+/** @var \DI\Container $container */
+$container = require_once __DIR__ . '/app/bootstrap.php';
+
+$options = getopt('', ['dry-run']);
+$dryRun = isset($options['dry-run']);
+
+/** @var MediaFilenameBackfillService $backfillService */
+$backfillService = $container->get(MediaFilenameBackfillService::class);
+
+$changes = $backfillService->renameToSeoSlugs($dryRun);
+
+$prefix = $dryRun ? '[dry run] Would rename' : 'Renamed';
+foreach ($changes as $change) {
+    fwrite(STDOUT, sprintf("%s media #%d: %s -> %s\n", $prefix, $change['id'], $change['from'], $change['to']));
+}
+
+fwrite(STDOUT, sprintf("%s %d file(s) total.\n", $prefix, count($changes)));
+
+exit(0);
