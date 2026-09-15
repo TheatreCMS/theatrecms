@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
@@ -35,6 +36,10 @@ class PermalinkResolver
             $entity instanceof Work => $this->archiveUrl('works') . '/' . $entity->getSlug(),
             $entity instanceof Post => $this->archiveUrl('posts') . '/' . $entity->getSlug(),
             $entity instanceof Page => '/' . $entity->getSlug(),
+            $entity instanceof Event => $entity->getProduction() !== null
+                ? $this->archiveUrl('seasons') . '/' . $entity->getProduction()->getSeason()->getSlug()
+                    . '/' . $entity->getProduction()->getSlug() . '#event-' . $entity->getId()
+                : $this->archiveUrl('calendar') . '#event-' . $entity->getId(),
             default => throw new \InvalidArgumentException(sprintf(
                 'PermalinkResolver does not know how to resolve a URL for %s.',
                 is_object($entity) ? get_class($entity) : get_debug_type($entity)

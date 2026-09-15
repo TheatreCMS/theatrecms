@@ -86,7 +86,7 @@
                                 </h2>
                                 <ul class="px-4 py-4 space-y-3 max-h-96 overflow-y-auto">
                                     {% for performance in performances %}
-                                        <li class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
+                                        <li id="event-{{ performance.id }}" class="border-t border-gray-100 pt-3 first:border-t-0 first:pt-0">
                                             <p class="text-sm font-medium text-gray-900">
                                                 {% if performance.effectiveTicketUrl %}
                                                     <a href="{{ performance.effectiveTicketUrl }}" target="_blank" rel="noopener noreferrer" class="hover:underline">

@@ -27,6 +27,7 @@ class ContentTypeRegistry
         'people' => 'people',
         'works' => 'works',
         'posts' => 'posts',
+        'calendar' => 'calendar',
     ];
 
     /**
@@ -38,6 +39,7 @@ class ContentTypeRegistry
         'people' => 'People',
         'works' => 'Works',
         'posts' => 'Posts',
+        'calendar' => 'Calendar',
     ];
 
     /**
