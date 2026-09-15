@@ -3,10 +3,13 @@
 namespace TheatreCMS\Models;
 
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 
 /**
@@ -64,12 +67,24 @@ class Media
     #[Column(name: 'uploaded_at', type: 'datetime_immutable', nullable: false)]
     private DateTimeImmutable $uploadedAt;
 
+    /**
+     * @var Collection<int, MediaVariant>
+     */
+    #[OneToMany(
+        mappedBy: 'media',
+        targetEntity: MediaVariant::class,
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    private Collection $variants;
+
     public function __construct(string $url, string $filename, string $mediaType)
     {
         $this->url = $url;
         $this->filename = $filename;
         $this->mediaType = $mediaType;
         $this->uploadedAt = new DateTimeImmutable();
+        $this->variants = new ArrayCollection();
     }
 
     public function getId(): int
@@ -200,5 +215,47 @@ class Media
         $this->uploadedAt = $uploadedAt;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, MediaVariant>
+     */
+    public function getVariants(): Collection
+    {
+        return $this->variants;
+    }
+
+    /**
+     * Adds a generated variant, replacing any existing one for the same size name.
+     */
+    public function addVariant(MediaVariant $variant): self
+    {
+        foreach ($this->variants as $key => $existing) {
+            if ($existing->getSizeName() === $variant->getSizeName()) {
+                $this->variants->set($key, $variant);
+
+                return $this;
+            }
+        }
+
+        $this->variants->add($variant);
+
+        return $this;
+    }
+
+    /**
+     * The URL of the named thumbnail size (see ImageSizeRegistry), falling
+     * back to the original file when that size hasn't been generated for
+     * this media.
+     */
+    public function getVariantUrl(string $sizeName): string
+    {
+        foreach ($this->variants as $variant) {
+            if ($variant->getSizeName() === $sizeName) {
+                return $variant->getUrl();
+            }
+        }
+
+        return $this->url;
     }
 }

@@ -16,3 +16,7 @@ themes/
             ├── footer.html.twig
             └── nav.html.twig
 ```
+
+See `hooks.md` for the `add_filter`/`apply_filters` API and `image-sizes.md`
+for registering thumbnail sizes — both are things a theme's `functions.php`
+typically does at load time.

@@ -55,7 +55,11 @@ class MediaUploadService
         }
     }
 
-    private function resolvePath(string $url): ?string
+    /**
+     * Maps a stored `/uploads/...` public URL back to its filesystem path.
+     * Returns null for empty/foreign/traversal-attempting URLs.
+     */
+    public function resolvePath(string $url): ?string
     {
         if (!str_starts_with($url, self::UPLOADS_SUBPATH)) {
             return null;

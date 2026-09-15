@@ -2,7 +2,7 @@
 	{% if media is empty %}
 		<p class="text-sm text-gray-500 px-6 py-8">No media files uploaded yet.</p>
 	{% else %}
-		<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 p-6">
+		<div class="grid gap-4 p-6" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));">
 			{% for item in media %}
 				<button
 					type="button"
@@ -13,7 +13,7 @@
 				>
 					<div class="aspect-square bg-gray-50 flex items-center justify-center">
 						{% if item.mediaType == 'image' %}
-							<img src="{{ item.url }}" alt="{{ item.altText|default(item.filename) }}" class="h-full w-full object-cover">
+							<img src="{{ item.getVariantUrl('admin-thumbnail') }}" alt="{{ item.altText|default(item.filename) }}" class="h-full w-full object-cover">
 						{% else %}
 							<div class="flex flex-col items-center justify-center text-gray-400 gap-1">
 								{{ media_type_icon(item.mediaType) }}

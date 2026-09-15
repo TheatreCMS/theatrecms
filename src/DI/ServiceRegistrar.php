@@ -4,6 +4,7 @@ namespace TheatreCMS\DI;
 
 use DI\Container;
 use Doctrine\ORM\EntityManager;
+use Intervention\Image\ImageManager;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Views\Twig;
@@ -42,7 +43,9 @@ use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ImageBackfillService;
+use TheatreCMS\Services\ImageVariantGenerator;
 use TheatreCMS\Services\MediaUploadService;
+use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\AddressResolver;
@@ -51,6 +54,7 @@ use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\ExcerptResolver;
 use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Theme\PermalinkResolver;
@@ -186,6 +190,29 @@ class ServiceRegistrar
                 $c->get(EntityManager::class)->getConnection(),
                 $c->get(MediaRepository::class),
                 APP_ROOT . '/www/uploads',
+            );
+        });
+
+        $container->set(ImageSizeRegistry::class, static fn(): ImageSizeRegistry => new ImageSizeRegistry());
+
+        $container->set(ImageManager::class, static fn(): ImageManager => ImageManager::gd());
+
+        $container->set(ImageVariantGenerator::class, static function (ContainerInterface $c): ImageVariantGenerator {
+            return new ImageVariantGenerator(
+                $c->get(ImageManager::class),
+                $c->get(MediaUploadService::class),
+                $c->get(EntityManager::class),
+                $c->get(ImageSizeRegistry::class),
+            );
+        });
+
+        $container->set(MediaVariantBackfillService::class, static function (
+            ContainerInterface $c
+        ): MediaVariantBackfillService {
+            return new MediaVariantBackfillService(
+                $c->get(EntityManager::class),
+                $c->get(ImageVariantGenerator::class),
+                $c->get(ImageSizeRegistry::class),
             );
         });
 
@@ -416,6 +443,7 @@ class ServiceRegistrar
                     $c->get(MediaRepository::class),
                     $c->get(Twig::class),
                     $c->get(MediaUploadService::class),
+                    $c->get(ImageVariantGenerator::class),
                 );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {

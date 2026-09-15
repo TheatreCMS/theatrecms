@@ -1,0 +1,53 @@
+#!/usr/bin/env php
+<?php
+/**
+ *
+ * Copyright (C) 2026  TheatreCMS Team (https://theatrecms.dev)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * Generates the registered thumbnail sizes (ImageSizeRegistry) for images
+ * already in the media library. By default only sizes a given image doesn't
+ * already have are generated -- run this after registering a new size, or
+ * after backfilling pre-existing uploads with ./backfill-images.
+ *
+ * Safe to run more than once.
+ *
+ * Usage:
+ *   ./regenerate-media-thumbnails [--dry-run] [--force] [--size=<name>]
+ */
+
+use TheatreCMS\Services\MediaVariantBackfillService;
+
+if (PHP_SAPI !== 'cli') {
+    fwrite(STDERR, "This script must be run from the command line.\n");
+    exit(1);
+}
+
+/** @var \DI\Container $container */
+$container = require_once __DIR__ . '/app/bootstrap.php';
+
+$options = getopt('', ['dry-run', 'force', 'size:']);
+$dryRun = isset($options['dry-run']);
+$force = isset($options['force']);
+$onlySize = isset($options['size']) ? (string) $options['size'] : null;
+
+/** @var MediaVariantBackfillService $backfillService */
+$backfillService = $container->get(MediaVariantBackfillService::class);
+
+$counts = $backfillService->regenerate($dryRun, $force, $onlySize);
+
+$prefix = $dryRun ? '[dry run] Would generate' : 'Generated';
+foreach ($counts as $sizeName => $count) {
+    fwrite(STDOUT, sprintf("%s %d '%s' thumbnail(s).\n", $prefix, $count, $sizeName));
+}
+
+exit(0);

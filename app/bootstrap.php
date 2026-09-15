@@ -25,6 +25,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\QueriedObject;
 
@@ -35,6 +36,7 @@ if (!defined('APP_ROOT')) {
 require_once APP_ROOT . '/vendor/autoload.php';
 require_once APP_ROOT . '/app/hooks.php';
 require_once APP_ROOT . '/app/menu-locations.php';
+require_once APP_ROOT . '/app/image-sizes.php';
 require_once APP_ROOT . '/app/template-tags.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
@@ -76,6 +78,10 @@ HookManager::setInstance($hookManager);
 
 $menuLocationRegistry = $container->get(MenuLocationRegistry::class);
 MenuLocationRegistry::setInstance($menuLocationRegistry);
+
+$imageSizeRegistry = $container->get(ImageSizeRegistry::class);
+ImageSizeRegistry::setInstance($imageSizeRegistry);
+register_image_size('admin-thumbnail', 300, 300, true);
 
 $queriedObject = $container->get(QueriedObject::class);
 QueriedObject::setInstance($queriedObject);

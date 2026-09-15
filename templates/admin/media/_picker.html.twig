@@ -47,7 +47,7 @@
 					hx-swap="innerHTML"
 					title="{{ item.filename }}"
 				>
-					<img src="{{ item.url }}" alt="{{ item.altText|default(item.filename) }}" class="h-full w-full object-cover">
+					<img src="{{ item.getVariantUrl('admin-thumbnail') }}" alt="{{ item.altText|default(item.filename) }}" class="h-full w-full object-cover">
 				</button>
 			{% endfor %}
 		</div>

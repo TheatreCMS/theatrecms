@@ -8,6 +8,7 @@ use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Repositories\MediaRepository;
+use TheatreCMS\Services\ImageVariantGenerator;
 use TheatreCMS\Services\MediaTypeClassifier;
 use TheatreCMS\Services\MediaUploadService;
 
@@ -31,11 +32,18 @@ class MediaController extends BaseController
 
     private MediaUploadService $mediaUploadService;
 
-    public function __construct(MediaRepository $repository, Twig $twig, MediaUploadService $mediaUploadService)
-    {
+    private ImageVariantGenerator $imageVariantGenerator;
+
+    public function __construct(
+        MediaRepository $repository,
+        Twig $twig,
+        MediaUploadService $mediaUploadService,
+        ImageVariantGenerator $imageVariantGenerator
+    ) {
         $this->repository = $repository;
         $this->twig = $twig;
         $this->mediaUploadService = $mediaUploadService;
+        $this->imageVariantGenerator = $imageVariantGenerator;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -118,6 +126,8 @@ class MediaController extends BaseController
             'mediaType'        => $mediaType,
         ]);
 
+        $this->imageVariantGenerator->generate($media);
+
         // Uploaded directly from the library page (not the featured-image
         // picker modal): refresh the grid out-of-band instead of rendering
         // the picker's selection partial, which targets DOM ids that don't
@@ -195,6 +205,7 @@ class MediaController extends BaseController
         $media = $this->repository->fetch((int) ($args['id'] ?? 0));
 
         if ($media) {
+            $this->imageVariantGenerator->deleteFiles($media);
             $this->mediaUploadService->delete($media->getUrl());
             $this->repository->delete($media);
         }

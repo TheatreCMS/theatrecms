@@ -95,6 +95,8 @@ mysql -u theatrecms -p theatrecms_prod < migrations/20260903_add_featured_image_
 
 **Do not apply `migrations/20260903_drop_featured_image_url_columns.sql` on a fresh install** — `orm:schema-tool:create` already builds the `productions`/`posts`/`seasons` tables without a `featured_image_url` column, so there is nothing for it to drop. That migration (and `./backfill-images`, the root-level script that registers pre-existing `www/uploads/` files as `images` rows and repoints old `featured_image_url` values at them) only apply when **upgrading** an existing instance that has data in those legacy columns. For an upgrade: apply the two migrations above, run `./backfill-images` (safe to run more than once), deploy the new application code, run `./backfill-images` once more to catch anything uploaded during the deploy window, then — once the instance is confirmed healthy — apply `20260903_drop_featured_image_url_columns.sql` in a follow-up step.
 
+`migrations/20260915_create_media_variants_table.sql` adds the table behind registered thumbnail sizes (see `documentation/Theme/image-sizes.md`) — safe to apply on both a fresh install and an upgrade, since no pre-existing data needs migrating into it. After applying it (and, on an upgrade, after `./backfill-images` has registered any pre-existing uploads), run `./regenerate-media-thumbnails` to generate the registered sizes for every image already in the media library; re-run it with `--size=<name>` whenever a new size is registered later.
+
 ## 6. Harden settings for production
 
 `app/settings.php` currently hardcodes several dev-only values regardless of environment. Edit them directly on the deploy target:
