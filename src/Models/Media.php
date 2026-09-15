@@ -64,6 +64,9 @@ class Media
     #[Column(name: 'alt_text', type: 'string', length: 255, nullable: true)]
     private ?string $altText = null;
 
+    #[Column(name: 'caption', type: 'text', nullable: true)]
+    private ?string $caption = null;
+
     #[Column(name: 'uploaded_at', type: 'datetime_immutable', nullable: false)]
     private DateTimeImmutable $uploadedAt;
 
@@ -201,6 +204,18 @@ class Media
     public function setAltText(?string $altText): self
     {
         $this->altText = $altText;
+
+        return $this;
+    }
+
+    public function getCaption(): ?string
+    {
+        return $this->caption;
+    }
+
+    public function setCaption(?string $caption): self
+    {
+        $this->caption = $caption;
 
         return $this;
     }

@@ -21,6 +21,7 @@ class MediaRepository extends BaseRepository
             'mimeType' => null,
             'sizeBytes' => null,
             'altText' => null,
+            'caption' => null,
             'mediaType' => null,
         ], $args);
 
@@ -38,7 +39,8 @@ class MediaRepository extends BaseRepository
         $media->setOriginalFilename($args['originalFilename'])
             ->setMimeType($args['mimeType'])
             ->setSizeBytes($args['sizeBytes'] !== null ? (int) $args['sizeBytes'] : null)
-            ->setAltText($args['altText']);
+            ->setAltText($args['altText'])
+            ->setCaption($args['caption']);
 
         if ($args['mediaType'] === Media::TYPE_IMAGE) {
             $dimensions = $this->resolveDimensions($args['url']);
@@ -67,7 +69,8 @@ class MediaRepository extends BaseRepository
         }
 
         $builder->andWhere(sprintf(
-            '%1$s.filename LIKE :search OR %1$s.originalFilename LIKE :search OR %1$s.altText LIKE :search',
+            '%1$s.filename LIKE :search OR %1$s.originalFilename LIKE :search '
+                . 'OR %1$s.altText LIKE :search OR %1$s.caption LIKE :search',
             $alias
         ))->setParameter('search', '%' . $search . '%');
     }

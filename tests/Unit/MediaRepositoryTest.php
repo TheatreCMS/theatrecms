@@ -44,6 +44,7 @@ class MediaRepositoryTest extends TestCase
             'mimeType' => 'image/jpeg',
             'sizeBytes' => 1024,
             'altText' => 'A photo',
+            'caption' => 'A caption describing the photo.',
             'mediaType' => Media::TYPE_IMAGE,
         ]);
 
@@ -53,6 +54,7 @@ class MediaRepositoryTest extends TestCase
         $this->assertSame('image/jpeg', $media->getMimeType());
         $this->assertSame(1024, $media->getSizeBytes());
         $this->assertSame('A photo', $media->getAltText());
+        $this->assertSame('A caption describing the photo.', $media->getCaption());
         $this->assertSame(Media::TYPE_IMAGE, $media->getMediaType());
         $this->assertNotNull($media->getId());
     }

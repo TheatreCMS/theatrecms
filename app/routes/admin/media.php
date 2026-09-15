@@ -18,7 +18,7 @@ if (isset($app)) {
         $group->post('/library-upload', [MediaController::class, 'upload']);
         $group->get('/{id}/select', [MediaController::class, 'select']);
         $group->get('/{id}', [MediaController::class, 'show']);
-        $group->patch('/{id}', [MediaController::class, 'updateAltText']);
+        $group->patch('/{id}', [MediaController::class, 'update']);
         $group->delete('/{id}', [MediaController::class, 'destroy']);
     })->add(new RequireTwigMiddleware($container))
       ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), Capability::UPLOAD_FILES))

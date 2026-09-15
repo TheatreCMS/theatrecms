@@ -182,7 +182,7 @@ class MediaController extends BaseController
         ]);
     }
 
-    public function updateAltText(Request $request, Response $response, array $args = []): Response
+    public function update(Request $request, Response $response, array $args = []): Response
     {
         $media = $this->repository->fetch((int) ($args['id'] ?? 0));
 
@@ -192,6 +192,7 @@ class MediaController extends BaseController
 
         $data = (array) $request->getParsedBody();
         $media->setAltText(trim((string) ($data['altText'] ?? '')) ?: null);
+        $media->setCaption(trim((string) ($data['caption'] ?? '')) ?: null);
         $this->repository->update($media);
 
         return $this->twig->render($response, 'admin/media/_details.html.twig', [
