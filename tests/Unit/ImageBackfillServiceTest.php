@@ -8,8 +8,9 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Post;
-use TheatreCMS\Repositories\ImageRepository;
+use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Services\ImageBackfillService;
 
 /**
@@ -24,7 +25,7 @@ use TheatreCMS\Services\ImageBackfillService;
 class ImageBackfillServiceTest extends TestCase
 {
     private EntityManager $em;
-    private ImageRepository $imageRepository;
+    private MediaRepository $mediaRepository;
     private ImageBackfillService $backfillService;
     private string $uploadsDir;
 
@@ -50,14 +51,14 @@ class ImageBackfillServiceTest extends TestCase
             );
         }
 
-        $this->imageRepository = new ImageRepository($this->em);
+        $this->mediaRepository = new MediaRepository($this->em);
 
         $this->uploadsDir = sys_get_temp_dir() . '/theatrecms-backfill-test-' . uniqid();
         mkdir($this->uploadsDir);
 
         $this->backfillService = new ImageBackfillService(
             $this->em->getConnection(),
-            $this->imageRepository,
+            $this->mediaRepository,
             $this->uploadsDir
         );
     }
@@ -80,8 +81,8 @@ class ImageBackfillServiceTest extends TestCase
         $created = $this->backfillService->scanUploads();
 
         $this->assertSame(2, $created);
-        $this->assertNotNull($this->imageRepository->findByUrl('/uploads/photo1.jpg'));
-        $this->assertNotNull($this->imageRepository->findByUrl('/uploads/photo2.png'));
+        $this->assertNotNull($this->mediaRepository->findByUrl('/uploads/photo1.jpg'));
+        $this->assertNotNull($this->mediaRepository->findByUrl('/uploads/photo2.png'));
     }
 
     public function testScanUploadsIsIdempotent(): void
@@ -99,7 +100,7 @@ class ImageBackfillServiceTest extends TestCase
         $created = $this->backfillService->scanUploads(true);
 
         $this->assertSame(1, $created);
-        $this->assertNull($this->imageRepository->findByUrl('/uploads/photo1.jpg'));
+        $this->assertNull($this->mediaRepository->findByUrl('/uploads/photo1.jpg'));
     }
 
     public function testRepointAllMatchesLegacyUrlToImageAndSetsForeignKey(): void
@@ -111,16 +112,16 @@ class ImageBackfillServiceTest extends TestCase
 
         $this->em->getConnection()->update('posts', ['featured_image_url' => '/uploads/legacy.jpg'], ['id' => $post->getId()]);
 
-        $this->imageRepository->create(['url' => '/uploads/legacy.jpg', 'filename' => 'legacy.jpg']);
+        $this->mediaRepository->create(['url' => '/uploads/legacy.jpg', 'filename' => 'legacy.jpg', 'mediaType' => Media::TYPE_IMAGE]);
 
         $counts = $this->backfillService->repointAll();
 
         $this->assertSame(1, $counts['posts']);
 
         $row = $this->em->getConnection()->fetchAssociative('SELECT featured_image_id FROM posts WHERE id = ?', [$post->getId()]);
-        $image = $this->imageRepository->findByUrl('/uploads/legacy.jpg');
+        $media = $this->mediaRepository->findByUrl('/uploads/legacy.jpg');
 
-        $this->assertSame($image->getId(), (int) $row['featured_image_id']);
+        $this->assertSame($media->getId(), (int) $row['featured_image_id']);
     }
 
     public function testRepointAllSkipsRowsAlreadyRepointed(): void
@@ -130,10 +131,10 @@ class ImageBackfillServiceTest extends TestCase
         $this->em->persist($post);
         $this->em->flush();
 
-        $image = $this->imageRepository->create(['url' => '/uploads/legacy.jpg', 'filename' => 'legacy.jpg']);
+        $media = $this->mediaRepository->create(['url' => '/uploads/legacy.jpg', 'filename' => 'legacy.jpg', 'mediaType' => Media::TYPE_IMAGE]);
         $this->em->getConnection()->update('posts', [
             'featured_image_url' => '/uploads/legacy.jpg',
-            'featured_image_id' => $image->getId(),
+            'featured_image_id' => $media->getId(),
         ], ['id' => $post->getId()]);
 
         $counts = $this->backfillService->repointAll();

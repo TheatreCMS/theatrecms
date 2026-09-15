@@ -8,7 +8,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\ContentStatus;
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Repositories\PostRepository;
 
@@ -262,7 +262,7 @@ class PostController extends BaseController
             return;
         }
 
-        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
         $post->setFeaturedImage($image);
     }
 }

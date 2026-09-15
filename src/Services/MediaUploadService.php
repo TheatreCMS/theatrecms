@@ -5,31 +5,30 @@ namespace TheatreCMS\Services;
 use Psr\Http\Message\UploadedFileInterface;
 
 /**
- * Stores and removes admin-uploaded images under the public /uploads directory.
+ * Stores and removes admin-uploaded media files under the public /uploads
+ * directory.
  *
- * Shared by any controller that lets an editor attach an image to a record
- * (sponsor logos, post/production featured images, etc.) so the storage,
- * filename generation, and path-traversal guarding only live in one place.
+ * Shared by any controller that lets an editor attach a file to a record
+ * (sponsor logos, post/production featured images, media library uploads,
+ * etc.) so the storage, filename generation, and path-traversal guarding
+ * only live in one place.
  */
-class ImageUploadService
+class MediaUploadService
 {
     private const UPLOADS_SUBPATH = '/uploads/';
     private const RANDOM_SUFFIX_BYTES = 12;
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     public function __construct(private readonly string $publicRoot)
     {
     }
 
-    public function isImage(UploadedFileInterface $file): bool
-    {
-        $mediaType = $file->getClientMediaType();
-
-        return is_string($mediaType) && str_starts_with($mediaType, 'image/');
-    }
-
     /**
      * Moves an uploaded file into the uploads directory and returns its public URL.
+     *
+     * @throws \InvalidArgumentException if the file's extension isn't one of
+     *         MediaTypeClassifier::allowedExtensions() — callers are expected
+     *         to classify/reject unsupported files before calling store().
+     * @throws \RuntimeException if the uploads directory can't be created.
      */
     public function store(UploadedFileInterface $file): string
     {
@@ -86,8 +85,8 @@ class ImageUploadService
         $original = $file->getClientFilename() ?? '';
         $extension = strtolower(pathinfo($original, PATHINFO_EXTENSION));
 
-        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
-            $extension = 'jpg';
+        if (!in_array($extension, MediaTypeClassifier::allowedExtensions(), true)) {
+            throw new \InvalidArgumentException('Unsupported file extension.');
         }
 
         return sprintf('%s.%s', bin2hex(random_bytes(self::RANDOM_SUFFIX_BYTES)), $extension);

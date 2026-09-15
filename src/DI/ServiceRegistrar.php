@@ -11,7 +11,7 @@ use Slim\Views\TwigMiddleware;
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
-use TheatreCMS\Controllers\ImagesController;
+use TheatreCMS\Controllers\MediaController;
 use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Controllers\LinkPreviewController;
 use TheatreCMS\Controllers\MenuController;
@@ -30,7 +30,7 @@ use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Repositories\EventRepository;
-use TheatreCMS\Repositories\ImageRepository;
+use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
@@ -42,7 +42,7 @@ use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ImageBackfillService;
-use TheatreCMS\Services\ImageUploadService;
+use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\AddressResolver;
@@ -72,6 +72,7 @@ use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\ExcerptExtension;
 use TheatreCMS\Twig\FeaturedImageExtension;
+use TheatreCMS\Twig\MediaTypeIconExtension;
 use TheatreCMS\Twig\HooksExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
@@ -178,12 +179,12 @@ class ServiceRegistrar
             return new AuthorizationService($c->get(Auth::class), $c->get(CapabilityRegistry::class));
         });
 
-        $container->set(ImageUploadService::class, static fn(): ImageUploadService => new ImageUploadService(APP_ROOT . '/www'));
+        $container->set(MediaUploadService::class, static fn(): MediaUploadService => new MediaUploadService(APP_ROOT . '/www'));
 
         $container->set(ImageBackfillService::class, static function (ContainerInterface $c): ImageBackfillService {
             return new ImageBackfillService(
                 $c->get(EntityManager::class)->getConnection(),
-                $c->get(ImageRepository::class),
+                $c->get(MediaRepository::class),
                 APP_ROOT . '/www/uploads',
             );
         });
@@ -234,6 +235,7 @@ class ServiceRegistrar
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
             $twig->addExtension(new SlugExtension($c->get(SlugResolver::class)));
             $twig->addExtension(new FeaturedImageExtension($c->get(FeaturedImageResolver::class)));
+            $twig->addExtension(new MediaTypeIconExtension());
             $twig->addExtension(new SponsorsExtension($c->get(SponsorsResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
@@ -396,7 +398,7 @@ class ServiceRegistrar
                 return new SponsorController(
                     $c->get(SponsorRepository::class),
                     $c->get(Twig::class),
-                    $c->get(ImageUploadService::class),
+                    $c->get(MediaUploadService::class),
                 );
             },
             WorksController::class => static function (ContainerInterface $c): WorksController {
@@ -407,13 +409,13 @@ class ServiceRegistrar
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
-                return new ImageUploadController($c->get(ImageUploadService::class));
+                return new ImageUploadController($c->get(MediaUploadService::class));
             },
-            ImagesController::class => static function (ContainerInterface $c): ImagesController {
-                return new ImagesController(
-                    $c->get(ImageRepository::class),
+            MediaController::class => static function (ContainerInterface $c): MediaController {
+                return new MediaController(
+                    $c->get(MediaRepository::class),
                     $c->get(Twig::class),
-                    $c->get(ImageUploadService::class),
+                    $c->get(MediaUploadService::class),
                 );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {

@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * One-time backfill for the media library feature: registers pre-existing
- * files under www/uploads/ as `images` rows, then repoints the legacy
+ * files under www/uploads/ as `media` rows, then repoints the legacy
  * `featured_image_url` columns on productions/posts/seasons at the matching
  * row's id. See documentation/DEPLOYMENT.md for when to run this relative to
  * the accompanying migrations.
@@ -46,7 +46,7 @@ $created = $backfillService->scanUploads($dryRun);
 $repointed = $backfillService->repointAll($dryRun);
 
 $prefix = $dryRun ? '[dry run] Would create' : 'Created';
-fwrite(STDOUT, sprintf("%s %d image row(s) from www/uploads/.\n", $prefix, $created));
+fwrite(STDOUT, sprintf("%s %d media row(s) from www/uploads/.\n", $prefix, $created));
 
 $repointPrefix = $dryRun ? '[dry run] Would repoint' : 'Repointed';
 foreach ($repointed as $table => $count) {

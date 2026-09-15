@@ -29,9 +29,9 @@ class Season extends ModelBase implements \JsonSerializable
     #[Column(type: 'text', nullable: true)]
     private ?string $overview = null;
 
-    #[ManyToOne(targetEntity: Image::class)]
+    #[ManyToOne(targetEntity: Media::class)]
     #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Image $featuredImage = null;
+    private ?Media $featuredImage = null;
 
     #[Column(name: 'start_date', type: 'datetime', nullable: false)]
     private ?\DateTime $startDate = null;
@@ -82,12 +82,12 @@ class Season extends ModelBase implements \JsonSerializable
         return $this->endDate;
     }
 
-    public function getFeaturedImage(): ?Image
+    public function getFeaturedImage(): ?Media
     {
         return $this->featuredImage;
     }
 
-    public function setFeaturedImage(?Image $featuredImage): self
+    public function setFeaturedImage(?Media $featuredImage): self
     {
         $this->featuredImage = $featuredImage;
 

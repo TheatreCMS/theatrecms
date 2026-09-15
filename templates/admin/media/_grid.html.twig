@@ -1,0 +1,34 @@
+<div id="media-grid"{% if oob %} hx-swap-oob="true"{% endif %}>
+	{% if media is empty %}
+		<p class="text-sm text-gray-500 px-6 py-8">No media files uploaded yet.</p>
+	{% else %}
+		<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 p-6">
+			{% for item in media %}
+				<button
+					type="button"
+					class="text-left rounded-md border border-gray-200 overflow-hidden bg-white hover:ring-2 hover:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+					hx-get="/admin/media/{{ item.id }}"
+					hx-target="#media-details-modal-content"
+					hx-swap="innerHTML"
+				>
+					<div class="aspect-square bg-gray-50 flex items-center justify-center">
+						{% if item.mediaType == 'image' %}
+							<img src="{{ item.url }}" alt="{{ item.altText|default(item.filename) }}" class="h-full w-full object-cover">
+						{% else %}
+							<div class="flex flex-col items-center justify-center text-gray-400 gap-1">
+								{{ media_type_icon(item.mediaType) }}
+								<span class="text-[10px] uppercase tracking-wide font-medium">{{ item.mediaType }}</span>
+							</div>
+						{% endif %}
+					</div>
+					<div class="p-2">
+						<p class="text-xs text-gray-700 truncate" title="{{ item.filename }}">{{ item.filename }}</p>
+						<p class="text-xs text-gray-400">{{ item.uploadedAt|date('Y-m-d') }}</p>
+					</div>
+				</button>
+			{% endfor %}
+		</div>
+	{% endif %}
+
+	{% include 'admin/partials/_pagination.html.twig' %}
+</div>

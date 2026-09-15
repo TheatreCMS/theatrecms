@@ -12,6 +12,7 @@ interface PaginatedRepositoryInterface
         int $perPage = 25,
         string $search = '',
         string $sort = '',
-        string $direction = 'asc'
+        string $direction = 'asc',
+        array $criteria = []
     ): array;
 }

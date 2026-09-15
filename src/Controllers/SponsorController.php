@@ -2,8 +2,10 @@
 
 namespace TheatreCMS\Controllers;
 
+use TheatreCMS\Models\Media;
 use TheatreCMS\Repositories\SponsorRepository;
-use TheatreCMS\Services\ImageUploadService;
+use TheatreCMS\Services\MediaTypeClassifier;
+use TheatreCMS\Services\MediaUploadService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
@@ -12,9 +14,9 @@ use Slim\Views\Twig;
 class SponsorController extends BaseController
 {
     protected SponsorRepository $sponsorRepository;
-    private ImageUploadService $imageUploadService;
+    private MediaUploadService $imageUploadService;
 
-    public function __construct(SponsorRepository $repository, Twig $twig, ImageUploadService $imageUploadService)
+    public function __construct(SponsorRepository $repository, Twig $twig, MediaUploadService $imageUploadService)
     {
         $this->sponsorRepository  = $repository;
         $this->twig               = $twig;
@@ -218,7 +220,10 @@ class SponsorController extends BaseController
             return null;
         }
 
-        if ($logo->getError() !== UPLOAD_ERR_OK || !$this->imageUploadService->isImage($logo)) {
+        $extension = pathinfo($logo->getClientFilename() ?? '', PATHINFO_EXTENSION);
+        $mediaType = MediaTypeClassifier::classify($logo->getClientMediaType(), $extension);
+
+        if ($logo->getError() !== UPLOAD_ERR_OK || $mediaType !== Media::TYPE_IMAGE) {
             return null;
         }
 

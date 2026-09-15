@@ -9,7 +9,7 @@
 	<div id="image-picker-result" class="mb-3"></div>
 
 	<form
-		hx-post="/admin/images/library-upload"
+		hx-post="/admin/media/library-upload"
 		hx-target="#image-picker-result"
 		hx-swap="innerHTML"
 		hx-encoding="multipart/form-data"
@@ -24,7 +24,7 @@
 		type="search"
 		placeholder="Search images by filename…"
 		value="{{ pagination.search|default('') }}"
-		hx-get="/admin/images/picker?target={{ target|default('') }}"
+		hx-get="/admin/media/picker?target={{ target|default('') }}&type={{ type|default('image') }}"
 		hx-trigger="keyup changed delay:300ms"
 		hx-target="#image-picker-modal-content"
 		hx-swap="innerHTML"
@@ -34,20 +34,20 @@
 </div>
 
 <div class="px-6 pb-6 max-h-96 overflow-y-auto">
-	{% if images is empty %}
+	{% if media is empty %}
 		<p class="text-sm text-gray-500">No images found.</p>
 	{% else %}
 		<div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
-			{% for image in images %}
+			{% for item in media %}
 				<button
 					type="button"
 					class="group relative aspect-square rounded-md border border-gray-200 overflow-hidden hover:ring-2 hover:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-					hx-get="/admin/images/{{ image.id }}/select"
+					hx-get="/admin/media/{{ item.id }}/select"
 					hx-target="#image-picker-result"
 					hx-swap="innerHTML"
-					title="{{ image.filename }}"
+					title="{{ item.filename }}"
 				>
-					<img src="{{ image.url }}" alt="{{ image.altText|default(image.filename) }}" class="h-full w-full object-cover">
+					<img src="{{ item.url }}" alt="{{ item.altText|default(item.filename) }}" class="h-full w-full object-cover">
 				</button>
 			{% endfor %}
 		</div>

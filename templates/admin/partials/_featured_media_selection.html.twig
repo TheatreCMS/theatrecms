@@ -3,7 +3,7 @@
    underlying entity form (outside the modal), even though this itself is rendered
    into #image-picker-result (inside the modal). #}
 <div hx-swap-oob="true" id="featured-image-preview">
-    <img src="{{ image.url }}" alt="{{ image.altText|default('Selected image') }}" class="max-h-40 w-auto object-contain">
+    <img src="{{ media.url }}" alt="{{ media.altText|default('Selected image') }}" class="max-h-40 w-auto object-contain">
 </div>
-<input hx-swap-oob="true" type="hidden" name="featuredImageId" id="featuredImageId" value="{{ image.id }}">
-<p class="text-sm text-green-700">{{ image.filename }} selected.</p>
+<input hx-swap-oob="true" type="hidden" name="featuredImageId" id="featuredImageId" value="{{ media.id }}">
+<p class="text-sm text-green-700">{{ media.filename }} selected.</p>

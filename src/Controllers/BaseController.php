@@ -7,7 +7,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
 use TheatreCMS\Repositories\EventRepository;
-use TheatreCMS\Repositories\ImageRepository;
+use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PaginatedRepositoryInterface;
@@ -25,10 +25,10 @@ class BaseController
     protected const DEFAULT_PAGE_SIZE = 25;
 
     protected EntityManagerInterface $entityManager;
-    protected PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|ImageRepository $repository;
+    protected PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|MediaRepository $repository;
     protected Twig $twig;
 
-    public function repository(): PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|ImageRepository
+    public function repository(): PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|MediaRepository
     {
         return $this->repository;
     }
@@ -173,17 +173,18 @@ class BaseController
         array $context = [],
         string $search = '',
         string $sort = '',
-        string $direction = 'asc'
+        string $direction = 'asc',
+        array $criteria = []
     ): array {
         $page = $this->resolveRequestedPage($request);
-        $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE, $search, $sort, $direction);
+        $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE, $search, $sort, $direction, $criteria);
         $pageCount = max(1, (int) ceil($result['total'] / self::DEFAULT_PAGE_SIZE));
 
         if ($result['total'] === 0) {
             $page = 1;
         } elseif ($page > $pageCount) {
             $page = $pageCount;
-            $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE, $search, $sort, $direction);
+            $result = $repository->fetchPage($page, self::DEFAULT_PAGE_SIZE, $search, $sort, $direction, $criteria);
         }
 
         return array_merge($context, [
@@ -196,7 +197,8 @@ class BaseController
                 count($result['items']),
                 $search,
                 $sort,
-                $direction
+                $direction,
+                $criteria
             ),
         ]);
     }
@@ -231,7 +233,8 @@ class BaseController
         int $currentCount,
         string $search = '',
         string $sort = '',
-        string $direction = 'asc'
+        string $direction = 'asc',
+        array $extra = []
     ): array {
         $pageCount = max(1, (int) ceil($total / $perPage));
         $from = $total === 0 ? 0 : (($page - 1) * $perPage) + 1;
@@ -256,6 +259,7 @@ class BaseController
             'search' => $search,
             'sort' => $sort,
             'direction' => $direction,
+            'extra' => $extra,
         ];
     }
 

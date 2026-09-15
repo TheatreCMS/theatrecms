@@ -2,7 +2,7 @@
 
 namespace TheatreCMS\Controllers;
 
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -531,7 +531,7 @@ class ProductionController extends BaseController
             return;
         }
 
-        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
         $production->setFeaturedImage($image);
     }
 }

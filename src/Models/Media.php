@@ -10,14 +10,32 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
 /**
- * A single uploaded file in the media library, shared across content types
- * (Production, Post, Season, Venue) via a `featured_image_id` foreign key.
+ * A single uploaded file in the media library (image, PDF, audio, or video),
+ * shared across content types (Production, Post, Season, Venue) via a
+ * `featured_image_id` foreign key.
  */
-#[Entity, Table(name: 'images')]
-class Image
+#[Entity, Table(name: 'media')]
+class Media
 {
+    public const TYPE_IMAGE = 'image';
+    public const TYPE_PDF = 'pdf';
+    public const TYPE_AUDIO = 'audio';
+    public const TYPE_VIDEO = 'video';
+    public const TYPE_OTHER = 'other';
+
+    public const ALL_TYPES = [
+        self::TYPE_IMAGE,
+        self::TYPE_PDF,
+        self::TYPE_AUDIO,
+        self::TYPE_VIDEO,
+        self::TYPE_OTHER,
+    ];
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
+
+    #[Column(name: 'media_type', type: 'string', length: 20, nullable: false)]
+    private string $mediaType;
 
     #[Column(name: 'url', type: 'string', length: 255, nullable: false)]
     private string $url;
@@ -46,16 +64,34 @@ class Image
     #[Column(name: 'uploaded_at', type: 'datetime_immutable', nullable: false)]
     private DateTimeImmutable $uploadedAt;
 
-    public function __construct(string $url, string $filename)
+    public function __construct(string $url, string $filename, string $mediaType)
     {
         $this->url = $url;
         $this->filename = $filename;
+        $this->mediaType = $mediaType;
         $this->uploadedAt = new DateTimeImmutable();
     }
 
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getMediaType(): string
+    {
+        return $this->mediaType;
+    }
+
+    public function setMediaType(string $mediaType): self
+    {
+        $this->mediaType = $mediaType;
+
+        return $this;
+    }
+
+    public function isImage(): bool
+    {
+        return $this->mediaType === self::TYPE_IMAGE;
     }
 
     public function getUrl(): string

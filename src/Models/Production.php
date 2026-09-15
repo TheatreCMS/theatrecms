@@ -72,9 +72,9 @@ class Production extends ModelBase
     #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable: true)]
     private ?Venue $venue = null;
 
-    #[ManyToOne(targetEntity: Image::class)]
+    #[ManyToOne(targetEntity: Media::class)]
     #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Image $featuredImage = null;
+    private ?Media $featuredImage = null;
 
     // Many productions have many works, in a user-defined display order (e.g. a choir's setlist).
     #[OneToMany(targetEntity: ProductionWork::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
@@ -365,12 +365,12 @@ class Production extends ModelBase
         return $this->performances;
     }
 
-    public function getFeaturedImage(): ?Image
+    public function getFeaturedImage(): ?Media
     {
         return $this->featuredImage;
     }
 
-    public function setFeaturedImage(?Image $featuredImage): self
+    public function setFeaturedImage(?Media $featuredImage): self
     {
         $this->featuredImage = $featuredImage;
 

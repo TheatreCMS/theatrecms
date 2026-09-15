@@ -3,7 +3,7 @@
 namespace TheatreCMS\Controllers;
 
 use Doctrine\ORM\EntityManagerInterface;
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\VenueRepository;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -242,7 +242,7 @@ class VenueController extends BaseController
             return;
         }
 
-        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
         $venue->setFeaturedImage($image);
     }
 }

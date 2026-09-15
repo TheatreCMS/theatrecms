@@ -44,18 +44,19 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         int $perPage = 25,
         string $search = '',
         string $sort = '',
-        string $direction = 'asc'
+        string $direction = 'asc',
+        array $criteria = []
     ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
 
         return [
-            'items' => $this->createListQueryBuilder('e', $search, $sort, $direction)
+            'items' => $this->createListQueryBuilder('e', $search, $sort, $direction, $criteria)
                 ->setFirstResult(($page - 1) * $perPage)
                 ->setMaxResults($perPage)
                 ->getQuery()
                 ->getResult(),
-            'total' => $this->countAll('e', $search),
+            'total' => $this->countAll('e', $search, $criteria),
             'page' => $page,
             'perPage' => $perPage,
         ];
@@ -96,13 +97,15 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         string $alias = 'e',
         string $search = '',
         string $sort = '',
-        string $direction = 'asc'
+        string $direction = 'asc',
+        array $criteria = []
     ): QueryBuilder {
         $builder = $this->em->createQueryBuilder()
             ->select($alias)
             ->from($this->entityClass, $alias);
 
         $this->applySearchFilter($builder, $alias, $search);
+        $this->applyCriteria($builder, $alias, $criteria);
 
         if ($sort === '' || !$this->applyRequestedSort($builder, $alias, $sort, $direction)) {
             $this->applyListOrder($builder, $alias);
@@ -134,13 +137,25 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         return false;
     }
 
-    protected function countAll(string $alias = 'e', string $search = ''): int
+    /**
+     * Restrict the list/count query builders to items matching arbitrary,
+     * repository-specific filter criteria (e.g. a `type` facet).
+     * No-op by default; override in repositories that support such filtering.
+     *
+     * @param array<string, mixed> $criteria
+     */
+    protected function applyCriteria(QueryBuilder $builder, string $alias, array $criteria): void
+    {
+    }
+
+    protected function countAll(string $alias = 'e', string $search = '', array $criteria = []): int
     {
         $builder = $this->em->createQueryBuilder()
             ->select(sprintf('COUNT(%s.id)', $alias))
             ->from($this->entityClass, $alias);
 
         $this->applySearchFilter($builder, $alias, $search);
+        $this->applyCriteria($builder, $alias, $criteria);
 
         return (int) $builder->getQuery()->getSingleScalarResult();
     }
