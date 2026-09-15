@@ -1,0 +1,58 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}{{ seo.title }}{% endblock %}
+
+{% block content %}
+    <div x-data="{ view: 'month', modalOpen: false }" x-cloak
+         x-on:calendar-modal-open.window="modalOpen = true"
+         x-on:keydown.escape.window="modalOpen = false">
+
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-semibold text-gray-900">{{ page.title }}</h1>
+            <div class="inline-flex rounded-md border border-gray-200 bg-white overflow-hidden">
+                <button type="button"
+                        x-on:click="view = 'month'; $nextTick(() => window.TheatreCMSCalendar &amp;&amp; window.TheatreCMSCalendar.instance.updateSize())"
+                        :class="view === 'month' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                        class="px-4 py-2 text-sm font-medium">
+                    Month
+                </button>
+                <button type="button"
+                        x-on:click="view = 'list'"
+                        :class="view === 'list' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'"
+                        class="px-4 py-2 text-sm font-medium border-l border-gray-200">
+                    List
+                </button>
+            </div>
+        </div>
+
+        <div id="calendar-mount" x-show="view === 'month'"
+             data-events-url="{{ archive_url('calendar') }}/events.json"
+             data-list-url="{{ archive_url('calendar') }}/events"
+             data-detail-url="{{ archive_url('calendar') }}/events"></div>
+
+        <div x-show="view === 'list'" class="space-y-6">
+            <div id="event-list-content">
+                {% include 'calendar/_event-list.html.twig' with { groupedEvents: groupedEvents } %}
+            </div>
+        </div>
+
+        <div x-show="modalOpen" x-cloak x-transition
+             x-on:click.self="modalOpen = false"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto relative">
+                <button type="button" x-on:click="modalOpen = false"
+                        class="absolute top-3 right-3 text-gray-400 hover:text-gray-600" aria-label="Close">
+                    &times;
+                </button>
+                <div id="event-detail-modal-content" class="p-6"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script defer src="https://unpkg.com/alpinejs@3.17.3/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.21/index.global.min.js"></script>
+    <script src="/assets/js/calendar.js"></script>
+{% endblock %}

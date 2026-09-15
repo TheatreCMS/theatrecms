@@ -1,0 +1,59 @@
+{% set production = event.production %}
+{% set venue = event.effectiveVenue %}
+{% set isCancelled = event.status in ['cancelled', 'canceled'] %}
+{% set isPostponed = event.status in ['postponed', 'rescheduled'] %}
+
+<div class="space-y-4">
+    <div>
+        <p class="text-xs uppercase tracking-wide text-gray-500">
+            {{ production ? production.season.label : 'Event' }}
+        </p>
+        <h2 class="text-2xl font-semibold text-gray-900">
+            {{ event.title ?: (production ? production.name : (venue ? venue.name : 'Event')) }}
+        </h2>
+    </div>
+
+    {% if isCancelled %}
+        <div class="rounded-md bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2">
+            This performance has been cancelled.
+        </div>
+    {% elseif isPostponed %}
+        <div class="rounded-md bg-amber-50 border border-amber-200 text-amber-700 text-sm px-3 py-2">
+            This performance has been {{ event.status }}.
+        </div>
+    {% endif %}
+
+    <p class="text-sm text-gray-700">
+        <time datetime="{{ event.startsAt|date('c') }}">{{ event.startsAt|date('l, F j, Y g:i A') }}</time>
+        {% if event.endsAt %}
+            &ndash; <time datetime="{{ event.endsAt|date('c') }}">{{ event.endsAt|date('g:i A') }}</time>
+        {% endif %}
+    </p>
+
+    {% if venue %}
+        <div class="text-sm text-gray-700">
+            <p class="font-medium text-gray-900">{{ venue.name }}</p>
+            <p>{{ venue.address }}, {{ venue.city }}, {{ venue.state }} {{ venue.postcode }}</p>
+        </div>
+    {% else %}
+        <p class="text-sm text-gray-500">Venue TBA</p>
+    {% endif %}
+
+    {% if event.notes %}
+        <p class="text-sm text-gray-600">{{ event.notes }}</p>
+    {% endif %}
+
+    <div class="flex items-center gap-4 pt-2">
+        {% if event.effectiveTicketUrl and not isCancelled %}
+            <a href="{{ event.effectiveTicketUrl }}" target="_blank" rel="noopener noreferrer"
+               class="inline-block bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-gray-700">
+                Buy Tickets
+            </a>
+        {% endif %}
+        {% if production %}
+            <a href="{{ the_permalink(production) }}" class="text-sm text-blue-700 hover:underline">
+                View production details
+            </a>
+        {% endif %}
+    </div>
+</div>

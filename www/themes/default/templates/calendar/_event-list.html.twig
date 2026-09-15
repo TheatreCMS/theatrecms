@@ -1,0 +1,47 @@
+{% if groupedEvents|length == 0 %}
+    <p class="text-gray-500 italic">No upcoming performances in this range.</p>
+{% else %}
+    {% for dateKey, group in groupedEvents %}
+        <div class="space-y-3">
+            <h2 class="text-sm uppercase tracking-wide text-gray-500 border-b border-gray-200 pb-2">
+                {{ group.date|date('l, F j, Y') }}
+            </h2>
+            <ul class="space-y-3">
+                {% for event in group.events %}
+                    {% set production = event.production %}
+                    {% set venue = event.effectiveVenue %}
+                    {% set isCancelled = event.status in ['cancelled', 'canceled'] %}
+                    {% set isPostponed = event.status in ['postponed', 'rescheduled'] %}
+                    <li id="event-{{ event.id }}"
+                        class="rounded-md border border-gray-200 bg-white p-4 flex justify-between items-start gap-4 cursor-pointer hover:border-gray-300"
+                        hx-get="{{ archive_url('calendar') }}/events/{{ event.id }}"
+                        hx-target="#event-detail-modal-content"
+                        hx-swap="innerHTML">
+                        <div>
+                            <p class="text-sm font-medium text-gray-900 {% if isCancelled %}line-through text-gray-400{% endif %}">
+                                <time datetime="{{ event.startsAt|date('c') }}">{{ event.startsAt|date('g:i A') }}</time>
+                                &mdash;
+                                {{ event.title ?: (production ? production.name : (venue ? venue.name : 'Event')) }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">
+                                {{ venue ? venue.name : 'Venue TBA' }}
+                            </p>
+                            {% if isCancelled %}
+                                <span class="inline-block mt-2 px-2 py-0.5 text-xs font-medium rounded bg-red-100 text-red-700">Cancelled</span>
+                            {% elseif isPostponed %}
+                                <span class="inline-block mt-2 px-2 py-0.5 text-xs font-medium rounded bg-amber-100 text-amber-700">{{ event.status|capitalize }}</span>
+                            {% endif %}
+                        </div>
+                        {% if event.effectiveTicketUrl and not isCancelled %}
+                            <a href="{{ event.effectiveTicketUrl }}" target="_blank" rel="noopener noreferrer"
+                               class="text-xs text-blue-700 hover:underline whitespace-nowrap"
+                               onclick="event.stopPropagation()">
+                                Tickets
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+{% endif %}

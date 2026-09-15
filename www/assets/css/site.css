@@ -209,3 +209,9 @@ h1[id^="this-season-"] {
 .prose li {
     margin-top: 0.25rem;
 }
+
+/* Hides Alpine-controlled elements until Alpine has initialized, avoiding a
+   flash of unstyled content (e.g. the calendar page's view toggle/modal). */
+[x-cloak] {
+    display: none !important;
+}
