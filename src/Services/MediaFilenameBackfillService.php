@@ -66,28 +66,31 @@ class MediaFilenameBackfillService
             }
 
             $newUrlPreview = dirname($oldUrl) . '/' . $newFilename;
-            $changes[] = ['id' => $media->getId(), 'from' => $oldUrl, 'to' => $newUrlPreview];
 
             if ($dryRun) {
+                $changes[] = ['id' => $media->getId(), 'from' => $oldUrl, 'to' => $newUrlPreview];
                 continue;
             }
 
             $isImage = $media->getMediaType() === Media::TYPE_IMAGE;
-            if ($isImage) {
-                $this->imageVariantGenerator->deleteFiles($media);
-            }
-
             $newUrl = $this->mediaUploadService->renameTo($oldUrl, $newFilename);
             if ($newUrl === null) {
                 continue;
             }
 
+            if ($isImage) {
+                $this->imageVariantGenerator->deleteFiles($media);
+            }
+
             $media->setUrl($newUrl)->setFilename($newFilename);
+            $this->em->persist($media);
             $this->em->flush();
 
             if ($isImage) {
                 $this->imageVariantGenerator->generate($media);
             }
+
+            $changes[] = ['id' => $media->getId(), 'from' => $oldUrl, 'to' => $newUrl];
         }
 
         return $changes;

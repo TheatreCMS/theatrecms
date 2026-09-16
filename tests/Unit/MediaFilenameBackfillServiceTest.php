@@ -4,8 +4,10 @@ namespace TheatreCMS\Tests\Unit;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Media;
+use TheatreCMS\Models\MediaVariant;
 use TheatreCMS\Services\ImageVariantGenerator;
 use TheatreCMS\Services\MediaFilenameBackfillService;
 use TheatreCMS\Services\MediaUploadService;
@@ -13,6 +15,7 @@ use TheatreCMS\Services\MediaUploadService;
 /**
  * @coversDefaultClass \TheatreCMS\Services\MediaFilenameBackfillService
  */
+#[AllowMockObjectsWithoutExpectations]
 class MediaFilenameBackfillServiceTest extends TestCase
 {
     private string $uploadsDir;
@@ -23,7 +26,7 @@ class MediaFilenameBackfillServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $publicRoot = sys_get_temp_dir() . '/theatrecms-filename-backfill-test-' . uniqid();
+        $publicRoot = __DIR__ . '/.theatrecms-filename-backfill-test-' . uniqid();
         $this->uploadsDir = $publicRoot . '/uploads';
         mkdir($this->uploadsDir, 0755, true);
 
@@ -63,7 +66,6 @@ class MediaFilenameBackfillServiceTest extends TestCase
     private function withId(Media $media, int $id): Media
     {
         $property = new \ReflectionProperty(Media::class, 'id');
-        $property->setAccessible(true);
         $property->setValue($media, $id);
 
         return $media;
@@ -140,6 +142,7 @@ class MediaFilenameBackfillServiceTest extends TestCase
 
         $this->generator->expects($this->once())->method('deleteFiles')->with($media);
         $this->generator->expects($this->once())->method('generate')->with($media);
+        $this->em->expects($this->once())->method('persist')->with($media);
         $this->em->expects($this->once())->method('flush');
 
         $changes = $this->backfillService->renameToSeoSlugs();
@@ -173,5 +176,45 @@ class MediaFilenameBackfillServiceTest extends TestCase
             'from' => '/uploads/abc123.pdf',
             'to' => '/uploads/program.pdf',
         ]], $changes);
+    }
+
+    public function testFailedRenameRetainsSourceRowFileAndVariantsAndReportsNothing(): void
+    {
+        file_put_contents($this->uploadsDir . '/abc123.jpg', 'source-bytes');
+        file_put_contents($this->uploadsDir . '/abc123-thumbnail.jpg', 'variant-bytes');
+
+        $media = $this->withId(new Media('/uploads/abc123.jpg', 'abc123.jpg', Media::TYPE_IMAGE), 1);
+        $media->setOriginalFilename('My Poster.jpg');
+        $media->addVariant(new MediaVariant(
+            $media,
+            'thumbnail',
+            '/uploads/abc123-thumbnail.jpg',
+            150,
+            150
+        ));
+        $this->mockAllMedia([$media]);
+
+        $uploadService = $this->getMockBuilder(MediaUploadService::class)
+            ->setConstructorArgs([dirname($this->uploadsDir)])
+            ->onlyMethods(['renameTo'])
+            ->getMock();
+        $uploadService->expects($this->once())
+            ->method('renameTo')
+            ->with('/uploads/abc123.jpg', 'my-poster.jpg')
+            ->willReturn(null);
+
+        $service = new MediaFilenameBackfillService($this->em, $uploadService, $this->generator);
+
+        $this->generator->expects($this->never())->method('deleteFiles');
+        $this->generator->expects($this->never())->method('generate');
+        $this->em->expects($this->never())->method('persist');
+        $this->em->expects($this->never())->method('flush');
+
+        $this->assertSame([], $service->renameToSeoSlugs());
+        $this->assertSame('/uploads/abc123.jpg', $media->getUrl());
+        $this->assertSame('abc123.jpg', $media->getFilename());
+        $this->assertFileExists($this->uploadsDir . '/abc123.jpg');
+        $this->assertFileExists($this->uploadsDir . '/abc123-thumbnail.jpg');
+        $this->assertCount(1, $media->getVariants());
     }
 }

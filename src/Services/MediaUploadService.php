@@ -82,7 +82,8 @@ class MediaUploadService
 
     /**
      * Renames an existing stored upload to $newFilename in the same directory.
-     * Returns the new public URL, or null if the source file doesn't exist.
+     * Returns the new public URL, or null if the source is missing, the
+     * destination already exists, or the filesystem rename fails.
      */
     public function renameTo(string $url, string $newFilename): ?string
     {
@@ -93,7 +94,9 @@ class MediaUploadService
 
         $newPath = dirname($path) . DIRECTORY_SEPARATOR . $newFilename;
         if ($newPath !== $path) {
-            rename($path, $newPath);
+            if (file_exists($newPath) || !@rename($path, $newPath)) {
+                return null;
+            }
         }
 
         return dirname($url) . '/' . $newFilename;

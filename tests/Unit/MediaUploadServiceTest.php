@@ -16,7 +16,7 @@ class MediaUploadServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->publicRoot = sys_get_temp_dir() . '/theatrecms-upload-test-' . uniqid();
+        $this->publicRoot = __DIR__ . '/.theatrecms-upload-test-' . uniqid();
         $this->uploadsDir = $this->publicRoot . '/uploads';
         mkdir($this->uploadsDir, 0755, true);
 
@@ -98,5 +98,27 @@ class MediaUploadServiceTest extends TestCase
         $newUrl = $this->service->renameTo('/uploads/does-not-exist.jpg', 'poster.jpg');
 
         $this->assertNull($newUrl);
+    }
+
+    public function testRenameToReturnsNullAndPreservesFilesOnDestinationCollision(): void
+    {
+        file_put_contents($this->uploadsDir . '/source.jpg', 'source-bytes');
+        file_put_contents($this->uploadsDir . '/poster.jpg', 'destination-bytes');
+
+        $newUrl = $this->service->renameTo('/uploads/source.jpg', 'poster.jpg');
+
+        $this->assertNull($newUrl);
+        $this->assertSame('source-bytes', file_get_contents($this->uploadsDir . '/source.jpg'));
+        $this->assertSame('destination-bytes', file_get_contents($this->uploadsDir . '/poster.jpg'));
+    }
+
+    public function testRenameToReturnsNullWhenFilesystemRenameFails(): void
+    {
+        file_put_contents($this->uploadsDir . '/source.jpg', 'source-bytes');
+
+        $newUrl = $this->service->renameTo('/uploads/source.jpg', 'missing/poster.jpg');
+
+        $this->assertNull($newUrl);
+        $this->assertFileExists($this->uploadsDir . '/source.jpg');
     }
 }
