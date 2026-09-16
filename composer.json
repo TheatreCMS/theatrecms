@@ -19,6 +19,7 @@
         }
     ],
     "require": {
+        "ext-gd": "*",
         "slim/slim": "^4.15",
         "php-di/php-di": "^7.1",
         "slim/psr7": "^1.8",
