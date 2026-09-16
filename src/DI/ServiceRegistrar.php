@@ -4,6 +4,7 @@ namespace TheatreCMS\DI;
 
 use DI\Container;
 use Doctrine\ORM\EntityManager;
+use Intervention\Image\ImageManager;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Views\Twig;
@@ -11,7 +12,7 @@ use Slim\Views\TwigMiddleware;
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
-use TheatreCMS\Controllers\ImagesController;
+use TheatreCMS\Controllers\MediaController;
 use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Controllers\LinkPreviewController;
 use TheatreCMS\Controllers\MenuController;
@@ -30,7 +31,7 @@ use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Repositories\EventRepository;
-use TheatreCMS\Repositories\ImageRepository;
+use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
@@ -42,7 +43,10 @@ use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ImageBackfillService;
-use TheatreCMS\Services\ImageUploadService;
+use TheatreCMS\Services\ImageVariantGenerator;
+use TheatreCMS\Services\MediaFilenameBackfillService;
+use TheatreCMS\Services\MediaUploadService;
+use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\AddressResolver;
@@ -51,6 +55,7 @@ use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\ExcerptResolver;
 use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\FeaturedImageResolver;
 use TheatreCMS\Theme\PermalinkResolver;
@@ -72,6 +77,7 @@ use TheatreCMS\Twig\DateExtension;
 use TheatreCMS\Twig\EditorJsExtension;
 use TheatreCMS\Twig\ExcerptExtension;
 use TheatreCMS\Twig\FeaturedImageExtension;
+use TheatreCMS\Twig\MediaTypeIconExtension;
 use TheatreCMS\Twig\HooksExtension;
 use TheatreCMS\Twig\MenuExtension;
 use TheatreCMS\Twig\PermalinkExtension;
@@ -180,13 +186,46 @@ class ServiceRegistrar
             return new AuthorizationService($c->get(Auth::class), $c->get(CapabilityRegistry::class));
         });
 
-        $container->set(ImageUploadService::class, static fn(): ImageUploadService => new ImageUploadService(APP_ROOT . '/www'));
+        $container->set(MediaUploadService::class, static fn(): MediaUploadService => new MediaUploadService(APP_ROOT . '/www'));
 
         $container->set(ImageBackfillService::class, static function (ContainerInterface $c): ImageBackfillService {
             return new ImageBackfillService(
                 $c->get(EntityManager::class)->getConnection(),
-                $c->get(ImageRepository::class),
+                $c->get(MediaRepository::class),
                 APP_ROOT . '/www/uploads',
+            );
+        });
+
+        $container->set(ImageSizeRegistry::class, static fn(): ImageSizeRegistry => new ImageSizeRegistry());
+
+        $container->set(ImageManager::class, static fn(): ImageManager => ImageManager::gd());
+
+        $container->set(ImageVariantGenerator::class, static function (ContainerInterface $c): ImageVariantGenerator {
+            return new ImageVariantGenerator(
+                $c->get(ImageManager::class),
+                $c->get(MediaUploadService::class),
+                $c->get(EntityManager::class),
+                $c->get(ImageSizeRegistry::class),
+            );
+        });
+
+        $container->set(MediaVariantBackfillService::class, static function (
+            ContainerInterface $c
+        ): MediaVariantBackfillService {
+            return new MediaVariantBackfillService(
+                $c->get(EntityManager::class),
+                $c->get(ImageVariantGenerator::class),
+                $c->get(ImageSizeRegistry::class),
+            );
+        });
+
+        $container->set(MediaFilenameBackfillService::class, static function (
+            ContainerInterface $c
+        ): MediaFilenameBackfillService {
+            return new MediaFilenameBackfillService(
+                $c->get(EntityManager::class),
+                $c->get(MediaUploadService::class),
+                $c->get(ImageVariantGenerator::class),
             );
         });
 
@@ -228,7 +267,6 @@ class ServiceRegistrar
 
             $themeManager = $c->get(ThemeManager::class);
             $themeManager->configureTwig($twig, $templateDir);
-            $themeManager->loadFunctions();
             $twig->addExtension(new EditorJsExtension($c->get(EditorJsHtmlConverter::class)));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
@@ -236,6 +274,7 @@ class ServiceRegistrar
             $twig->addExtension(new TitleExtension($c->get(TitleResolver::class)));
             $twig->addExtension(new SlugExtension($c->get(SlugResolver::class)));
             $twig->addExtension(new FeaturedImageExtension($c->get(FeaturedImageResolver::class)));
+            $twig->addExtension(new MediaTypeIconExtension());
             $twig->addExtension(new SponsorsExtension($c->get(SponsorsResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
@@ -399,7 +438,7 @@ class ServiceRegistrar
                 return new SponsorController(
                     $c->get(SponsorRepository::class),
                     $c->get(Twig::class),
-                    $c->get(ImageUploadService::class),
+                    $c->get(MediaUploadService::class),
                 );
             },
             WorksController::class => static function (ContainerInterface $c): WorksController {
@@ -410,13 +449,14 @@ class ServiceRegistrar
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
-                return new ImageUploadController($c->get(ImageUploadService::class));
+                return new ImageUploadController($c->get(MediaUploadService::class));
             },
-            ImagesController::class => static function (ContainerInterface $c): ImagesController {
-                return new ImagesController(
-                    $c->get(ImageRepository::class),
+            MediaController::class => static function (ContainerInterface $c): MediaController {
+                return new MediaController(
+                    $c->get(MediaRepository::class),
                     $c->get(Twig::class),
-                    $c->get(ImageUploadService::class),
+                    $c->get(MediaUploadService::class),
+                    $c->get(ImageVariantGenerator::class),
                 );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {

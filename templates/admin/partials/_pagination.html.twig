@@ -1,6 +1,13 @@
 {% set searchQuery = (pagination.search is defined and pagination.search) ? '&q=' ~ pagination.search|url_encode : '' %}
 {% set searchQuery = searchQuery ~ ((pagination.sort is defined and pagination.sort) ? '&sort=' ~ pagination.sort|url_encode : '') %}
 {% set searchQuery = searchQuery ~ ((pagination.direction is defined and pagination.direction) ? '&direction=' ~ pagination.direction|url_encode : '') %}
+{% if pagination.extra is defined %}
+    {% for key, value in pagination.extra %}
+        {% if value is not empty %}
+            {% set searchQuery = searchQuery ~ '&' ~ key ~ '=' ~ value|url_encode %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
 {% if pagination.total > 0 %}
     <div class="flex flex-col gap-3 border-t border-default px-6 py-4 text-sm text-gray-600 md:flex-row md:items-center md:justify-between">
         <p>

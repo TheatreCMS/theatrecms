@@ -2,20 +2,20 @@
 
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\Capability;
-use TheatreCMS\Controllers\ImagesController;
 use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 
+// This route is frozen: it serves the EditorJS in-body "Image Gallery"/
+// "Carousel" block upload endpoint, whose JSON contract (field name `image`,
+// {success, file:{url}}/{success:0, error:{message}}) is depended on by the
+// vendored @editorjs/image tool and the hand-written gallery/carousel tools.
+// Everything else that used to live under /admin/images now lives under
+// /admin/media -- see app/routes/admin/media.php.
 if (isset($app)) {
     $app->group('/admin/images', function ($group) {
         $group->post('/upload', [ImageUploadController::class, 'upload']);
-
-        $group->get('', [ImagesController::class, 'index']);
-        $group->get('/picker', [ImagesController::class, 'picker']);
-        $group->post('/library-upload', [ImagesController::class, 'upload']);
-        $group->get('/{id}/select', [ImagesController::class, 'select']);
     })->add(new RequireTwigMiddleware($container))
       ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), Capability::UPLOAD_FILES))
       ->add($container->get(AuthMiddleware::class));

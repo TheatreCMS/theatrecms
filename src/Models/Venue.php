@@ -46,9 +46,9 @@ class Venue extends ModelBase
     #[Column(name: 'map_url', type: 'string', nullable: true)]
     private ?string $mapUrl;
 
-    #[ManyToOne(targetEntity: Image::class)]
+    #[ManyToOne(targetEntity: Media::class)]
     #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Image $featuredImage = null;
+    private ?Media $featuredImage = null;
 
     public function __construct(string $name, string $address, string $city, string $state, string $postcode)
     {
@@ -181,12 +181,12 @@ class Venue extends ModelBase
         return $this;
     }
 
-    public function getFeaturedImage(): ?Image
+    public function getFeaturedImage(): ?Media
     {
         return $this->featuredImage;
     }
 
-    public function setFeaturedImage(?Image $featuredImage): self
+    public function setFeaturedImage(?Media $featuredImage): self
     {
         $this->featuredImage = $featuredImage;
         return $this;

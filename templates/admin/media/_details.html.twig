@@ -1,0 +1,78 @@
+{# Media details slide-over content, rendered into #media-details-modal-content. #}
+<div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+	<h2 class="text-lg font-semibold text-gray-900 truncate">{{ media.filename }}</h2>
+	<button type="button" onclick="document.getElementById('media-details-modal').close()" class="text-gray-400 hover:text-gray-600 focus:outline-none" aria-label="Close">
+		<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+	</button>
+</div>
+
+<div class="px-6 py-4 space-y-4">
+	<div class="rounded-md border border-gray-200 bg-gray-50 p-4 flex items-center justify-center">
+		{% if media.mediaType == 'image' %}
+			<img src="{{ media.url }}" alt="{{ media.altText|default(media.filename) }}" class="max-h-48 w-auto object-contain">
+		{% else %}
+			<div class="flex flex-col items-center justify-center text-gray-400 gap-1 py-8">
+				{{ media_type_icon(media.mediaType) }}
+				<span class="text-xs uppercase tracking-wide font-medium">{{ media.mediaType }}</span>
+			</div>
+		{% endif %}
+	</div>
+
+	<dl class="text-sm text-gray-700 grid grid-cols-3 gap-x-4 gap-y-2">
+		<dt class="text-gray-500">Original filename</dt>
+		<dd class="col-span-2">{{ media.originalFilename|default(media.filename) }}</dd>
+
+		<dt class="text-gray-500">Type</dt>
+		<dd class="col-span-2">{{ media.mimeType|default('Unknown') }}</dd>
+
+		<dt class="text-gray-500">Size</dt>
+		<dd class="col-span-2">{% if media.sizeBytes %}{{ (media.sizeBytes / 1024)|round }} KB{% else %}Unknown{% endif %}</dd>
+
+		{% if media.mediaType == 'image' and media.width and media.height %}
+			<dt class="text-gray-500">Dimensions</dt>
+			<dd class="col-span-2">{{ media.width }} &times; {{ media.height }}</dd>
+		{% endif %}
+
+		<dt class="text-gray-500">Uploaded</dt>
+		<dd class="col-span-2">{{ media.uploadedAt|date('Y-m-d H:i') }}</dd>
+
+		<dt class="text-gray-500">URL</dt>
+		<dd class="col-span-2">
+			<input type="text" readonly value="{{ media.url }}" onclick="this.select()" class="w-full text-xs rounded-md border-gray-300 bg-white">
+		</dd>
+	</dl>
+
+	{% if media.mediaType == 'image' %}
+		<form id="media-edit-form" hx-patch="/admin/media/{{ media.id }}" hx-target="#media-details-modal-content" hx-swap="innerHTML" class="space-y-3">
+			<div>
+				<label for="media-alt-text" class="block text-xs font-medium text-gray-500 mb-1">Alt text</label>
+				<input type="text" name="altText" id="media-alt-text" value="{{ media.altText }}" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+			</div>
+			<div>
+				<label for="media-caption" class="block text-xs font-medium text-gray-500 mb-1">Caption</label>
+				<textarea name="caption" id="media-caption" rows="2" class="w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ media.caption }}</textarea>
+			</div>
+		</form>
+		{% if saved is defined and saved %}
+			<p class="text-sm text-green-700">Saved.</p>
+		{% endif %}
+	{% endif %}
+
+	<div class="flex items-center justify-between pt-2 border-t border-gray-200">
+		<div>
+			{% if media.mediaType == 'image' %}
+				<button type="submit" form="media-edit-form" class="px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Save</button>
+			{% endif %}
+		</div>
+		<button
+			type="button"
+			class="px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50"
+			hx-delete="/admin/media/{{ media.id }}"
+			hx-target="#media-grid"
+			hx-swap="outerHTML"
+			hx-confirm="Delete this file? This cannot be undone."
+		>
+			Delete
+		</button>
+	</div>
+</div>

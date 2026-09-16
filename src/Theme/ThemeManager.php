@@ -10,6 +10,7 @@ class ThemeManager
     private string $themesDir;
     private string $activeTheme;
     private array $themeData = [];
+    private bool $functionsLoaded = false;
 
     public function __construct(string $themesDir, string $activeTheme = 'default')
     {
@@ -95,10 +96,16 @@ class ThemeManager
      */
     public function loadFunctions(): void
     {
+        if ($this->functionsLoaded) {
+            return;
+        }
+
         $functions = $this->getThemeDir() . '/functions.php';
         if (file_exists($functions)) {
             require_once $functions;
         }
+
+        $this->functionsLoaded = true;
     }
 
     /**

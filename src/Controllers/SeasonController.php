@@ -2,7 +2,7 @@
 
 namespace TheatreCMS\Controllers;
 
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Sponsorship;
@@ -246,7 +246,12 @@ class SeasonController extends BaseController
             return;
         }
 
-        $image = $this->entityManager->getRepository(Image::class)->find((int) $featuredImageId);
+        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
+
+        if ($image instanceof Media && !$image->isImage()) {
+            throw new \InvalidArgumentException('Featured media must be an image.');
+        }
+
         $season->setFeaturedImage($image);
     }
 }

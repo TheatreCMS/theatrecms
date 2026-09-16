@@ -27,8 +27,8 @@ class FeaturedImageExtension extends AbstractExtension
         ];
     }
 
-    public function theFeaturedImageUrl(mixed $entity): string
+    public function theFeaturedImageUrl(mixed $entity, string $size = 'full'): string
     {
-        return $this->resolver->resolve($entity);
+        return $this->resolver->resolve($entity, $size);
     }
 }

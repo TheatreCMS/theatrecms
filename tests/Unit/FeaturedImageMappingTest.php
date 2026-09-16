@@ -8,7 +8,7 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
@@ -17,7 +17,7 @@ use TheatreCMS\Models\Venue;
 /**
  * Regression guard for the featured_image_id FK migration: Production, Post,
  * Season, and Venue all replaced a plain `featured_image_url` string column
- * with a ManyToOne relation to Image (see SupportsFeaturedImage removal).
+ * with a ManyToOne relation to Media (see SupportsFeaturedImage removal).
  * Each must still resolve getFeaturedImageUrl() through the relation, and
  * return null (not throw) when no image is attached.
  */
@@ -40,13 +40,13 @@ class FeaturedImageMappingTest extends TestCase
         $schemaTool->createSchema($this->em->getMetadataFactory()->getAllMetadata());
     }
 
-    private function persistImage(): Image
+    private function persistMedia(): Media
     {
-        $image = new Image('/uploads/test.jpg', 'test.jpg');
-        $this->em->persist($image);
+        $media = new Media('/uploads/test.jpg', 'test.jpg', Media::TYPE_IMAGE);
+        $this->em->persist($media);
         $this->em->flush();
 
-        return $image;
+        return $media;
     }
 
     public function testProductionResolvesFeaturedImageUrlThroughRelation(): void
@@ -62,8 +62,8 @@ class FeaturedImageMappingTest extends TestCase
         $this->assertNull($production->getFeaturedImageUrl());
         $this->assertFalse($production->hasFeaturedImage());
 
-        $image = $this->persistImage();
-        $production->setFeaturedImage($image);
+        $media = $this->persistMedia();
+        $production->setFeaturedImage($media);
         $this->em->flush();
 
         $this->assertSame('/uploads/test.jpg', $production->getFeaturedImageUrl());
@@ -79,8 +79,8 @@ class FeaturedImageMappingTest extends TestCase
 
         $this->assertNull($post->getFeaturedImageUrl());
 
-        $image = $this->persistImage();
-        $post->setFeaturedImage($image);
+        $media = $this->persistMedia();
+        $post->setFeaturedImage($media);
         $this->em->flush();
 
         $this->assertSame('/uploads/test.jpg', $post->getFeaturedImageUrl());
@@ -94,8 +94,8 @@ class FeaturedImageMappingTest extends TestCase
 
         $this->assertNull($season->getFeaturedImageUrl());
 
-        $image = $this->persistImage();
-        $season->setFeaturedImage($image);
+        $media = $this->persistMedia();
+        $season->setFeaturedImage($media);
         $this->em->flush();
 
         $this->assertSame('/uploads/test.jpg', $season->getFeaturedImageUrl());
@@ -111,8 +111,8 @@ class FeaturedImageMappingTest extends TestCase
         $this->assertNull($venue->getFeaturedImageUrl());
         $this->assertFalse($venue->hasFeaturedImage());
 
-        $image = $this->persistImage();
-        $venue->setFeaturedImage($image);
+        $media = $this->persistMedia();
+        $venue->setFeaturedImage($media);
         $this->em->flush();
 
         $this->assertSame('/uploads/test.jpg', $venue->getFeaturedImageUrl());

@@ -10,7 +10,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\Controllers\VenueController;
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\VenueRepository;
 
@@ -18,9 +18,9 @@ use TheatreCMS\Repositories\VenueRepository;
  * Venue is the net-new featured-image entity added alongside the media
  * library; these pin down the two behaviors that changed shape from the
  * old per-entity upload flow: removeFeaturedImage() now only detaches the
- * relation (it must NOT delete the underlying Image/file, since the same
- * image can be shared by other entities), and store()/update() resolve a
- * submitted featuredImageId to an Image via the EntityManager.
+ * relation (it must NOT delete the underlying Media/file, since the same
+ * media row can be shared by other entities), and store()/update() resolve a
+ * submitted featuredImageId to a Media entity via the EntityManager.
  */
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class VenueControllerFeaturedImageTest extends TestCase
@@ -57,9 +57,9 @@ class VenueControllerFeaturedImageTest extends TestCase
 
     public function testRemoveFeaturedImageDetachesWithoutDeletingTheImage(): void
     {
-        $image = new Image('/uploads/venue.jpg', 'venue.jpg');
+        $media = new Media('/uploads/venue.jpg', 'venue.jpg', Media::TYPE_IMAGE);
         $venue = new Venue('Main Stage', '1 Stage Rd', 'Testville', 'TS', '00000');
-        $venue->setFeaturedImage($image);
+        $venue->setFeaturedImage($media);
 
         $this->mockVenueLookup($venue, 5);
 
@@ -72,22 +72,22 @@ class VenueControllerFeaturedImageTest extends TestCase
         $controller->removeFeaturedImage($request, $response, ['id' => '5']);
 
         $this->assertNull($venue->getFeaturedImage());
-        // The Image row itself is untouched: the relation was cleared, not the entity.
-        $this->assertSame('/uploads/venue.jpg', $image->getUrl());
+        // The Media row itself is untouched: the relation was cleared, not the entity.
+        $this->assertSame('/uploads/venue.jpg', $media->getUrl());
     }
 
     public function testUpdateResolvesFeaturedImageIdToAnImageEntity(): void
     {
         $venue = new Venue('Main Stage', '1 Stage Rd', 'Testville', 'TS', '00000');
-        $image = new Image('/uploads/new.jpg', 'new.jpg');
+        $media = new Media('/uploads/new.jpg', 'new.jpg', Media::TYPE_IMAGE);
 
         $venueObjectRepository = $this->createMock(EntityRepository::class);
         $venueObjectRepository->method('findOneBy')->willReturn($venue);
-        $imageObjectRepository = $this->createMock(EntityRepository::class);
-        $imageObjectRepository->method('find')->with(42)->willReturn($image);
+        $mediaObjectRepository = $this->createMock(EntityRepository::class);
+        $mediaObjectRepository->method('find')->with(42)->willReturn($media);
         $this->entityManager->method('getRepository')->willReturnCallback(
-            function (string $class) use ($venueObjectRepository, $imageObjectRepository) {
-                return $class === Image::class ? $imageObjectRepository : $venueObjectRepository;
+            function (string $class) use ($venueObjectRepository, $mediaObjectRepository) {
+                return $class === Media::class ? $mediaObjectRepository : $venueObjectRepository;
             }
         );
 
@@ -108,13 +108,13 @@ class VenueControllerFeaturedImageTest extends TestCase
         $controller = $this->buildController();
         $controller->update($request, $response, []);
 
-        $this->assertSame($image, $venue->getFeaturedImage());
+        $this->assertSame($media, $venue->getFeaturedImage());
     }
 
     public function testUpdateClearsFeaturedImageWhenIdIsEmpty(): void
     {
         $venue = new Venue('Main Stage', '1 Stage Rd', 'Testville', 'TS', '00000');
-        $venue->setFeaturedImage(new Image('/uploads/old.jpg', 'old.jpg'));
+        $venue->setFeaturedImage(new Media('/uploads/old.jpg', 'old.jpg', Media::TYPE_IMAGE));
 
         $this->mockVenueLookup($venue, 1);
 

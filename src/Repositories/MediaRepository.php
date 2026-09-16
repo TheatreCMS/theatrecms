@@ -3,16 +3,16 @@
 namespace TheatreCMS\Repositories;
 
 use Doctrine\ORM\QueryBuilder;
-use TheatreCMS\Models\Image;
+use TheatreCMS\Models\Media;
 
-class ImageRepository extends BaseRepository
+class MediaRepository extends BaseRepository
 {
-    protected string $entityClass = Image::class;
+    protected string $entityClass = Media::class;
 
     /**
      * @param array<string, mixed> $args
      */
-    public function create(array $args): Image
+    public function create(array $args): Media
     {
         $args = array_merge([
             'url' => null,
@@ -21,34 +21,43 @@ class ImageRepository extends BaseRepository
             'mimeType' => null,
             'sizeBytes' => null,
             'altText' => null,
+            'caption' => null,
+            'mediaType' => null,
         ], $args);
 
         if (empty($args['url'])) {
-            throw new \InvalidArgumentException('Image URL is required.');
+            throw new \InvalidArgumentException('Media URL is required.');
+        }
+
+        if (empty($args['mediaType']) || !in_array($args['mediaType'], Media::ALL_TYPES, true)) {
+            throw new \InvalidArgumentException('A valid media type is required.');
         }
 
         $filename = $args['filename'] ?: basename((string) $args['url']);
 
-        $image = new Image($args['url'], $filename);
-        $image->setOriginalFilename($args['originalFilename'])
+        $media = new Media($args['url'], $filename, $args['mediaType']);
+        $media->setOriginalFilename($args['originalFilename'])
             ->setMimeType($args['mimeType'])
             ->setSizeBytes($args['sizeBytes'] !== null ? (int) $args['sizeBytes'] : null)
-            ->setAltText($args['altText']);
+            ->setAltText($args['altText'])
+            ->setCaption($args['caption']);
 
-        $dimensions = $this->resolveDimensions($args['url']);
-        if ($dimensions !== null) {
-            $image->setWidth($dimensions[0])->setHeight($dimensions[1]);
+        if ($args['mediaType'] === Media::TYPE_IMAGE) {
+            $dimensions = $this->resolveDimensions($args['url']);
+            if ($dimensions !== null) {
+                $media->setWidth($dimensions[0])->setHeight($dimensions[1]);
+            }
         }
 
-        $this->em->persist($image);
+        $this->em->persist($media);
         $this->em->flush();
 
-        return $image;
+        return $media;
     }
 
-    public function findByUrl(string $url): ?Image
+    public function findByUrl(string $url): ?Media
     {
-        return $this->em->getRepository(Image::class)->findOneBy(['url' => $url]);
+        return $this->em->getRepository(Media::class)->findOneBy(['url' => $url]);
     }
 
     protected function applySearchFilter(QueryBuilder $builder, string $alias, string $search): void
@@ -60,7 +69,8 @@ class ImageRepository extends BaseRepository
         }
 
         $builder->andWhere(sprintf(
-            '%1$s.filename LIKE :search OR %1$s.originalFilename LIKE :search OR %1$s.altText LIKE :search',
+            '%1$s.filename LIKE :search OR %1$s.originalFilename LIKE :search '
+                . 'OR %1$s.altText LIKE :search OR %1$s.caption LIKE :search',
             $alias
         ))->setParameter('search', '%' . $search . '%');
     }
@@ -84,6 +94,18 @@ class ImageRepository extends BaseRepository
     {
         $builder->orderBy(sprintf('%s.uploadedAt', $alias), 'DESC')
             ->addOrderBy(sprintf('%s.id', $alias), 'DESC');
+    }
+
+    /**
+     * @param array<string, mixed> $criteria
+     */
+    protected function applyCriteria(QueryBuilder $builder, string $alias, array $criteria): void
+    {
+        $type = $criteria['type'] ?? '';
+        if ($type !== '' && in_array($type, Media::ALL_TYPES, true)) {
+            $builder->andWhere(sprintf('%s.mediaType = :mediaType', $alias))
+                ->setParameter('mediaType', $type);
+        }
     }
 
     /**

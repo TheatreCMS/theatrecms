@@ -19,6 +19,7 @@
         }
     ],
     "require": {
+        "ext-gd": "*",
         "slim/slim": "^4.15",
         "php-di/php-di": "^7.1",
         "slim/psr7": "^1.8",
@@ -30,7 +31,8 @@
         "guzzlehttp/guzzle": "^7.10",
         "slim/twig-view": "^3.4",
         "delight-im/auth": "^9.0",
-        "clubdeuce/schema-php": "^0.3"
+        "clubdeuce/schema-php": "^0.3",
+        "intervention/image": "^3.0"
     },
     "require-dev": {
         "consolidation/robo": "^5.1",

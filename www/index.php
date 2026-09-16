@@ -59,6 +59,7 @@ require ROUTES_DIR . '/admin/posts.php';
 require ROUTES_DIR . '/admin/pages.php';
 require ROUTES_DIR . '/admin/menus.php';
 require ROUTES_DIR . '/admin/images.php';
+require ROUTES_DIR . '/admin/media.php';
 require ROUTES_DIR . '/admin/link-preview.php';
 require ROUTES_DIR . '/admin/settings.php';
 require ROUTES_DIR . '/frontend/seasons.php';

@@ -64,7 +64,8 @@ class UserRepository implements PaginatedRepositoryInterface
         int $perPage = 25,
         string $search = '',
         string $sort = '',
-        string $direction = 'asc'
+        string $direction = 'asc',
+        array $criteria = []
     ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);

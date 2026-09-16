@@ -31,9 +31,9 @@ class Post extends ModelBase
     #[Column(type: 'text', nullable: false)]
     private string $content;
 
-    #[ManyToOne(targetEntity: Image::class)]
+    #[ManyToOne(targetEntity: Media::class)]
     #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Image $featuredImage = null;
+    private ?Media $featuredImage = null;
 
     public function __construct(string $title, ContentStatus $status, string $content)
     {
@@ -77,12 +77,12 @@ class Post extends ModelBase
         return $this;
     }
 
-    public function getFeaturedImage(): ?Image
+    public function getFeaturedImage(): ?Media
     {
         return $this->featuredImage;
     }
 
-    public function setFeaturedImage(?Image $featuredImage): self
+    public function setFeaturedImage(?Media $featuredImage): self
     {
         $this->featuredImage = $featuredImage;
 

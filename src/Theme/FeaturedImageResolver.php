@@ -11,7 +11,7 @@ namespace TheatreCMS\Theme;
  */
 class FeaturedImageResolver
 {
-    public function resolve(mixed $entity): string
+    public function resolve(mixed $entity, string $size = 'full'): string
     {
         if (!is_object($entity) || !method_exists($entity, 'getFeaturedImageUrl')) {
             throw new \InvalidArgumentException(sprintf(
@@ -22,6 +22,13 @@ class FeaturedImageResolver
 
         $url = (string) ($entity->getFeaturedImageUrl() ?? '');
 
-        return (string) apply_filters('theatrecms/the_featured_image_url', $url, $entity);
+        if ($size !== 'full' && method_exists($entity, 'getFeaturedImage')) {
+            $media = $entity->getFeaturedImage();
+            if ($media !== null) {
+                $url = $media->getVariantUrl($size);
+            }
+        }
+
+        return (string) apply_filters('theatrecms/the_featured_image_url', $url, $entity, $size);
     }
 }

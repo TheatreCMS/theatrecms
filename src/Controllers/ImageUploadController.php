@@ -5,7 +5,7 @@ namespace TheatreCMS\Controllers;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
-use TheatreCMS\Services\ImageUploadService;
+use TheatreCMS\Services\MediaUploadService;
 
 /**
  * Handles EditorJS-compatible image uploads for the Image Gallery block.
@@ -24,7 +24,7 @@ class ImageUploadController
 {
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
-    public function __construct(private readonly ImageUploadService $imageUploadService)
+    public function __construct(private readonly MediaUploadService $mediaUploadService)
     {
     }
 
@@ -43,8 +43,8 @@ class ImageUploadController
         }
 
         try {
-            $url = $this->imageUploadService->store($file);
-        } catch (\RuntimeException $e) {
+            $url = $this->mediaUploadService->store($file);
+        } catch (\RuntimeException | \InvalidArgumentException $e) {
             return $this->jsonError($response, 'Failed to save the uploaded file.', 500);
         }
 
