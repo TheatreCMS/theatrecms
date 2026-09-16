@@ -39,6 +39,10 @@ class ImageBackfillService
     public function scanUploads(bool $dryRun = false): int
     {
         $files = glob(rtrim($this->uploadsDir, '/\\') . '/*') ?: [];
+        $variantUrls = array_fill_keys(
+            $this->connection->fetchFirstColumn('SELECT url FROM media_variants'),
+            true
+        );
         $created = 0;
 
         foreach ($files as $path) {
@@ -49,7 +53,7 @@ class ImageBackfillService
             $filename = basename($path);
             $url = $this->uploadsUrlPrefix . $filename;
 
-            if ($this->mediaRepository->findByUrl($url) !== null) {
+            if (isset($variantUrls[$url]) || $this->mediaRepository->findByUrl($url) !== null) {
                 continue;
             }
 
@@ -96,7 +100,8 @@ class ImageBackfillService
     private function repointColumn(string $table, bool $dryRun): int
     {
         $rows = $this->connection->fetchAllAssociative(
-            "SELECT id, featured_image_url FROM {$table} WHERE featured_image_url IS NOT NULL AND featured_image_id IS NULL"
+            "SELECT id, featured_image_url FROM {$table} "
+                . 'WHERE featured_image_url IS NOT NULL AND featured_image_id IS NULL'
         );
 
         $repointed = 0;

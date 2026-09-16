@@ -9,6 +9,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Media;
+use TheatreCMS\Models\MediaVariant;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Services\ImageBackfillService;
@@ -37,6 +38,7 @@ class ImageBackfillServiceTest extends TestCase
 
         $paths = [__DIR__ . '/../../src/Models'];
         $config = ORMSetup::createAttributeMetadataConfiguration($paths, true);
+        $config->enableNativeLazyObjects(true);
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         $this->em = new EntityManager($connection, $config);
 
@@ -53,7 +55,7 @@ class ImageBackfillServiceTest extends TestCase
 
         $this->mediaRepository = new MediaRepository($this->em);
 
-        $this->uploadsDir = sys_get_temp_dir() . '/theatrecms-backfill-test-' . uniqid();
+        $this->uploadsDir = __DIR__ . '/.theatrecms-backfill-test-' . uniqid();
         mkdir($this->uploadsDir);
 
         $this->backfillService = new ImageBackfillService(
@@ -103,6 +105,33 @@ class ImageBackfillServiceTest extends TestCase
         $this->assertNull($this->mediaRepository->findByUrl('/uploads/photo1.jpg'));
     }
 
+    public function testScanUploadsExcludesFilesRepresentedByMediaVariants(): void
+    {
+        file_put_contents($this->uploadsDir . '/photo.jpg', 'source');
+        file_put_contents($this->uploadsDir . '/photo-thumbnail.jpg', 'variant');
+
+        $media = $this->mediaRepository->create([
+            'url' => '/uploads/photo.jpg',
+            'filename' => 'photo.jpg',
+            'mediaType' => Media::TYPE_IMAGE,
+        ]);
+        $variant = new MediaVariant(
+            $media,
+            'thumbnail',
+            '/uploads/photo-thumbnail.jpg',
+            150,
+            150
+        );
+        $media->addVariant($variant);
+        $this->em->persist($variant);
+        $this->em->flush();
+
+        $this->assertSame(0, $this->backfillService->scanUploads(true));
+        $this->assertSame(0, $this->backfillService->scanUploads());
+        $this->assertSame(0, $this->backfillService->scanUploads());
+        $this->assertNull($this->mediaRepository->findByUrl('/uploads/photo-thumbnail.jpg'));
+    }
+
     public function testRepointAllMatchesLegacyUrlToImageAndSetsForeignKey(): void
     {
         $post = new Post('A Post', ContentStatus::DRAFT, 'body');
@@ -110,15 +139,26 @@ class ImageBackfillServiceTest extends TestCase
         $this->em->persist($post);
         $this->em->flush();
 
-        $this->em->getConnection()->update('posts', ['featured_image_url' => '/uploads/legacy.jpg'], ['id' => $post->getId()]);
+        $this->em->getConnection()->update(
+            'posts',
+            ['featured_image_url' => '/uploads/legacy.jpg'],
+            ['id' => $post->getId()]
+        );
 
-        $this->mediaRepository->create(['url' => '/uploads/legacy.jpg', 'filename' => 'legacy.jpg', 'mediaType' => Media::TYPE_IMAGE]);
+        $this->mediaRepository->create([
+            'url' => '/uploads/legacy.jpg',
+            'filename' => 'legacy.jpg',
+            'mediaType' => Media::TYPE_IMAGE,
+        ]);
 
         $counts = $this->backfillService->repointAll();
 
         $this->assertSame(1, $counts['posts']);
 
-        $row = $this->em->getConnection()->fetchAssociative('SELECT featured_image_id FROM posts WHERE id = ?', [$post->getId()]);
+        $row = $this->em->getConnection()->fetchAssociative(
+            'SELECT featured_image_id FROM posts WHERE id = ?',
+            [$post->getId()]
+        );
         $media = $this->mediaRepository->findByUrl('/uploads/legacy.jpg');
 
         $this->assertSame($media->getId(), (int) $row['featured_image_id']);
@@ -131,7 +171,11 @@ class ImageBackfillServiceTest extends TestCase
         $this->em->persist($post);
         $this->em->flush();
 
-        $media = $this->mediaRepository->create(['url' => '/uploads/legacy.jpg', 'filename' => 'legacy.jpg', 'mediaType' => Media::TYPE_IMAGE]);
+        $media = $this->mediaRepository->create([
+            'url' => '/uploads/legacy.jpg',
+            'filename' => 'legacy.jpg',
+            'mediaType' => Media::TYPE_IMAGE,
+        ]);
         $this->em->getConnection()->update('posts', [
             'featured_image_url' => '/uploads/legacy.jpg',
             'featured_image_id' => $media->getId(),
