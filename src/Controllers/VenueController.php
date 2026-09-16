@@ -243,6 +243,11 @@ class VenueController extends BaseController
         }
 
         $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
+
+        if ($image instanceof Media && !$image->isImage()) {
+            throw new \InvalidArgumentException('Featured media must be an image.');
+        }
+
         $venue->setFeaturedImage($image);
     }
 }

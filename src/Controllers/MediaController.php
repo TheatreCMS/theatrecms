@@ -73,7 +73,7 @@ class MediaController extends BaseController
     public function picker(Request $request, Response $response, array $args = []): Response
     {
         [$search] = $this->resolveListQuery($request, []);
-        $type = $this->resolveRequestedType($request, Media::TYPE_IMAGE);
+        $type = Media::TYPE_IMAGE;
 
         $data = $this->buildPaginatedViewData(
             $request,
@@ -162,6 +162,10 @@ class MediaController extends BaseController
 
         if ($media === null) {
             return $response->withStatus(404);
+        }
+
+        if (!$media->isImage()) {
+            throw new \InvalidArgumentException('Featured media must be an image.');
         }
 
         return $this->twig->render($response, 'admin/partials/_featured_media_selection.html.twig', [
