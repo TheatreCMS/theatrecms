@@ -34,6 +34,7 @@ class MediaTypeClassifierTest extends TestCase
     public function testReturnsOtherForUnsupportedCombinations(): void
     {
         $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify('application/x-php', 'php'));
+        $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify('image/jpeg', 'php'));
         $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify(null, 'exe'));
         $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify(null, ''));
     }
@@ -55,7 +56,30 @@ class MediaTypeClassifierTest extends TestCase
 
     public function testExtensionMatchingIsCaseInsensitiveAndIgnoresLeadingDot(): void
     {
+        $this->assertSame(Media::TYPE_IMAGE, MediaTypeClassifier::classify('IMAGE/JPEG', '.JPG'));
         $this->assertSame(Media::TYPE_IMAGE, MediaTypeClassifier::classify(null, '.JPG'));
         $this->assertSame(Media::TYPE_IMAGE, MediaTypeClassifier::classify(null, 'JPG'));
+    }
+
+    public function testMimeClassificationRequiresASupportedExtension(): void
+    {
+        $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify('image/jpeg', 'PHP'));
+        $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify('application/pdf', 'txt'));
+        $this->assertSame(Media::TYPE_OTHER, MediaTypeClassifier::classify('audio/mpeg', ''));
+    }
+
+    public function testMismatchedMimeTypeFallsBackToTheAllowedExtensionCategory(): void
+    {
+        $this->assertSame(Media::TYPE_PDF, MediaTypeClassifier::classify('image/jpeg', 'pdf'));
+        $this->assertSame(Media::TYPE_IMAGE, MediaTypeClassifier::classify('application/pdf', 'jpg'));
+        $this->assertSame(Media::TYPE_VIDEO, MediaTypeClassifier::classify('audio/mpeg', 'mov'));
+    }
+
+    public function testClassifiesEveryValidMediaCategoryWithNormalizedExtensions(): void
+    {
+        $this->assertSame(Media::TYPE_IMAGE, MediaTypeClassifier::classify('image/jpeg', '.JPEG'));
+        $this->assertSame(Media::TYPE_PDF, MediaTypeClassifier::classify('application/pdf', '.PDF'));
+        $this->assertSame(Media::TYPE_AUDIO, MediaTypeClassifier::classify('audio/mp4', '.M4A'));
+        $this->assertSame(Media::TYPE_VIDEO, MediaTypeClassifier::classify('video/mp4', '.MP4'));
     }
 }

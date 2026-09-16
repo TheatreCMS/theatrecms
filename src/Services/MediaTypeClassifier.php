@@ -10,10 +10,10 @@ use TheatreCMS\Models\Media;
  *
  * Mime matching uses a prefix for image/audio/video, since real-world
  * browsers/OSes report inconsistent exact mime strings for these (e.g.
- * `video/quicktime` for `.mov`, `audio/mpeg` for `.mp3`). PDF has no useful
- * prefix family, so it's matched exactly. The extension allowlist is the
- * fallback signal, used when the mime type is missing, generic (e.g.
- * `application/octet-stream`), or doesn't match a known prefix/exact value.
+ * `video/quicktime` for `.mov`, `audio/mpeg` for `.mp3`). A mime-derived
+ * category is accepted only when the normalized extension is allowed for that
+ * category. Otherwise the extension is the fallback signal, including when
+ * the mime type is missing, generic, or mismatched.
  */
 final class MediaTypeClassifier
 {
@@ -43,16 +43,26 @@ final class MediaTypeClassifier
         $mimeType = $mimeType !== null ? strtolower(trim($mimeType)) : null;
         $extension = strtolower(ltrim($extension, '.'));
 
+        if (!in_array($extension, self::allowedExtensions(), true)) {
+            return Media::TYPE_OTHER;
+        }
+
         if ($mimeType !== null) {
             foreach (self::MIME_EXACT_BY_TYPE as $type => $exactMimes) {
-                if (in_array($mimeType, $exactMimes, true)) {
+                if (
+                    in_array($mimeType, $exactMimes, true)
+                    && in_array($extension, self::EXTENSIONS_BY_TYPE[$type], true)
+                ) {
                     return $type;
                 }
             }
 
             foreach (self::MIME_PREFIXES_BY_TYPE as $type => $prefixes) {
                 foreach ($prefixes as $prefix) {
-                    if (str_starts_with($mimeType, $prefix)) {
+                    if (
+                        str_starts_with($mimeType, $prefix)
+                        && in_array($extension, self::EXTENSIONS_BY_TYPE[$type], true)
+                    ) {
                         return $type;
                     }
                 }
