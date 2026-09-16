@@ -45,6 +45,7 @@ class CtaCard {
                 a: { href: true },
                 mark: true,
                 code: true,
+                cite: true,
             },
             buttonText: false,
             buttonUrl: false,

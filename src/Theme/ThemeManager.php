@@ -57,9 +57,6 @@ class ThemeManager
             return [];
         }
 
-        $colorPattern = '/^(#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})'
-            . '|(rgb|hsl)a?\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*(,\s*[\d.]+\s*)?\))$/';
-
         $normalized = [];
         foreach ($palette as $entry) {
             if (!is_array($entry)) {
@@ -69,7 +66,7 @@ class ThemeManager
             $name = trim((string) ($entry['name'] ?? ''));
             $color = trim((string) ($entry['color'] ?? ''));
 
-            if ($name === '' || $color === '' || !preg_match($colorPattern, $color)) {
+            if ($name === '' || !self::isValidCssColor($color)) {
                 continue;
             }
 
@@ -83,6 +80,14 @@ class ThemeManager
         }
 
         return $normalized;
+    }
+
+    public static function isValidCssColor(string $color): bool
+    {
+        $colorPattern = '/^(#([0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})'
+            . '|(rgb|hsl)a?\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*(,\s*[\d.]+\s*)?\))$/';
+
+        return preg_match($colorPattern, trim($color)) === 1;
     }
 
     /**

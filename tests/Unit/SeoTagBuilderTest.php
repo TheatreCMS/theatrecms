@@ -20,6 +20,7 @@ use TheatreCMS\Theme\PermalinkResolver;
 use TheatreCMS\Theme\SeoDescriptionResolver;
 use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\SeoTagBuilder;
+use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
 
 class SeoTagBuilderTest extends TestCase
@@ -63,11 +64,13 @@ class SeoTagBuilderTest extends TestCase
 
     private function makeBuilder(SiteSettings $siteSettings): SeoTagBuilder
     {
+        $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
+
         return new SeoTagBuilder(
             $siteSettings,
             new TitleResolver(),
             new PermalinkResolver(new ContentTypeRegistry()),
-            new SeoDescriptionResolver(new EditorJsHtmlConverter())
+            new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager))
         );
     }
 

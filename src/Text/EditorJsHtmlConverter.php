@@ -35,7 +35,8 @@
  *   inline tags, ensuring output is safe for inclusion in HTML.
  *
  * Usage example:
- * $converter = new EditorJsHtmlConverter();
+ * $themeManager = new ThemeManager(APP_ROOT . '/www/themes', 'default');
+ * $converter = new EditorJsHtmlConverter($themeManager);
  * $html = $converter->toHtml($editorJsJsonString);
  *
  * Note: This class focuses on producing markup suitable for rendering in a
@@ -367,12 +368,44 @@ class EditorJsHtmlConverter
             $header .= '</div>';
         }
 
-        $colorScheme = (string) ($data['colorScheme'] ?? '');
-        $color = $this->resolveThemeColor($colorScheme);
+        $styles = [];
+        $colorScheme = trim((string) ($data['colorScheme'] ?? ''));
+        $themeColor = $this->findThemeColor($colorScheme);
+        if ($themeColor !== null) {
+            $styles['background-color'] = $themeColor;
+        } else {
+            foreach (
+                [
+                    'backgroundColor' => 'background-color',
+                    'textColor' => 'color',
+                ] as $dataKey => $property
+            ) {
+                $legacyColor = trim((string) ($data[$dataKey] ?? ''));
+                if (ThemeManager::isValidCssColor($legacyColor)) {
+                    $styles[$property] = $legacyColor;
+                }
+            }
+
+            $legacyBorderColor = trim((string) ($data['borderColor'] ?? ''));
+            if (ThemeManager::isValidCssColor($legacyBorderColor)) {
+                $styles['border'] = '1px solid ' . $legacyBorderColor;
+            }
+
+            $styles['background-color'] ??= $this->resolveThemeColor('');
+        }
+
+        $style = '';
+        foreach ($styles as $property => $value) {
+            $style .= sprintf(
+                '%s: %s; ',
+                $property,
+                htmlspecialchars($value, ENT_QUOTES, 'UTF-8')
+            );
+        }
 
         return sprintf(
-            '<div class="kg-card kg-callout-card" style="background-color: %s;">%s<p>%s</p></div>',
-            htmlspecialchars($color, ENT_QUOTES, 'UTF-8'),
+            '<div class="kg-card kg-callout-card" style="%s">%s<p>%s</p></div>',
+            rtrim($style),
             $header,
             $text
         );
@@ -390,18 +423,33 @@ class EditorJsHtmlConverter
      */
     private function resolveThemeColor(string $colorScheme): string
     {
-        $palette = $this->themeManager->getColorPalette();
-        if ($palette === []) {
-            $palette = self::FALLBACK_COLOR_PALETTE;
+        $color = $this->findThemeColor($colorScheme);
+        if ($color !== null) {
+            return $color;
         }
 
-        foreach ($palette as $entry) {
+        return $this->themeColorPalette()[0]['color'];
+    }
+
+    private function findThemeColor(string $colorScheme): ?string
+    {
+        foreach ($this->themeColorPalette() as $entry) {
             if ($entry['name'] === $colorScheme) {
                 return $entry['color'];
             }
         }
 
-        return $palette[0]['color'];
+        return null;
+    }
+
+    /**
+     * @return array<int, array{name: string, label: string, color: string}>
+     */
+    private function themeColorPalette(): array
+    {
+        $palette = $this->themeManager->getColorPalette();
+
+        return $palette !== [] ? $palette : self::FALLBACK_COLOR_PALETTE;
     }
 
     /**
@@ -468,11 +516,21 @@ class EditorJsHtmlConverter
 
         $figures = [];
         foreach ($items as $item) {
-            $url = $this->sanitizeImageUrl($item['url'] ?? '');
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $rawUrl = $item['url'] ?? '';
+            if (!is_string($rawUrl)) {
+                continue;
+            }
+
+            $url = $this->sanitizeImageUrl($rawUrl);
             if ($url === '') {
                 continue;
             }
-            $caption    = $this->sanitizeText($item['caption'] ?? '');
+            $rawCaption = $item['caption'] ?? '';
+            $caption = is_string($rawCaption) ? $this->sanitizeText($rawCaption) : '';
             $escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
             $escapedAlt = htmlspecialchars(strip_tags($caption), ENT_QUOTES, 'UTF-8');
 
@@ -521,11 +579,21 @@ class EditorJsHtmlConverter
 
         $slides = [];
         foreach ($items as $item) {
-            $url = $this->sanitizeImageUrl($item['url'] ?? '');
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $rawUrl = $item['url'] ?? '';
+            if (!is_string($rawUrl)) {
+                continue;
+            }
+
+            $url = $this->sanitizeImageUrl($rawUrl);
             if ($url === '') {
                 continue;
             }
-            $caption    = $this->sanitizeText($item['caption'] ?? '');
+            $rawCaption = $item['caption'] ?? '';
+            $caption = is_string($rawCaption) ? $this->sanitizeText($rawCaption) : '';
             $escapedUrl = htmlspecialchars($url, ENT_QUOTES, 'UTF-8');
             $escapedAlt = htmlspecialchars(strip_tags($caption), ENT_QUOTES, 'UTF-8');
 
@@ -810,7 +878,11 @@ class EditorJsHtmlConverter
             return '';
         }
 
-        if (str_starts_with($value, '/') && !str_starts_with($value, '//')) {
+        if (
+            str_starts_with($value, '/')
+            && !str_starts_with($value, '//')
+            && !str_starts_with($value, '/\\')
+        ) {
             return preg_match('/[\s\x00-\x1F<>"\']/', $value) ? '' : $value;
         }
 

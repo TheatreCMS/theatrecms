@@ -23,6 +23,8 @@
 
         var current = 0;
         var timer   = null;
+        var isHovered = false;
+        var hasFocusWithin = false;
 
         var viewport = document.createElement('div');
         viewport.className = 'editorjs-carousel__viewport';
@@ -59,7 +61,7 @@
         }
 
         function startAutoplay() {
-            if (!autoplay) {
+            if (!autoplay || isHovered || hasFocusWithin) {
                 return;
             }
             stopAutoplay();
@@ -128,10 +130,24 @@
             }
         });
 
-        root.addEventListener('mouseenter', stopAutoplay);
-        root.addEventListener('mouseleave', startAutoplay);
-        root.addEventListener('focusin', stopAutoplay);
-        root.addEventListener('focusout', startAutoplay);
+        root.addEventListener('mouseenter', function () {
+            isHovered = true;
+            stopAutoplay();
+        });
+        root.addEventListener('mouseleave', function () {
+            isHovered = false;
+            startAutoplay();
+        });
+        root.addEventListener('focusin', function () {
+            hasFocusWithin = true;
+            stopAutoplay();
+        });
+        root.addEventListener('focusout', function (event) {
+            if (!event.relatedTarget || !root.contains(event.relatedTarget)) {
+                hasFocusWithin = false;
+                startAutoplay();
+            }
+        });
 
         var pointerStartX = null;
 

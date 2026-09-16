@@ -16,8 +16,10 @@ Quick usage
 
 ```php
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Theme\ThemeManager;
 
-$converter = new EditorJsHtmlConverter();
+$themeManager = new ThemeManager(__DIR__ . '/../www/themes', 'default');
+$converter = new EditorJsHtmlConverter($themeManager);
 
 // Accepts a JSON string (Editor.js output) or decoded array
 $html = $converter->toHtml($editorJsJsonString);
@@ -26,6 +28,9 @@ $html = $converter->toHtml($editorJsJsonString);
 $blocks = json_decode($editorJsJsonString, true);
 $html = $converter->toHtml($blocks);
 ```
+
+The required `ThemeManager` supplies the active theme's validated color palette
+for quote and callout blocks.
 
 Supported block types
 - paragraph: Default fallback block. Rendered as `<p>…</p>`.

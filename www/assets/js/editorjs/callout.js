@@ -64,8 +64,12 @@ class Callout {
                 a: { href: true },
                 mark: true,
                 code: true,
+                cite: true,
             },
             colorScheme: false,
+            backgroundColor: false,
+            borderColor: false,
+            textColor: false,
             icon: false,
             label: false,
         };
@@ -75,6 +79,10 @@ class Callout {
     // theme.json, so the picker never has zero options.
     static get FALLBACK_COLOR_PALETTE() {
         return [{ name: 'grey', label: 'Grey', color: '#94a3b8' }];
+    }
+
+    static get LEGACY_COLOR_FIELDS() {
+        return ['backgroundColor', 'borderColor', 'textColor'];
     }
 
     // ─── Constructor ─────────────────────────────────────────────────────────────
@@ -98,12 +106,23 @@ class Callout {
 
         const requested = data.colorScheme;
         const isValid = this.colorPalette.some((preset) => preset.name === requested);
+        const legacyColors = {};
+        Callout.LEGACY_COLOR_FIELDS.forEach((field) => {
+            const color = Callout._safeCssColor(data[field]);
+            if (color !== null) {
+                legacyColors[field] = color;
+            }
+        });
+        this._usesLegacyColors = !isValid && Object.keys(legacyColors).length > 0;
 
         this.data = {
             text: data.text ?? '',
-            colorScheme: isValid ? requested : this.colorPalette[0].name,
+            colorScheme: isValid
+                ? requested
+                : (this._usesLegacyColors ? null : this.colorPalette[0].name),
             label: data.label ?? '',
             icon: data.icon ?? '💡',
+            ...legacyColors,
         };
 
         // DOM references populated in render()
@@ -132,12 +151,23 @@ class Callout {
      * @returns {object} – Data object that will be stored in the output JSON.
      */
     save() {
-        return {
+        const savedData = {
             text: this._textArea ? this._textArea.innerHTML : this.data.text,
             label: this._labelInput ? this._labelInput.value : this.data.label,
             icon: this._iconInput ? this._iconInput.value : this.data.icon,
-            colorScheme: this.data.colorScheme,
         };
+
+        if (this._usesLegacyColors) {
+            Callout.LEGACY_COLOR_FIELDS.forEach((field) => {
+                if (this.data[field]) {
+                    savedData[field] = this.data[field];
+                }
+            });
+        } else {
+            savedData.colorScheme = this.data.colorScheme;
+        }
+
+        return savedData;
     }
 
     // ─── validate() ──────────────────────────────────────────────────────────────
@@ -215,6 +245,10 @@ class Callout {
                 swatch.addEventListener('mouseleave', () => swatch.style.transform = 'scale(1)');
                 swatch.addEventListener('click', () => {
                     this.data.colorScheme = preset.name;
+                    this._usesLegacyColors = false;
+                    Callout.LEGACY_COLOR_FIELDS.forEach((field) => {
+                        delete this.data[field];
+                    });
                     this._applyBackground();
                     Array.from(grid.children).forEach((child) => {
                         child.style.borderColor = 'rgba(124,139,154,.35)';
@@ -243,13 +277,14 @@ class Callout {
         card.classList.add('ce-callout-card');
         card.style.cssText = `
       border-radius: 10px;
-      background: ${this._currentPreset().color};
       padding: 14px 18px;
       margin: 4px 0;
       box-shadow: 0 1px 4px rgba(0,0,0,.06);
       transition: background .2s;
       font-family: inherit;
     `;
+        this._card = card;
+        this._applyBackground();
 
         // Header row (icon + label)
         const header = document.createElement('div');
@@ -300,15 +335,39 @@ class Callout {
         this._textArea = body;
         this._iconEl = iconSpan;
         this._labelEl = labelSpan;
-        this._card = card;
-
         return card;
     }
 
     /** Re-applies the background color to the live card. */
     _applyBackground() {
         if (!this._card) return;
+
+        this._card.style.border = '';
+        this._card.style.color = '';
+
+        if (this._usesLegacyColors) {
+            this._card.style.background = this.data.backgroundColor || this.colorPalette[0].color;
+            if (this.data.borderColor) {
+                this._card.style.border = `1px solid ${this.data.borderColor}`;
+            }
+            if (this.data.textColor) {
+                this._card.style.color = this.data.textColor;
+            }
+            return;
+        }
+
         this._card.style.background = this._currentPreset().color;
+    }
+
+    /** Returns a legacy CSS color only when it matches the server-side safe formats. */
+    static _safeCssColor(value) {
+        if (typeof value !== 'string') {
+            return null;
+        }
+
+        const color = value.trim();
+        const pattern = /^(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgb|hsl)a?\(\s*[\d.]+%?\s*,\s*[\d.]+%?\s*,\s*[\d.]+%?\s*(?:,\s*[\d.]+\s*)?\))$/;
+        return pattern.test(color) ? color : null;
     }
 
     /** Syncs the live label element with current data. */

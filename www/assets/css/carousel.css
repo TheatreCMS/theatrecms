@@ -4,6 +4,11 @@
     outline: none;
 }
 
+.editorjs-carousel:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+}
+
 .editorjs-carousel__viewport {
     position: relative;
     overflow: hidden;

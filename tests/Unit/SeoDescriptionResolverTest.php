@@ -17,6 +17,7 @@ use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\SeoDescriptionResolver;
+use TheatreCMS\Theme\ThemeManager;
 
 class SeoDescriptionResolverTest extends TestCase
 {
@@ -25,7 +26,8 @@ class SeoDescriptionResolverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->resolver = new SeoDescriptionResolver(new EditorJsHtmlConverter());
+        $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
+        $this->resolver = new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager));
     }
 
     private function editorJsPayload(string $text): string

@@ -385,6 +385,71 @@ class EditorJsFilterTest extends TestCase
         $this->assertStringNotContainsString('javascript:', $html);
     }
 
+    public function testConverterPreservesSafeLegacyCalloutColors(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Legacy message',
+                        'backgroundColor' => '#FFF8E7',
+                        'borderColor' => '#F59E0B',
+                        'textColor' => '#92400E',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('background-color: #FFF8E7;', $html);
+        $this->assertStringContainsString('border: 1px solid #F59E0B;', $html);
+        $this->assertStringContainsString('color: #92400E;', $html);
+    }
+
+    public function testConverterRejectsUnsafeLegacyCalloutColors(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Legacy message',
+                        'backgroundColor' => 'red; } body { display: none',
+                        'borderColor' => 'url(javascript:alert(1))',
+                        'textColor' => 'expression(alert(1))',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('background-color: #3b82f6;', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+        $this->assertStringNotContainsString('expression(', $html);
+        $this->assertStringNotContainsString('display: none', $html);
+    }
+
+    public function testConverterUsesLegacyColorsWhenStoredThemeSchemeNoLongerExists(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'callout',
+                    'data' => [
+                        'text' => 'Legacy message',
+                        'colorScheme' => 'removed-theme-color',
+                        'backgroundColor' => '#FFF8E7',
+                        'borderColor' => '#F59E0B',
+                        'textColor' => '#92400E',
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('background-color: #FFF8E7;', $html);
+        $this->assertStringContainsString('border: 1px solid #F59E0B;', $html);
+        $this->assertStringContainsString('color: #92400E;', $html);
+    }
+
     public function testConverterOmitsCalloutHeaderWhenNoIconOrLabel(): void
     {
         $html = $this->converter->toHtml(json_encode([
@@ -552,6 +617,29 @@ class EditorJsFilterTest extends TestCase
         $this->assertStringContainsString('<figure class="editorjs-carousel__slide"><img src="https://example.com/two.jpg" alt="Second slide" loading="lazy" /><figcaption>Second slide</figcaption></figure>', $html);
     }
 
+    public function testConverterSkipsMalformedImageGalleryItems(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'imageGallery',
+                    'data' => [
+                        'items' => [
+                            null,
+                            ['url' => []],
+                            ['url' => 'https://example.com/no-caption.jpg', 'caption' => []],
+                            ['url' => 'https://example.com/valid.jpg', 'caption' => 'Valid'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('https://example.com/no-caption.jpg', $html);
+        $this->assertStringContainsString('https://example.com/valid.jpg', $html);
+        $this->assertStringContainsString('<figcaption>Valid</figcaption>', $html);
+    }
+
     public function testConverterDropsCarouselWithNoSlides(): void
     {
         $html = $this->converter->toHtml(json_encode([
@@ -621,6 +709,48 @@ class EditorJsFilterTest extends TestCase
         ]));
 
         $this->assertSame('', $html);
+    }
+
+    public function testConverterRejectsBackslashProtocolRelativeUrlInCarousel(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            ['url' => '/\\evil.example.com/x.jpg', 'caption' => 'Off-origin'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertSame('', $html);
+    }
+
+    public function testConverterSkipsMalformedCarouselItems(): void
+    {
+        $html = $this->converter->toHtml(json_encode([
+            'blocks' => [
+                [
+                    'type' => 'carousel',
+                    'data' => [
+                        'items' => [
+                            null,
+                            'not-an-item',
+                            ['url' => []],
+                            ['url' => 'https://example.com/no-caption.jpg', 'caption' => []],
+                            ['url' => 'https://example.com/valid.jpg', 'caption' => 'Valid'],
+                        ],
+                    ],
+                ],
+            ],
+        ]));
+
+        $this->assertStringContainsString('https://example.com/no-caption.jpg', $html);
+        $this->assertStringContainsString('https://example.com/valid.jpg', $html);
+        $this->assertStringNotContainsString('not-an-item', $html);
     }
 
     public function testConverterAcceptsRootRelativeUploadUrlInImageBlock(): void

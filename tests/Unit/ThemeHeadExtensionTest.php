@@ -11,6 +11,7 @@ use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\StructuredDataBuilder;
+use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Twig\ThemeHeadExtension;
 
 class ThemeHeadExtensionTest extends TestCase
@@ -25,8 +26,11 @@ class ThemeHeadExtensionTest extends TestCase
     {
         $siteSettings = $this->createStub(SiteSettings::class);
         $siteSettings->method('get')->willReturn('https://example.com');
+        $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
 
-        return new ThemeHeadExtension(new StructuredDataBuilder($siteSettings, new EditorJsHtmlConverter()));
+        return new ThemeHeadExtension(
+            new StructuredDataBuilder($siteSettings, new EditorJsHtmlConverter($themeManager))
+        );
     }
 
     public function testOmitsSeoTagsWhenNoSeoContextIsPresent(): void

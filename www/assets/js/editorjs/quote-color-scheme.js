@@ -40,6 +40,8 @@ class QuoteColorScheme extends Quote {
     constructor(params) {
         super(params);
 
+        this.block = params.block;
+
         const configuredPalette = (params.config && params.config.colorPalette) || [];
         this.colorPalette = configuredPalette.length > 0
             ? configuredPalette
@@ -80,7 +82,9 @@ class QuoteColorScheme extends Quote {
     _setColorScheme(name) {
         this.data.colorScheme = name;
         this._applyColorPreview();
-        this.block.dispatchChange();
+        if (this.block && typeof this.block.dispatchChange === 'function') {
+            this.block.dispatchChange();
+        }
     }
 
     _applyColorPreview() {
