@@ -265,7 +265,6 @@ class ServiceRegistrar
 
             $themeManager = $c->get(ThemeManager::class);
             $themeManager->configureTwig($twig, $templateDir);
-            $themeManager->loadFunctions();
             $twig->addExtension(new EditorJsExtension($c->get(EditorJsHtmlConverter::class)));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));

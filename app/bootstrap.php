@@ -28,6 +28,7 @@ use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\QueriedObject;
+use TheatreCMS\Theme\ThemeManager;
 
 if (!defined('APP_ROOT')) {
     define('APP_ROOT', dirname(__DIR__));
@@ -79,6 +80,10 @@ HookManager::setInstance($hookManager);
 $menuLocationRegistry = $container->get(MenuLocationRegistry::class);
 MenuLocationRegistry::setInstance($menuLocationRegistry);
 
+$capabilityRegistry = $container->get(CapabilityRegistry::class);
+CapabilityRegistry::setInstance($capabilityRegistry);
+require_once APP_ROOT . '/app/capabilities.php';
+
 $imageSizeRegistry = $container->get(ImageSizeRegistry::class);
 ImageSizeRegistry::setInstance($imageSizeRegistry);
 register_image_size('admin-thumbnail', 300, 300, true);
@@ -86,8 +91,6 @@ register_image_size('admin-thumbnail', 300, 300, true);
 $queriedObject = $container->get(QueriedObject::class);
 QueriedObject::setInstance($queriedObject);
 
-$capabilityRegistry = $container->get(CapabilityRegistry::class);
-CapabilityRegistry::setInstance($capabilityRegistry);
-require_once APP_ROOT . '/app/capabilities.php';
+$container->get(ThemeManager::class)->loadFunctions();
 
 return $container;
