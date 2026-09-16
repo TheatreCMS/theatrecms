@@ -6,8 +6,8 @@ TheatreCMS is a custom PHP application (Slim 4 + Doctrine ORM 3 + [delight-im/au
 
 ## Requirements
 
-- **PHP 8.2+** with extensions: `ctype`, `json`, `openssl`, `pdo_mysql`, `mbstring`, `xml`, `curl`, `intl`, `zip`, `opcache`
-- **MariaDB 10.11** or **MySQL 8** (MariaDB matches the project's `.ddev/config.yaml` dev environment)
+- **PHP 8.2+** with extensions: `ctype`, `json`, `openssl`, `pdo_mysql`, `mbstring`, `xml`, `curl`, `intl`, `zip`, `gd`, `opcache`
+- **MariaDB 11.8** or **MySQL 8** (MariaDB 11.8 matches the project's `.ddev/config.yaml` dev environment)
 - **nginx** + **PHP-FPM**
 - **Composer 2**
 - `certbot` (or equivalent) for TLS
@@ -69,35 +69,74 @@ GRANT ALL PRIVILEGES ON theatrecms_prod.* TO 'theatrecms'@'127.0.0.1';
 FLUSH PRIVILEGES;
 ```
 
-## 5. Initialize the schema
+## 5. Initialize or upgrade the schema
 
-There is no migration-tracking table in this project. The schema comes from three sources and **must be applied in this order**:
+There is no migration-tracking table in this project. Keep an external record
+of the last migration applied to each environment. Do not use the same schema
+procedure for a fresh install and an upgrade.
 
-1. `vendor/delight-im/auth/Database/MySQL.sql` — DDL for the `users` table and 7 `users_*` auth tables, owned by `delight-im/auth`. The application reads these records through DBAL, while Doctrine excludes the auth tables from schema management.
-2. The Doctrine schema tool — creates all content-entity tables from `src/Models/*` (Season, Production, Page, Post, Person, Venue, Sponsor, Menu, etc.).
-3. `migrations/*.sql` — hand-written patch files with no runner, applied in filename/date order.
+### Fresh install
 
 ```bash
 mysql -u theatrecms -p theatrecms_prod < vendor/delight-im/auth/Database/MySQL.sql
 ./doctrine orm:schema-tool:create
-mysql -u theatrecms -p theatrecms_prod < migrations/20260325_create_posts_table.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260327_create_pages_table.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260702_create_menus_tables.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260709_rename_seasons_hero_image_to_featured_image.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260805_make_production_venue_nullable.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260820_add_position_to_production_works.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260820_add_ends_at_to_events.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260903_create_images_table.sql
-mysql -u theatrecms -p theatrecms_prod < migrations/20260903_add_featured_image_id_to_content_tables.sql
 ```
 
-`./doctrine` is the Doctrine ORM console script at the repo root; it boots the app container and reads `app/config.yaml` via `app/bootstrap.php`. When new migration files are added to `migrations/` in future releases, apply any not yet run, in date order, before starting the upgraded app.
+`./doctrine` is the Doctrine ORM console script at the repo root; it boots the
+app container and reads `app/config.yaml` via `app/bootstrap.php`. The current
+Doctrine metadata creates the complete content schema, including `media`,
+`caption`, and `media_variants`. **Do not replay historical migrations after
+`orm:schema-tool:create`**: many describe older versions of tables that Doctrine
+has already created. The three September 2026 media transition migrations are
+idempotent on a fresh schema, but are unnecessary for a fresh install.
 
-**Do not apply `migrations/20260903_drop_featured_image_url_columns.sql` on a fresh install** — `orm:schema-tool:create` already builds the `productions`/`posts`/`seasons` tables without a `featured_image_url` column, so there is nothing for it to drop. That migration (and `./backfill-images`, the root-level script that registers pre-existing `www/uploads/` files as `images` rows and repoints old `featured_image_url` values at them) only apply when **upgrading** an existing instance that has data in those legacy columns. For an upgrade: apply the two migrations above, run `./backfill-images` (safe to run more than once), deploy the new application code, run `./backfill-images` once more to catch anything uploaded during the deploy window, then — once the instance is confirmed healthy — apply `20260903_drop_featured_image_url_columns.sql` in a follow-up step.
+### Upgrade an existing installation
 
-`migrations/20260915_create_media_variants_table.sql` adds the table behind registered thumbnail sizes (see `documentation/Theme/image-sizes.md`) — safe to apply on both a fresh install and an upgrade, since no pre-existing data needs migrating into it. After applying it (and, on an upgrade, after `./backfill-images` has registered any pre-existing uploads), run `./regenerate-media-thumbnails` to generate the registered sizes for every image already in the media library; re-run it with `--size=<name>` whenever a new size is registered later.
+Back up the database and `www/uploads`, then apply only migrations not already
+recorded for that environment. For an installation that still has legacy
+`featured_image_url` columns and no `images` table:
 
-`./rename-media-filenames [--dry-run]` renames existing media library files from their stored name to a slugified version of the original upload filename (e.g. `/uploads/3ddfb7a0765f10f8c7b6c495.jpg` -> `/uploads/pride-and-prejudice-poster.jpg`), for SEO-friendly URLs, regenerating thumbnail variants under the new name for images. Safe to run more than once; rows with no known original filename (e.g. ones registered by `./backfill-images` from a pre-existing file) are skipped. Run it any time after `./backfill-images` on an upgrade, or whenever new uploads accumulate under the old scheme from before this feature existed. Review with `--dry-run` first — old URLs stop resolving once renamed, since this setup has no redirect layer.
+1. While the previous application release is still deployed, apply
+   `20260903_create_images_table.sql` and
+   `20260903_add_featured_image_id_to_content_tables.sql`.
+2. Run that release's `./backfill-images` to register existing uploads and copy
+   legacy URL references. It is safe to repeat before cutover.
+3. Put the site in maintenance mode or otherwise stop uploads and content
+   writes. Run the previous release's `./backfill-images` one final time.
+4. Deploy the new code and run `composer install --no-dev --optimize-autoloader`.
+   Keep the site stopped until the remaining database steps are complete.
+5. Apply these transition migrations in order:
+
+   ```bash
+   mysql -u theatrecms -p theatrecms_prod < migrations/20260912_rename_images_table_to_media.sql
+   mysql -u theatrecms -p theatrecms_prod < migrations/20260915_add_caption_to_media.sql
+   mysql -u theatrecms -p theatrecms_prod < migrations/20260915_create_media_variants_table.sql
+   ```
+
+   The rename preserves rows and repoints existing featured-image foreign keys.
+   All three files are idempotent for interrupted/repeated deployments.
+6. Before generating variants, run the new release's `./backfill-images` once
+   to register any source uploads that were not represented in the database.
+7. Preview and then perform SEO filename renames:
+   `./rename-media-filenames --dry-run`, followed by
+   `./rename-media-filenames`. This command regenerates variants for renamed
+   images, so it must run before the general regeneration pass.
+8. Run `./regenerate-media-thumbnails` to fill every remaining registered image
+   size. Re-run it with `--size=<name>` when a new size is registered.
+9. Start the application and verify it. Once the deployment is healthy, apply
+   `20260903_drop_featured_image_url_columns.sql` as a follow-up cleanup for
+   installations that still have those legacy columns.
+
+Installations that already completed part of this sequence should start at
+their first unapplied step. The conditional transition migrations may safely
+be re-run, but older migrations are not generally idempotent.
+
+`./rename-media-filenames [--dry-run]` changes stored files from generated names
+to slugs based on the original upload filename (for example,
+`/uploads/3ddfb7a0765f10f8c7b6c495.jpg` to
+`/uploads/pride-and-prejudice-poster.jpg`). Rows without a known original
+filename are skipped. Old URLs stop resolving after a rename because this setup
+has no redirect layer.
 
 ## 6. Harden settings for production
 

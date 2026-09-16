@@ -1,8 +1,8 @@
 -- One row per generated thumbnail size for a `media` image row (see
 -- src/Models/MediaVariant.php / src/Services/ImageVariantGenerator.php).
--- Safe to apply on a fresh install and on an existing deployment alike; no
--- data migration needed since no size variants exist before this feature.
-CREATE TABLE `media_variants` (
+-- Doctrine already creates this table on a fresh schema. IF NOT EXISTS keeps
+-- the transition migration safe to apply there and safe to re-run on upgrades.
+CREATE TABLE IF NOT EXISTS `media_variants` (
     `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
     `media_id`   INT UNSIGNED NOT NULL,
     `size_name`  VARCHAR(50)  NOT NULL,
