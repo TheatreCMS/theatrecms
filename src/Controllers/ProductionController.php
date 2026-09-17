@@ -11,13 +11,8 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
-use TheatreCMS\Repositories\EventRepository;
-use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
-use TheatreCMS\Repositories\SeasonRepository;
-use TheatreCMS\Repositories\SponsorRepository;
-use TheatreCMS\Repositories\VenueRepository;
-use TheatreCMS\Repositories\WorkRepository;
+use TheatreCMS\Services\ProductionFormOptionsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -34,33 +29,15 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
-    private SeasonRepository $seasonRepo;
-    private PersonRepository $personRepo;
-    private WorkRepository $worksRepo;
-    private SponsorRepository $sponsorRepo;
-    private VenueRepository $venueRepo;
-    private EventRepository $eventRepo;
-
     public function __construct(
         ProductionRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        SeasonRepository $seasonRepo,
-        PersonRepository $personRepo,
-        WorkRepository $worksRepo,
-        SponsorRepository $sponsorRepo,
-        VenueRepository $venueRepo,
-        EventRepository $eventRepo
+        private readonly ProductionFormOptionsService $formOptions
     ) {
         $this->repository    = $repository;
         $this->entityManager = $em;
         $this->twig          = $twig;
-        $this->seasonRepo    = $seasonRepo;
-        $this->personRepo    = $personRepo;
-        $this->worksRepo     = $worksRepo;
-        $this->sponsorRepo   = $sponsorRepo;
-        $this->venueRepo     = $venueRepo;
-        $this->eventRepo     = $eventRepo;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -71,7 +48,7 @@ class ProductionController extends BaseController
             $this->repository,
             'productions',
             '/admin/productions',
-            ['seasons' => $this->seasonRepo->fetchAll()],
+            ['seasons' => $this->formOptions->getSeasons()],
             $search
         );
 
@@ -85,11 +62,11 @@ class ProductionController extends BaseController
     public function create(Request $request, Response $response, array $args = []): Response
     {
         return $this->twig->render($response, 'admin/productions/create.html.twig', [
-            'seasons'  => $this->seasonRepo->fetchAll(),
-            'people'   => $this->personRepo->fetchAll(),
-            'works'    => $this->worksRepo->fetchAll(),
-            'sponsors' => $this->sponsorRepo->fetchAll(),
-            'venues'   => $this->venueRepo->fetchAll(),
+            'seasons'  => $this->formOptions->getSeasons(),
+            'people'   => $this->formOptions->getPeople(),
+            'works'    => $this->formOptions->getWorks(),
+            'sponsors' => $this->formOptions->getSponsors(),
+            'venues'   => $this->formOptions->getVenues(),
         ]);
     }
 
@@ -102,14 +79,14 @@ class ProductionController extends BaseController
 
         return $this->twig->render($response, 'admin/productions/edit.html.twig', [
             'production' => $production,
-            'seasons'    => $this->seasonRepo->fetchAll(),
-            'people'     => $this->personRepo->fetchAll(),
-            'works'      => $this->worksRepo->fetchAll(),
+            'seasons'    => $this->formOptions->getSeasons(),
+            'people'     => $this->formOptions->getPeople(),
+            'works'      => $this->formOptions->getWorks(),
             'performers'      => $production->getPerformers()->toArray(),
             'productionTeam'  => $production->getProductionTeam()->toArray(),
-            'sponsors'   => $this->sponsorRepo->fetchAll(),
-            'venues'     => $this->venueRepo->fetchAll(),
-            'events'     => $this->eventRepo->fetchByProduction((int) $args['id']),
+            'sponsors'   => $this->formOptions->getSponsors(),
+            'venues'     => $this->formOptions->getVenues(),
+            'events'     => $this->formOptions->getEventsForProduction((int) $args['id']),
             'activeTab'  => $activeTab,
         ]);
     }

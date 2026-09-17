@@ -48,6 +48,8 @@ use TheatreCMS\Services\MediaFilenameBackfillService;
 use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
+use TheatreCMS\Services\MenuLinkTargetOptionsService;
+use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\AddressResolver;
 use TheatreCMS\Theme\ContentResolver;
@@ -231,6 +233,30 @@ class ServiceRegistrar
 
         $container->set(LinkPreviewService::class, static fn(): LinkPreviewService => new LinkPreviewService(new \GuzzleHttp\Client()));
 
+        $container->set(ProductionFormOptionsService::class, static function (
+            ContainerInterface $c
+        ): ProductionFormOptionsService {
+            return new ProductionFormOptionsService(
+                $c->get(SeasonRepository::class),
+                $c->get(PersonRepository::class),
+                $c->get(WorkRepository::class),
+                $c->get(SponsorRepository::class),
+                $c->get(VenueRepository::class),
+                $c->get(EventRepository::class),
+            );
+        });
+
+        $container->set(MenuLinkTargetOptionsService::class, static function (
+            ContainerInterface $c
+        ): MenuLinkTargetOptionsService {
+            return new MenuLinkTargetOptionsService(
+                $c->get(PageRepository::class),
+                $c->get(PostRepository::class),
+                $c->get(ProductionRepository::class),
+                $c->get(SeasonRepository::class),
+            );
+        });
+
         $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
 
         $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {
@@ -369,12 +395,7 @@ class ServiceRegistrar
                     $c->get(ProductionRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
-                    $c->get(SeasonRepository::class),
-                    $c->get(PersonRepository::class),
-                    $c->get(WorkRepository::class),
-                    $c->get(SponsorRepository::class),
-                    $c->get(VenueRepository::class),
-                    $c->get(EventRepository::class),
+                    $c->get(ProductionFormOptionsService::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
@@ -415,10 +436,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(MenuLocationRegistry::class),
                     $c->get(MenuItemResolver::class),
-                    $c->get(PageRepository::class),
-                    $c->get(PostRepository::class),
-                    $c->get(ProductionRepository::class),
-                    $c->get(SeasonRepository::class),
+                    $c->get(MenuLinkTargetOptionsService::class),
                 );
             },
             VenueController::class => static function (ContainerInterface $c): VenueController {

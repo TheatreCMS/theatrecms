@@ -9,10 +9,7 @@ use Slim\Views\Twig;
 use TheatreCMS\Enums\MenuItemType;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Repositories\MenuRepository;
-use TheatreCMS\Repositories\PageRepository;
-use TheatreCMS\Repositories\PostRepository;
-use TheatreCMS\Repositories\ProductionRepository;
-use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Theme\MenuLocationRegistry;
 
 /**
@@ -26,10 +23,7 @@ class MenuController extends BaseController
         Twig $twig,
         private readonly MenuLocationRegistry $locationRegistry,
         private readonly MenuItemResolver $resolver,
-        private readonly PageRepository $pageRepository,
-        private readonly PostRepository $postRepository,
-        private readonly ProductionRepository $productionRepository,
-        private readonly SeasonRepository $seasonRepository
+        private readonly MenuLinkTargetOptionsService $linkTargets
     ) {
         $this->repository = $repository;
         $this->entityManager = $em;
@@ -87,10 +81,10 @@ class MenuController extends BaseController
                 JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
             ),
             'locations' => $this->locationRegistry->all(),
-            'pages' => $this->pageRepository->fetchAll(),
-            'posts' => $this->postRepository->fetchAll(),
-            'productions' => $this->productionRepository->fetchAll(),
-            'seasons' => $this->seasonRepository->fetchAll(),
+            'pages' => $this->linkTargets->getPages(),
+            'posts' => $this->linkTargets->getPosts(),
+            'productions' => $this->linkTargets->getProductions(),
+            'seasons' => $this->linkTargets->getSeasons(),
         ]);
     }
 
