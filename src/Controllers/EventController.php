@@ -18,7 +18,7 @@ use Symfony\Component\Validator\Constraints\Date as DateConstraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
- * @method EventRepository repository()
+ * @extends BaseController<EventRepository>
  */
 class EventController extends BaseController
 {
@@ -32,9 +32,7 @@ class EventController extends BaseController
         ProductionRepository $productionRepo,
         VenueRepository $venueRepo
     ) {
-        $this->repository     = $repository;
-        $this->entityManager  = $em;
-        $this->twig           = $twig;
+        parent::__construct($repository, $twig, $em);
         $this->productionRepo = $productionRepo;
         $this->venueRepo      = $venueRepo;
     }

@@ -6,118 +6,44 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
-use TheatreCMS\Repositories\EventRepository;
-use TheatreCMS\Repositories\MediaRepository;
-use TheatreCMS\Repositories\MenuRepository;
-use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PaginatedRepositoryInterface;
-use TheatreCMS\Repositories\PersonRepository;
-use TheatreCMS\Repositories\PostRepository;
-use TheatreCMS\Repositories\ProductionRepository;
-use TheatreCMS\Repositories\SeasonRepository;
-use TheatreCMS\Repositories\SponsorRepository;
-use TheatreCMS\Repositories\UserRepository;
-use TheatreCMS\Repositories\VenueRepository;
-use TheatreCMS\Repositories\WorkRepository;
 
+/**
+ * @template TRepository of PaginatedRepositoryInterface
+ */
 class BaseController
 {
     protected const DEFAULT_PAGE_SIZE = 25;
 
     protected EntityManagerInterface $entityManager;
-    protected PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|MediaRepository $repository;
+
+    /** @var TRepository */
+    protected PaginatedRepositoryInterface $repository;
+
     protected Twig $twig;
 
-    public function repository(): PersonRepository|PostRepository|PageRepository|ProductionRepository|SeasonRepository|UserRepository|WorkRepository|VenueRepository|SponsorRepository|EventRepository|MenuRepository|MediaRepository
+    /**
+     * @param TRepository $repository
+     */
+    public function __construct(
+        PaginatedRepositoryInterface $repository,
+        Twig $twig,
+        ?EntityManagerInterface $entityManager = null
+    ) {
+        $this->repository = $repository;
+        $this->twig = $twig;
+
+        if ($entityManager !== null) {
+            $this->entityManager = $entityManager;
+        }
+    }
+
+    /**
+     * @return TRepository
+     */
+    public function repository(): PaginatedRepositoryInterface
     {
         return $this->repository;
-    }
-
-    public function store(Request $request, Response $response): Response
-    {
-        $body = $request->getBody()->getContents();
-
-        if (empty($body)) {
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
-
-        $data = json_decode($body, true);
-
-        $this->repository->create($data);
-
-        return $response->withHeader('Location', '/admin/productions');
-    }
-
-    public function create(Request $request, Response $response): Response
-    {
-        $body = $request->getBody()->getContents();
-
-        if (empty($body)) {
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
-        }
-
-        $data = json_decode($body, true);
-        $result = null;
-
-        if (!empty($data)) {
-            $result = $this->repository->create($data);
-        }
-
-        if ($result) {
-            $response->getBody()->write(json_encode($result));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
-        }
-
-        $response->getBody()->write('{"error": "Failed to create item."}');
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
-    }
-
-    public function get(Request $request, Response $response): Response
-    {
-        $works = $this->repository->query();
-        $response->getBody()->write(json_encode($works));
-
-        return $response->withHeader('Content-Type', 'application/json');
-    }
-
-    public function getById(Request $request, Response $response, array $args): Response
-    {
-        $id = $args['id'] ?? '';
-
-        if ($id) {
-            $item = $this->repository->fetch($id);
-
-            if ($item) {
-                $response->getBody()->write(json_encode($item));
-                return $response->withHeader('Content-Type', 'application/json');
-            }
-
-            $response->getBody()->write('{"error": "Item not found."}');
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-        }
-
-        $response->getBody()->write('{"error": "Missing item ID."}');
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
-    }
-
-    public function delete(Request $request, Response $response, array $args): Response
-    {
-        $id = $args['id'] ?? '';
-
-        if ($id) {
-            $item = $this->repository->fetch($id);
-
-            if ($item) {
-                $this->repository->delete($item);
-                return $response->withHeader('Location', '/admin/seasons');
-            }
-
-            $response->getBody()->write('{"error": "Item not found."}');
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
-        }
-
-        $response->getBody()->write('{"error": "Missing item ID."}');
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(403);
     }
 
     /**

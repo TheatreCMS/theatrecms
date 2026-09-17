@@ -10,15 +10,17 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
 
+/**
+ * @extends BaseController<UserRepository>
+ */
 class ProfileController extends BaseController
 {
     private Auth $auth;
 
     public function __construct(UserRepository $repository, Twig $twig, Auth $auth)
     {
-        $this->repository = $repository;
-        $this->twig       = $twig;
-        $this->auth       = $auth;
+        parent::__construct($repository, $twig);
+        $this->auth = $auth;
     }
 
     public function edit(Request $request, Response $response, array $args = []): Response

@@ -4,6 +4,15 @@ namespace TheatreCMS\Repositories;
 
 interface PaginatedRepositoryInterface
 {
+    public function create(array $args);
+
+    public function fetch(int $id);
+
+    /**
+     * @return array<int, object>
+     */
+    public function fetchAll(): array;
+
     /**
      * @return array{items: array<int, object>, total: int, page: int, perPage: int}
      */

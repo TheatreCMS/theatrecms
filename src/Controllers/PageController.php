@@ -10,15 +10,13 @@ use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Repositories\PageRepository;
 
 /**
- * @method PageRepository repository()
+ * @extends BaseController<PageRepository>
  */
 class PageController extends BaseController
 {
     public function __construct(PageRepository $repository, EntityManagerInterface $em, Twig $twig)
     {
-        $this->repository = $repository;
-        $this->entityManager = $em;
-        $this->twig       = $twig;
+        parent::__construct($repository, $twig, $em);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

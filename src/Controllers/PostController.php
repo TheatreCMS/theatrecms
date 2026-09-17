@@ -13,7 +13,7 @@ use TheatreCMS\Models\Post;
 use TheatreCMS\Repositories\PostRepository;
 
 /**
- * @method PostRepository repository()
+ * @extends BaseController<PostRepository>
  */
 class PostController extends BaseController
 {
@@ -21,9 +21,7 @@ class PostController extends BaseController
 
     public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig)
     {
-        $this->repository = $repository;
-        $this->entityManager = $em;
-        $this->twig       = $twig;
+        parent::__construct($repository, $twig, $em);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

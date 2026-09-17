@@ -10,13 +10,14 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
+/**
+ * @extends BaseController<VenueRepository>
+ */
 class VenueController extends BaseController
 {
     public function __construct(VenueRepository $repository, EntityManagerInterface $em, Twig $twig)
     {
-        $this->repository = $repository;
-        $this->entityManager = $em;
-        $this->twig       = $twig;
+        parent::__construct($repository, $twig, $em);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

@@ -9,6 +9,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
+/**
+ * @extends BaseController<WorkRepository>
+ */
 class WorksController extends BaseController
 {
     private const SORTABLE_COLUMNS = ['title', 'author'];
@@ -17,8 +20,7 @@ class WorksController extends BaseController
 
     public function __construct(WorkRepository $repository, Twig $twig, PersonRepository $personRepo)
     {
-        $this->repository = $repository;
-        $this->twig       = $twig;
+        parent::__construct($repository, $twig);
         $this->personRepo = $personRepo;
     }
 

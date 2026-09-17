@@ -17,7 +17,7 @@ use Slim\Views\Twig;
  * Class SeasonController
  * @package TheatreCMS\Controllers
  *
- * @method SeasonRepository repository()
+ * @extends BaseController<SeasonRepository>
  */
 class SeasonController extends BaseController
 {
@@ -29,10 +29,8 @@ class SeasonController extends BaseController
         Twig $twig,
         SponsorRepository $sponsorRepo
     ) {
-        $this->repository    = $repository;
-        $this->entityManager = $em;
-        $this->twig          = $twig;
-        $this->sponsorRepo   = $sponsorRepo;
+        parent::__construct($repository, $twig, $em);
+        $this->sponsorRepo = $sponsorRepo;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

@@ -7,12 +7,14 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
+/**
+ * @extends BaseController<PersonRepository>
+ */
 class PersonController extends BaseController
 {
     public function __construct(PersonRepository $repository, Twig $twig)
     {
-        $this->repository = $repository;
-        $this->twig       = $twig;
+        parent::__construct($repository, $twig);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

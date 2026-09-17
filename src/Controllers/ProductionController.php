@@ -25,7 +25,7 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  * Class ProductionController
  * @package TheatreCMS\Controllers
  *
- * @method ProductionRepository repository()
+ * @extends BaseController<ProductionRepository>
  */
 class ProductionController extends BaseController
 {
@@ -35,9 +35,7 @@ class ProductionController extends BaseController
         Twig $twig,
         private readonly ProductionFormOptionsService $formOptions
     ) {
-        $this->repository    = $repository;
-        $this->entityManager = $em;
-        $this->twig          = $twig;
+        parent::__construct($repository, $twig, $em);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
