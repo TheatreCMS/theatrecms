@@ -8,12 +8,15 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 
 class ProductionRepository extends BaseRepository
 {
+    use EagerLoadsHeroImage;
+
     protected string $entityClass = Production::class;
 
     public function __construct(
@@ -21,6 +24,11 @@ class ProductionRepository extends BaseRepository
         private readonly ContentMetaRepository $contentMeta,
     ) {
         parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'production';
     }
 
     protected function applyListOrder(QueryBuilder $builder, string $alias): void
@@ -160,13 +168,6 @@ class ProductionRepository extends BaseRepository
         return $production;
     }
 
-    public function fetch(int $id): ?object
-    {
-        $production = parent::fetch($id);
-
-        return $this->attachHeroImage($production instanceof Production ? $production : null);
-    }
-
     public function getBySlug(string $slug): ?object
     {
         $production = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
@@ -194,31 +195,8 @@ class ProductionRepository extends BaseRepository
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $this->attachHeroImage($production);
-    }
-
-    /**
-     * Eager-loads the hero image URL from content_meta onto a single fetched Production,
-     * mirroring how a real Doctrine relation like featuredImage is always populated.
-     * Deliberately not called from fetchAll()/fetchPage() (listings) to avoid an extra
-     * content_meta query per row.
-     */
-    private function attachHeroImage(?Production $production): ?Production
-    {
-        if ($production === null) {
-            return null;
-        }
-
-        $mediaId = $this->contentMeta->get('production', $production->getId(), 'hero_image_id');
-
-        $production->setHasHeroImage(!empty($mediaId));
-
-        $image = match (empty($mediaId)) {
-            true      => $production->getFeaturedImage(),
-            default   => $this->em->getRepository(Media::class)->find((int) $mediaId),
-        };
-
-        $production->setHeroImageUrl($image instanceof Media ? $image->getUrl() : null);
+        /** @var ?Production $production */
+        $production = $this->attachHeroImage($production);
 
         return $production;
     }

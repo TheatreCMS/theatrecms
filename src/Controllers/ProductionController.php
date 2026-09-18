@@ -2,7 +2,6 @@
 
 namespace TheatreCMS\Controllers;
 
-use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -14,6 +13,7 @@ use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
+use TheatreCMS\Traits\HandlesContentImages;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -30,9 +30,7 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
-    private const CONTENT_TYPE = 'production';
-
-    private const HERO_IMAGE_META_KEY = 'hero_image_id';
+    use HandlesContentImages;
 
     public function __construct(
         ProductionRepository $repository,
@@ -42,6 +40,11 @@ class ProductionController extends BaseController
         private readonly ContentMetaRepository $contentMeta
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function contentType(): string
+    {
+        return 'production';
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -96,7 +99,7 @@ class ProductionController extends BaseController
             'activeTab'  => $activeTab,
             'heroImageUrl' => $production->getHeroImageUrl(),
             'heroImageId'  => $this->contentMeta->get(
-                self::CONTENT_TYPE,
+                $this->contentType(),
                 $production->getId(),
                 self::HERO_IMAGE_META_KEY
             ),
@@ -115,70 +118,6 @@ class ProductionController extends BaseController
         }
 
         return $this->buildListRedirect($response, $request, '/admin/productions');
-    }
-
-    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
-    {
-        /** @var Production|null $production */
-        $production = $this->repository->fetch((int) $args['id']);
-
-        if ($production === null) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Production not found.',
-                ]);
-            }
-
-            return $response->withStatus(404);
-        }
-
-        $production->setFeaturedImage(null);
-        $this->repository->update($production);
-
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
-                'entityType'       => 'production',
-                'entityId'         => $production->getId(),
-                'featuredImageUrl' => $production->getFeaturedImageUrl(),
-                'featuredImageId'  => null,
-            ]);
-        }
-
-        return $response->withHeader('Location', '/admin/productions/edit/' . $production->getId());
-    }
-
-    public function removeHeroImage(Request $request, Response $response, array $args = []): Response
-    {
-        /** @var Production|null $production */
-        $production = $this->repository->fetch((int) $args['id']);
-
-        if ($production === null) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Production not found.',
-                ]);
-            }
-
-            return $response->withStatus(404);
-        }
-
-        $this->contentMeta->delete(self::CONTENT_TYPE, $production->getId(), self::HERO_IMAGE_META_KEY);
-
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
-                'entityType'       => 'production',
-                'entityId'         => $production->getId(),
-                'field'            => 'hero',
-                'label'            => 'Hero Image',
-                'deleteUrl'        => '/admin/productions/' . $production->getId() . '/hero-image',
-                'featuredImageUrl' => null,
-                'featuredImageId'  => null,
-            ]);
-        }
-
-        return $response->withHeader('Location', '/admin/productions/edit/' . $production->getId());
     }
 
     public function store(Request $request, Response $response, array $args = []): Response
@@ -548,42 +487,5 @@ class ProductionController extends BaseController
             $production->addSponsorship($newSponsorship);
             $this->entityManager->persist($newSponsorship);
         }
-    }
-
-    private function applyFeaturedImage(Production $production, mixed $featuredImageId): void
-    {
-        if (empty($featuredImageId)) {
-            $production->setFeaturedImage(null);
-            return;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
-
-        if ($image instanceof Media && !$image->isImage()) {
-            throw new \InvalidArgumentException('Featured media must be an image.');
-        }
-
-        $production->setFeaturedImage($image);
-    }
-
-    private function applyHeroImage(int $productionId, mixed $heroImageId): void
-    {
-        if (empty($heroImageId)) {
-            $this->contentMeta->delete(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY);
-            return;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $heroImageId);
-
-        if (!$image instanceof Media) {
-            $this->contentMeta->delete(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY);
-            return;
-        }
-
-        if (!$image->isImage()) {
-            throw new \InvalidArgumentException('Hero media must be an image.');
-        }
-
-        $this->contentMeta->set(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY, (string) $image->getId());
     }
 }
