@@ -78,7 +78,11 @@ class Production extends ModelBase
 
     // Not Doctrine-mapped: hero image data lives in content_meta, not a relation on this
     // entity. Eager-populated by ProductionRepository's single-record fetch methods.
+    // heroImageUrl falls back to featuredImage when no hero_image_id meta is set, but
+    // hasHeroImage reflects only whether that meta value actually exists.
     private ?string $heroImageUrl = null;
+
+    private bool $hasHeroImage = false;
 
     // Many productions have many works, in a user-defined display order (e.g. a choir's setlist).
     #[OneToMany(targetEntity: ProductionWork::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
@@ -405,6 +409,13 @@ class Production extends ModelBase
 
     public function hasHeroImage(): bool
     {
-        return $this->heroImageUrl !== null;
+        return $this->hasHeroImage;
+    }
+
+    public function setHasHeroImage(bool $hasHeroImage): self
+    {
+        $this->hasHeroImage = $hasHeroImage;
+
+        return $this;
     }
 }

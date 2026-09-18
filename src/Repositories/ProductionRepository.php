@@ -16,8 +16,10 @@ class ProductionRepository extends BaseRepository
 {
     protected string $entityClass = Production::class;
 
-    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
-    {
+    public function __construct(
+        EntityManagerInterface $em,
+        private readonly ContentMetaRepository $contentMeta,
+    ) {
         parent::__construct($em);
     }
 
@@ -42,28 +44,28 @@ class ProductionRepository extends BaseRepository
     public function create(array $args): Production
     {
         $args = array_merge([
-            'name' => null,
-            'seasonId' => null,
-            'venueId' => null,
-            'opening' => null,
-            'closing' => null,
-            'description' => null,
-            'excerpt' => null,
-            'runtime' => null,
+            'name'              => null,
+            'seasonId'          => null,
+            'venueId'           => null,
+            'opening'           => null,
+            'closing'           => null,
+            'description'       => null,
+            'excerpt'           => null,
+            'runtime'           => null,
             'ageRecommendation' => null,
-            'contentAdvisory' => null,
-            'promoVideoUrl' => null,
+            'contentAdvisory'   => null,
+            'promoVideoUrl'     => null,
             'ticketPurchaseUrl' => null,
-            'works' => null, // comma separated ids or titles
-            'people' => null, // lines of "id|role" or "Name|role"
+            'works'             => null, // comma separated ids or titles
+            'people'            => null, // lines of "id|role" or "Name|role"
         ], $args);
 
-        $name = trim((string)$args['name']);
+        $name = trim((string) $args['name']);
         if (empty($name)) {
             throw new \InvalidArgumentException('Production name is required.');
         }
 
-        $seasonId = (int)($args['seasonId'] ?? 0);
+        $seasonId = (int) ($args['seasonId'] ?? 0);
         if (!$seasonId) {
             throw new \InvalidArgumentException('Season ID is required.');
         }
@@ -74,7 +76,7 @@ class ProductionRepository extends BaseRepository
         }
 
         $venue = null;
-        $venueId = (int)($args['venueId'] ?? 0);
+        $venueId = (int) ($args['venueId'] ?? 0);
         if ($venueId > 0) {
             $venue = $this->em->getRepository(Venue::class)->find($venueId);
             if (!$venue) {
@@ -96,7 +98,7 @@ class ProductionRepository extends BaseRepository
         }
 
         if (!empty($args['runtime'])) {
-            $production->setRuntime((int)$args['runtime']);
+            $production->setRuntime((int) $args['runtime']);
         }
 
         if (!empty($args['ageRecommendation'])) {
@@ -209,10 +211,14 @@ class ProductionRepository extends BaseRepository
 
         $mediaId = $this->contentMeta->get('production', $production->getId(), 'hero_image_id');
 
-        if (!empty($mediaId)) {
-            $image = $this->em->getRepository(Media::class)->find((int) $mediaId);
-            $production->setHeroImageUrl($image instanceof Media ? $image->getUrl() : null);
-        }
+        $production->setHasHeroImage(!empty($mediaId));
+
+        $image = match (empty($mediaId)) {
+            true      => $production->getFeaturedImage(),
+            default   => $this->em->getRepository(Media::class)->find((int) $mediaId),
+        };
+
+        $production->setHeroImageUrl($image instanceof Media ? $image->getUrl() : null);
 
         return $production;
     }
