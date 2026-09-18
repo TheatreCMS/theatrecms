@@ -25,7 +25,6 @@ use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Theme\ContentTypeRegistry;
-use TheatreCMS\Theme\HeroImageResolver;
 use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -88,8 +87,6 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
 
     $featuredProductionStatus = null;
     if ($featuredProduction) {
-        $container->get(HeroImageResolver::class)->attach($featuredProduction);
-
         $today = new \DateTime('today');
         $featuredProductionStatus = $featuredProduction->getOpening() && $featuredProduction->getOpening() <= $today
             ? 'now-playing'

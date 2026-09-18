@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 
 /**
@@ -37,7 +38,7 @@ class ProductionRepositoryFeaturedTest extends TestCase
         $schemaTool = new SchemaTool($this->em);
         $schemaTool->createSchema($this->em->getMetadataFactory()->getAllMetadata());
 
-        $this->repository = new ProductionRepository($this->em);
+        $this->repository = new ProductionRepository($this->em, new ContentMetaRepository($this->em));
 
         $this->season = new Season('2025-2026', '2025-2026 Season');
         $this->season->setStartDate(new DateTime('2025-09-01'));

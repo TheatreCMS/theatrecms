@@ -14,7 +14,6 @@ use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
-use TheatreCMS\Theme\HeroImageResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -40,8 +39,7 @@ class ProductionController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         private readonly ProductionFormOptionsService $formOptions,
-        private readonly ContentMetaRepository $contentMeta,
-        private readonly HeroImageResolver $heroImageResolver
+        private readonly ContentMetaRepository $contentMeta
     ) {
         parent::__construct($repository, $twig, $em);
     }
@@ -96,7 +94,7 @@ class ProductionController extends BaseController
             'venues'     => $this->formOptions->getVenues(),
             'events'     => $this->formOptions->getEventsForProduction((int) $args['id']),
             'activeTab'  => $activeTab,
-            'heroImageUrl' => $this->heroImageResolver->resolve($production),
+            'heroImageUrl' => $production->getHeroImageUrl(),
             'heroImageId'  => $this->contentMeta->get(
                 self::CONTENT_TYPE,
                 $production->getId(),

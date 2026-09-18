@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Repositories;
 
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
@@ -14,6 +15,11 @@ use Doctrine\ORM\QueryBuilder;
 class ProductionRepository extends BaseRepository
 {
     protected string $entityClass = Production::class;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
 
     protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
@@ -152,9 +158,18 @@ class ProductionRepository extends BaseRepository
         return $production;
     }
 
+    public function fetch(int $id): ?object
+    {
+        $production = parent::fetch($id);
+
+        return $this->attachHeroImage($production instanceof Production ? $production : null);
+    }
+
     public function getBySlug(string $slug): ?object
     {
-        return $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+        $production = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+
+        return $this->attachHeroImage($production instanceof Production ? $production : null);
     }
 
     /**
@@ -166,7 +181,7 @@ class ProductionRepository extends BaseRepository
     {
         $today = new DateTime('today');
 
-        return $this->em->createQueryBuilder()
+        $production = $this->em->createQueryBuilder()
             ->select('p')
             ->from(Production::class, 'p')
             ->where('p.opening IS NOT NULL')
@@ -176,5 +191,29 @@ class ProductionRepository extends BaseRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        return $this->attachHeroImage($production);
+    }
+
+    /**
+     * Eager-loads the hero image URL from content_meta onto a single fetched Production,
+     * mirroring how a real Doctrine relation like featuredImage is always populated.
+     * Deliberately not called from fetchAll()/fetchPage() (listings) to avoid an extra
+     * content_meta query per row.
+     */
+    private function attachHeroImage(?Production $production): ?Production
+    {
+        if ($production === null) {
+            return null;
+        }
+
+        $mediaId = $this->contentMeta->get('production', $production->getId(), 'hero_image_id');
+
+        if (!empty($mediaId)) {
+            $image = $this->em->getRepository(Media::class)->find((int) $mediaId);
+            $production->setHeroImageUrl($image instanceof Media ? $image->getUrl() : null);
+        }
+
+        return $production;
     }
 }

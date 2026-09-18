@@ -77,7 +77,7 @@ class Production extends ModelBase
     private ?Media $featuredImage = null;
 
     // Not Doctrine-mapped: hero image data lives in content_meta, not a relation on this
-    // entity. Populated by HeroImageResolver before this entity reaches a template.
+    // entity. Eager-populated by ProductionRepository's single-record fetch methods.
     private ?string $heroImageUrl = null;
 
     // Many productions have many works, in a user-defined display order (e.g. a choir's setlist).
