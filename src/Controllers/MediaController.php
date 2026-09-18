@@ -21,7 +21,7 @@ use TheatreCMS\Services\MediaUploadService;
  * "Image Gallery" block at POST /admin/images/upload and must keep its
  * existing JSON contract untouched.
  *
- * @method MediaRepository repository()
+ * @extends BaseController<MediaRepository>
  */
 class MediaController extends BaseController
 {
@@ -40,8 +40,7 @@ class MediaController extends BaseController
         MediaUploadService $mediaUploadService,
         ImageVariantGenerator $imageVariantGenerator
     ) {
-        $this->repository = $repository;
-        $this->twig = $twig;
+        parent::__construct($repository, $twig);
         $this->mediaUploadService = $mediaUploadService;
         $this->imageVariantGenerator = $imageVariantGenerator;
     }

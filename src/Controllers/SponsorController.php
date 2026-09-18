@@ -11,6 +11,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 
+/**
+ * @extends BaseController<SponsorRepository>
+ */
 class SponsorController extends BaseController
 {
     protected SponsorRepository $sponsorRepository;
@@ -18,8 +21,8 @@ class SponsorController extends BaseController
 
     public function __construct(SponsorRepository $repository, Twig $twig, MediaUploadService $imageUploadService)
     {
+        parent::__construct($repository, $twig);
         $this->sponsorRepository  = $repository;
-        $this->twig               = $twig;
         $this->imageUploadService = $imageUploadService;
     }
 

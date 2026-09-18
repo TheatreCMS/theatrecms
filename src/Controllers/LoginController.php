@@ -18,14 +18,16 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 
+/**
+ * @extends BaseController<UserRepository>
+ */
 class LoginController extends BaseController
 {
     private Auth $auth;
 
     public function __construct(UserRepository $repository, Twig $twig, Auth $auth)
     {
-        $this->repository = $repository;
-        $this->twig = $twig;
+        parent::__construct($repository, $twig);
         $this->auth = $auth;
     }
 

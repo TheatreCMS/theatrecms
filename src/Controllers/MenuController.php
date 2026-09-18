@@ -13,7 +13,7 @@ use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Theme\MenuLocationRegistry;
 
 /**
- * @method MenuRepository repository()
+ * @extends BaseController<MenuRepository>
  */
 class MenuController extends BaseController
 {
@@ -25,9 +25,7 @@ class MenuController extends BaseController
         private readonly MenuItemResolver $resolver,
         private readonly MenuLinkTargetOptionsService $linkTargets
     ) {
-        $this->repository = $repository;
-        $this->entityManager = $em;
-        $this->twig = $twig;
+        parent::__construct($repository, $twig, $em);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
