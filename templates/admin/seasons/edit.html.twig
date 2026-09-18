@@ -46,6 +46,14 @@
                     entityType: 'season', entityId: season.id|default(null), featuredImageUrl: season.featuredImageUrl|default(null), featuredImageId: season.featuredImage.id|default(null)
                 } %}
             </div>
+
+            <div class="md:col-span-2">
+                {% include 'admin/partials/_featured_image_field.html.twig' with {
+                    entityType: 'season', entityId: season.id|default(null), field: 'hero', label: 'Hero Image',
+                    deleteUrl: '/admin/seasons/' ~ season.id ~ '/hero-image',
+                    featuredImageUrl: season.heroImageUrl|default(null), featuredImageId: heroImageId|default(null)
+                } %}
+            </div>
         </div>
 
         <div class="space-y-4 p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">

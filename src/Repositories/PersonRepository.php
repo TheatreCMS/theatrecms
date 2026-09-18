@@ -3,6 +3,8 @@
 namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Models\Person;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -12,7 +14,19 @@ use Doctrine\ORM\QueryBuilder;
  */
 final class PersonRepository extends BaseRepository
 {
+    use EagerLoadsHeroImage;
+
     protected string $entityClass = Person::class;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'person';
+    }
 
     public function create(array $args): Person
     {

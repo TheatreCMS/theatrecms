@@ -64,6 +64,12 @@
             {% include 'admin/partials/_featured_image_field.html.twig' with {
                 entityType: 'venue', entityId: venue.id, featuredImageUrl: venue.featuredImageUrl, featuredImageId: venue.featuredImage.id|default(null)
             } %}
+
+            {% include 'admin/partials/_featured_image_field.html.twig' with {
+                entityType: 'venue', entityId: venue.id, field: 'hero', label: 'Hero Image',
+                deleteUrl: '/admin/venues/' ~ venue.id ~ '/hero-image',
+                featuredImageUrl: venue.heroImageUrl, featuredImageId: heroImageId
+            } %}
         </div>
 
         <div class="flex items-center justify-end space-x-3 pt-4 border-t">

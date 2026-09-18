@@ -12,6 +12,7 @@ use Slim\Views\Twig;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\VenueRepository;
 
 /**
@@ -31,17 +32,19 @@ class VenueControllerFeaturedImageTest extends TestCase
     private VenueRepository $venueRepo;
     private EntityManagerInterface|MockObject $entityManager;
     private Twig|MockObject $twig;
+    private ContentMetaRepository|MockObject $contentMeta;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->venueRepo = new VenueRepository($this->entityManager);
+        $this->contentMeta = $this->createMock(ContentMetaRepository::class);
+        $this->venueRepo = new VenueRepository($this->entityManager, $this->contentMeta);
         $this->twig = $this->createMock(Twig::class);
     }
 
     private function buildController(): VenueController
     {
-        return new VenueController($this->venueRepo, $this->entityManager, $this->twig);
+        return new VenueController($this->venueRepo, $this->entityManager, $this->twig, $this->contentMeta);
     }
 
     private function mockVenueLookup(Venue $venue, int $id): void

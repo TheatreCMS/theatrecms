@@ -2,7 +2,10 @@
 
 namespace TheatreCMS\Controllers;
 
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PersonRepository;
+use TheatreCMS\Traits\HandlesContentImages;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -12,9 +15,25 @@ use Slim\Views\Twig;
  */
 class PersonController extends BaseController
 {
-    public function __construct(PersonRepository $repository, Twig $twig)
+    use HandlesContentImages;
+
+    public function __construct(
+        PersonRepository $repository,
+        Twig $twig,
+        EntityManagerInterface $em,
+        private readonly ContentMetaRepository $contentMeta
+    ) {
+        parent::__construct($repository, $twig, $em);
+    }
+
+    protected function contentType(): string
     {
-        parent::__construct($repository, $twig);
+        return 'person';
+    }
+
+    protected function routePrefix(): string
+    {
+        return 'people';
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -43,8 +62,11 @@ class PersonController extends BaseController
 
     public function edit(Request $request, Response $response, array $args = []): Response
     {
+        $person = $this->repository->fetch($args['id']);
+
         return $this->twig->render($response, 'admin/people/edit.html.twig', [
-            'person' => $this->repository->fetch($args['id']),
+            'person' => $person,
+            'heroImageId' => $this->contentMeta->get($this->contentType(), $person->getId(), self::HERO_IMAGE_META_KEY),
         ]);
     }
 
@@ -83,9 +105,14 @@ class PersonController extends BaseController
             'lastName'  => null,
             'biography' => null,
             'headshotUrl' => null,
+            'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $person = $this->repository->create($data);
+        $this->applyFeaturedImage($person, $data['featuredImageId']);
+        $this->applyHeroImage($person->getId(), $data['heroImageId']);
+        $this->entityManager->flush();
         $editUrl = '/admin/people/edit/' . $person->getId();
 
         if ($request->getHeaderLine('HX-Request')) {
@@ -154,6 +181,8 @@ class PersonController extends BaseController
             'lastName' => null,
             'biography' => null,
             'headshotUrl' => null,
+            'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $person = $this->repository->fetch(intval($data['personId']));
@@ -172,6 +201,9 @@ class PersonController extends BaseController
             ->setLastName($data['lastName'])
             ->setBiography($data['biography'])
             ->setHeadshotUrl(filter_var($data['headshotUrl'], FILTER_VALIDATE_URL) ?: $data['headshotUrl']);
+
+        $this->applyFeaturedImage($person, $data['featuredImageId']);
+        $this->applyHeroImage($person->getId(), $data['heroImageId']);
 
         $this->repository->update($person);
 

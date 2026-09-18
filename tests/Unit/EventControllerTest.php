@@ -11,6 +11,7 @@ use Slim\Psr7\Response as SlimResponse;
 use Slim\Views\Twig;
 use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Models\Production;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\VenueRepository;
@@ -30,7 +31,7 @@ class EventControllerTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->twig = $this->createMock(Twig::class);
         $this->productionRepo = $this->createMock(ProductionRepository::class);
-        $this->venueRepo = new VenueRepository($this->entityManager);
+        $this->venueRepo = new VenueRepository($this->entityManager, $this->createMock(ContentMetaRepository::class));
     }
 
     public function testStoreRecurringReturns400WhenNoBody(): void

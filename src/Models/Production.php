@@ -14,11 +14,15 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use DateTime;
+use TheatreCMS\Traits\HasFeaturedImage;
+use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasSponsors;
 
 #[Entity, Table(name: 'productions')]
 class Production extends ModelBase
 {
+    use HasFeaturedImage;
+    use HasHeroImage;
     use HasSponsors;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
@@ -71,10 +75,6 @@ class Production extends ModelBase
     #[ManyToOne(targetEntity: Venue::class, inversedBy: 'productions')]
     #[JoinColumn(name: 'venue_id', referencedColumnName: 'id', nullable: true)]
     private ?Venue $venue = null;
-
-    #[ManyToOne(targetEntity: Media::class)]
-    #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Media $featuredImage = null;
 
     // Many productions have many works, in a user-defined display order (e.g. a choir's setlist).
     #[OneToMany(targetEntity: ProductionWork::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
@@ -363,27 +363,5 @@ class Production extends ModelBase
     public function getPerformances(): Collection
     {
         return $this->performances;
-    }
-
-    public function getFeaturedImage(): ?Media
-    {
-        return $this->featuredImage;
-    }
-
-    public function setFeaturedImage(?Media $featuredImage): self
-    {
-        $this->featuredImage = $featuredImage;
-
-        return $this;
-    }
-
-    public function getFeaturedImageUrl(): ?string
-    {
-        return $this->featuredImage?->getUrl();
-    }
-
-    public function hasFeaturedImage(): bool
-    {
-        return $this->featuredImage !== null;
     }
 }

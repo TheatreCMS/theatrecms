@@ -8,20 +8,31 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\ContentStatus;
-use TheatreCMS\Models\Media;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Traits\HandlesContentImages;
 
 /**
  * @extends BaseController<PostRepository>
  */
 class PostController extends BaseController
 {
+    use HandlesContentImages;
+
     private const SORTABLE_COLUMNS = ['title', 'publishedAt'];
 
-    public function __construct(PostRepository $repository, EntityManagerInterface $em, Twig $twig)
-    {
+    public function __construct(
+        PostRepository $repository,
+        EntityManagerInterface $em,
+        Twig $twig,
+        private readonly ContentMetaRepository $contentMeta
+    ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function contentType(): string
+    {
+        return 'post';
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -63,6 +74,7 @@ class PostController extends BaseController
         return $this->twig->render($response, 'admin/posts/edit.html.twig', [
             'post'     => $post,
             'statuses' => ContentStatus::labels(),
+            'heroImageId' => $this->contentMeta->get($this->contentType(), $post->getId(), self::HERO_IMAGE_META_KEY),
         ]);
     }
 
@@ -95,35 +107,6 @@ class PostController extends BaseController
         return $this->buildListRedirect($response, $request, '/admin/posts');
     }
 
-    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
-    {
-        $post = $this->repository->fetch($args['id']);
-
-        if (is_null($post)) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Post not found.',
-                ]);
-            }
-            return $response->withStatus(404);
-        }
-
-        $post->setFeaturedImage(null);
-        $this->repository->update($post);
-
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
-                'entityType'       => 'post',
-                'entityId'         => $post->getId(),
-                'featuredImageUrl' => $post->getFeaturedImageUrl(),
-                'featuredImageId'  => null,
-            ]);
-        }
-
-        return $response->withHeader('Location', '/admin/posts/edit/' . $post->getId());
-    }
-
     public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
@@ -145,6 +128,7 @@ class PostController extends BaseController
                 'content' => $data['content'] ?? null,
             ]);
             $this->applyFeaturedImage($post, $data['featuredImageId'] ?? null);
+            $this->applyHeroImage($post->getId(), $data['heroImageId'] ?? null);
             $this->entityManager->flush();
         } catch (\InvalidArgumentException $e) {
             if ($request->getHeaderLine('HX-Request')) {
@@ -188,6 +172,7 @@ class PostController extends BaseController
             'slug' => null,
             'publishedAt' => null,
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $post = $this->repository->fetch($data['postId']);
@@ -227,6 +212,7 @@ class PostController extends BaseController
         $post->setStatus($status);
         $post->setContent($data['content']);
         $this->applyFeaturedImage($post, $data['featuredImageId']);
+        $this->applyHeroImage($post->getId(), $data['heroImageId']);
         $post->touchModified();
 
         if (!empty($data['publishedAt'])) {
@@ -251,21 +237,5 @@ class PostController extends BaseController
         }
 
         return $response->withHeader('Location', '/admin/posts');
-    }
-
-    private function applyFeaturedImage(Post $post, mixed $featuredImageId): void
-    {
-        if (empty($featuredImageId)) {
-            $post->setFeaturedImage(null);
-            return;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
-
-        if ($image instanceof Media && !$image->isImage()) {
-            throw new \InvalidArgumentException('Featured media must be an image.');
-        }
-
-        $post->setFeaturedImage($image);
     }
 }

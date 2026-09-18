@@ -94,7 +94,11 @@ class MediaControllerTest extends TestCase
         $twig = $this->createMock(Twig::class);
         $twig->expects($this->once())
             ->method('render')
-            ->with($response, 'admin/partials/_featured_media_selection.html.twig', ['media' => $image])
+            ->with(
+                $response,
+                'admin/partials/_featured_media_selection.html.twig',
+                ['media' => $image, 'field' => 'featured']
+            )
             ->willReturn($response);
 
         $actual = $this->controller($repository, $twig)->select(
