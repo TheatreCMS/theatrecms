@@ -1,7 +1,8 @@
 {# Reusable home page hero - expects `production` and `status` ('now-playing'|'upcoming') variables #}
+{% set heroBackgroundUrl = production.hasHeroImage ? production.heroImageUrl : (production.hasFeaturedImage ? production.featuredImageUrl : null) %}
 <section class="relative overflow-hidden rounded-lg bg-gray-900 text-white shadow-lg"
-         {% if production.hasFeaturedImage %}
-             style="background-image: linear-gradient(to top, rgba(17,24,39,0.9), rgba(17,24,39,0.5)), url('{{ production.featuredImageUrl }}'); background-size: cover; background-position: center;"
+         {% if heroBackgroundUrl %}
+             style="background-image: linear-gradient(to top, rgba(17,24,39,0.9), rgba(17,24,39,0.5)), url('{{ heroBackgroundUrl }}'); background-size: cover; background-position: center;"
          {% endif %}>
     <div class="max-w-4xl mx-auto px-6 py-20 sm:py-28 text-center space-y-4">
         <p class="text-xs uppercase tracking-widest text-gray-300">

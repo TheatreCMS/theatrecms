@@ -14,6 +14,7 @@ use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
+use TheatreCMS\Theme\HeroImageResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -39,7 +40,8 @@ class ProductionController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         private readonly ProductionFormOptionsService $formOptions,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly HeroImageResolver $heroImageResolver
     ) {
         parent::__construct($repository, $twig, $em);
     }
@@ -94,7 +96,7 @@ class ProductionController extends BaseController
             'venues'     => $this->formOptions->getVenues(),
             'events'     => $this->formOptions->getEventsForProduction((int) $args['id']),
             'activeTab'  => $activeTab,
-            'heroImageUrl' => $this->resolveHeroImageUrl($production->getId()),
+            'heroImageUrl' => $this->heroImageResolver->resolve($production),
             'heroImageId'  => $this->contentMeta->get(
                 self::CONTENT_TYPE,
                 $production->getId(),
@@ -585,18 +587,5 @@ class ProductionController extends BaseController
         }
 
         $this->contentMeta->set(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY, (string) $image->getId());
-    }
-
-    private function resolveHeroImageUrl(int $productionId): ?string
-    {
-        $heroImageId = $this->contentMeta->get(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY);
-
-        if (empty($heroImageId)) {
-            return null;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $heroImageId);
-
-        return $image instanceof Media ? $image->getUrl() : null;
     }
 }

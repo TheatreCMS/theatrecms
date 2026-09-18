@@ -76,6 +76,10 @@ class Production extends ModelBase
     #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
     private ?Media $featuredImage = null;
 
+    // Not Doctrine-mapped: hero image data lives in content_meta, not a relation on this
+    // entity. Populated by HeroImageResolver before this entity reaches a template.
+    private ?string $heroImageUrl = null;
+
     // Many productions have many works, in a user-defined display order (e.g. a choir's setlist).
     #[OneToMany(targetEntity: ProductionWork::class, mappedBy: 'production', cascade: ['persist', 'remove'])]
     #[OrderBy(['position' => 'ASC'])]
@@ -385,5 +389,22 @@ class Production extends ModelBase
     public function hasFeaturedImage(): bool
     {
         return $this->featuredImage !== null;
+    }
+
+    public function getHeroImageUrl(): ?string
+    {
+        return $this->heroImageUrl;
+    }
+
+    public function setHeroImageUrl(?string $heroImageUrl): self
+    {
+        $this->heroImageUrl = $heroImageUrl;
+
+        return $this;
+    }
+
+    public function hasHeroImage(): bool
+    {
+        return $this->heroImageUrl !== null;
     }
 }

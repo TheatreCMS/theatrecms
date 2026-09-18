@@ -57,6 +57,7 @@ use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\ExcerptResolver;
+use TheatreCMS\Theme\HeroImageResolver;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
@@ -126,6 +127,10 @@ class ServiceRegistrar
         $container->set(SlugResolver::class, static fn(): SlugResolver => new SlugResolver());
 
         $container->set(FeaturedImageResolver::class, static fn(): FeaturedImageResolver => new FeaturedImageResolver());
+
+        $container->set(HeroImageResolver::class, static function (ContainerInterface $c): HeroImageResolver {
+            return new HeroImageResolver($c->get(ContentMetaRepository::class), $c->get(EntityManager::class));
+        });
 
         $container->set(SponsorsResolver::class, static fn(): SponsorsResolver => new SponsorsResolver());
 
@@ -398,6 +403,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(ProductionFormOptionsService::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(HeroImageResolver::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
