@@ -354,6 +354,22 @@ class ServiceRegistrar
         $container->set(ProductionRepository::class, static function (ContainerInterface $c): ProductionRepository {
             return new ProductionRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
         });
+
+        $container->set(PersonRepository::class, static function (ContainerInterface $c): PersonRepository {
+            return new PersonRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
+
+        $container->set(PostRepository::class, static function (ContainerInterface $c): PostRepository {
+            return new PostRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
+
+        $container->set(SeasonRepository::class, static function (ContainerInterface $c): SeasonRepository {
+            return new SeasonRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
+
+        $container->set(VenueRepository::class, static function (ContainerInterface $c): VenueRepository {
+            return new VenueRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
     }
 
     /**
@@ -410,6 +426,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(SponsorRepository::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
@@ -426,6 +443,7 @@ class ServiceRegistrar
                     $c->get(PostRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
@@ -450,12 +468,15 @@ class ServiceRegistrar
                     $c->get(VenueRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             PersonController::class => static function (ContainerInterface $c): PersonController {
                 return new PersonController(
                     $c->get(PersonRepository::class),
                     $c->get(Twig::class),
+                    $c->get(EntityManager::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             SponsorController::class => static function (ContainerInterface $c): SponsorController {
@@ -510,7 +531,17 @@ class ServiceRegistrar
 
         foreach ($files as $file) {
             $name = pathinfo($file, PATHINFO_FILENAME);
-            if ($name === 'BaseRepository' || $name === 'UserRepository' || $name === 'ProductionRepository') {
+            if (
+                in_array($name, [
+                'BaseRepository',
+                'UserRepository',
+                'ProductionRepository',
+                'PersonRepository',
+                'PostRepository',
+                'SeasonRepository',
+                'VenueRepository',
+                ], true)
+            ) {
                 continue;
             }
 

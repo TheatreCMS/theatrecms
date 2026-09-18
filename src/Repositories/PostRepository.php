@@ -4,11 +4,25 @@ namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Post;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 
 class PostRepository extends BaseRepository
 {
+    use EagerLoadsHeroImage;
+
     protected string $entityClass = Post::class;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'post';
+    }
 
     public function create(array $args): Post
     {

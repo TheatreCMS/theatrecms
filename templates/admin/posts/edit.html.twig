@@ -46,6 +46,12 @@
                 entityType: 'post', entityId: post.id, featuredImageUrl: post.featuredImageUrl, featuredImageId: post.featuredImage.id|default(null)
             } %}
 
+            {% include 'admin/partials/_featured_image_field.html.twig' with {
+                entityType: 'post', entityId: post.id, field: 'hero', label: 'Hero Image',
+                deleteUrl: '/admin/posts/' ~ post.id ~ '/hero-image',
+                featuredImageUrl: post.heroImageUrl, featuredImageId: heroImageId
+            } %}
+
             <div class="md:col-span-2 space-y-3">
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
                 <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>

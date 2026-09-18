@@ -3,9 +3,9 @@
 namespace TheatreCMS\Controllers;
 
 use Doctrine\ORM\EntityManagerInterface;
-use TheatreCMS\Models\Media;
-use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Traits\HandlesContentImages;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
@@ -15,9 +15,20 @@ use Slim\Views\Twig;
  */
 class VenueController extends BaseController
 {
-    public function __construct(VenueRepository $repository, EntityManagerInterface $em, Twig $twig)
-    {
+    use HandlesContentImages;
+
+    public function __construct(
+        VenueRepository $repository,
+        EntityManagerInterface $em,
+        Twig $twig,
+        private readonly ContentMetaRepository $contentMeta
+    ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function contentType(): string
+    {
+        return 'venue';
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -36,8 +47,11 @@ class VenueController extends BaseController
 
     public function edit(Request $request, Response $response, array $args = []): Response
     {
+        $venue = $this->repository->fetch($args['id']);
+
         return $this->twig->render($response, 'admin/venues/edit.html.twig', [
-            'venue' => $this->repository->fetch($args['id']),
+            'venue' => $venue,
+            'heroImageId' => $this->contentMeta->get($this->contentType(), $venue->getId(), self::HERO_IMAGE_META_KEY),
         ]);
     }
 
@@ -85,10 +99,12 @@ class VenueController extends BaseController
             'websiteUrl' => null,
             'mapUrl' => null,
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $venue = $this->repository->create($data);
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
+        $this->applyHeroImage($venue->getId(), $data['heroImageId']);
         $this->entityManager->flush();
         $editUrl = '/admin/venues/edit/' . $venue->getId();
 
@@ -168,6 +184,7 @@ class VenueController extends BaseController
             'websiteUrl' => null,
             'mapUrl' => null,
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $venue = $this->repository->fetch(intval($data['venueId']));
@@ -194,6 +211,7 @@ class VenueController extends BaseController
             ->setMapUrl($data['mapUrl']);
 
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
+        $this->applyHeroImage($venue->getId(), $data['heroImageId']);
 
         $this->repository->update($venue);
 
@@ -205,50 +223,5 @@ class VenueController extends BaseController
         }
 
         return $response->withHeader('Location', '/admin/venues');
-    }
-
-    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
-    {
-        $venue = $this->repository->fetch((int) ($args['id'] ?? 0));
-
-        if ($venue === null) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Venue not found.',
-                ]);
-            }
-            return $response->withStatus(404);
-        }
-
-        $venue->setFeaturedImage(null);
-        $this->repository->update($venue);
-
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
-                'entityType'      => 'venue',
-                'entityId'        => $venue->getId(),
-                'featuredImageUrl' => $venue->getFeaturedImageUrl(),
-                'featuredImageId' => null,
-            ]);
-        }
-
-        return $response->withHeader('Location', '/admin/venues/edit/' . $venue->getId());
-    }
-
-    private function applyFeaturedImage(Venue $venue, mixed $featuredImageId): void
-    {
-        if (empty($featuredImageId)) {
-            $venue->setFeaturedImage(null);
-            return;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
-
-        if ($image instanceof Media && !$image->isImage()) {
-            throw new \InvalidArgumentException('Featured media must be an image.');
-        }
-
-        $venue->setFeaturedImage($image);
     }
 }

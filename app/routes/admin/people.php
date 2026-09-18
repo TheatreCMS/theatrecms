@@ -15,6 +15,8 @@ if (isset($app)) {
         $group->get('/quick-create',   [PersonController::class, 'quickCreate']);
         $group->post('/edit',          [PersonController::class, 'update']);
         $group->get('/edit/{id}',      [PersonController::class, 'edit']);
+        $group->delete('/{id}/featured-image', [PersonController::class, 'removeFeaturedImage']);
+        $group->delete('/{id}/hero-image', [PersonController::class, 'removeHeroImage']);
         $group->delete('/{id}',        [PersonController::class, 'destroy']);
         $group->get('',                [PersonController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))

@@ -3,6 +3,8 @@
 namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * @method Venue[] query(array $args = [])
@@ -11,7 +13,19 @@ use TheatreCMS\Models\Venue;
  */
 final class VenueRepository extends BaseRepository
 {
+    use EagerLoadsHeroImage;
+
     protected string $entityClass = Venue::class;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'venue';
+    }
 
     public function fetchAll(): array
     {

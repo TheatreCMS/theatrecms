@@ -15,6 +15,7 @@ if (isset($app)) {
         $group->get('/edit/{id}', [SeasonController::class, 'edit']);
         $group->get('/{id}',      [SeasonController::class, 'show']);
         $group->delete('/{id}/featured-image', [SeasonController::class, 'removeFeaturedImage']);
+        $group->delete('/{id}/hero-image', [SeasonController::class, 'removeHeroImage']);
         $group->delete('/{id}',   [SeasonController::class, 'destroy']);
         $group->get('',           [SeasonController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))
