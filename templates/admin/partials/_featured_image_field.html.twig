@@ -2,16 +2,26 @@
    Params: entityType (string), entityId (int|null), featuredImageUrl (string|null), featuredImageId (int|null),
    field (string, optional, default 'featured') - distinguishes multiple image fields on the same page
    (e.g. Production's separate featured + hero images) by deriving DOM ids/names from it,
-   label (string, optional, default 'Featured Image'), deleteUrl (string, optional - defaults to the
-   featured-image REST subresource; pass explicitly for fields that don't follow that route naming),
-   confirmLabel (string, optional), oob (bool, optional) - set true when re-rendering this into an
-   existing page via an HTMX out-of-band swap #}
+   label (string, optional, default 'Featured Image'), description (string, optional - defaults to
+   field-specific help text for 'featured'/'hero', kept content-type neutral since this partial is
+   shared across entity types; pass explicitly to override, or '' to suppress it), deleteUrl (string,
+   optional - defaults to the featured-image REST subresource; pass explicitly for fields that don't
+   follow that route naming), confirmLabel (string, optional), oob (bool, optional) - set true when
+   re-rendering this into an existing page via an HTMX out-of-band swap #}
 {% set field = field|default('featured') %}
 {% set label = label|default('Featured Image') %}
+{% set description = description|default(field == 'hero'
+    ? "Used only on this item's own single page, as the primary banner image."
+    : (field == 'featured'
+        ? 'Used wherever this item is referenced elsewhere — cards, listings, and links. Not shown on its own single page.'
+        : null)) %}
 {% set deleteUrl = deleteUrl|default('/admin/' ~ entityType ~ 's/' ~ entityId ~ '/featured-image') %}
 {% set confirmLabel = confirmLabel|default('Remove the ' ~ label|lower ~ '? This does not delete it from the media library.') %}
 <div id="{{ field }}-image-field"{% if oob %} hx-swap-oob="true"{% endif %} class="md:col-span-2">
     <label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
+    {% if description %}
+        <p class="text-xs text-gray-500 mb-2">{{ description }}</p>
+    {% endif %}
     <div class="rounded-md border border-gray-200 bg-gray-50 p-4">
         <div id="{{ field }}-image-preview">
             {% if featuredImageUrl %}
