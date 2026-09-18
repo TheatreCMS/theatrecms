@@ -32,7 +32,7 @@ class ProductionController extends BaseController
 {
     private const CONTENT_TYPE = 'production';
 
-    private const HERO_IMAGE_META_KEY = 'heroImageId';
+    private const HERO_IMAGE_META_KEY = 'hero_image_id';
 
     public function __construct(
         ProductionRepository $repository,
