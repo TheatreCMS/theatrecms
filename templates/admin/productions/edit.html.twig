@@ -188,6 +188,12 @@
 						entityType: 'production', entityId: production.id, featuredImageUrl: production.featuredImageUrl, featuredImageId: production.featuredImage.id|default(null)
 					} %}
 
+					{% include 'admin/partials/_featured_image_field.html.twig' with {
+						entityType: 'production', entityId: production.id, field: 'hero', label: 'Hero Image',
+						deleteUrl: '/admin/productions/' ~ production.id ~ '/hero-image',
+						featuredImageUrl: heroImageUrl, featuredImageId: heroImageId
+					} %}
+
 				</div>
 			</div>
 			{# /tab-details #}

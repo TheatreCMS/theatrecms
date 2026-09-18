@@ -11,6 +11,7 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,11 +30,16 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
+    private const CONTENT_TYPE = 'production';
+
+    private const HERO_IMAGE_META_KEY = 'heroImageId';
+
     public function __construct(
         ProductionRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        private readonly ProductionFormOptionsService $formOptions
+        private readonly ProductionFormOptionsService $formOptions,
+        private readonly ContentMetaRepository $contentMeta
     ) {
         parent::__construct($repository, $twig, $em);
     }
@@ -65,6 +71,8 @@ class ProductionController extends BaseController
             'works'    => $this->formOptions->getWorks(),
             'sponsors' => $this->formOptions->getSponsors(),
             'venues'   => $this->formOptions->getVenues(),
+            'heroImageUrl' => null,
+            'heroImageId'  => null,
         ]);
     }
 
@@ -86,6 +94,12 @@ class ProductionController extends BaseController
             'venues'     => $this->formOptions->getVenues(),
             'events'     => $this->formOptions->getEventsForProduction((int) $args['id']),
             'activeTab'  => $activeTab,
+            'heroImageUrl' => $this->resolveHeroImageUrl($production->getId()),
+            'heroImageId'  => $this->contentMeta->get(
+                self::CONTENT_TYPE,
+                $production->getId(),
+                self::HERO_IMAGE_META_KEY
+            ),
         ]);
     }
 
@@ -134,6 +148,39 @@ class ProductionController extends BaseController
         return $response->withHeader('Location', '/admin/productions/edit/' . $production->getId());
     }
 
+    public function removeHeroImage(Request $request, Response $response, array $args = []): Response
+    {
+        /** @var Production|null $production */
+        $production = $this->repository->fetch((int) $args['id']);
+
+        if ($production === null) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Production not found.',
+                ]);
+            }
+
+            return $response->withStatus(404);
+        }
+
+        $this->contentMeta->delete(self::CONTENT_TYPE, $production->getId(), self::HERO_IMAGE_META_KEY);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
+                'entityType'       => 'production',
+                'entityId'         => $production->getId(),
+                'field'            => 'hero',
+                'label'            => 'Hero Image',
+                'deleteUrl'        => '/admin/productions/' . $production->getId() . '/hero-image',
+                'featuredImageUrl' => null,
+                'featuredImageId'  => null,
+            ]);
+        }
+
+        return $response->withHeader('Location', '/admin/productions/edit/' . $production->getId());
+    }
+
     public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
@@ -156,10 +203,12 @@ class ProductionController extends BaseController
             'performerIds' => [],
             'performerRoles' => [],
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $production = $this->repository->create($data);
         $this->applyFeaturedImage($production, $data['featuredImageId']);
+        $this->applyHeroImage($production->getId(), $data['heroImageId']);
 
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -237,6 +286,7 @@ class ProductionController extends BaseController
             'sponsorshipSponsorIds' => [],
             'venueId' => null,
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         /**
@@ -284,6 +334,7 @@ class ProductionController extends BaseController
         $this->syncWorks($item, $data['works']);
 
         $this->applyFeaturedImage($item, $data['featuredImageId']);
+        $this->applyHeroImage($item->getId(), $data['heroImageId']);
 
         $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
@@ -513,5 +564,39 @@ class ProductionController extends BaseController
         }
 
         $production->setFeaturedImage($image);
+    }
+
+    private function applyHeroImage(int $productionId, mixed $heroImageId): void
+    {
+        if (empty($heroImageId)) {
+            $this->contentMeta->delete(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY);
+            return;
+        }
+
+        $image = $this->entityManager->getRepository(Media::class)->find((int) $heroImageId);
+
+        if (!$image instanceof Media) {
+            $this->contentMeta->delete(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY);
+            return;
+        }
+
+        if (!$image->isImage()) {
+            throw new \InvalidArgumentException('Hero media must be an image.');
+        }
+
+        $this->contentMeta->set(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY, (string) $image->getId());
+    }
+
+    private function resolveHeroImageUrl(int $productionId): ?string
+    {
+        $heroImageId = $this->contentMeta->get(self::CONTENT_TYPE, $productionId, self::HERO_IMAGE_META_KEY);
+
+        if (empty($heroImageId)) {
+            return null;
+        }
+
+        $image = $this->entityManager->getRepository(Media::class)->find((int) $heroImageId);
+
+        return $image instanceof Media ? $image->getUrl() : null;
     }
 }

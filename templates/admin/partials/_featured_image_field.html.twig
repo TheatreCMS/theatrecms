@@ -1,14 +1,23 @@
-{# Shared "Featured Image" field for Production/Post/Season/Venue create+edit forms.
+{# Shared image-picker field for Production/Post/Season/Venue create+edit forms.
    Params: entityType (string), entityId (int|null), featuredImageUrl (string|null), featuredImageId (int|null),
-   oob (bool, optional) - set true when re-rendering this into an existing page via an HTMX out-of-band swap #}
-<div id="featured-image-field"{% if oob %} hx-swap-oob="true"{% endif %} class="md:col-span-2">
-    <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+   field (string, optional, default 'featured') - distinguishes multiple image fields on the same page
+   (e.g. Production's separate featured + hero images) by deriving DOM ids/names from it,
+   label (string, optional, default 'Featured Image'), deleteUrl (string, optional - defaults to the
+   featured-image REST subresource; pass explicitly for fields that don't follow that route naming),
+   confirmLabel (string, optional), oob (bool, optional) - set true when re-rendering this into an
+   existing page via an HTMX out-of-band swap #}
+{% set field = field|default('featured') %}
+{% set label = label|default('Featured Image') %}
+{% set deleteUrl = deleteUrl|default('/admin/' ~ entityType ~ 's/' ~ entityId ~ '/featured-image') %}
+{% set confirmLabel = confirmLabel|default('Remove the ' ~ label|lower ~ '? This does not delete it from the media library.') %}
+<div id="{{ field }}-image-field"{% if oob %} hx-swap-oob="true"{% endif %} class="md:col-span-2">
+    <label class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
     <div class="rounded-md border border-gray-200 bg-gray-50 p-4">
-        <div id="featured-image-preview">
+        <div id="{{ field }}-image-preview">
             {% if featuredImageUrl %}
-                <img src="{{ featuredImageUrl }}" alt="Featured image" class="max-h-40 w-auto object-contain">
+                <img src="{{ featuredImageUrl }}" alt="{{ label }}" class="max-h-40 w-auto object-contain">
             {% else %}
-                <p class="text-sm text-gray-500">No featured image set.</p>
+                <p class="text-sm text-gray-500">No {{ label|lower }} set.</p>
             {% endif %}
         </div>
 
@@ -16,7 +25,7 @@
             <button
                 type="button"
                 class="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                hx-get="/admin/media/picker?target={{ entityType }}&type=image"
+                hx-get="/admin/media/picker?target={{ entityType }}&field={{ field }}&type=image"
                 hx-target="#image-picker-modal-content"
                 hx-swap="innerHTML"
             >
@@ -27,16 +36,16 @@
                 <button
                     type="button"
                     class="px-3 py-1.5 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50"
-                    hx-delete="/admin/{{ entityType }}s/{{ entityId }}/featured-image"
-                    hx-target="#featured-image-field"
+                    hx-delete="{{ deleteUrl }}"
+                    hx-target="#{{ field }}-image-field"
                     hx-swap="outerHTML"
-                    hx-confirm="Remove the featured image? This does not delete it from the media library."
+                    hx-confirm="{{ confirmLabel }}"
                 >
-                    Remove Featured Image
+                    Remove {{ label }}
                 </button>
             {% endif %}
         </div>
     </div>
 
-    <input type="hidden" name="featuredImageId" id="featuredImageId" value="{{ featuredImageId }}">
+    <input type="hidden" name="{{ field }}ImageId" id="{{ field }}ImageId" value="{{ featuredImageId }}">
 </div>

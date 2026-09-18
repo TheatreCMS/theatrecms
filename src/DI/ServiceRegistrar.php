@@ -30,6 +30,7 @@ use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Repositories\MenuRepository;
@@ -396,6 +397,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(ProductionFormOptionsService::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
