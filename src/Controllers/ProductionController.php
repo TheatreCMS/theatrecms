@@ -2,7 +2,6 @@
 
 namespace TheatreCMS\Controllers;
 
-use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -11,8 +10,10 @@ use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
+use TheatreCMS\Traits\HandlesContentImages;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -29,13 +30,21 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  */
 class ProductionController extends BaseController
 {
+    use HandlesContentImages;
+
     public function __construct(
         ProductionRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        private readonly ProductionFormOptionsService $formOptions
+        private readonly ProductionFormOptionsService $formOptions,
+        private readonly ContentMetaRepository $contentMeta
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function contentType(): string
+    {
+        return 'production';
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -65,6 +74,8 @@ class ProductionController extends BaseController
             'works'    => $this->formOptions->getWorks(),
             'sponsors' => $this->formOptions->getSponsors(),
             'venues'   => $this->formOptions->getVenues(),
+            'heroImageUrl' => null,
+            'heroImageId'  => null,
         ]);
     }
 
@@ -86,6 +97,12 @@ class ProductionController extends BaseController
             'venues'     => $this->formOptions->getVenues(),
             'events'     => $this->formOptions->getEventsForProduction((int) $args['id']),
             'activeTab'  => $activeTab,
+            'heroImageUrl' => $production->getHeroImageUrl(),
+            'heroImageId'  => $this->contentMeta->get(
+                $this->contentType(),
+                $production->getId(),
+                self::HERO_IMAGE_META_KEY
+            ),
         ]);
     }
 
@@ -101,37 +118,6 @@ class ProductionController extends BaseController
         }
 
         return $this->buildListRedirect($response, $request, '/admin/productions');
-    }
-
-    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
-    {
-        /** @var Production|null $production */
-        $production = $this->repository->fetch((int) $args['id']);
-
-        if ($production === null) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Production not found.',
-                ]);
-            }
-
-            return $response->withStatus(404);
-        }
-
-        $production->setFeaturedImage(null);
-        $this->repository->update($production);
-
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
-                'entityType'       => 'production',
-                'entityId'         => $production->getId(),
-                'featuredImageUrl' => $production->getFeaturedImageUrl(),
-                'featuredImageId'  => null,
-            ]);
-        }
-
-        return $response->withHeader('Location', '/admin/productions/edit/' . $production->getId());
     }
 
     public function store(Request $request, Response $response, array $args = []): Response
@@ -156,10 +142,12 @@ class ProductionController extends BaseController
             'performerIds' => [],
             'performerRoles' => [],
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         $production = $this->repository->create($data);
         $this->applyFeaturedImage($production, $data['featuredImageId']);
+        $this->applyHeroImage($production->getId(), $data['heroImageId']);
 
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -237,6 +225,7 @@ class ProductionController extends BaseController
             'sponsorshipSponsorIds' => [],
             'venueId' => null,
             'featuredImageId' => null,
+            'heroImageId' => null,
         ]);
 
         /**
@@ -284,6 +273,7 @@ class ProductionController extends BaseController
         $this->syncWorks($item, $data['works']);
 
         $this->applyFeaturedImage($item, $data['featuredImageId']);
+        $this->applyHeroImage($item->getId(), $data['heroImageId']);
 
         $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
@@ -497,21 +487,5 @@ class ProductionController extends BaseController
             $production->addSponsorship($newSponsorship);
             $this->entityManager->persist($newSponsorship);
         }
-    }
-
-    private function applyFeaturedImage(Production $production, mixed $featuredImageId): void
-    {
-        if (empty($featuredImageId)) {
-            $production->setFeaturedImage(null);
-            return;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
-
-        if ($image instanceof Media && !$image->isImage()) {
-            throw new \InvalidArgumentException('Featured media must be an image.');
-        }
-
-        $production->setFeaturedImage($image);
     }
 }

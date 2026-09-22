@@ -2,18 +2,34 @@
 
 namespace TheatreCMS\Repositories;
 
+use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Models\Person;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 
 class ProductionRepository extends BaseRepository
 {
+    use EagerLoadsHeroImage;
+
     protected string $entityClass = Production::class;
+
+    public function __construct(
+        EntityManagerInterface $em,
+        private readonly ContentMetaRepository $contentMeta,
+    ) {
+        parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'production';
+    }
 
     protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
@@ -36,28 +52,28 @@ class ProductionRepository extends BaseRepository
     public function create(array $args): Production
     {
         $args = array_merge([
-            'name' => null,
-            'seasonId' => null,
-            'venueId' => null,
-            'opening' => null,
-            'closing' => null,
-            'description' => null,
-            'excerpt' => null,
-            'runtime' => null,
+            'name'              => null,
+            'seasonId'          => null,
+            'venueId'           => null,
+            'opening'           => null,
+            'closing'           => null,
+            'description'       => null,
+            'excerpt'           => null,
+            'runtime'           => null,
             'ageRecommendation' => null,
-            'contentAdvisory' => null,
-            'promoVideoUrl' => null,
+            'contentAdvisory'   => null,
+            'promoVideoUrl'     => null,
             'ticketPurchaseUrl' => null,
-            'works' => null, // comma separated ids or titles
-            'people' => null, // lines of "id|role" or "Name|role"
+            'works'             => null, // comma separated ids or titles
+            'people'            => null, // lines of "id|role" or "Name|role"
         ], $args);
 
-        $name = trim((string)$args['name']);
+        $name = trim((string) $args['name']);
         if (empty($name)) {
             throw new \InvalidArgumentException('Production name is required.');
         }
 
-        $seasonId = (int)($args['seasonId'] ?? 0);
+        $seasonId = (int) ($args['seasonId'] ?? 0);
         if (!$seasonId) {
             throw new \InvalidArgumentException('Season ID is required.');
         }
@@ -68,7 +84,7 @@ class ProductionRepository extends BaseRepository
         }
 
         $venue = null;
-        $venueId = (int)($args['venueId'] ?? 0);
+        $venueId = (int) ($args['venueId'] ?? 0);
         if ($venueId > 0) {
             $venue = $this->em->getRepository(Venue::class)->find($venueId);
             if (!$venue) {
@@ -90,7 +106,7 @@ class ProductionRepository extends BaseRepository
         }
 
         if (!empty($args['runtime'])) {
-            $production->setRuntime((int)$args['runtime']);
+            $production->setRuntime((int) $args['runtime']);
         }
 
         if (!empty($args['ageRecommendation'])) {
@@ -154,7 +170,9 @@ class ProductionRepository extends BaseRepository
 
     public function getBySlug(string $slug): ?object
     {
-        return $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+        $production = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+
+        return $this->attachHeroImage($production instanceof Production ? $production : null);
     }
 
     /**
@@ -166,7 +184,7 @@ class ProductionRepository extends BaseRepository
     {
         $today = new DateTime('today');
 
-        return $this->em->createQueryBuilder()
+        $production = $this->em->createQueryBuilder()
             ->select('p')
             ->from(Production::class, 'p')
             ->where('p.opening IS NOT NULL')
@@ -176,5 +194,10 @@ class ProductionRepository extends BaseRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+
+        /** @var ?Production $production */
+        $production = $this->attachHeroImage($production);
+
+        return $production;
     }
 }

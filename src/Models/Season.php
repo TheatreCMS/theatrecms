@@ -8,16 +8,18 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
+use TheatreCMS\Traits\HasFeaturedImage;
+use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasSponsors;
 
 #[Entity, Table(name: 'seasons')]
 class Season extends ModelBase implements \JsonSerializable
 {
+    use HasFeaturedImage;
+    use HasHeroImage;
     use HasSponsors;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
@@ -28,10 +30,6 @@ class Season extends ModelBase implements \JsonSerializable
 
     #[Column(type: 'text', nullable: true)]
     private ?string $overview = null;
-
-    #[ManyToOne(targetEntity: Media::class)]
-    #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Media $featuredImage = null;
 
     #[Column(name: 'start_date', type: 'datetime', nullable: false)]
     private ?\DateTime $startDate = null;
@@ -80,28 +78,6 @@ class Season extends ModelBase implements \JsonSerializable
     public function getEndDate(): ?\DateTime
     {
         return $this->endDate;
-    }
-
-    public function getFeaturedImage(): ?Media
-    {
-        return $this->featuredImage;
-    }
-
-    public function setFeaturedImage(?Media $featuredImage): self
-    {
-        $this->featuredImage = $featuredImage;
-
-        return $this;
-    }
-
-    public function getFeaturedImageUrl(): ?string
-    {
-        return $this->featuredImage?->getUrl();
-    }
-
-    public function hasFeaturedImage(): bool
-    {
-        return $this->featuredImage !== null;
     }
 
     public function getProductions(): Collection

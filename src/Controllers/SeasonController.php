@@ -2,12 +2,13 @@
 
 namespace TheatreCMS\Controllers;
 
-use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Sponsorship;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Traits\HandlesContentImages;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -21,16 +22,24 @@ use Slim\Views\Twig;
  */
 class SeasonController extends BaseController
 {
+    use HandlesContentImages;
+
     private SponsorRepository $sponsorRepo;
 
     public function __construct(
         SeasonRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        SponsorRepository $sponsorRepo
+        SponsorRepository $sponsorRepo,
+        private readonly ContentMetaRepository $contentMeta
     ) {
         parent::__construct($repository, $twig, $em);
         $this->sponsorRepo = $sponsorRepo;
+    }
+
+    protected function contentType(): string
+    {
+        return 'season';
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -51,9 +60,13 @@ class SeasonController extends BaseController
 
     public function edit(Request $request, Response $response, array $args = []): Response
     {
+        /** @var Season $season */
+        $season = $this->repository()->fetch($args['id']);
+
         return $this->twig->render($response, 'admin/seasons/edit.html.twig', [
-            'season'   => $this->repository()->fetch($args['id']),
+            'season'   => $season,
             'sponsors' => $this->sponsorRepo->fetchAll(),
+            'heroImageId' => $this->contentMeta->get($this->contentType(), $season->getId(), self::HERO_IMAGE_META_KEY),
         ]);
     }
 
@@ -84,35 +97,6 @@ class SeasonController extends BaseController
         return $this->buildListRedirect($response, $request, '/admin/seasons');
     }
 
-    public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response
-    {
-        $season = $this->repository()->fetch($args['id']);
-
-        if (is_null($season)) {
-            if ($request->getHeaderLine('HX-Request')) {
-                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
-                    'type'    => 'error',
-                    'message' => 'Season not found.',
-                ]);
-            }
-            return $response->withStatus(404);
-        }
-
-        $season->setFeaturedImage(null);
-        $this->repository()->update($season);
-
-        if ($request->getHeaderLine('HX-Request')) {
-            return $this->twig->render($response, 'admin/partials/_featured_image_field.html.twig', [
-                'entityType'       => 'season',
-                'entityId'         => $season->getId(),
-                'featuredImageUrl' => $season->getFeaturedImageUrl(),
-                'featuredImageId'  => null,
-            ]);
-        }
-
-        return $response->withHeader('Location', '/admin/seasons/edit/' . $season->getId());
-    }
-
     public function store(Request $request, Response $response, array $args = []): Response
     {
         $data = $request->getParsedBody();
@@ -129,6 +113,7 @@ class SeasonController extends BaseController
 
         $season = $this->repository->create($data);
         $this->applyFeaturedImage($season, $data['featuredImageId'] ?? null);
+        $this->applyHeroImage($season->getId(), $data['heroImageId'] ?? null);
         $this->syncSponsorships($season, $data['sponsorshipSponsorIds'] ?? []);
         $this->entityManager->flush();
 
@@ -151,6 +136,7 @@ class SeasonController extends BaseController
             'endDate' => null,
             'overview' => null,
             'featuredImageId' => null,
+            'heroImageId' => null,
             'sponsorshipSponsorIds' => [],
         ], $data);
 
@@ -177,6 +163,7 @@ class SeasonController extends BaseController
             $item->setEndDate($end);
             $item->setOverview($data['overview']);
             $this->applyFeaturedImage($item, $data['featuredImageId']);
+            $this->applyHeroImage($item->getId(), $data['heroImageId']);
             $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);
             $this->repository()->update($item);
 
@@ -235,21 +222,5 @@ class SeasonController extends BaseController
             $season->addSponsorship($newSponsorship);
             $this->entityManager->persist($newSponsorship);
         }
-    }
-
-    private function applyFeaturedImage(Season $season, mixed $featuredImageId): void
-    {
-        if (empty($featuredImageId)) {
-            $season->setFeaturedImage(null);
-            return;
-        }
-
-        $image = $this->entityManager->getRepository(Media::class)->find((int) $featuredImageId);
-
-        if ($image instanceof Media && !$image->isImage()) {
-            throw new \InvalidArgumentException('Featured media must be an image.');
-        }
-
-        $season->setFeaturedImage($image);
     }
 }

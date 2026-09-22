@@ -7,11 +7,11 @@ use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\JoinColumn;
-use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasFeaturedImage;
+use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
 use TheatreCMS\Traits\HasTimestamps;
 
@@ -19,6 +19,8 @@ use TheatreCMS\Traits\HasTimestamps;
 class Post extends ModelBase
 {
     use HasContentStatus;
+    use HasFeaturedImage;
+    use HasHeroImage;
     use HasTimestamps;
     use HasModifiedTimestamp;
 
@@ -30,10 +32,6 @@ class Post extends ModelBase
 
     #[Column(type: 'text', nullable: false)]
     private string $content;
-
-    #[ManyToOne(targetEntity: Media::class)]
-    #[JoinColumn(name: 'featured_image_id', referencedColumnName: 'id', nullable: true)]
-    private ?Media $featuredImage = null;
 
     public function __construct(string $title, ContentStatus $status, string $content)
     {
@@ -75,27 +73,5 @@ class Post extends ModelBase
         $this->content = $content;
 
         return $this;
-    }
-
-    public function getFeaturedImage(): ?Media
-    {
-        return $this->featuredImage;
-    }
-
-    public function setFeaturedImage(?Media $featuredImage): self
-    {
-        $this->featuredImage = $featuredImage;
-
-        return $this;
-    }
-
-    public function getFeaturedImageUrl(): ?string
-    {
-        return $this->featuredImage?->getUrl();
-    }
-
-    public function hasFeaturedImage(): bool
-    {
-        return $this->featuredImage !== null;
     }
 }

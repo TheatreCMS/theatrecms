@@ -86,6 +86,11 @@
 				entityType: 'production', entityId: null, featuredImageUrl: null, featuredImageId: null
 			} %}
 
+			{% include 'admin/partials/_featured_image_field.html.twig' with {
+				entityType: 'production', entityId: null, field: 'hero', label: 'Hero Image',
+				featuredImageUrl: null, featuredImageId: null
+			} %}
+
 			<div class="md:col-span-2 space-y-3">
 				<label for="description" class="block text-sm font-medium text-gray-700">Description</label>
 				<div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>

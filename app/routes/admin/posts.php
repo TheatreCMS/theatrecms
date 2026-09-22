@@ -14,6 +14,7 @@ if (isset($app)) {
         $group->post('/edit',     [PostController::class, 'update']);
         $group->get('/edit/{id}', [PostController::class, 'edit']);
         $group->delete('/{id}/featured-image', [PostController::class, 'removeFeaturedImage']);
+        $group->delete('/{id}/hero-image', [PostController::class, 'removeHeroImage']);
         $group->delete('/{id}',   [PostController::class, 'destroy']);
         $group->get('',           [PostController::class, 'index']);
     })->add(new RequireTwigMiddleware($container))

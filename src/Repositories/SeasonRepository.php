@@ -3,14 +3,28 @@
 namespace TheatreCMS\Repositories;
 
 use TheatreCMS\Models\Season;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\QueryBuilder;
 
 class SeasonRepository extends BaseRepository
 {
+    use EagerLoadsHeroImage;
+
     protected string $entityClass = Season::class;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'season';
+    }
 
     protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {

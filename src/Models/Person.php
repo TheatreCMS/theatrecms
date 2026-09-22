@@ -9,10 +9,15 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use JsonSerializable;
 use TheatreCMS\Text\RichTextSanitizer;
+use TheatreCMS\Traits\HasFeaturedImage;
+use TheatreCMS\Traits\HasHeroImage;
 
 #[Entity, Table(name: 'people')]
 class Person extends ModelBase implements JsonSerializable
 {
+    use HasFeaturedImage;
+    use HasHeroImage;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
 

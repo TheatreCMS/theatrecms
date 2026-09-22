@@ -81,6 +81,7 @@ class MediaController extends BaseController
             '/admin/media/picker',
             [
                 'target' => (string) ($request->getQueryParams()['target'] ?? ''),
+                'field' => (string) ($request->getQueryParams()['field'] ?? 'featured'),
                 'type' => $type,
             ],
             $search,
@@ -152,6 +153,7 @@ class MediaController extends BaseController
 
         return $this->twig->render($response, 'admin/partials/_featured_media_selection.html.twig', [
             'media' => $media,
+            'field' => (string) ($request->getQueryParams()['field'] ?? 'featured'),
         ]);
     }
 
@@ -169,6 +171,7 @@ class MediaController extends BaseController
 
         return $this->twig->render($response, 'admin/partials/_featured_media_selection.html.twig', [
             'media' => $media,
+            'field' => (string) ($request->getQueryParams()['field'] ?? 'featured'),
         ]);
     }
 

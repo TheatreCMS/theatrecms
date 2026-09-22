@@ -120,12 +120,19 @@ class SeoTagBuilder
 
     private function resolveOgImage(object $entity): string
     {
-        $image = match (true) {
-            method_exists($entity, 'getFeaturedImageUrl') => (string) ($entity->getFeaturedImageUrl() ?? ''),
-            $entity instanceof Person => $entity->getHeadshotUrl(),
-            $entity instanceof Sponsor => (string) ($entity->getLogoUrl() ?? ''),
-            default => '',
-        };
+        $image = '';
+
+        if (method_exists($entity, 'getFeaturedImageUrl')) {
+            $image = (string) ($entity->getFeaturedImageUrl() ?? '');
+        }
+
+        if ($image === '' && $entity instanceof Person) {
+            $image = $entity->getHeadshotUrl();
+        }
+
+        if ($image === '' && $entity instanceof Sponsor) {
+            $image = (string) ($entity->getLogoUrl() ?? '');
+        }
 
         if ($image === '') {
             $image = $this->seoSetting('default_social_image');
