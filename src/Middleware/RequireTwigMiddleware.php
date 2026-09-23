@@ -24,6 +24,9 @@ class RequireTwigMiddleware implements MiddlewareInterface
             return $response->withStatus(500);
         }
 
+        // Expose the request path to every template rendered for this request (e.g. admin sidebar active state).
+        $this->container->get(Twig::class)['current_path'] = $request->getUri()->getPath();
+
         return $handler->handle($request);
     }
 }
