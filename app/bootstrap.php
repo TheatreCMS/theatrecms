@@ -92,6 +92,8 @@ register_image_size('admin-thumbnail', 300, 300, true);
 
 $taxonomyRegistry = $container->get(TaxonomyRegistry::class);
 TaxonomyRegistry::setInstance($taxonomyRegistry);
+register_taxonomy('genre', ['work'], ['label' => 'Genres', 'singular_label' => 'Genre']);
+register_taxonomy('post_category', ['post'], ['label' => 'Categories', 'singular_label' => 'Category']);
 
 $queriedObject = $container->get(QueriedObject::class);
 QueriedObject::setInstance($queriedObject);
