@@ -41,3 +41,6 @@ opencode.json
 # PHP CS Fixer configuration
 /.php-cs-fixer.cache
 /.php-cs-fixer.php
+
+# Twig CS Fixer cache
+/.twig-cs-fixer.cache
