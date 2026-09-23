@@ -18,9 +18,9 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  * registered by future theme/plugin extensions can use this table without code changes
  * here, matching this codebase's WordPress-inspired extensibility goals.
  */
-#[Entity, Table(name: 'content_meta', uniqueConstraints: [
-    new UniqueConstraint(name: 'uniq_content_meta_key', columns: ['content_type', 'content_id', 'meta_key']),
-])]
+#[Entity]
+#[Table(name: 'content_meta')]
+#[UniqueConstraint(name: 'uniq_content_meta_key', columns: ['content_type', 'content_id', 'meta_key'])]
 class ContentMeta
 {
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
