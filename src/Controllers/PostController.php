@@ -9,7 +9,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Repositories\ContentMetaRepository;
+use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Traits\AssignsTaxonomyTerms;
 use TheatreCMS\Traits\HandlesContentImages;
 
 /**
@@ -18,6 +20,7 @@ use TheatreCMS\Traits\HandlesContentImages;
 class PostController extends BaseController
 {
     use HandlesContentImages;
+    use AssignsTaxonomyTerms;
 
     private const SORTABLE_COLUMNS = ['title', 'publishedAt'];
 
@@ -25,9 +28,15 @@ class PostController extends BaseController
         PostRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TermRelationshipRepository $termRelationships,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function termRelationships(): TermRelationshipRepository
+    {
+        return $this->termRelationships;
     }
 
     protected function contentType(): string
@@ -129,6 +138,7 @@ class PostController extends BaseController
             ]);
             $this->applyFeaturedImage($post, $data['featuredImageId'] ?? null);
             $this->applyHeroImage($post->getId(), $data['heroImageId'] ?? null);
+            $this->applyTerms($this->contentType(), $post->getId(), $data);
             $this->entityManager->flush();
         } catch (\InvalidArgumentException $e) {
             if ($request->getHeaderLine('HX-Request')) {
@@ -226,6 +236,18 @@ class PostController extends BaseController
 
         if (!empty($data['slug'])) {
             $this->repository->updateSlug($post, $data['slug']);
+        }
+
+        try {
+            $this->applyTerms($this->contentType(), $post->getId(), $data);
+        } catch (\InvalidArgumentException $e) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Unable to save post: ' . $e->getMessage(),
+                ]);
+            }
+            return $response->withStatus(400);
         }
 
         $this->repository->update($post);

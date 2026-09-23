@@ -3,6 +3,8 @@
 {% block title %}Posts - {{ parent() }}{% endblock %}
 
 {% block content %}
+{% include 'admin/partials/_content_tabs.html.twig' with {'content_type': 'post', 'current': 'list'} %}
+
     <div class="flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold">Posts</h1>

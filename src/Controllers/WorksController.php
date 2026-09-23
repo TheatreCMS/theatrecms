@@ -4,24 +4,37 @@ namespace TheatreCMS\Controllers;
 
 use TheatreCMS\Models\Work;
 use TheatreCMS\Repositories\PersonRepository;
+use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\Traits\AssignsTaxonomyTerms;
 
 /**
  * @extends BaseController<WorkRepository>
  */
 class WorksController extends BaseController
 {
+    use AssignsTaxonomyTerms;
+
     private const SORTABLE_COLUMNS = ['title', 'author'];
 
     private PersonRepository $personRepo;
 
-    public function __construct(WorkRepository $repository, Twig $twig, PersonRepository $personRepo)
-    {
+    public function __construct(
+        WorkRepository $repository,
+        Twig $twig,
+        PersonRepository $personRepo,
+        private readonly TermRelationshipRepository $termRelationships,
+    ) {
         parent::__construct($repository, $twig);
         $this->personRepo = $personRepo;
+    }
+
+    protected function termRelationships(): TermRelationshipRepository
+    {
+        return $this->termRelationships;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -103,6 +116,12 @@ class WorksController extends BaseController
                 ]);
             }
             return $response->withStatus(400);
+        }
+
+        try {
+            $this->applyTerms('work', $work->getId(), $data);
+        } catch (\InvalidArgumentException $e) {
+            // The work itself was created; land on its edit page so the terms can be corrected.
         }
 
         $editUrl = '/admin/works/edit/' . $work->getId();
@@ -211,6 +230,18 @@ class WorksController extends BaseController
         $workEntity = $work;
 
         $this->repository->updateFromArgs($workEntity, $data);
+
+        try {
+            $this->applyTerms('work', $workEntity->getId(), $data);
+        } catch (\InvalidArgumentException $e) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => 'Work saved, but its terms could not be updated: ' . $e->getMessage(),
+                ]);
+            }
+            return $response->withStatus(400);
+        }
 
         if ($request->getHeaderLine('HX-Request')) {
             return $this->twig->render($response, 'admin/partials/_alert.html.twig', [

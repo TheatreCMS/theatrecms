@@ -1,0 +1,17 @@
+<div>
+    <label for="term-name" class="block text-sm font-medium text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
+    <input type="text" name="name" id="term-name" required class="w-full rounded-md border-gray-300 shadow-sm" value="{{ term ? term.name }}">
+</div>
+
+<div>
+    <label for="term-slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+    <input type="text" name="slug" id="term-slug" class="w-full rounded-md border-gray-300 shadow-sm" value="{{ term ? term.slug }}" aria-describedby="term-slug-help">
+    <p id="term-slug-help" class="mt-1 text-xs text-gray-500">
+        {% if term %}Used in URLs. Changing it breaks existing links to this {{ taxonomy.singularLabel|lower }}.{% else %}Used in URLs. Leave blank to generate it from the name.{% endif %}
+    </p>
+</div>
+
+<div>
+    <label for="term-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+    <textarea name="description" id="term-description" rows="3" class="w-full rounded-md border-gray-300 shadow-sm">{{ term ? term.description }}</textarea>
+</div>

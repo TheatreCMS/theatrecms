@@ -25,6 +25,7 @@ use TheatreCMS\Controllers\ProfileController;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Controllers\SponsorController;
+use TheatreCMS\Controllers\TermController;
 use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
@@ -90,6 +91,7 @@ use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
 use TheatreCMS\Twig\SponsorsExtension;
 use TheatreCMS\Twig\StartDateExtension;
+use TheatreCMS\Twig\TaxonomyExtension;
 use TheatreCMS\Twig\TermsExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
@@ -314,6 +316,11 @@ class ServiceRegistrar
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new EndDateExtension($c->get(EndDateResolver::class)));
             $twig->addExtension(new TermsExtension($c->get(TermRelationshipRepository::class)));
+            $twig->addExtension(new TaxonomyExtension(
+                $c->get(TaxonomyRegistry::class),
+                $c->get(AuthorizationService::class),
+                $c->get(TermRepository::class),
+            ));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->addExtension(new AddressExtension($c->get(AddressResolver::class)));
             $twig->addExtension(new ExcerptExtension($c->get(ExcerptResolver::class)));
@@ -465,6 +472,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(TermRelationshipRepository::class),
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
@@ -507,11 +515,21 @@ class ServiceRegistrar
                     $c->get(MediaUploadService::class),
                 );
             },
+            TermController::class => static function (ContainerInterface $c): TermController {
+                return new TermController(
+                    $c->get(TermRepository::class),
+                    $c->get(Twig::class),
+                    $c->get(TermRelationshipRepository::class),
+                    $c->get(TaxonomyRegistry::class),
+                    $c->get(AuthorizationService::class),
+                );
+            },
             WorksController::class => static function (ContainerInterface $c): WorksController {
                 return new WorksController(
                     $c->get(WorkRepository::class),
                     $c->get(Twig::class),
                     $c->get(PersonRepository::class),
+                    $c->get(TermRelationshipRepository::class),
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {

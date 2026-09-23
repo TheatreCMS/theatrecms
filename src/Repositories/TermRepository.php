@@ -43,6 +43,37 @@ class TermRepository extends BaseRepository
     }
 
     /**
+     * Rename/re-describe a term. A non-blank slug is re-slugified and kept unique within the
+     * taxonomy (ignoring the term itself); a blank slug keeps the current one, since changing
+     * a slug changes the term's public URLs.
+     *
+     * @param array{name?: string, slug?: string|null, description?: string|null} $args
+     */
+    public function updateTerm(Term $term, array $args): Term
+    {
+        $name = trim((string) ($args['name'] ?? ''));
+
+        if ($name === '') {
+            throw new InvalidArgumentException('A term name is required.');
+        }
+
+        $term->setName($name);
+
+        $slugSource = trim((string) ($args['slug'] ?? ''));
+        if ($slugSource !== '' && $slugSource !== $term->getSlug()) {
+            $term->setSlug($this->generateUniqueTermSlug($term->getTaxonomy(), $slugSource, $term->getId()));
+        }
+
+        $description = trim((string) ($args['description'] ?? ''));
+        $term->setDescription($description === '' ? null : $description);
+        $term->touchModified();
+
+        $this->em->flush();
+
+        return $term;
+    }
+
+    /**
      * Removes the term's assignments through the entity manager as well: the FK's ON DELETE
      * CASCADE cleans the rows up, but any relationship entities already loaded in this request
      * would otherwise stay managed while pointing at a removed term, breaking the next flush.

@@ -1,0 +1,25 @@
+{% for term in terms %}
+    {% set count = counts[term.id] ?? 0 %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <th scope="row" class="px-6 py-4 font-medium text-heading">
+            <a href="{{ basePath }}/edit/{{ term.id }}" class="hover:underline">{{ term.name }}</a>
+        </th>
+        <td class="px-6 py-4 text-gray-600">{{ term.slug }}</td>
+        <td class="px-6 py-4 text-gray-600 hidden md:table-cell">{{ term.description|length > 80 ? term.description|slice(0, 80) ~ '…' : term.description }}</td>
+        <td class="px-6 py-4 text-right">{{ count }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">
+            <a href="{{ basePath }}/edit/{{ term.id }}" class="text-blue-600 hover:text-blue-900 mr-4">Edit</a>
+            <button type="button" class="text-red-600 hover:text-red-900"
+                hx-delete="{{ basePath }}/{{ term.id }}?page={{ pagination.page }}"
+                hx-target="#termListContainer"
+                hx-swap="outerHTML"
+                hx-confirm="Delete the {{ taxonomy.singularLabel|lower }} &quot;{{ term.name }}&quot;?{% if count > 0 %} It will be removed from {{ count }} {{ count == 1 ? 'item' : 'items' }}.{% endif %} This cannot be undone.">Delete</button>
+        </td>
+    </tr>
+{% else %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td colspan="5" class="px-6 py-4">
+            {% if pagination.search %}No {{ taxonomy.label|lower }} match your search.{% else %}No {{ taxonomy.label|lower }} yet. Add one using the form.{% endif %}
+        </td>
+    </tr>
+{% endfor %}

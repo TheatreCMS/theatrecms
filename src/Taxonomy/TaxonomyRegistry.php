@@ -3,6 +3,7 @@
 namespace TheatreCMS\Taxonomy;
 
 use InvalidArgumentException;
+use TheatreCMS\Auth\Capability;
 
 class TaxonomyRegistry
 {
@@ -29,7 +30,7 @@ class TaxonomyRegistry
 
     /**
      * @param string[] $contentTypes
-     * @param array{label?: string, singular_label?: string, multiple?: bool} $args
+     * @param array{label?: string, singular_label?: string, multiple?: bool, capability?: string} $args
      */
     public function register(string $name, array $contentTypes, array $args = []): TaxonomyDefinition
     {
@@ -54,6 +55,7 @@ class TaxonomyRegistry
             $args['label'] ?? $fallbackLabel,
             $args['singular_label'] ?? $fallbackLabel,
             $args['multiple'] ?? true,
+            $args['capability'] ?? Capability::MANAGE_OPTIONS,
         );
 
         $this->taxonomies[$name] = $definition;

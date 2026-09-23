@@ -1,0 +1,33 @@
+<div id="termListContainer">
+    <table class="w-full text-sm text-left rtl:text-right text-body">
+        <thead class="text-sm text-body bg-neutral-secondary-soft border-b rounded-base border-default">
+            {% set qParam = pagination.search ? '&q=' ~ pagination.search|url_encode : '' %}
+            <tr>
+                {% for column in [{key: 'name', label: 'Name'}, {key: 'slug', label: 'Slug'}] %}
+                    <th scope="col" class="px-6 py-3 font-medium">
+                        {% set nextDirection = (pagination.sort == column.key and pagination.direction == 'asc') ? 'desc' : 'asc' %}
+                        <a href="{{ basePath }}?sort={{ column.key }}&direction={{ nextDirection }}{{ qParam }}"
+                            hx-get="{{ basePath }}?sort={{ column.key }}&direction={{ nextDirection }}{{ qParam }}"
+                            hx-target="#termListContainer"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                            class="inline-flex items-center gap-1 hover:underline">
+                            {{ column.label }}
+                            {% if pagination.sort == column.key %}
+                                <span aria-hidden="true">{{ pagination.direction == 'asc' ? '▲' : '▼' }}</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                {% endfor %}
+                <th scope="col" class="px-6 py-3 font-medium hidden md:table-cell">Description</th>
+                <th scope="col" class="px-6 py-3 font-medium text-right">Count</th>
+                <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="termList">
+            {% include 'admin/taxonomies/_table.html.twig' %}
+        </tbody>
+    </table>
+
+    {% include 'admin/partials/_pagination.html.twig' with {'pagination': pagination} %}
+</div>

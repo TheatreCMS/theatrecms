@@ -119,6 +119,32 @@ class TermRelationshipRepository
     }
 
     /**
+     * Number of content items carrying each term of the taxonomy, in one grouped query.
+     * Terms with no assignments are absent from the result.
+     *
+     * @return array<int, int> term id => item count
+     */
+    public function countsByTaxonomy(string $taxonomy): array
+    {
+        $rows = $this->em->createQueryBuilder()
+            ->select('IDENTITY(tr.term) AS termId', 'COUNT(tr.id) AS items')
+            ->from(TermRelationship::class, 'tr')
+            ->join('tr.term', 't')
+            ->where('t.taxonomy = :taxonomy')
+            ->setParameter('taxonomy', $taxonomy)
+            ->groupBy('tr.term')
+            ->getQuery()
+            ->getArrayResult();
+
+        $counts = [];
+        foreach ($rows as $row) {
+            $counts[(int) $row['termId']] = (int) $row['items'];
+        }
+
+        return $counts;
+    }
+
+    /**
      * Removes through the entity manager rather than a bulk DQL delete, so relationship
      * entities already loaded in this request don't linger in the unit of work.
      */

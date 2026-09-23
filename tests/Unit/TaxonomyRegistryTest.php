@@ -4,6 +4,7 @@ namespace TheatreCMS\Tests\Unit;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Auth\Capability;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 
 /**
@@ -32,6 +33,17 @@ class TaxonomyRegistryTest extends TestCase
 
         $this->assertSame('Post Category', $definition->label);
         $this->assertTrue($definition->multiple);
+    }
+
+    public function testCapabilityDefaultsToManageOptionsAndCanBeOverridden(): void
+    {
+        $registry = new TaxonomyRegistry();
+
+        $this->assertSame(Capability::MANAGE_OPTIONS, $registry->register('audience', ['work'])->capability);
+        $this->assertSame(
+            Capability::EDIT_POSTS,
+            $registry->register('post_category', ['post'], ['capability' => Capability::EDIT_POSTS])->capability
+        );
     }
 
     public function testForContentTypeReturnsOnlyApplicableTaxonomies(): void

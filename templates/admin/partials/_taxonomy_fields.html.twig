@@ -1,0 +1,45 @@
+{#
+	Term pickers for every taxonomy that applies to a content type; saved by the AssignsTaxonomyTerms
+	controller trait. Multi-term taxonomies get a checkbox list, single-term ones a <select>.
+
+	Params:
+	  content_type  singular content-type key, e.g. 'work'
+	  content_id    the item's id, or null on a create form
+#}
+{% for taxonomy in taxonomies_for(content_type) %}
+	{% set all_terms = taxonomy_terms(taxonomy.name) %}
+	{% set assigned_ids = content_id ? get_terms(content_type, content_id, taxonomy.name)|map(t => t.id) : [] %}
+	{% set field_name = 'terms[' ~ taxonomy.name ~ '][]' %}
+
+	<fieldset class="md:col-span-2">
+		<div class="flex items-baseline justify-between mb-1">
+			<legend class="block text-sm font-medium text-gray-700">{{ taxonomy.label }}</legend>
+			{% if can(taxonomy.capability) %}
+				<a href="/admin/taxonomies/{{ taxonomy.name }}" class="text-xs text-blue-600 hover:text-blue-900">Manage {{ taxonomy.label|lower }}</a>
+			{% endif %}
+		</div>
+
+		{# Always submitted, so clearing every choice clears the item's terms #}
+		<input type="hidden" name="{{ field_name }}" value="">
+
+		{% if all_terms is empty %}
+			<p class="text-sm text-gray-500">No {{ taxonomy.label|lower }} yet.</p>
+		{% elseif taxonomy.multiple %}
+			<div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 max-h-48 overflow-y-auto rounded-md border border-gray-300 p-3">
+				{% for term in all_terms %}
+					<label class="inline-flex items-center gap-2 text-sm">
+						<input type="checkbox" name="{{ field_name }}" value="{{ term.id }}" {% if term.id in assigned_ids %}checked{% endif %}>
+						{{ term.name }}
+					</label>
+				{% endfor %}
+			</div>
+		{% else %}
+			<select name="{{ field_name }}" aria-label="{{ taxonomy.singularLabel }}" class="w-full rounded-md border-gray-300 shadow-sm">
+				<option value="">— None —</option>
+				{% for term in all_terms %}
+					<option value="{{ term.id }}" {% if term.id in assigned_ids %}selected{% endif %}>{{ term.name }}</option>
+				{% endfor %}
+			</select>
+		{% endif %}
+	</fieldset>
+{% endfor %}

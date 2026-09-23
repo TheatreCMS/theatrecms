@@ -57,6 +57,8 @@
                 <div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
                 <textarea name="content" id="content" rows="10" class="hidden" aria-hidden="true">{{ post.content|default('') }}</textarea>
             </div>
+
+            {% include 'admin/partials/_taxonomy_fields.html.twig' with {'content_type': 'post', 'content_id': post.id} %}
         </div>
 
         <div class="flex items-center justify-end space-x-3 pt-4 border-t">

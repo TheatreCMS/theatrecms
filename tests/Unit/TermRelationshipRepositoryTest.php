@@ -130,6 +130,22 @@ class TermRelationshipRepositoryTest extends TestCase
         $this->assertSame([1, 3], $this->repository->contentIdsFor($comedy, 'work'));
     }
 
+    public function testCountsByTaxonomyCountsItemsPerTermWithinTaxonomyOnly(): void
+    {
+        $comedy = $this->term('genre', 'Comedy');
+        $drama = $this->term('genre', 'Drama');
+        $unused = $this->term('genre', 'Farce');
+        $family = $this->term('audience', 'Family');
+        $this->repository->setTerms('work', 1, 'genre', [$comedy->getId(), $drama->getId()]);
+        $this->repository->setTerms('work', 2, 'genre', [$comedy->getId()]);
+        $this->repository->setTerms('work', 1, 'audience', [$family->getId()]);
+
+        $counts = $this->repository->countsByTaxonomy('genre');
+
+        $this->assertSame([$comedy->getId() => 2, $drama->getId() => 1], $counts);
+        $this->assertArrayNotHasKey($unused->getId(), $counts);
+    }
+
     public function testDeleteAllForContentRemovesOnlyThatItem(): void
     {
         $comedy = $this->term('genre', 'Comedy');

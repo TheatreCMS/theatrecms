@@ -1,0 +1,45 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}{{ taxonomy.label }} - {{ parent() }}{% endblock %}
+
+{% block content %}
+{% include 'admin/partials/_content_tabs.html.twig' with {'content_type': taxonomy.contentTypes|first, 'current': taxonomy.name} %}
+
+<div class="mb-6">
+    <h1 class="text-2xl font-bold">{{ taxonomy.label }}</h1>
+    <p class="text-gray-600">Terms used to group content. Each item can have {{ taxonomy.multiple ? 'several' : 'one' }} {{ taxonomy.multiple ? taxonomy.label|lower : taxonomy.singularLabel|lower }}.</p>
+</div>
+
+<div class="flex flex-col gap-8 lg:flex-row">
+    <section class="lg:w-1/3" aria-labelledby="add-term-heading">
+        <h2 id="add-term-heading" class="text-lg font-semibold mb-4">Add new {{ taxonomy.singularLabel|lower }}</h2>
+        <div id="term-form-errors"></div>
+        <form action="{{ basePath }}" method="POST" class="space-y-4"
+            hx-post="{{ basePath }}" hx-target="#termListContainer" hx-swap="outerHTML">
+            <div id="term-add-fields" class="space-y-4">
+                {% include 'admin/taxonomies/_fields.html.twig' with {'term': null} %}
+            </div>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Add {{ taxonomy.singularLabel|lower }}</button>
+        </form>
+    </section>
+
+    <section class="lg:flex-1 min-w-0" aria-label="{{ taxonomy.label }}">
+        <div class="mb-4">
+            <input
+                type="search"
+                name="q"
+                value="{{ pagination.search }}"
+                placeholder="Search {{ taxonomy.label|lower }}..."
+                aria-label="Search {{ taxonomy.label|lower }}"
+                class="w-full max-w-sm rounded border border-default px-3 py-2 text-sm"
+                hx-get="{{ basePath }}"
+                hx-trigger="input changed delay:300ms, search"
+                hx-target="#termListContainer"
+                hx-swap="outerHTML"
+                hx-push-url="true">
+        </div>
+
+        {% include 'admin/taxonomies/_list.html.twig' %}
+    </section>
+</div>
+{% endblock %}

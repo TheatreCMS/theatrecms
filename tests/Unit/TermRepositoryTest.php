@@ -80,6 +80,38 @@ class TermRepositoryTest extends TestCase
         $this->repository->create(['taxonomy' => 'genre', 'name' => '  ']);
     }
 
+    public function testUpdateTermRenamesAndKeepsSlugWhenSlugBlank(): void
+    {
+        $term = $this->repository->create(['taxonomy' => 'genre', 'name' => 'Comedy', 'description' => 'Funny']);
+
+        $this->repository->updateTerm($term, ['name' => 'Comedies', 'slug' => '', 'description' => '  ']);
+
+        $this->assertSame('Comedies', $term->getName());
+        $this->assertSame('comedy', $term->getSlug());
+        $this->assertSame('', $term->getDescription());
+    }
+
+    public function testUpdateTermReslugsUniquelyIgnoringItself(): void
+    {
+        $this->repository->create(['taxonomy' => 'genre', 'name' => 'Drama']);
+        $term = $this->repository->create(['taxonomy' => 'genre', 'name' => 'Comedy']);
+
+        $this->repository->updateTerm($term, ['name' => 'Comedy', 'slug' => 'Comedy']);
+        $this->assertSame('comedy', $term->getSlug());
+
+        $this->repository->updateTerm($term, ['name' => 'Comedy', 'slug' => 'drama']);
+        $this->assertSame('drama-1', $term->getSlug());
+    }
+
+    public function testUpdateTermRejectsBlankName(): void
+    {
+        $term = $this->repository->create(['taxonomy' => 'genre', 'name' => 'Comedy']);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->repository->updateTerm($term, ['name' => ' ']);
+    }
+
     public function testFetchByTaxonomyReturnsOnlyThatTaxonomyAlphabetically(): void
     {
         $this->repository->create(['taxonomy' => 'genre', 'name' => 'Tragedy']);
