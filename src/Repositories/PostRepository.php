@@ -24,6 +24,11 @@ class PostRepository extends BaseRepository
         return 'post';
     }
 
+    protected function taxonomyContentType(): ?string
+    {
+        return 'post';
+    }
+
     public function create(array $args): Post
     {
         $args = array_merge([

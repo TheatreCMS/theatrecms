@@ -4,6 +4,7 @@ namespace TheatreCMS\Repositories;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use TheatreCMS\Models\TermRelationship;
 
 abstract class BaseRepository implements PaginatedRepositoryInterface
 {
@@ -74,6 +75,19 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
 
     public function delete($item): void
     {
+        $contentType = $this->taxonomyContentType();
+        if ($contentType !== null) {
+            // content_id is a soft reference, so the DB can't cascade this for us
+            $relationships = $this->em->getRepository(TermRelationship::class)->findBy([
+                'contentType' => $contentType,
+                'contentId' => $item->getId(),
+            ]);
+
+            foreach ($relationships as $relationship) {
+                $this->em->remove($relationship);
+            }
+        }
+
         $this->em->remove($item);
         $this->em->flush();
     }
@@ -82,6 +96,16 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
     {
         $this->em->persist($item);
         $this->em->flush();
+    }
+
+    /**
+     * The singular content-type key (e.g. 'work') this repository's entities are stored under
+     * in `term_relationships`, so delete() can clean up their term assignments.
+     * Null (the default) for entities that can't carry taxonomy terms.
+     */
+    protected function taxonomyContentType(): ?string
+    {
+        return null;
     }
 
     protected function defaultQueryArgs(): array
@@ -162,10 +186,7 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
 
     protected function generateUniqueSlug(string $string): string
     {
-        // first prepare the string by lowercasing and replacing non-alphanumeric characters with hyphens
-        $processed = strtolower($string);
-        $processed = preg_replace('/[^a-z0-9]+/i', '-', $processed);
-        $slug = $processed = trim($processed, '-');
+        $slug = $processed = $this->slugify($string);
         $i = 0;
 
         // if the slug already exists, append a number and increment until we find a unique slug
@@ -175,6 +196,14 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         }
 
         return $slug;
+    }
+
+    /**
+     * Lowercase the string and collapse runs of non-alphanumeric characters into single hyphens.
+     */
+    protected function slugify(string $string): string
+    {
+        return trim(preg_replace('/[^a-z0-9]+/i', '-', strtolower($string)), '-');
     }
 
     protected function slugExists(string $slug): bool

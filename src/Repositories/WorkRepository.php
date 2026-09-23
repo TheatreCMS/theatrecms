@@ -12,6 +12,11 @@ class WorkRepository extends BaseRepository
 {
     protected string $entityClass = Work::class;
 
+    protected function taxonomyContentType(): ?string
+    {
+        return 'work';
+    }
+
     protected function applyListOrder(QueryBuilder $builder, string $alias): void
     {
         $builder->orderBy(sprintf('%s.title', $alias), 'ASC')
