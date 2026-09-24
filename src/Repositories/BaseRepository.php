@@ -63,6 +63,28 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         ];
     }
 
+    /**
+     * The publicly visible items among the given ids, in the repository's normal list order.
+     * Used by frontend listings (e.g. term archives) that know ids but not what's visible.
+     *
+     * @param int[] $ids
+     * @return array<int, object>
+     */
+    public function fetchPublicByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $builder = $this->createListQueryBuilder()
+            ->andWhere('e.id IN (:ids)')
+            ->setParameter('ids', array_values($ids));
+
+        $this->applyPublicFilter($builder, 'e');
+
+        return $builder->getQuery()->getResult();
+    }
+
     public function fetch(int $id)
     {
         return $this->em->getRepository($this->entityClass)->findOneBy(['id' => $id]);
@@ -169,6 +191,14 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
      * @param array<string, mixed> $criteria
      */
     protected function applyCriteria(QueryBuilder $builder, string $alias, array $criteria): void
+    {
+    }
+
+    /**
+     * Restrict a frontend query builder to items the public may see (e.g. published posts).
+     * No-op by default; override in repositories whose entities have a draft/private state.
+     */
+    protected function applyPublicFilter(QueryBuilder $builder, string $alias): void
     {
     }
 

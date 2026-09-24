@@ -2,11 +2,13 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\Models\Term;
+
 /**
  * Tracks which content type (and, for a single item, which entity) the current frontend
  * request is rendering. Populated by `TemplateResolver::renderSingle()`/`renderList()` right
  * before the template renders, and read by the `is_single()`/`is_item()`/`is_item_id()`/
- * `is_archive()`/`is_singular()` template tags (`app/template-tags.php`) — TheatreCMS's
+ * `is_archive()`/`is_singular()`/`is_tax()` template tags (`app/template-tags.php`) — TheatreCMS's
  * corollary to WordPress' conditional tags against `$wp_query`.
  */
 class QueriedObject
@@ -20,6 +22,10 @@ class QueriedObject
     private bool $isSingle = false;
 
     private bool $isArchive = false;
+
+    private ?string $taxonomy = null;
+
+    private ?Term $term = null;
 
     public static function setInstance(self $instance): void
     {
@@ -41,6 +47,8 @@ class QueriedObject
         $this->entity = $entity;
         $this->isSingle = true;
         $this->isArchive = false;
+        $this->taxonomy = null;
+        $this->term = null;
     }
 
     public function setArchive(string $type): void
@@ -49,6 +57,35 @@ class QueriedObject
         $this->entity = null;
         $this->isSingle = false;
         $this->isArchive = true;
+        $this->taxonomy = null;
+        $this->term = null;
+    }
+
+    /**
+     * A term archive counts as an archive (`is_archive()` is true, as in WordPress), but not
+     * as any content type's archive, so `is_archive('works')` stays false on `/genre/comedy`.
+     */
+    public function setTerm(string $taxonomy, Term $term): void
+    {
+        $this->type = null;
+        $this->entity = null;
+        $this->isSingle = false;
+        $this->isArchive = true;
+        $this->taxonomy = $taxonomy;
+        $this->term = $term;
+    }
+
+    public function isTax(?string $taxonomy = null, ?string $termSlug = null): bool
+    {
+        if ($this->term === null) {
+            return false;
+        }
+
+        if ($taxonomy !== null && $this->taxonomy !== $taxonomy) {
+            return false;
+        }
+
+        return $termSlug === null || $this->term->getSlug() === $termSlug;
     }
 
     public function isSingle(): bool

@@ -19,6 +19,7 @@ class ConditionalTagsExtension extends AbstractExtension
             new TwigFunction('is_item_id', 'is_item_id'),
             new TwigFunction('is_archive', 'is_archive'),
             new TwigFunction('is_singular', 'is_singular'),
+            new TwigFunction('is_tax', 'is_tax'),
         ];
     }
 }

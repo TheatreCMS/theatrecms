@@ -60,3 +60,17 @@ if (!function_exists('is_singular')) {
         return QueriedObject::getInstance()->isSingular($typeSlug);
     }
 }
+
+if (!function_exists('is_tax')) {
+    /**
+     * Whether the current request is rendering a taxonomy term archive — for any taxonomy, for
+     * the given taxonomy, or, when `$termSlug` is also given, for that specific term.
+     *
+     * @param string|null $taxonomy
+     * @param string|null $termSlug
+     */
+    function is_tax(?string $taxonomy = null, ?string $termSlug = null): bool
+    {
+        return QueriedObject::getInstance()->isTax($taxonomy, $termSlug);
+    }
+}

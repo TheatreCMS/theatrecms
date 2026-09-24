@@ -98,6 +98,12 @@ class PostRepository extends BaseRepository
         return false;
     }
 
+    protected function applyPublicFilter(QueryBuilder $builder, string $alias): void
+    {
+        $builder->andWhere(sprintf('%s.status = :publicStatus', $alias))
+            ->setParameter('publicStatus', ContentStatus::PUBLISHED);
+    }
+
     public function fetchPublished(): array
     {
         return $this->em->createQueryBuilder()

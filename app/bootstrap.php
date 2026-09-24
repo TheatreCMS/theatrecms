@@ -102,6 +102,7 @@ register_taxonomy('post_category', ['post'], [
     'label' => 'Categories',
     'singular_label' => 'Category',
     'capability' => Capability::EDIT_POSTS,
+    'url_prefix' => 'category',
 ]);
 
 $queriedObject = $container->get(QueriedObject::class);

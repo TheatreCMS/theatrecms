@@ -9,6 +9,7 @@ use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
+use TheatreCMS\Models\Term;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 
@@ -36,6 +37,7 @@ class TitleResolver
             $entity instanceof Venue => $entity->getName(),
             $entity instanceof Sponsor => $entity->getName(),
             $entity instanceof Event => $entity->getTitle() ?? '',
+            $entity instanceof Term => $entity->getName(),
             default => throw new \InvalidArgumentException(sprintf(
                 'TitleResolver does not know how to resolve a title for %s.',
                 is_object($entity) ? get_class($entity) : get_debug_type($entity)

@@ -32,6 +32,7 @@ use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Taxonomy\TermArchiveQuery;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\MediaRepository;
@@ -141,7 +142,7 @@ class ServiceRegistrar
         });
 
         $container->set(PermalinkResolver::class, static function (ContainerInterface $c): PermalinkResolver {
-            return new PermalinkResolver($c->get(ContentTypeRegistry::class));
+            return new PermalinkResolver($c->get(ContentTypeRegistry::class), $c->get(TaxonomyRegistry::class));
         });
 
         $container->set(DateResolver::class, static fn(): DateResolver => new DateResolver());
@@ -398,6 +399,13 @@ class ServiceRegistrar
                 );
             }
         );
+
+        $container->set(TermArchiveQuery::class, static function (ContainerInterface $c): TermArchiveQuery {
+            return new TermArchiveQuery($c->get(TermRelationshipRepository::class), [
+                'work' => $c->get(WorkRepository::class),
+                'post' => $c->get(PostRepository::class),
+            ]);
+        });
     }
 
     /**

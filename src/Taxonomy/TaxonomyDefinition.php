@@ -21,6 +21,8 @@ final class TaxonomyDefinition
      * @param string $singularLabel singular display label, e.g. "Genre"
      * @param bool $multiple whether a content item may carry more than one term of this taxonomy
      * @param string $capability capability required to manage this taxonomy's terms in the admin UI
+     * @param string $urlPrefix URL path segment its term archives are served under, e.g. `genre` for `/genre/comedy`
+     * @param bool $hasArchive whether its terms get a public archive page
      */
     public function __construct(
         public readonly string $name,
@@ -29,6 +31,8 @@ final class TaxonomyDefinition
         public readonly string $singularLabel,
         public readonly bool $multiple = true,
         public readonly string $capability = Capability::MANAGE_OPTIONS,
+        public readonly string $urlPrefix = '',
+        public readonly bool $hasArchive = true,
     ) {
     }
 

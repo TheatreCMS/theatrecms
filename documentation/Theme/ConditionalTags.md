@@ -3,8 +3,8 @@
 TheatreCMS's corollary to WordPress' `is_single()`/`is_archive()`/etc. family of conditional
 tags — small boolean checks theme code and templates use to branch on what kind of page is
 currently being rendered. Backed by `QueriedObject` (`src/Theme/QueriedObject.php`), which is
-populated by `TemplateResolver::renderSingle()`/`renderList()` (the two methods every frontend
-content route funnels through) right before the template renders.
+populated by `TemplateResolver::renderSingle()`/`renderList()`/`renderTerm()` (the methods every
+frontend content route funnels through) right before the template renders.
 
 ### Available tags
 
@@ -16,6 +16,12 @@ content route funnels through) right before the template renders.
 | `is_archive()` | The current page is an archive (listing) view, of any content type. |
 | `is_archive($typeSlug)` | The current page is the archive for this specific content type. |
 | `is_singular($typeSlug)` | The current page is the single view for this specific content type. |
+| `is_tax()` | The current page is a taxonomy term archive, of any taxonomy. |
+| `is_tax($taxonomy)` | The current page is a term archive of this taxonomy (e.g. `'genre'`). |
+| `is_tax($taxonomy, $termSlug)` | The current page is the archive for this specific term. |
+
+On a term archive `is_archive()` is also true, as in WordPress, but `is_archive($typeSlug)`
+is false for every content type, even when the term's items are all of one type.
 
 `$typeSlug` matches the raw content-type string each route passes to `TemplateResolver` (e.g.
 `'seasons'`, `'productions'`, `'people'`, `'works'`, `'pages'`) — not a URL segment. A

@@ -3,6 +3,7 @@
 namespace TheatreCMS\Tests\Unit\Theme;
 
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Models\Term;
 use TheatreCMS\Theme\QueriedObject;
 
 class QueriedObjectTest extends TestCase
@@ -76,6 +77,42 @@ class QueriedObjectTest extends TestCase
         $this->assertTrue($queriedObject->isArchive());
         $this->assertTrue($queriedObject->isArchive('productions'));
         $this->assertFalse($queriedObject->isArchive('seasons'));
+    }
+
+    public function testSetTermIsAnArchiveButNotAContentTypesArchive(): void
+    {
+        $queriedObject = new QueriedObject();
+        $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
+
+        $this->assertTrue($queriedObject->isArchive());
+        $this->assertFalse($queriedObject->isArchive('works'));
+        $this->assertFalse($queriedObject->isSingle());
+    }
+
+    public function testIsTaxMatchesAnyTaxonomyThenTaxonomyThenTerm(): void
+    {
+        $queriedObject = new QueriedObject();
+        $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
+
+        $this->assertTrue($queriedObject->isTax());
+        $this->assertTrue($queriedObject->isTax('genre'));
+        $this->assertTrue($queriedObject->isTax('genre', 'comedy'));
+        $this->assertFalse($queriedObject->isTax('post_category'));
+        $this->assertFalse($queriedObject->isTax('genre', 'drama'));
+    }
+
+    public function testIsTaxIsFalseOffTermArchives(): void
+    {
+        $queriedObject = new QueriedObject();
+        $this->assertFalse($queriedObject->isTax());
+
+        $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
+        $queriedObject->setSingle('works', $this->makeEntity(1, 'hamlet'));
+        $this->assertFalse($queriedObject->isTax());
+
+        $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
+        $queriedObject->setArchive('works');
+        $this->assertFalse($queriedObject->isTax());
     }
 
     public function testGetInstanceThrowsWhenNotInitialized(): void
