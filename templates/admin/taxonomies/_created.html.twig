@@ -1,0 +1,9 @@
+{% include 'admin/taxonomies/_list.html.twig' %}
+{# Out-of-band: announce the new term, clear any earlier error, and reset the add form. #}
+<div id="flash-messages" hx-swap-oob="innerHTML">
+    {% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': message} %}
+</div>
+<div id="term-form-errors" hx-swap-oob="true"></div>
+<div id="term-add-fields" class="space-y-4" hx-swap-oob="true">
+    {% include 'admin/taxonomies/_fields.html.twig' with {'term': null} %}
+</div>

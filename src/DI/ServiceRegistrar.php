@@ -25,11 +25,14 @@ use TheatreCMS\Controllers\ProfileController;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Controllers\SponsorController;
+use TheatreCMS\Controllers\TermController;
 use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Settings\SiteSettings;
+use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Taxonomy\TermArchiveQuery;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\MediaRepository;
@@ -40,6 +43,8 @@ use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
+use TheatreCMS\Repositories\TermRelationshipRepository;
+use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Repositories\UserRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Repositories\WorkRepository;
@@ -87,6 +92,8 @@ use TheatreCMS\Twig\PermalinkExtension;
 use TheatreCMS\Twig\SlugExtension;
 use TheatreCMS\Twig\SponsorsExtension;
 use TheatreCMS\Twig\StartDateExtension;
+use TheatreCMS\Twig\TaxonomyExtension;
+use TheatreCMS\Twig\TermsExtension;
 use TheatreCMS\Twig\ThemeHeadExtension;
 use TheatreCMS\Twig\TitleExtension;
 use Delight\Auth\Auth;
@@ -135,7 +142,7 @@ class ServiceRegistrar
         });
 
         $container->set(PermalinkResolver::class, static function (ContainerInterface $c): PermalinkResolver {
-            return new PermalinkResolver($c->get(ContentTypeRegistry::class));
+            return new PermalinkResolver($c->get(ContentTypeRegistry::class), $c->get(TaxonomyRegistry::class));
         });
 
         $container->set(DateResolver::class, static fn(): DateResolver => new DateResolver());
@@ -260,6 +267,8 @@ class ServiceRegistrar
 
         $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
 
+        $container->set(TaxonomyRegistry::class, static fn(): TaxonomyRegistry => new TaxonomyRegistry());
+
         $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {
             return new MenuItemResolver(
                 $c->get(PageRepository::class),
@@ -307,6 +316,12 @@ class ServiceRegistrar
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new EndDateExtension($c->get(EndDateResolver::class)));
+            $twig->addExtension(new TermsExtension($c->get(TermRelationshipRepository::class)));
+            $twig->addExtension(new TaxonomyExtension(
+                $c->get(TaxonomyRegistry::class),
+                $c->get(AuthorizationService::class),
+                $c->get(TermRepository::class),
+            ));
             $twig->addExtension(new ContentExtension($c->get(ContentResolver::class)));
             $twig->addExtension(new AddressExtension($c->get(AddressResolver::class)));
             $twig->addExtension(new ExcerptExtension($c->get(ExcerptResolver::class)));
@@ -369,6 +384,27 @@ class ServiceRegistrar
 
         $container->set(VenueRepository::class, static function (ContainerInterface $c): VenueRepository {
             return new VenueRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
+
+        $container->set(TermRepository::class, static function (ContainerInterface $c): TermRepository {
+            return new TermRepository($c->get(EntityManager::class), $c->get(TaxonomyRegistry::class));
+        });
+
+        $container->set(
+            TermRelationshipRepository::class,
+            static function (ContainerInterface $c): TermRelationshipRepository {
+                return new TermRelationshipRepository(
+                    $c->get(EntityManager::class),
+                    $c->get(TaxonomyRegistry::class),
+                );
+            }
+        );
+
+        $container->set(TermArchiveQuery::class, static function (ContainerInterface $c): TermArchiveQuery {
+            return new TermArchiveQuery($c->get(TermRelationshipRepository::class), [
+                'work' => $c->get(WorkRepository::class),
+                'post' => $c->get(PostRepository::class),
+            ]);
         });
     }
 
@@ -444,6 +480,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(TermRelationshipRepository::class),
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
@@ -486,11 +523,21 @@ class ServiceRegistrar
                     $c->get(MediaUploadService::class),
                 );
             },
+            TermController::class => static function (ContainerInterface $c): TermController {
+                return new TermController(
+                    $c->get(TermRepository::class),
+                    $c->get(Twig::class),
+                    $c->get(TermRelationshipRepository::class),
+                    $c->get(TaxonomyRegistry::class),
+                    $c->get(AuthorizationService::class),
+                );
+            },
             WorksController::class => static function (ContainerInterface $c): WorksController {
                 return new WorksController(
                     $c->get(WorkRepository::class),
                     $c->get(Twig::class),
                     $c->get(PersonRepository::class),
+                    $c->get(TermRelationshipRepository::class),
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
@@ -540,6 +587,8 @@ class ServiceRegistrar
                 'PostRepository',
                 'SeasonRepository',
                 'VenueRepository',
+                'TermRepository',
+                'TermRelationshipRepository',
                 ], true)
             ) {
                 continue;

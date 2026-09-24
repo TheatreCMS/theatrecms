@@ -1,0 +1,2 @@
+{% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': taxonomy.singularLabel ~ ' saved.'} %}
+<input type="text" name="slug" id="term-slug" hx-swap-oob="true" class="w-full rounded-md border-gray-300 shadow-sm" value="{{ term.slug }}" aria-describedby="term-slug-help">

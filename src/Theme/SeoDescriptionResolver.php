@@ -7,6 +7,7 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Term;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -41,6 +42,7 @@ class SeoDescriptionResolver
             $entity instanceof Post => $this->fromEditorJs($entity->getContent()),
             $entity instanceof Person => PlainText::fromHtml($entity->getBiography()),
             $entity instanceof Venue => (string) $entity->getDescription(),
+            $entity instanceof Term => $entity->getDescription(),
             default => '',
         };
 

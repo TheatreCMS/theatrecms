@@ -24,6 +24,11 @@ class PostRepository extends BaseRepository
         return 'post';
     }
 
+    protected function taxonomyContentType(): ?string
+    {
+        return 'post';
+    }
+
     public function create(array $args): Post
     {
         $args = array_merge([
@@ -91,6 +96,12 @@ class PostRepository extends BaseRepository
         }
 
         return false;
+    }
+
+    protected function applyPublicFilter(QueryBuilder $builder, string $alias): void
+    {
+        $builder->andWhere(sprintf('%s.status = :publicStatus', $alias))
+            ->setParameter('publicStatus', ContentStatus::PUBLISHED);
     }
 
     public function fetchPublished(): array

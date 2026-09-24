@@ -7,7 +7,9 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
+use TheatreCMS\Models\Term;
 use TheatreCMS\Models\Work;
+use TheatreCMS\Taxonomy\TaxonomyRegistry;
 
 /**
  * Resolves the canonical relative URL for any content entity, without callers needing
@@ -21,8 +23,10 @@ use TheatreCMS\Models\Work;
  */
 class PermalinkResolver
 {
-    public function __construct(private readonly ContentTypeRegistry $contentTypes)
-    {
+    public function __construct(
+        private readonly ContentTypeRegistry $contentTypes,
+        private readonly TaxonomyRegistry $taxonomies,
+    ) {
     }
 
     public function resolve(mixed $entity): string
@@ -35,6 +39,8 @@ class PermalinkResolver
             $entity instanceof Work => $this->archiveUrl('works') . '/' . $entity->getSlug(),
             $entity instanceof Post => $this->archiveUrl('posts') . '/' . $entity->getSlug(),
             $entity instanceof Page => '/' . $entity->getSlug(),
+            $entity instanceof Term => '/' . $this->taxonomies->require($entity->getTaxonomy())->urlPrefix
+                . '/' . $entity->getSlug(),
             default => throw new \InvalidArgumentException(sprintf(
                 'PermalinkResolver does not know how to resolve a URL for %s.',
                 is_object($entity) ? get_class($entity) : get_debug_type($entity)

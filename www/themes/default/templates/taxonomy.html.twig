@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}{{ seo.title }}{% endblock %}
+
+{% block content %}
+    <header class="space-y-2">
+        <p class="text-xs uppercase tracking-widest text-gray-500">{{ taxonomy.singularLabel }}</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">{{ term.name }}</h1>
+        {% if term.description %}
+            <p class="text-sm sm:text-base text-gray-600">{{ term.description }}</p>
+        {% endif %}
+    </header>
+
+    <ul class="space-y-3">
+        {% for item in posts %}
+            <li>
+                <a href="{{ the_permalink(item) }}" class="text-lg font-semibold text-gray-900 hover:underline">
+                    {{ the_title(item) }}
+                </a>
+            </li>
+        {% else %}
+            <li class="text-gray-600">Nothing is filed under {{ term.name }} yet.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

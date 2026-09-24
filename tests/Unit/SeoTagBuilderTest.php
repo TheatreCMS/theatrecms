@@ -14,6 +14,7 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Theme\ContentTypeRegistry;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\PermalinkResolver;
@@ -69,7 +70,7 @@ class SeoTagBuilderTest extends TestCase
         return new SeoTagBuilder(
             $siteSettings,
             new TitleResolver(),
-            new PermalinkResolver(new ContentTypeRegistry()),
+            new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry()),
             new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager))
         );
     }

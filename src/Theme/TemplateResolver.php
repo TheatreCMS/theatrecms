@@ -4,6 +4,8 @@ namespace TheatreCMS\Theme;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
+use TheatreCMS\Models\Term;
+use TheatreCMS\Taxonomy\TaxonomyDefinition;
 
 /**
  * Resolves a template from a list of candidates, returning the first one that exists. This is used
@@ -66,6 +68,23 @@ class TemplateResolver
     public function resolveList(Twig $twig, string $type): string
     {
         return $this->resolve($twig, "$type/list.html.twig", 'list.html.twig', 'index.html.twig');
+    }
+
+    /**
+     * Template hierarchy for a taxonomy term archive:
+     * taxonomy/{taxonomy}-{slug}.html.twig -> taxonomy/{taxonomy}.html.twig -> taxonomy.html.twig
+     * -> list.html.twig -> index.html.twig
+     */
+    public function resolveTerm(Twig $twig, string $taxonomy, string $slug): string
+    {
+        return $this->resolve(
+            $twig,
+            "taxonomy/$taxonomy-$slug.html.twig",
+            "taxonomy/$taxonomy.html.twig",
+            'taxonomy.html.twig',
+            'list.html.twig',
+            'index.html.twig'
+        );
     }
 
     /**
@@ -137,5 +156,38 @@ class TemplateResolver
         $this->queriedObject->setArchive($type);
 
         return $twig->render($response, $this->resolveList($twig, $type), $context);
+    }
+
+    /**
+     * Resolve and render a taxonomy term archive in one step.
+     *
+     * Adds `term`, `taxonomy` (its `TaxonomyDefinition`) and `items_by_type` (content type =>
+     * items), plus the same generic keys as `renderList()`: `posts` (every item, flattened across
+     * content types, for the generic list/index fallbacks), `page` (titled with the term's name)
+     * and `seo`.
+     *
+     * @param array<string, array<int, object>> $itemsByType
+     * @param array<string, mixed> $context
+     */
+    public function renderTerm(
+        Twig $twig,
+        Response $response,
+        Term $term,
+        TaxonomyDefinition $taxonomy,
+        array $itemsByType,
+        array $context = []
+    ): Response {
+        $context += [
+            'term' => $term,
+            'taxonomy' => $taxonomy,
+            'items_by_type' => $itemsByType,
+            'posts' => array_merge(...array_values($itemsByType)),
+            'page' => ['title' => $this->titleResolver->resolve($term)],
+            'seo' => $this->seoTagBuilder->forEntity($term, 'taxonomy'),
+        ];
+
+        $this->queriedObject->setTerm($taxonomy->name, $term);
+
+        return $twig->render($response, $this->resolveTerm($twig, $taxonomy->name, $term->getSlug()), $context);
     }
 }
