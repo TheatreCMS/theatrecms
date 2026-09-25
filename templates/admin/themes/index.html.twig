@@ -15,51 +15,75 @@
     } %}
 {% endif %}
 
-{% if themes is empty %}
-    <p class="text-gray-600">No themes are installed. Add a theme directory containing a <code>theme.json</code> under <code>www/themes</code>.</p>
-{% else %}
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {% for theme in themes %}
-            {% set is_active = theme.slug == active_theme %}
-            <div class="flex flex-col bg-white rounded-lg shadow-sm border {% if is_active %}border-blue-500 ring-2 ring-blue-500{% else %}border-gray-200{% endif %}">
-                <div class="h-40 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center">
-                    {% if theme.screenshot %}
-                        <img src="/themes/{{ theme.slug|url_encode }}/{{ theme.screenshot }}" alt="{{ theme.name }} screenshot" class="w-full h-full object-cover object-top">
-                    {% else %}
-                        <span class="text-4xl font-semibold text-gray-300">{{ theme.name|first|upper }}</span>
-                    {% endif %}
-                </div>
+{% set current = themes[active_theme] ?? null %}
+{% set others = themes|filter(theme => theme.slug != active_theme) %}
 
-                <div class="flex flex-col flex-1 p-4">
-                    <div class="flex items-start justify-between gap-2">
-                        <h2 class="text-lg font-semibold text-gray-800">{{ theme.name }}</h2>
-                        {% if is_active %}
-                            <span class="shrink-0 px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-full">Active</span>
-                        {% endif %}
-                    </div>
-                    <p class="text-xs text-gray-500 mb-2">
-                        <code>{{ theme.slug }}</code>
-                        {% if theme.version %} · v{{ theme.version }}{% endif %}
-                        {% if theme.author %} · by {{ theme.author }}{% endif %}
-                    </p>
-                    {% if theme.description %}
-                        <p class="text-sm text-gray-600 mb-4">{{ theme.description }}</p>
-                    {% endif %}
+<section class="mb-10">
+    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Active Theme</h2>
 
-                    <div class="mt-auto pt-2">
-                        {% if not is_active %}
-                            <form action="/admin/themes/activate" method="POST">
-                                <input type="hidden" name="theme" value="{{ theme.slug }}">
-                                <button type="submit"
-                                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
-                                    Activate
-                                </button>
-                            </form>
-                        {% endif %}
-                    </div>
-                </div>
+    {% if current %}
+        <div class="flex flex-col md:flex-row bg-white rounded-lg shadow-sm border border-blue-500 ring-2 ring-blue-500 overflow-hidden">
+            <div class="h-48 md:h-auto md:w-80 md:min-h-48 shrink-0 bg-gray-100 flex items-center justify-center">
+                {% if current.screenshot %}
+                    <img src="/themes/{{ current.slug|url_encode }}/{{ current.screenshot }}" alt="{{ current.name }} screenshot" class="w-full h-full object-cover object-top">
+                {% else %}
+                    <span class="text-5xl font-semibold text-gray-300">{{ current.name|first|upper }}</span>
+                {% endif %}
             </div>
-        {% endfor %}
-    </div>
-{% endif %}
+
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-1">
+                    <h3 class="text-xl font-semibold text-gray-800">{{ current.name }}</h3>
+                    <span class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-full">Active</span>
+                </div>
+                {% include 'admin/themes/_meta.html.twig' with {theme: current} %}
+                {% if current.description %}
+                    <p class="text-sm text-gray-600">{{ current.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <p class="p-4 rounded-lg border bg-yellow-50 border-yellow-200 text-yellow-800 text-sm">
+            The configured theme <code>{{ active_theme }}</code> is not installed. Activate one of the themes below.
+        </p>
+    {% endif %}
+</section>
+
+<section>
+    <h2 class="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Available Themes</h2>
+
+    {% if others is empty %}
+        <p class="text-gray-600 text-sm">No other themes are installed. Add a theme directory containing a <code>theme.json</code> under <code>www/themes</code>.</p>
+    {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for theme in others %}
+                <div class="flex flex-col bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="h-40 bg-gray-100 rounded-t-lg overflow-hidden flex items-center justify-center">
+                        {% if theme.screenshot %}
+                            <img src="/themes/{{ theme.slug|url_encode }}/{{ theme.screenshot }}" alt="{{ theme.name }} screenshot" class="w-full h-full object-cover object-top">
+                        {% else %}
+                            <span class="text-4xl font-semibold text-gray-300">{{ theme.name|first|upper }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex flex-col flex-1 p-4">
+                        <h3 class="text-lg font-semibold text-gray-800">{{ theme.name }}</h3>
+                        {% include 'admin/themes/_meta.html.twig' with {theme: theme} %}
+                        {% if theme.description %}
+                            <p class="text-sm text-gray-600 mb-4">{{ theme.description }}</p>
+                        {% endif %}
+
+                        <form action="/admin/themes/activate" method="POST" class="mt-auto pt-2">
+                            <input type="hidden" name="theme" value="{{ theme.slug }}">
+                            <button type="submit"
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+                                Activate
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
 {% endblock %}
