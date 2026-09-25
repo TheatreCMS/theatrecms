@@ -362,7 +362,8 @@ class ServiceRegistrar
                 session_start();
             }
             $responseFactory = $c->get(ResponseFactoryInterface::class);
-            return new Guard($responseFactory, 'csrf', null, null, 200, 16, true);
+            // $storage is taken by reference, so it can't be passed a literal; omitting it uses $_SESSION.
+            return new Guard($responseFactory, persistentTokenMode: true);
         });
     }
 
