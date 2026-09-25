@@ -4,6 +4,7 @@ namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Repositories\UserRepository;
 use Slim\Views\Twig;
@@ -13,29 +14,40 @@ use Delight\Auth\Auth;
 
 class LoginControllerTest extends TestCase
 {
-    private UserRepository|MockObject $repository;
+    private UserRepository&Stub $repository;
     private Twig|MockObject $twig;
-    private Auth|MockObject $auth;
+    private Auth $auth;
 
     protected function setUp(): void
     {
-        $this->repository = $this->createMock(UserRepository::class);
+        if (!in_array('sqlite', \PDO::getAvailableDrivers())) {
+            $this->markTestSkipped('PDO SQLite driver is not available; skipping.');
+        }
+
+        $this->repository = $this->createStub(UserRepository::class);
         $this->twig       = $this->createMock(Twig::class);
-        $this->auth       = $this->createMock(Auth::class);
+
+        // Auth is final and cannot be mocked, so back a real instance with an in-memory database.
+        $pdo = new \PDO('sqlite::memory:');
+        $schema = file_get_contents(dirname(__DIR__, 2) . '/vendor/delight-im/auth/Database/SQLite.sql');
+        foreach (array_filter(array_map('trim', explode(';', $schema))) as $statement) {
+            $pdo->exec($statement);
+        }
+        $this->auth = new Auth($pdo);
     }
 
     public function testLoginPassesCsrfTokensToTemplate(): void
     {
         $controller = new LoginController($this->repository, $this->twig, $this->auth);
 
-        $request = $this->createMock(Request::class);
+        $request = $this->createStub(Request::class);
         $request->method('getAttribute')
             ->willReturnMap([
                 [LoginController::CSRF_NAME_KEY, null, 'csrf_abc123'],
                 [LoginController::CSRF_VALUE_KEY, null, 'token_xyz789'],
             ]);
 
-        $response = $this->createMock(Response::class);
+        $response = $this->createStub(Response::class);
 
         $this->twig->expects($this->once())
             ->method('render')
@@ -60,10 +72,10 @@ class LoginControllerTest extends TestCase
     {
         $controller = new LoginController($this->repository, $this->twig, $this->auth);
 
-        $request = $this->createMock(Request::class);
+        $request = $this->createStub(Request::class);
         $request->method('getAttribute')->willReturn(null);
 
-        $response = $this->createMock(Response::class);
+        $response = $this->createStub(Response::class);
 
         $this->twig->expects($this->once())
             ->method('render')
