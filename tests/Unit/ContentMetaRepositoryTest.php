@@ -3,10 +3,12 @@
 namespace TheatreCMS\Tests\Unit;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Models\ContentMeta;
 use TheatreCMS\Repositories\ContentMetaRepository;
 
 /**
@@ -25,6 +27,7 @@ class ContentMetaRepositoryTest extends TestCase
 
         $paths = [__DIR__ . '/../../src/Models'];
         $config = ORMSetup::createAttributeMetadataConfiguration($paths, true);
+        $config->enableNativeLazyObjects(true);
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         $this->em = new EntityManager($connection, $config);
 
@@ -100,5 +103,15 @@ class ContentMetaRepositoryTest extends TestCase
         $this->assertNull($this->repository->get('production', 1, 'hero_image_id'));
         $this->assertNull($this->repository->get('production', 1, 'subtitle'));
         $this->assertSame('7', $this->repository->get('production', 2, 'hero_image_id'));
+    }
+
+    public function testSchemaEnforcesUniqueKeyPerContentItem(): void
+    {
+        $this->em->persist(new ContentMeta('production', 1, 'hero_image_id', '42'));
+        $this->em->persist(new ContentMeta('production', 1, 'hero_image_id', '99'));
+
+        $this->expectException(UniqueConstraintViolationException::class);
+
+        $this->em->flush();
     }
 }
