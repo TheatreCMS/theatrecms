@@ -80,10 +80,34 @@ class SiteSettings
         $current['seo']['default_social_image']      = $data['seo_default_social_image']
             ?? $current['seo']['default_social_image']      ?? '';
 
-        $yaml = Yaml::dump(['site' => $current], 4);
-        file_put_contents($this->configPath, $yaml);
+        $this->writeConfig('site', $current);
 
         $this->data = $current;
+    }
+
+    /**
+     * Persists the active theme (the top-level `theme` config key). Callers are
+     * responsible for checking the theme is actually installed.
+     */
+    public function saveTheme(string $slug): void
+    {
+        $this->writeConfig('theme', $slug);
+    }
+
+    /**
+     * Replaces one top-level key in the config file, preserving every other key
+     * (database credentials, theme, content_types, ...).
+     */
+    private function writeConfig(string $key, mixed $value): void
+    {
+        $config = file_exists($this->configPath) ? Yaml::parseFile($this->configPath) : [];
+        if (!is_array($config)) {
+            $config = [];
+        }
+
+        $config[$key] = $value;
+
+        file_put_contents($this->configPath, Yaml::dump($config, 4));
     }
 
     /** @return array<string, mixed> */

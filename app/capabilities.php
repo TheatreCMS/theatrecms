@@ -15,4 +15,5 @@ $capabilities->register(Role::ADMIN, [
     Capability::EDIT_PAGES,
     Capability::MANAGE_PRODUCTIONS,
     Capability::MANAGE_PEOPLE,
+    Capability::SWITCH_THEMES,
 ]);

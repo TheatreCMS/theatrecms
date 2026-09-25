@@ -25,6 +25,7 @@ use TheatreCMS\Controllers\ProfileController;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Controllers\SponsorController;
+use TheatreCMS\Controllers\ThemesController;
 use TheatreCMS\Controllers\TermController;
 use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
@@ -556,6 +557,13 @@ class ServiceRegistrar
             },
             SettingsController::class => static function (ContainerInterface $c): SettingsController {
                 return new SettingsController(
+                    $c->get(SiteSettings::class),
+                    $c->get(Twig::class),
+                );
+            },
+            ThemesController::class => static function (ContainerInterface $c): ThemesController {
+                return new ThemesController(
+                    $c->get(ThemeManager::class),
                     $c->get(SiteSettings::class),
                     $c->get(Twig::class),
                 );

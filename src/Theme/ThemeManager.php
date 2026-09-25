@@ -18,6 +18,54 @@ class ThemeManager
         $this->activeTheme = $activeTheme;
     }
 
+    public function getActiveTheme(): string
+    {
+        return $this->activeTheme;
+    }
+
+    /**
+     * List every installed theme: each subdirectory of the themes dir that has a
+     * `theme.json`. The directory name is the theme's identifier (what the
+     * `theme` config key holds); `theme.json` supplies display metadata only.
+     *
+     * @return array<string, array{slug: string, name: string, description: string,
+     *     version: string, author: string, screenshot: ?string}>
+     */
+    public function getAvailableThemes(): array
+    {
+        $themes = [];
+
+        foreach (glob($this->themesDir . '/*/theme.json') ?: [] as $jsonFile) {
+            $dir = dirname($jsonFile);
+            $slug = basename($dir);
+            $metadata = json_decode((string) file_get_contents($jsonFile), true);
+            if (!is_array($metadata)) {
+                $metadata = [];
+            }
+
+            $screenshot = null;
+            foreach (['png', 'jpg', 'jpeg', 'webp'] as $ext) {
+                if (is_file($dir . '/screenshot.' . $ext)) {
+                    $screenshot = 'screenshot.' . $ext;
+                    break;
+                }
+            }
+
+            $themes[$slug] = [
+                'slug'        => $slug,
+                'name'        => (string) ($metadata['name'] ?? $slug),
+                'description' => (string) ($metadata['description'] ?? ''),
+                'version'     => (string) ($metadata['version'] ?? ''),
+                'author'      => (string) ($metadata['author'] ?? ''),
+                'screenshot'  => $screenshot,
+            ];
+        }
+
+        ksort($themes);
+
+        return $themes;
+    }
+
     public function getThemeDir(): string
     {
         return $this->themesDir . '/' . $this->activeTheme;

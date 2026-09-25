@@ -12,5 +12,5 @@ final class Capability
     public const EDIT_PAGES           = 'edit_pages';
     public const MANAGE_PRODUCTIONS   = 'manage_productions';
     public const MANAGE_PEOPLE        = 'manage_people';
-
+    public const SWITCH_THEMES        = 'switch_themes';
 }

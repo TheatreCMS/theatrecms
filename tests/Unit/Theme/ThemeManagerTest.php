@@ -118,4 +118,23 @@ class ThemeManagerTest extends TestCase
 
         $this->assertSame([], $themeManager->getColorPalette());
     }
+
+    public function testGetAvailableThemesListsDirectoriesWithThemeJsonKeyedByDirectoryName(): void
+    {
+        $this->makeTheme('zeta', ['name' => 'Zeta Theme', 'version' => '2.0.0', 'author' => 'Z']);
+        $themeManager = $this->makeTheme('alpha', ['description' => 'First']);
+        mkdir($this->themesDir . '/not-a-theme');
+        touch($this->themesDir . '/alpha/screenshot.png');
+
+        $themes = $themeManager->getAvailableThemes();
+
+        $this->assertSame(['alpha', 'zeta'], array_keys($themes));
+        $this->assertSame('alpha', $themes['alpha']['name'], 'name falls back to the directory name');
+        $this->assertSame('First', $themes['alpha']['description']);
+        $this->assertSame('screenshot.png', $themes['alpha']['screenshot']);
+        $this->assertSame('Zeta Theme', $themes['zeta']['name']);
+        $this->assertSame('2.0.0', $themes['zeta']['version']);
+        $this->assertNull($themes['zeta']['screenshot']);
+        $this->assertSame('alpha', $themeManager->getActiveTheme());
+    }
 }
