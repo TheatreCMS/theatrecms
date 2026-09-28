@@ -10,14 +10,9 @@ build:
     before:
       - composer install --no-interaction --prefer-dist
 
+  # The analysis node's steps (php-scrutinizer-run, phpcs-run, js-scrutinizer-run) come from the
+  # repository's website config on scrutinizer-ci.com.
   nodes:
-    analysis:
-      # Overrides the repository's website config on scrutinizer-ci.com, which pins this node to
-      # PHP 8.1. The node's analysis steps (php-scrutinizer-run, phpcs-run, js-scrutinizer-run)
-      # still come from that website config.
-      environment:
-        php:
-          version: 8.4.11
     tests:
       tests:
         override:
