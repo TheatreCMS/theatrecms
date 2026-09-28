@@ -34,6 +34,19 @@ class CapabilityRegistry
     }
 
     /**
+     * Adds capabilities to a role without replacing what it already has (used by plugins,
+     * which extend core's role capabilities rather than redefining them).
+     *
+     * @param string[] $capabilities
+     */
+    public function grant(int $role, array $capabilities): void
+    {
+        $this->roleCapabilities[$role] = array_values(array_unique(
+            array_merge($this->roleCapabilities[$role] ?? [], $capabilities)
+        ));
+    }
+
+    /**
      * @return string[] the capabilities granted to this Delight\Auth\Role constant, or an empty
      *                   array if the role was never registered
      */

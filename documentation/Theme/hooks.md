@@ -37,6 +37,12 @@ Priorities work like WordPress (lower values run earlier). You can register call
 
 Feel free to register new tags inside the theme or application code by calling `apply_filters()` manually wherever you need to expose a new extension point.
 
+### Available actions
+
+| Tag | Description | Arguments |
+|-----|-------------|-----------|
+| `theatrecms/plugins_loaded` | Fired in `app/bootstrap.php` once every installed plugin has run `register()`, before the active theme's `functions.php` loads. Use it for work that depends on other plugins being registered (see `documentation/plugins.md`). | The `PluginManager` |
+
 ### Calling `apply_filters()` directly from a Twig template
 
 `apply_filters()` is also exposed as a Twig function (see `src/Twig/HooksExtension.php`), so a template can declare its own extension point inline without needing a dedicated `the_x()` Twig function + resolver pair for every insertion point:

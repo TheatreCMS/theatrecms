@@ -22,6 +22,7 @@ require_once ROOT_DIR . "/vendor/autoload.php";
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
+use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Settings\SiteSettings;
@@ -101,6 +102,9 @@ require ROUTES_DIR . '/frontend/productions.php';
 require ROUTES_DIR . '/frontend/people.php';
 require ROUTES_DIR . '/frontend/works.php';
 require ROUTES_DIR . '/frontend/taxonomies.php';
+
+// Plugin routes and middleware: after core routes, before the page catch-all below.
+$container->get(PluginManager::class)->bootAll($app);
 
 $app->get('/admin/login', [LoginController::class, 'login'])->add($container->get(Guard::class));
 $app->post('/admin/login', [LoginController::class, 'authenticate'])->add($container->get(Guard::class));

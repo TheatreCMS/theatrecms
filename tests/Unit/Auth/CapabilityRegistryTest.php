@@ -30,6 +30,23 @@ class CapabilityRegistryTest extends TestCase
         $this->assertSame(['manage_users', 'manage_options'], $registry->capabilitiesFor(1));
     }
 
+    public function testGrantAddsCapabilitiesWithoutReplacingExistingOnes(): void
+    {
+        $registry = new CapabilityRegistry();
+        $registry->register(1, ['manage_users', 'edit_posts']);
+        $registry->grant(1, ['edit_posts', 'manage_forms']);
+
+        $this->assertSame(['manage_users', 'edit_posts', 'manage_forms'], $registry->capabilitiesFor(1));
+    }
+
+    public function testGrantToUnregisteredRoleRegistersIt(): void
+    {
+        $registry = new CapabilityRegistry();
+        $registry->grant(2, ['manage_forms']);
+
+        $this->assertSame([2], $registry->rolesFor('manage_forms'));
+    }
+
     public function testCapabilitiesForReturnsEmptyArrayWhenUnregistered(): void
     {
         $registry = new CapabilityRegistry();

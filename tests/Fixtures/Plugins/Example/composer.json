@@ -1,0 +1,10 @@
+{
+    "name": "theatrecms/example-plugin",
+    "description": "Fixture plugin used by the plugin system tests.",
+    "type": "theatrecms-plugin",
+    "extra": {
+        "theatrecms": {
+            "plugin": "TheatreCMS\\Tests\\Fixtures\\Plugins\\Example\\ExamplePlugin"
+        }
+    }
+}

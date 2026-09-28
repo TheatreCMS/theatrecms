@@ -22,9 +22,11 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use TheatreCMS\Admin\AdminMenuRegistry;
 use TheatreCMS\Auth\Capability;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
+use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
@@ -42,6 +44,7 @@ require_once APP_ROOT . '/app/menu-locations.php';
 require_once APP_ROOT . '/app/image-sizes.php';
 require_once APP_ROOT . '/app/taxonomies.php';
 require_once APP_ROOT . '/app/template-tags.php';
+require_once APP_ROOT . '/app/admin-menu.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
 
@@ -56,7 +59,7 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
         : new FilesystemAdapter(directory: $settings['doctrine']['cache_dir']);
 
     $config = ORMSetup::createAttributeMetadataConfig(
-        $settings['doctrine']['metadata_dirs'],
+        array_merge($settings['doctrine']['metadata_dirs'], $c->get(PluginManager::class)->entityPaths()),
         $settings['doctrine']['dev_mode'],
         null,
         $cache,
@@ -76,6 +79,11 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 });
 
 ServiceRegistrar::register($container);
+
+// Collect plugin declarations (entity paths, Twig namespaces, ...) before anything builds the
+// EntityManager or Twig. Plugin code proper runs later, in registerAll() below.
+$pluginManager = $container->get(PluginManager::class);
+$pluginManager->discover();
 
 $hookManager = $container->get(HookManager::class);
 HookManager::setInstance($hookManager);
@@ -107,6 +115,15 @@ register_taxonomy('post_category', ['post'], [
 
 $queriedObject = $container->get(QueriedObject::class);
 QueriedObject::setInstance($queriedObject);
+
+$adminMenuRegistry = $container->get(AdminMenuRegistry::class);
+AdminMenuRegistry::setInstance($adminMenuRegistry);
+require_once APP_ROOT . '/app/admin-menu-items.php';
+
+// Plugins register after core's registries exist and before the theme's functions.php,
+// so themes can rely on anything a plugin provides.
+$pluginManager->registerAll($container, $capabilityRegistry, $adminMenuRegistry);
+do_action('theatrecms/plugins_loaded', $pluginManager);
 
 $container->get(ThemeManager::class)->loadFunctions();
 
