@@ -1,15 +1,22 @@
 build:
+  # The default image's glibc is too old for Node 20 and it has no PHP 8.4 build.
+  image: default-jammy
   environment:
     php: "8.4"
 
   dependencies:
     before:
       - composer install --no-interaction --prefer-dist
-      - npm install
 
-  tests:
-    before:
-      - npm test
+  nodes:
+    analysis:
+      tests:
+        override:
+          - php-scrutinizer-run
+    tests:
+      tests:
+        override:
+          - ./vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit
 
 checks:
   php:
