@@ -90,6 +90,12 @@ return [
             'active' => $config['theme'] ?? 'default'
         ],
 
+        'plugins' => [
+            // Directory where plugins are stored, one per subdirectory, each with a composer.json
+            // of type `theatrecms-plugin`. See documentation/plugins.md.
+            'dir' => APP_ROOT . '/plugins',
+        ],
+
         // Per-site overrides for the URL prefix of a built-in content type's frontend
         // routes (e.g. serving Seasons under `/shows` instead of `/seasons`). See
         // `TheatreCMS\Theme\ContentTypeRegistry` and the `content_types` key in

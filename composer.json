@@ -39,9 +39,15 @@
         "consolidation/robo": "^5.1",
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.0",
-        "phpunit/phpunit": "^12.5"
+        "phpunit/phpunit": "^12.5",
+        "wikimedia/composer-merge-plugin": "^2.1"
     },
     "scripts": {
         "stan": "phpstan analyse -c phpstan.neon.dist --memory-limit=1G"
+    },
+    "config": {
+        "allow-plugins": {
+            "wikimedia/composer-merge-plugin": true
+        }
     }
 }

@@ -9,14 +9,14 @@ use Slim\Factory\AppFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 use TheatreCMS\Admin\AdminMenuRegistry;
 use TheatreCMS\Auth\CapabilityRegistry;
-use TheatreCMS\Plugin\ComposerPluginDiscovery;
+use TheatreCMS\Plugin\DirectoryPluginDiscovery;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Tests\Fixtures\Plugins\Example\ExampleGreeter;
 use TheatreCMS\Tests\Fixtures\Plugins\Example\ExamplePlugin;
 
 /**
- * End to end: the fixture plugin, found through its composer.json the way an installed
- * package is, registers a service, a hook, a route, a capability and an admin menu item.
+ * End to end: the fixture plugin, found by scanning a plugins directory, registers a service,
+ * a hook, a route, a capability and an admin menu item.
  */
 class ExamplePluginTest extends TestCase
 {
@@ -27,9 +27,7 @@ class ExamplePluginTest extends TestCase
         $capabilities->register(Role::ADMIN, ['manage_users']);
         $adminMenu = new AdminMenuRegistry();
 
-        $manager = new PluginManager(new ComposerPluginDiscovery(static fn(): array => [
-            'theatrecms/example-plugin' => __DIR__ . '/../../Fixtures/Plugins/Example',
-        ]));
+        $manager = new PluginManager(new DirectoryPluginDiscovery(__DIR__ . '/../../Fixtures/PluginsDir'));
         $manager->registerAll($container, $capabilities, $adminMenu);
 
         $app = AppFactory::create(container: $container);
@@ -43,8 +41,12 @@ class ExamplePluginTest extends TestCase
         $this->assertSame('Hello from the example plugin', (string) $response->getBody());
         $this->assertContains(ExamplePlugin::CAPABILITY, $capabilities->capabilitiesFor(Role::ADMIN));
         $this->assertContains('manage_users', $capabilities->capabilitiesFor(Role::ADMIN));
-        $this->assertSame('Examples', $adminMenu->groups()[0]['items'][0]->label);
-        $this->assertStringEndsWith('/Example/Models', $manager->entityPaths()[0]);
+        $labels = array_map(static fn($item) => $item->label, $adminMenu->groups()[0]['items']);
+        $this->assertContains('Examples', $labels);
+        $this->assertContains(dirname(__DIR__, 2) . '/Fixtures/Plugins/Example/Models', array_map(
+            static fn(string $path): string => (string) realpath(dirname($path)) . '/' . basename($path),
+            $manager->entityPaths(),
+        ));
         $this->assertArrayHasKey('theatrecms/example-plugin', $manager->migrationPaths());
     }
 }

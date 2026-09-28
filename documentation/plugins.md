@@ -1,16 +1,16 @@
 # Plugins
 
-A plugin is a Composer package that extends TheatreCMS without editing core: it can add services,
-routes, hooks, capabilities, admin sidebar items, Doctrine entities, Twig templates, database
-migrations and console commands.
+A plugin extends TheatreCMS without editing core: it can add services, routes, hooks, capabilities,
+admin sidebar items, Doctrine entities, Twig templates, database migrations and console commands.
 
-**Installed means active.** There is no activation toggle: if Composer installed the package, the
-plugin runs. Remove the package to turn the plugin off.
+Like a theme, **a plugin is a folder**: `plugins/<name>/`, git-ignored in core. **Present means
+active.** There is no activation toggle; remove the folder to turn the plugin off.
 
 ## Making a plugin
 
-A plugin package has type `theatrecms-plugin` and names its plugin class under
-`extra.theatrecms.plugin`:
+The folder has a `composer.json` of type `theatrecms-plugin` that names the plugin class under
+`extra.theatrecms.plugin`. It declares its autoloading and any libraries it needs like any Composer
+package:
 
 ```json
 {
@@ -18,6 +18,9 @@ A plugin package has type `theatrecms-plugin` and names its plugin class under
     "type": "theatrecms-plugin",
     "autoload": {
         "psr-4": { "Acme\\BoxOffice\\": "src/" }
+    },
+    "require": {
+        "some/library": "^2.0"
     },
     "extra": {
         "theatrecms": {
@@ -80,8 +83,9 @@ class Plugin extends AbstractPlugin
 
 ## Lifecycle
 
-Plugins are found through Composer's installed-package data (`ComposerPluginDiscovery`) and run in
-package-name order.
+Plugins are found by scanning `plugins/*/composer.json` (`DirectoryPluginDiscovery`; the directory is
+`settings['plugins']['dir']`) and run in package-name order. Folders without a valid manifest are
+logged and skipped.
 
 1. **Discovery** (`app/bootstrap.php`, right after core services are registered). Each plugin is
    instantiated and its declarations are collected: `entityPaths()`, `twigPaths()`,
@@ -118,8 +122,33 @@ A plugin that cannot be loaded, or that throws while declaring, registering or b
 through the PSR-3 logger (PHP's error log by default) and skipped. The site keeps running without
 it. A plugin that fails in `register()` gets none of its capabilities or menu items, and is not booted.
 
-## Installing plugins locally
+## Installing plugins
 
-Until a plugin is published, install it from a local checkout with a Composer path repository.
-THE-102 adds a git-ignored `composer.local.json` for this, so core's committed `composer.json`
-doesn't change.
+Plugins can't bundle their own `vendor/`: two copies of a library core also uses (e.g. PHP-DI) would
+load into one process and fail. Composer resolves every plugin's dependencies together with core's,
+through a second, git-ignored Composer file so core's committed `composer.lock` never changes:
+
+- `composer.local.json` (copied from `composer.local.json.example`) uses
+  `wikimedia/composer-merge-plugin` to merge core's `composer.json` with every
+  `plugins/*/composer.json`, including their autoloading.
+- Its lock file is `composer.local.lock` (Composer names the lock after the JSON file), also
+  git-ignored.
+
+To add, update or remove a plugin, change the `plugins/` folder, then run:
+
+```sh
+ddev exec bin/composer-local
+```
+
+`bin/composer-local` installs core from `composer.lock`, re-seeds `composer.local.lock` from it, and
+runs `composer update --minimal-changes` against `composer.local.json`. Core's packages therefore
+stay at exactly the versions in `composer.lock`, and only what the plugins need is added. Run it
+again after pulling changes to `composer.lock`.
+
+Plain `composer` commands still manage core's own dependencies and lock. They also drop plugin
+dependencies from `vendor/`, so rerun `bin/composer-local` afterwards.
+
+A plugin folder added without running `bin/composer-local` is found but can't be autoloaded; it is
+logged ("run bin/composer-local after adding a plugin") and skipped.
+
+Themes need none of this: a theme is a folder in `www/themes/` (see `documentation/Theme/ThemeManager.md`).

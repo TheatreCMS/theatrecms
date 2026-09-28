@@ -25,6 +25,14 @@ Thumbs.db
 /sql/
 /www/themes/*
 !/www/themes/default
+
+# Plugins: one folder per plugin, each cloned or copied in locally (see documentation/plugins.md)
+/plugins/*
+!/plugins/.gitkeep
+
+# Local Composer install that merges core + plugins, with its own lock file
+/composer.local.json
+/composer.local.lock
 /www/uploads/*
 node_modules/
 
