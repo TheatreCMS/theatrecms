@@ -5,6 +5,8 @@ build:
   environment:
     php:
       version: 8.4.11
+    # Scrutinizer runs `npm install` for package.json; the image's default npm can't read lockfile v3.
+    node: v20.19.0
 
   dependencies:
     before:
