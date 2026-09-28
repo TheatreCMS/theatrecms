@@ -12,13 +12,12 @@ build:
 
   nodes:
     analysis:
-      # Overrides the repository's website config on scrutinizer-ci.com, which pins this node to PHP 8.1.
+      # Overrides the repository's website config on scrutinizer-ci.com, which pins this node to
+      # PHP 8.1. The node's analysis steps (php-scrutinizer-run, phpcs-run, js-scrutinizer-run)
+      # still come from that website config.
       environment:
         php:
           version: 8.4.11
-      tests:
-        override:
-          - php-scrutinizer-run
     tests:
       tests:
         override:
