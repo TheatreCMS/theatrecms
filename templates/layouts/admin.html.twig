@@ -75,35 +75,9 @@
                     </a>
                 </div>
                 <nav class="p-4">
-                    {# Sidebar nav: Dashboard on its own, then content types, then site administration.
+                    {# Sidebar nav, from the AdminMenuRegistry (core items in app/admin-menu-items.php, plus plugin items).
                        A group's heading is only shown when the user can access at least one of its items. #}
-                    {% set nav_groups = [
-                {label: null, items: [
-                    {label: 'Dashboard', url: base_path ~ 'admin', capability: null, exact: true},
-                ]},
-                {label: 'Content', items: [
-                    {label: 'Seasons', url: base_path ~ 'admin/seasons', capability: 'manage_productions'},
-                    {label: 'Productions', url: base_path ~ 'admin/productions', capability: 'manage_productions'},
-                    {label: 'Events', url: base_path ~ 'admin/events', capability: 'manage_productions'},
-                    {label: 'Works', url: base_path ~ 'admin/works', capability: 'manage_people'},
-                    {label: 'People', url: base_path ~ 'admin/people', capability: 'manage_people'},
-                    {label: 'Venues', url: base_path ~ 'admin/venues', capability: 'manage_productions'},
-                    {label: 'Sponsors', url: base_path ~ 'admin/sponsors', capability: 'manage_productions'},
-                    {label: 'Posts', url: base_path ~ 'admin/posts', capability: 'edit_posts'},
-                    {label: 'Pages', url: base_path ~ 'admin/pages', capability: 'edit_pages'},
-                    {label: 'Media', url: base_path ~ 'admin/media', capability: 'upload_files'},
-                ]},
-                {label: 'Appearance', items: [
-                  {label: 'Themes', url: base_path ~ 'admin/themes', capability: 'switch_themes'},
-                  {label: 'Menus', url: base_path ~ 'admin/menus', capability: 'manage_menus'},
-                ]},
-                {label: 'Administration', items: [
-                    {label: 'Users', url: base_path ~ 'admin/users', capability: 'manage_users'},
-                    {label: 'Settings', url: base_path ~ 'admin/settings', capability: 'manage_options'},
-                ]},
-            ] %}
-
-                    {% for group in nav_groups %}
+                    {% for group in admin_menu() %}
                         {% set visible_items = group.items|filter(item => item.capability is null or can(item.capability)) %}
                         {% if visible_items is not empty %}
                             {# Active when the request path (set by RequireTwigMiddleware) is the item's URL or below it;

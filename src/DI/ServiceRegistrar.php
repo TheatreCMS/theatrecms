@@ -5,13 +5,17 @@ namespace TheatreCMS\DI;
 use DI\Container;
 use Doctrine\ORM\EntityManager;
 use Intervention\Image\ImageManager;
+use Monolog\Handler\ErrorLogHandler;
+use Monolog\Logger;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
 use Slim\Csrf\Guard;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use TheatreCMS\Admin\AdminMenuRegistry;
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
@@ -34,6 +38,9 @@ use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
+use TheatreCMS\Plugin\ComposerPluginDiscovery;
+use TheatreCMS\Plugin\PluginDiscovery;
+use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Taxonomy\TermArchiveQuery;
@@ -82,6 +89,7 @@ use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
 use TheatreCMS\Twig\AddressExtension;
+use TheatreCMS\Twig\AdminMenuExtension;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ConditionalTagsExtension;
 use TheatreCMS\Twig\ContentExtension;
@@ -131,6 +139,19 @@ class ServiceRegistrar
         });
 
         $container->set(HookManager::class, static fn(): HookManager => new HookManager());
+
+        // Goes to PHP's error log, alongside Slim's own error logging.
+        $container->set(LoggerInterface::class, static function (): LoggerInterface {
+            return new Logger('theatrecms', [new ErrorLogHandler()]);
+        });
+
+        $container->set(PluginDiscovery::class, static function (ContainerInterface $c): PluginDiscovery {
+            return new ComposerPluginDiscovery(logger: $c->get(LoggerInterface::class));
+        });
+        $container->set(PluginManager::class, static function (ContainerInterface $c): PluginManager {
+            return new PluginManager($c->get(PluginDiscovery::class), $c->get(LoggerInterface::class));
+        });
+        $container->set(AdminMenuRegistry::class, static fn(): AdminMenuRegistry => new AdminMenuRegistry());
 
         $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
 
@@ -309,6 +330,7 @@ class ServiceRegistrar
 
             $themeManager = $c->get(ThemeManager::class);
             $themeManager->configureTwig($twig, $templateDir);
+            $c->get(PluginManager::class)->configureTwig($twig);
             $twig->addExtension(new EditorJsExtension($c->get(EditorJsHtmlConverter::class)));
             $twig->addExtension(new MenuExtension($c->get(MenuRepository::class), $c->get(MenuItemResolver::class)));
             $twig->addExtension(new CapabilityExtension($c->get(AuthorizationService::class)));
@@ -333,6 +355,7 @@ class ServiceRegistrar
             $twig->addExtension(new ExcerptExtension($c->get(ExcerptResolver::class)));
             $twig->addExtension(new HooksExtension());
             $twig->addExtension(new ConditionalTagsExtension());
+            $twig->addExtension(new AdminMenuExtension($c->get(AdminMenuRegistry::class)));
             $twig->getEnvironment()->addGlobal('theme', $themeManager->getMetadata());
             $twig->getEnvironment()->addGlobal('theme_color_palette', $themeManager->getColorPalette());
 
