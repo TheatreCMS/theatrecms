@@ -247,8 +247,8 @@ class ProductionController extends BaseController
             }
         }
         try {
-            $opening = new \DateTime($data['opening']);
-            $closing = new \DateTime($data['closing']);
+            $opening = !empty($data['opening']) ? new \DateTime($data['opening']) : null;
+            $closing = !empty($data['closing']) ? new \DateTime($data['closing']) : null;
         } catch (\Exception $e) {
             if ($request->getHeaderLine('HX-Request')) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
