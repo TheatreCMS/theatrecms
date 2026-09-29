@@ -33,6 +33,7 @@ class FeaturedImageMappingTest extends TestCase
 
         $paths = [__DIR__ . '/../../src/Models'];
         $config = ORMSetup::createAttributeMetadataConfiguration($paths, true);
+        $config->enableNativeLazyObjects(true);
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         $this->em = new EntityManager($connection, $config);
 
@@ -52,6 +53,8 @@ class FeaturedImageMappingTest extends TestCase
     public function testProductionResolvesFeaturedImageUrlThroughRelation(): void
     {
         $season = new Season('2025-2026', '2025-2026 Season');
+        $season->setStartDate(new \DateTime('2025-09-01'));
+        $season->setEndDate(new \DateTime('2026-06-30'));
         $this->em->persist($season);
 
         $production = new Production('A Show', $season);
@@ -89,6 +92,8 @@ class FeaturedImageMappingTest extends TestCase
     public function testSeasonResolvesFeaturedImageUrlThroughRelation(): void
     {
         $season = new Season('2025-2026', '2025-2026 Season');
+        $season->setStartDate(new \DateTime('2025-09-01'));
+        $season->setEndDate(new \DateTime('2026-06-30'));
         $this->em->persist($season);
         $this->em->flush();
 

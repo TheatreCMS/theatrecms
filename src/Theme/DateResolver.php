@@ -16,12 +16,26 @@ class DateResolver
     {
         $date = match (true) {
             $entity instanceof (Season::class) => $entity->getStartDate(),
-            default => $entity->getPublishedAt() ?? $this->resolveCreatedAt($entity)
+            default => $this->resolvePublishedAt($entity) ?? $this->resolveCreatedAt($entity)
         };
 
         $resolvedDate = $date instanceof \DateTimeInterface ? $date->format($format) : '';
 
         return (string) apply_filters('theatrecms/the_date', $resolvedDate, $entity, $date, $format);
+    }
+
+    /**
+     * @throws \InvalidArgumentException when the entity has no date to resolve at all
+     */
+    private function resolvePublishedAt(mixed $entity): ?\DateTimeInterface
+    {
+        $hasDate = is_object($entity)
+            && (method_exists($entity, 'getPublishedAt') || method_exists($entity, 'getCreatedAt'));
+        if (!$hasDate) {
+            throw new \InvalidArgumentException(sprintf('Cannot resolve a date for %s.', get_debug_type($entity)));
+        }
+
+        return method_exists($entity, 'getPublishedAt') ? $entity->getPublishedAt() : null;
     }
 
     /**
