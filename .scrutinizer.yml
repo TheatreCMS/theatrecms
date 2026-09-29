@@ -1,18 +1,46 @@
+# All Scrutinizer configuration lives here. The repository config on scrutinizer-ci.com should stay
+# empty: it is merged into this file, and node-level settings there silently override these.
 build:
-    environment:
-        php: '8.2'
-        node: '20'
+  # The default image's glibc is too old for Node 20 and it has no PHP 8.4 build.
+  # jammy defaults to PHP 8.1; pin an exact 8.4 patch release so it installs that instead.
+  image: default-jammy
+  environment:
+    php:
+      version: 8.4.11
+    # Scrutinizer runs `npm install` for package.json; the image's default npm can't read lockfile v3.
+    node: v20.19.0
 
-    dependencies:
-        before:
-            - composer install --no-interaction --prefer-dist
-            - npm install
+  dependencies:
+    before:
+      - composer install --no-interaction --prefer-dist
 
+  nodes:
+    analysis:
+      project_setup:
+        override:
+          - 'true'
+      tests:
+        override:
+          # Analysis can go several minutes without output; the default idle timeout is 300s.
+          - command: php-scrutinizer-run
+            idle_timeout: 900
+          # Uses the project's phpcs.xml and the phpcs from composer's require-dev, same as
+          # running ./vendor/bin/phpcs locally.
+          - phpcs-run
+          - js-scrutinizer-run
     tests:
-        before:
-            - npm test
+      tests:
+        override:
+          - ./vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit
+
+filter:
+  excluded_paths:
+    - 'app/*'
+    - '*.min.js'
+    - 'tests/*'
 
 checks:
-    php:
-        code_rating: true
-        duplication: true
+  php:
+    code_rating: true
+    duplication: true
+  javascript: true

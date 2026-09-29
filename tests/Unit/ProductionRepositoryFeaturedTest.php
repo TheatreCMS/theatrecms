@@ -32,6 +32,7 @@ class ProductionRepositoryFeaturedTest extends TestCase
 
         $paths = [__DIR__ . '/../../src/Models'];
         $config = ORMSetup::createAttributeMetadataConfiguration($paths, true);
+        $config->enableNativeLazyObjects(true);
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         $this->em = new EntityManager($connection, $config);
 
