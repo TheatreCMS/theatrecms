@@ -2,6 +2,10 @@
 
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/?branch=main)
 [![Build Status](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/badges/build.png?b=main)](https://scrutinizer-ci.com/g/TheatreCMS/theatrecms/build-status/main)
+[![CI](https://github.com/TheatreCMS/theatrecms/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/TheatreCMS/theatrecms/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=TheatreCMS_theatrecms&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=TheatreCMS_theatrecms)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=TheatreCMS_theatrecms&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=TheatreCMS_theatrecms)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=TheatreCMS_theatrecms&metric=coverage)](https://sonarcloud.io/summary/new_code?id=TheatreCMS_theatrecms)
 
 Copyright (C) 2026  TheatreCMS Team
 

@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  checks:
+    name: Tests, static analysis and coding standard
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # SonarQube Cloud needs full history to attribute new code on PRs.
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, pdo_sqlite
+          coverage: pcov
+          tools: composer:v2
+
+      - uses: ramsey/composer-install@v4
+
+      - name: PHPUnit
+        run: >-
+          vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit
+          --coverage-clover=build/coverage.xml --log-junit=build/junit.xml
+
+      # The remaining checks run even if an earlier one failed, so one run reports everything.
+      - name: PHPStan
+        if: ${{ !cancelled() }}
+        run: vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=1G --no-progress --error-format=github
+
+      - name: PHP_CodeSniffer (errors only)
+        if: ${{ !cancelled() }}
+        run: vendor/bin/phpcs -q -n
+
+      # Skipped until the SONAR_TOKEN repository secret exists (and on PRs from forks, which don't get secrets).
+      - name: SonarQube Cloud
+        if: ${{ !cancelled() && env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

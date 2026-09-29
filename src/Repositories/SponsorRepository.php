@@ -33,4 +33,3 @@ final class SponsorRepository extends BaseRepository
         return $sponsor;
     }
 }
-

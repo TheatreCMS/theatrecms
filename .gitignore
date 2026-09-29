@@ -20,6 +20,7 @@ Thumbs.db
 *.swo
 *~
 .phpunit.result.cache
+/build/
 
 /sql/
 /www/themes/*

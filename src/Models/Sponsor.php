@@ -1,7 +1,7 @@
 <?php
 
 namespace TheatreCMS\Models;
-    
+
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
-    
+
 #[Entity, Table(name: 'sponsors')]
 class Sponsor extends ModelBase
 {

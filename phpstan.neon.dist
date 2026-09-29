@@ -1,4 +1,7 @@
-includes: []
+includes:
+  # Errors that existed when CI started enforcing phpstan; fix them and regenerate with
+  # `vendor/bin/phpstan analyse -c phpstan.neon.dist --generate-baseline phpstan-baseline.neon`.
+  - phpstan-baseline.neon
 
 parameters:
   # Use the highest level for strictness; adjust if needed.
