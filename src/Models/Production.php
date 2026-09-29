@@ -63,10 +63,10 @@ class Production extends ModelBase
     private Collection $performances;
 
     #[Column(name: 'promo_video_url', type: 'string', nullable: true)]
-    private string $promoVideoUrl;
+    private ?string $promoVideoUrl = null;
 
     #[Column(name: 'ticket_purchase_url', type: 'string', nullable: true)]
-    private string $ticketPurchaseUrl;
+    private ?string $ticketPurchaseUrl = null;
 
     #[ManyToOne(targetEntity: Season::class, inversedBy: 'productions')]
     #[JoinColumn(name: 'season_id', referencedColumnName: 'id', nullable: false)]
@@ -242,14 +242,14 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function setDescription(string $description): self
+    public function setDescription(?string $description): self
     {
         $this->description = $description;
 
         return $this;
     }
 
-    public function setExcerpt(string $excerpt): self
+    public function setExcerpt(?string $excerpt): self
     {
         $this->excerpt = $excerpt;
 
@@ -277,14 +277,14 @@ class Production extends ModelBase
         return $this;
     }
 
-    public function setPromoVideoUrl(string $promoVideoUrl): self
+    public function setPromoVideoUrl(?string $promoVideoUrl): self
     {
         $this->promoVideoUrl = $promoVideoUrl;
 
         return $this;
     }
 
-    public function setTicketPurchaseUrl(string $ticketPurchaseUrl): self
+    public function setTicketPurchaseUrl(?string $ticketPurchaseUrl): self
     {
         $this->ticketPurchaseUrl = $ticketPurchaseUrl;
 

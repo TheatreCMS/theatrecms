@@ -64,15 +64,15 @@ class Person extends ModelBase implements JsonSerializable
     }
 
 
-    public function setFirstName(mixed $firstName): self
+    public function setFirstName(?string $firstName): self
     {
-        $this->firstName = $firstName;
+        $this->firstName = $firstName ?? '';
         return $this;
     }
 
-    public function setLastName(mixed $lastName): self
+    public function setLastName(?string $lastName): self
     {
-        $this->lastName = $lastName;
+        $this->lastName = $lastName ?? '';
         return $this;
     }
 

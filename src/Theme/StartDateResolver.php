@@ -22,46 +22,45 @@ class StartDateResolver
         return $startDate;
     }
 
+    /**
+     * The production's opening date, falling back to its earliest performance.
+     */
     public function resolveProductionStart(Production $production): ?\DateTime
     {
         if ($production->getOpening()) {
             return $production->getOpening();
         }
 
-        $performances = $production->getPerformances();
+        $earliest = null;
 
-        if ($performances->count()) {
-            $startDate = null;
-
-            while (null === $startDate) {
-                $startDate = $performances->current()->startDate();
-                $performances->next();
+        foreach ($production->getPerformances() as $performance) {
+            if ($earliest === null || $performance->getStartsAt() < $earliest) {
+                $earliest = $performance->getStartsAt();
             }
-
-            return $startDate;
         }
 
-        return null;
+        return $earliest ? \DateTime::createFromImmutable($earliest) : null;
     }
 
+    /**
+     * The season's start date, falling back to the earliest start among its productions.
+     */
     public function resolveSeasonStart(Season $season): ?\DateTime
     {
         if ($season->getStartDate()) {
             return $season->getStartDate();
         }
 
-        $productions = $season->getProductions();
+        $earliest = null;
 
-        if ($productions->count()) {
-            $startDate = null;
-            while (null === $startDate) {
-                $startDate = $this->resolveProductionStart($productions->current());
-                $productions->next();
+        foreach ($season->getProductions() as $production) {
+            $startDate = $this->resolveProductionStart($production);
+
+            if ($startDate !== null && ($earliest === null || $startDate < $earliest)) {
+                $earliest = $startDate;
             }
-
-            return $startDate;
         }
 
-        return null;
+        return $earliest;
     }
 }
