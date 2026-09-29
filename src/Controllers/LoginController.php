@@ -46,7 +46,7 @@ class LoginController extends BaseController
                 'csrf_value_key' => self::CSRF_VALUE_KEY,
                 'csrf_value'     => $csrfValue,
             ]);
-        } catch (LoaderError|RuntimeError|SyntaxError $e) {
+        } catch (LoaderError | RuntimeError | SyntaxError $e) {
             $response->getBody()->write('An error occurred while loading the login page.');
             return $response->withStatus(500);
         }
@@ -60,8 +60,7 @@ class LoginController extends BaseController
             $this->auth->login($data['email'], $data['password']);
 
             return $response->withHeader('Location', '/admin')->withStatus(302);
-        }
-        catch (InvalidEmailException|AuthError|InvalidPasswordException|EmailNotVerifiedException|TooManyRequestsException|SecondFactorRequiredException $e) {
+        } catch (InvalidEmailException | AuthError | InvalidPasswordException | EmailNotVerifiedException | TooManyRequestsException | SecondFactorRequiredException $e) {
             return $response->withHeader('Location', '/admin/login')->withStatus(302);
         }
     }
@@ -85,8 +84,7 @@ class LoginController extends BaseController
         try {
             $this->auth->register($data['email'], $data['password']);
             return $response->withHeader('Location', '/admin/users');
-        }
-        catch (UserAlreadyExistsException|InvalidEmailException|AuthError|InvalidPasswordException|TooManyRequestsException $e) {
+        } catch (UserAlreadyExistsException | InvalidEmailException | AuthError | InvalidPasswordException | TooManyRequestsException $e) {
             return $response->withHeader('Location', '/admin/register');
         }
     }

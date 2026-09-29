@@ -12,7 +12,9 @@ use Twig\TwigFunction;
  */
 class StartDateExtension extends AbstractExtension
 {
-    public function __construct(private readonly StartDateResolver $resolver) {}
+    public function __construct(private readonly StartDateResolver $resolver)
+    {
+    }
 
     public function getFunctions(): array
     {

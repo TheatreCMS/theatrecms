@@ -1,6 +1,5 @@
 <?php
 
-
 namespace TheatreCMS\Models;
 
 use Doctrine\ORM\Mapping\Column;

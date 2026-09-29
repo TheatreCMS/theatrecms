@@ -1,4 +1,5 @@
 <?php
+
 namespace TheatreCMS\Twig;
 
 use TheatreCMS\Theme\SeoMeta;
