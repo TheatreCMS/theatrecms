@@ -7,12 +7,12 @@ use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestWork
+ * Class WorkTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass \TheatreCMS\Models\Work
  */
-class TestWork extends TestCase
+class WorkTest extends TestCase
 {
     public function testTitle()
     {

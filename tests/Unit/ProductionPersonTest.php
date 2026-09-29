@@ -11,12 +11,12 @@ use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestProductionPerson
+ * Class ProductionPersonTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass ProductionPerson
  */
-class TestProductionPerson extends TestCase
+class ProductionPersonTest extends TestCase
 {
     private Season $season;
     private Work $work;

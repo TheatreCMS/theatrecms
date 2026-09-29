@@ -4,6 +4,7 @@ namespace TheatreCMS\Tests\Unit\Middleware;
 
 use Delight\Auth\Auth;
 use Delight\Auth\Role;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -12,7 +13,8 @@ use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 
-class TestRequireCapabilityMiddleware extends TestCase
+#[AllowMockObjectsWithoutExpectations]
+class RequireCapabilityMiddlewareTest extends TestCase
 {
     private Auth $auth;
 

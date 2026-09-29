@@ -6,7 +6,7 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
-class TestWorkCreatorsWithRole extends TestCase
+class WorkCreatorsWithRoleTest extends TestCase
 {
     public function testAddCreatorWithRole()
     {

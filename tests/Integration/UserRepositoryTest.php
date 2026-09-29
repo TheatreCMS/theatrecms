@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\User;
 use TheatreCMS\Repositories\UserRepository;
 
-class TestUserRepository extends TestCase
+class UserRepositoryTest extends TestCase
 {
     private Connection $connection;
     private Auth $auth;
@@ -102,6 +102,7 @@ class TestUserRepository extends TestCase
             [dirname(__DIR__, 2) . '/src/Models'],
             true
         );
+        $config->enableNativeLazyObjects(true);
         $entityManager = new EntityManager($this->connection, $config);
         $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
         $sql = (new SchemaTool($entityManager))->getCreateSchemaSql($metadata);

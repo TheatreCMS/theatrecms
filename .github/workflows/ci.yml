@@ -34,7 +34,7 @@ jobs:
 
       - name: PHPUnit
         run: >-
-          vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit
+          vendor/bin/phpunit --configuration=phpunit.xml.dist
           --coverage-clover=build/coverage.xml --log-junit=build/junit.xml
 
       # The remaining checks run even if an earlier one failed, so one run reports everything.

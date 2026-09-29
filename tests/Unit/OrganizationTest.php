@@ -6,12 +6,12 @@ use TheatreCMS\Models\Organization;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestOrganization
+ * Class OrganizationTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass \TheatreCMS\Models\Organization
  */
-class TestOrganization extends TestCase
+class OrganizationTest extends TestCase
 {
     public function testConstructor(): void
     {

@@ -12,7 +12,7 @@ It deliberately follows WordPress's core/plugin/theme architecture (a theme's `f
 
 - `composer install` — install backend dependencies.
 - `npm install` — install Playwright + TypeScript tooling for e2e tests and EditorJS frontend plugins.
-- Unit tests: `./vendor/bin/phpunit --configuration=phpunit.xml.dist tests/Unit`
+- Tests (unit + integration suites): `./vendor/bin/phpunit --configuration=phpunit.xml.dist` (one suite: add `--testsuite unit`)
   - Single test file: `./vendor/bin/phpunit tests/Unit/UsersControllerTest.php`
   - Single test method: add `--filter <TestMethodName>`
 - Static analysis: `composer stan` (or `./vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=1G`) — level 4, analyzes `src` only.
@@ -64,8 +64,8 @@ It deliberately follows WordPress's core/plugin/theme architecture (a theme's `f
 
 ### Tests
 
-- `tests/Unit` — PHPUnit tests for repositories, controllers, middleware, auth, and structured-data building; namespace `TheatreCMS\Tests` (per `composer.json` autoload-dev), bootstrapped via `tests/bootstrap.php`. `tests/Includes/TestCase.php` is the shared base test case; `tests/Unit/Test*.php` files (e.g. `TestPerson.php`, `TestVenue.php`) are Doctrine test fixtures/entities, not test cases themselves.
-- `tests/Integration` — repository-level integration tests requiring a real database.
+- `tests/Unit` — PHPUnit tests for repositories, controllers, middleware, auth, and structured-data building; namespace `TheatreCMS\Tests` (per `composer.json` autoload-dev), bootstrapped via `tests/bootstrap.php`. Shared helpers live in `tests/Includes` (`UsesSqliteEntityManager` for an in-memory SQLite EntityManager, `RendersControllerViews` for controller tests). Test files must be named `*Test.php`: PHPUnit only discovers that suffix, so anything else silently never runs.
+- `tests/Integration` — repository-level integration tests against in-memory SQLite (the `integration` testsuite; CI runs both suites).
 - `tests/e2e` — Playwright specs (`home.spec.ts` is the reference pattern), configured via `playwright.config.ts` to target Chrome and Firefox; require the app running at `http://127.0.0.1:8080`.
 - `phpunit.xml.dist`, `phpstan.neon.dist`, and `phpcs.xml` in the repo root are the authoritative config for testing, static analysis, and linting respectively.
 

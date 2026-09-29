@@ -9,7 +9,7 @@ use TheatreCMS\Models\Sponsorship;
 use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
-class TestSponsorship extends TestCase
+class SponsorshipTest extends TestCase
 {
     private Sponsor $sponsor;
     private Sponsorship $sponsorship;

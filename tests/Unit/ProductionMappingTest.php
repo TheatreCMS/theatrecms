@@ -9,7 +9,7 @@ use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Work;
 
-class TestProductionMapping extends TestCase
+class ProductionMappingTest extends TestCase
 {
     public function testAddToCreativeTeam(): void
     {

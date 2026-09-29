@@ -6,12 +6,12 @@ use TheatreCMS\Models\Season;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestSeason
+ * Class SeasonTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass  \TheatreCMS\Models\Season
  */
-class TestSeason extends TestCase
+class SeasonTest extends TestCase
 {
     public function testConstructor()
     {

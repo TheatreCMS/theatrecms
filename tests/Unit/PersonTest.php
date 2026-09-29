@@ -5,12 +5,12 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Tests\Includes\TestCase;
 
 /**
- * Class TestPerson
+ * Class PersonTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass Person
  */
-class TestPerson extends \PHPUnit\Framework\TestCase
+class PersonTest extends TestCase
 {
     public function testConstructor(): void
     {
