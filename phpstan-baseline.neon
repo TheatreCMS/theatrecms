@@ -1,0 +1,55 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Constant APP_ROOT not found\.$#'
+			identifier: constant.notFound
+			count: 6
+			path: src/DI/ServiceRegistrar.php
+
+		-
+			message: '#^Instanceof between TheatreCMS\\Models\\Work and TheatreCMS\\Models\\Work will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Models/Production.php
+
+		-
+			message: '#^Property TheatreCMS\\Models\\WorkCreator\:\:\$id is unused\.$#'
+			identifier: property.unused
+			count: 1
+			path: src/Models/WorkCreator.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Repositories/PageRepository.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Repositories/PostRepository.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Text/EditorJsHtmlConverter.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: src/Text/EditorJsHtmlConverter.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between DateTimeImmutable and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Theme/StructuredDataBuilder.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between Doctrine\\Common\\Collections\\Collection and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/Theme/StructuredDataBuilder.php
