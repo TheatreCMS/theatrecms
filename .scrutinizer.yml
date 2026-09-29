@@ -21,7 +21,9 @@ build:
           - 'true'
       tests:
         override:
-          - php-scrutinizer-run
+          # Analysis can go several minutes without output; the default idle timeout is 300s.
+          - command: php-scrutinizer-run
+            idle_timeout: 900
           # Uses the project's phpcs.xml and the phpcs from composer's require-dev, same as
           # running ./vendor/bin/phpcs locally.
           - phpcs-run
