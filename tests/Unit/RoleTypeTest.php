@@ -6,12 +6,12 @@ use TheatreCMS\Models\RoleType;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestRoleType
+ * Class RoleTypeTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass RoleType
  */
-class TestRoleType extends TestCase
+class RoleTypeTest extends TestCase
 {
     public function testEnumValues(): void
     {

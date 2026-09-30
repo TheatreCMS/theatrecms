@@ -2,17 +2,18 @@
 
 namespace TheatreCMS\Tests\Unit;
 
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
-class TestVenueRepositoryInvalidInput extends TestCase
+class VenueRepositoryInvalidInputTest extends TestCase
 {
     public function testCreateWithMissingRequiredFieldsThrowsTypeError(): void
     {
         $em = $this->createStub(EntityManagerInterface::class);
 
-        $repo = new VenueRepository($em);
+        $repo = new VenueRepository($em, $this->createStub(ContentMetaRepository::class));
 
         $this->expectException(\TypeError::class);
 
@@ -24,7 +25,7 @@ class TestVenueRepositoryInvalidInput extends TestCase
     {
         $em = $this->createStub(EntityManagerInterface::class);
 
-        $repo = new VenueRepository($em);
+        $repo = new VenueRepository($em, $this->createStub(ContentMetaRepository::class));
 
         $this->expectException(\TypeError::class);
 

@@ -9,12 +9,12 @@ use TheatreCMS\Models\Work;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestEvent
+ * Class EventTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass  \TheatreCMS\Models\Event
  */
-class TestEvent extends TestCase
+class EventTest extends TestCase
 {
     private Work $work;
     private Production $production;

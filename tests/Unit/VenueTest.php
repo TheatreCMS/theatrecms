@@ -5,12 +5,12 @@ use TheatreCMS\Models\Venue;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TestVenue
+ * Class VenueTest
  * @package TheatreCMS\Tests\Unit
  *
  * @coversDefaultClass \TheatreCMS\Models\Venue
  */
-class TestVenue extends TestCase
+class VenueTest extends TestCase
 {
     private function makeVenue(): Venue
     {

@@ -13,6 +13,9 @@ function isInsideTemplateRow(el) {
     return false;
 }
 
+// Gives each enhanced select's <datalist> a page-unique id.
+let searchableSelectDatalistCount = 0;
+
 // Wraps a plain <select class="searchable-select"> in a type-to-filter text input
 // backed by a <datalist>, keeping the original select (hidden) in sync so existing
 // form submission/validation code keeps working unchanged.
@@ -71,7 +74,7 @@ function enhanceSearchableSelect(select) {
         input.setAttribute('title', select.getAttribute('title'));
     }
 
-    const datalistId = `searchable-select-${Math.random().toString(36).slice(2)}`;
+    const datalistId = `searchable-select-${++searchableSelectDatalistCount}`;
     const datalist = document.createElement('datalist');
     datalist.id = datalistId;
 

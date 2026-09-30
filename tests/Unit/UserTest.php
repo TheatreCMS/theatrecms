@@ -5,7 +5,7 @@ namespace TheatreCMS\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\User;
 
-class TestUser extends TestCase
+class UserTest extends TestCase
 {
     public function testExposesAuthUserData(): void
     {

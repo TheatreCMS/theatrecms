@@ -3,50 +3,29 @@
 namespace TheatreCMS\Tests\Integration;
 
 use TheatreCMS\Models\Venue;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\VenueRepository;
-use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\ORMSetup;
-use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 
 /**
  * @coversDefaultClass \TheatreCMS\Repositories\VenueRepository
  */
-class TestVenueRepository extends TestCase
+class VenueRepositoryTest extends TestCase
 {
+    use UsesSqliteEntityManager;
+
     private EntityManager $em;
 
     protected function setUp(): void
     {
-        // Skip if PDO SQLite driver isn't available in this environment (CI or local dev may not have it)
-        if (!in_array('sqlite', \PDO::getAvailableDrivers())) {
-            $this->markTestSkipped('PDO SQLite driver is not available; skipping integration test.');
-        }
-
-        $paths = [__DIR__ . '/../../src/Models'];
-        $isDevMode = true;
-
-        $config = ORMSetup::createAttributeMetadataConfiguration($paths, $isDevMode);
-
-        $connectionParams = [
-            'driver' => 'pdo_sqlite',
-            'memory' => true,
-        ];
-
-        $connection = DriverManager::getConnection($connectionParams);
-
-        $this->em = new EntityManager($connection, $config);
-
-        // Create schema
-        $schemaTool = new SchemaTool($this->em);
-        $classes = [$this->em->getClassMetadata(Venue::class)];
-        $schemaTool->createSchema($classes);
+        $this->em = $this->createSqliteEntityManager();
     }
 
     public function testCreateAndFetchVenue(): void
     {
-        $repo = new VenueRepository($this->em);
+        $repo = new VenueRepository($this->em, new ContentMetaRepository($this->em));
 
         $data = [
             'name' => 'Integration Theatre',
@@ -99,7 +78,7 @@ class TestVenueRepository extends TestCase
 
     public function testUpdateVenue(): void
     {
-        $repo = new VenueRepository($this->em);
+        $repo = new VenueRepository($this->em, new ContentMetaRepository($this->em));
 
         $venue = $repo->create([
             'name' => 'Update Theatre',
@@ -128,7 +107,7 @@ class TestVenueRepository extends TestCase
 
     public function testDeleteVenue(): void
     {
-        $repo = new VenueRepository($this->em);
+        $repo = new VenueRepository($this->em, new ContentMetaRepository($this->em));
 
         $venue = $repo->create([
             'name' => 'Delete Theatre',
@@ -150,7 +129,7 @@ class TestVenueRepository extends TestCase
 
     public function testFetchAllVenues(): void
     {
-        $repo = new VenueRepository($this->em);
+        $repo = new VenueRepository($this->em, new ContentMetaRepository($this->em));
 
         // Ensure a clean state by relying on in-memory DB per test
         $repo->create([
