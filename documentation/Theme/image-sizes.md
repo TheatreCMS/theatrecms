@@ -43,7 +43,7 @@ Images uploaded before a size was registered (or before this feature existed)
 don't have variants until you run:
 
 ```
-./regenerate-media-thumbnails [--dry-run] [--force] [--size=<name>]
+bin/theatrecms media:regenerate-thumbnails [--dry-run] [--force] [--size=<name>]
 ```
 
 By default this only generates sizes a given image doesn't already have.
@@ -61,7 +61,7 @@ On a `Media` entity directly:
 
 `getVariantUrl()` falls back to the original file's URL if the requested size
 hasn't been generated for that image (e.g. it predates the size and
-`regenerate-media-thumbnails` hasn't been run yet).
+`media:regenerate-thumbnails` hasn't been run yet).
 
 On any content entity with a featured image, via the existing
 `the_featured_image_url()` Twig function (`src/Twig/FeaturedImageExtension.php`)

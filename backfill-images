@@ -14,43 +14,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * One-time backfill for the media library feature: registers pre-existing
- * files under www/uploads/ as `media` rows, then repoints the legacy
- * `featured_image_url` columns on productions/posts/seasons at the matching
- * row's id. See documentation/DEPLOYMENT.md for when to run this relative to
- * the accompanying migrations.
- *
- * Safe to run more than once.
- *
- * Usage:
- *   ./backfill-images [--dry-run]
+ * Deprecated: use `bin/theatrecms media:backfill`. This wrapper forwards its arguments
+ * there and will be removed in a future release.
  */
 
-use TheatreCMS\Services\ImageBackfillService;
-
 if (PHP_SAPI !== 'cli') {
-    fwrite(STDERR, "This script must be run from the command line.\n");
     exit(1);
 }
 
-/** @var \DI\Container $container */
-$container = require_once __DIR__ . '/app/bootstrap.php';
+fwrite(STDERR, "./backfill-images is deprecated; use bin/theatrecms media:backfill instead.\n");
 
-$options = getopt('', ['dry-run']);
-$dryRun = isset($options['dry-run']);
+$_SERVER['argv'] = array_merge([__DIR__ . '/bin/theatrecms', 'media:backfill'], array_slice($_SERVER['argv'], 1));
+$_SERVER['argc'] = count($_SERVER['argv']);
 
-/** @var ImageBackfillService $backfillService */
-$backfillService = $container->get(ImageBackfillService::class);
-
-$created = $backfillService->scanUploads($dryRun);
-$repointed = $backfillService->repointAll($dryRun);
-
-$prefix = $dryRun ? '[dry run] Would create' : 'Created';
-fwrite(STDOUT, sprintf("%s %d media row(s) from www/uploads/.\n", $prefix, $created));
-
-$repointPrefix = $dryRun ? '[dry run] Would repoint' : 'Repointed';
-foreach ($repointed as $table => $count) {
-    fwrite(STDOUT, sprintf("%s %d %s row(s) to their matching image.\n", $repointPrefix, $count, $table));
-}
-
-exit(0);
+require __DIR__ . '/bin/theatrecms';

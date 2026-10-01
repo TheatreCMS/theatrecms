@@ -14,40 +14,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * Generates the registered thumbnail sizes (ImageSizeRegistry) for images
- * already in the media library. By default only sizes a given image doesn't
- * already have are generated -- run this after registering a new size, or
- * after backfilling pre-existing uploads with ./backfill-images.
- *
- * Safe to run more than once.
- *
- * Usage:
- *   ./regenerate-media-thumbnails [--dry-run] [--force] [--size=<name>]
+ * Deprecated: use `bin/theatrecms media:regenerate-thumbnails`. This wrapper forwards its arguments
+ * there and will be removed in a future release.
  */
 
-use TheatreCMS\Services\MediaVariantBackfillService;
-
 if (PHP_SAPI !== 'cli') {
-    fwrite(STDERR, "This script must be run from the command line.\n");
     exit(1);
 }
 
-/** @var \DI\Container $container */
-$container = require_once __DIR__ . '/app/bootstrap.php';
+fwrite(STDERR, "./regenerate-media-thumbnails is deprecated; use bin/theatrecms media:regenerate-thumbnails instead.\n");
 
-$options = getopt('', ['dry-run', 'force', 'size:']);
-$dryRun = isset($options['dry-run']);
-$force = isset($options['force']);
-$onlySize = isset($options['size']) ? (string) $options['size'] : null;
+$_SERVER['argv'] = array_merge([__DIR__ . '/bin/theatrecms', 'media:regenerate-thumbnails'], array_slice($_SERVER['argv'], 1));
+$_SERVER['argc'] = count($_SERVER['argv']);
 
-/** @var MediaVariantBackfillService $backfillService */
-$backfillService = $container->get(MediaVariantBackfillService::class);
-
-$counts = $backfillService->regenerate($dryRun, $force, $onlySize);
-
-$prefix = $dryRun ? '[dry run] Would generate' : 'Generated';
-foreach ($counts as $sizeName => $count) {
-    fwrite(STDOUT, sprintf("%s %d '%s' thumbnail(s).\n", $prefix, $count, $sizeName));
-}
-
-exit(0);
+require __DIR__ . '/bin/theatrecms';

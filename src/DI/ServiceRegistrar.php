@@ -8,6 +8,7 @@ use Intervention\Image\ImageManager;
 use Monolog\Handler\ErrorLogHandler;
 use Monolog\Logger;
 use Psr\Container\ContainerInterface;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Slim\App;
@@ -17,6 +18,7 @@ use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 use TheatreCMS\Admin\AdminMenuRegistry;
 use TheatreCMS\Auth\AuthorizationService;
+use TheatreCMS\Console\ConsoleApplicationFactory;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Controllers\MediaController;
@@ -41,6 +43,13 @@ use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Plugin\DirectoryPluginDiscovery;
 use TheatreCMS\Plugin\PluginDiscovery;
 use TheatreCMS\Plugin\PluginManager;
+use TheatreCMS\Scheduler\ProcessTaskRunner;
+use TheatreCMS\Scheduler\ScheduledTaskRegistry;
+use TheatreCMS\Scheduler\ScheduledTaskRunRepository;
+use TheatreCMS\Scheduler\Scheduler;
+use TheatreCMS\Scheduler\SystemClock;
+use TheatreCMS\Scheduler\TaskLocker;
+use TheatreCMS\Scheduler\TaskRunner;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Taxonomy\TermArchiveQuery;
@@ -153,6 +162,28 @@ class ServiceRegistrar
             return new PluginManager($c->get(PluginDiscovery::class), $c->get(LoggerInterface::class));
         });
         $container->set(AdminMenuRegistry::class, static fn(): AdminMenuRegistry => new AdminMenuRegistry());
+
+        // Console (bin/theatrecms) and scheduler (schedule:run); see documentation/console.md.
+        $container->set(ConsoleApplicationFactory::class, static function (ContainerInterface $c): ConsoleApplicationFactory {
+            return new ConsoleApplicationFactory($c, $c->get(PluginManager::class), $c->get(LoggerInterface::class));
+        });
+        $container->set(ScheduledTaskRegistry::class, static fn(): ScheduledTaskRegistry => new ScheduledTaskRegistry());
+        $container->set(ScheduledTaskRunRepository::class, static function (ContainerInterface $c): ScheduledTaskRunRepository {
+            return new ScheduledTaskRunRepository($c->get(EntityManager::class)->getConnection());
+        });
+        $container->set(ClockInterface::class, static fn(): ClockInterface => new SystemClock());
+        $container->set(TaskRunner::class, static fn(): TaskRunner => new ProcessTaskRunner(APP_ROOT . '/bin/theatrecms', APP_ROOT));
+        $container->set(TaskLocker::class, static fn(): TaskLocker => new TaskLocker(APP_ROOT . '/var/locks'));
+        $container->set(Scheduler::class, static function (ContainerInterface $c): Scheduler {
+            return new Scheduler(
+                $c->get(ScheduledTaskRegistry::class),
+                $c->get(ScheduledTaskRunRepository::class),
+                $c->get(TaskRunner::class),
+                $c->get(TaskLocker::class),
+                $c->get(ClockInterface::class),
+                $c->get(LoggerInterface::class),
+            );
+        });
 
         $container->set(TitleResolver::class, static fn(): TitleResolver => new TitleResolver());
 

@@ -22,14 +22,18 @@ It deliberately follows WordPress's core/plugin/theme architecture (a theme's `f
 - Playwright e2e: start a local server first (`php -S 127.0.0.1:8080 -t www`), then `npm run test:e2e`.
   - Single browser/spec: `npx playwright test --project=chrome tests/e2e/home.spec.ts` (or `--project=firefox`).
 - `./doctrine` — Doctrine ORM console (schema tools etc.), wired to the app's `EntityManager` via `app/bootstrap.php`. Note: `migrations/` holds hand-written, timestamp-named raw `.sql` files, not Doctrine Migrations bundle output — apply them directly.
-- `./create-admin` — creates the first admin user (flags or interactive prompt); safe to re-run, no-ops once an admin exists.
+- `bin/theatrecms` — the console (Symfony Console, WP-CLI-like): `bin/theatrecms list` shows every core and plugin command. See `documentation/console.md`.
+  - `bin/theatrecms user:create-admin` — creates the first admin user (flags or interactive prompt); safe to re-run, no-ops once an admin exists.
+  - `bin/theatrecms media:backfill|media:regenerate-thumbnails|media:rename-filenames [--dry-run]` — media maintenance.
+  - `bin/theatrecms schedule:run` — runs due scheduled tasks (cron calls it every minute); `schedule:list` shows them.
+  - The old root scripts (`./create-admin`, `./backfill-images`, `./regenerate-media-thumbnails`, `./rename-media-filenames`) are deprecated wrappers around these commands.
 
 ### Environment & database
 
 - `app/config.yaml` is gitignored (DB credentials, site branding) — copy `app/config.yaml.example` to `app/config.yaml` before first run.
 - Doctrine connection defaults live in `app/settings.php` (`pdo_mysql`, host `db`, port `3306`, db/user/pass `db`, `utf8mb4`).
 - DDEV is configured (`.ddev/config.yaml`: PHP 8.4, nginx-fpm, docroot `www`, MariaDB 11.8, Node 24) as the primary local dev environment.
-- The `users` / `users_*` tables are owned entirely by `delight-im/auth` and are explicitly excluded from Doctrine's schema-diffing (see the `setSchemaAssetsFilter` call in `app/bootstrap.php`) — never model them as Doctrine entities or include them in migrations generated from Doctrine.
+- The `users` / `users_*` tables are owned entirely by `delight-im/auth` and are explicitly excluded from Doctrine's schema-diffing (see the `setSchemaAssetsFilter` call in `app/bootstrap.php`) — never model them as Doctrine entities or include them in migrations generated from Doctrine. The scheduler's `scheduled_task_runs` table (written through DBAL by `src/Scheduler/ScheduledTaskRunRepository.php`) is excluded the same way.
 
 ## Architecture
 
@@ -56,6 +60,7 @@ It deliberately follows WordPress's core/plugin/theme architecture (a theme's `f
 - Plugins: folders in git-ignored `plugins/`, each with a `composer.json` of type `theatrecms-plugin` naming a `PluginInterface` class (usually extending `AbstractPlugin`) under `extra.theatrecms.plugin`; present means active. Their dependencies are installed with `bin/composer-local` (git-ignored `composer.local.json` + `composer.local.lock`, via `wikimedia/composer-merge-plugin`), never into core's `composer.lock`. `src/Plugin/PluginManager.php` discovers them (`DirectoryPluginDiscovery`) in `app/bootstrap.php` (declarations: entity paths, Twig namespaces, migration paths, commands, capabilities, admin menu items), calls `register()` before the theme's `functions.php`, and `boot()` in `www/index.php` before the page catch-all. Failures are logged and the plugin skipped. See `documentation/plugins.md`.
 - Admin sidebar: built from `AdminMenuRegistry` (`src/Admin/`), with core items in `app/admin-menu-items.php`, plugin items, and `register_admin_menu_item()` (`app/admin-menu.php`). Don't hard-code sidebar links in `templates/layouts/admin.html.twig`.
 - Capabilities: authorization is capability-based (`CapabilityRegistry`, `AuthorizationService`), not a simple admin/non-admin flag — modeled on WordPress's `current_user_can()`, built on top of `delight-im/auth`'s role bitmask (`Role::*` constants), fail-closed for unregistered capabilities. See `documentation/capabilities-system-plan.md` for rationale and the full capability list.
+- Console and scheduler: `bin/theatrecms` builds a Symfony Console app via `src/Console/ConsoleApplicationFactory.php` from core commands (`src/Console/Command/`) and plugins' `commands()`, loaded lazily through the container (each class needs `#[AsCommand]`). Recurring tasks are registered with `register_scheduled_task()` (`app/scheduler.php`, backed by the `ScheduledTaskRegistry` singleton) and run by `schedule:run` in subprocesses with per-task file locks (`src/Scheduler/`). See `documentation/console.md`.
 - Menus: admin-manageable navigation menus (`Menu`/`MenuItem` Doctrine models, nested drag-and-drop tree, items link to Pages/Posts/Productions or custom URLs) with theme-registered locations (`register_menu_location()`) and a `render_menu()` Twig function, resolved via `src/Menus/MenuItemResolver.php`. See `documentation/menu-system-plan.md`.
 
 ### Templates

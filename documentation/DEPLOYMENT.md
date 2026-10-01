@@ -80,6 +80,7 @@ procedure for a fresh install and an upgrade.
 ```bash
 mysql -u theatrecms -p theatrecms_prod < vendor/delight-im/auth/Database/MySQL.sql
 ./doctrine orm:schema-tool:create
+mysql -u theatrecms -p theatrecms_prod < migrations/20261001_create_scheduled_task_runs_table.sql
 ```
 
 `./doctrine` is the Doctrine ORM console script at the repo root; it boots the
@@ -88,7 +89,10 @@ Doctrine metadata creates the complete content schema, including `media`,
 `caption`, and `media_variants`. **Do not replay historical migrations after
 `orm:schema-tool:create`**: many describe older versions of tables that Doctrine
 has already created. The three September 2026 media transition migrations are
-idempotent on a fresh schema, but are unnecessary for a fresh install.
+idempotent on a fresh schema, but are unnecessary for a fresh install. The
+scheduler's `scheduled_task_runs` table is the exception: it isn't a Doctrine
+entity, so `orm:schema-tool:create` doesn't create it and its migration must be
+applied (it is also safe to apply on an upgrade).
 
 ### Upgrade an existing installation
 
@@ -115,13 +119,13 @@ recorded for that environment. For an installation that still has legacy
 
    The rename preserves rows and repoints existing featured-image foreign keys.
    All three files are idempotent for interrupted/repeated deployments.
-6. Before generating variants, run the new release's `./backfill-images` once
+6. Before generating variants, run the new release's `bin/theatrecms media:backfill` once
    to register any source uploads that were not represented in the database.
 7. Preview and then perform SEO filename renames:
-   `./rename-media-filenames --dry-run`, followed by
-   `./rename-media-filenames`. This command regenerates variants for renamed
+   `bin/theatrecms media:rename-filenames --dry-run`, followed by
+   `bin/theatrecms media:rename-filenames`. This command regenerates variants for renamed
    images, so it must run before the general regeneration pass.
-8. Run `./regenerate-media-thumbnails` to fill every remaining registered image
+8. Run `bin/theatrecms media:regenerate-thumbnails` to fill every remaining registered image
    size. Re-run it with `--size=<name>` when a new size is registered.
 9. Start the application and verify it. Once the deployment is healthy, apply
    `20260903_drop_featured_image_url_columns.sql` as a follow-up cleanup for
@@ -131,7 +135,7 @@ Installations that already completed part of this sequence should start at
 their first unapplied step. The conditional transition migrations may safely
 be re-run, but older migrations are not generally idempotent.
 
-`./rename-media-filenames [--dry-run]` changes stored files from generated names
+`bin/theatrecms media:rename-filenames [--dry-run]` changes stored files from generated names
 to slugs based on the original upload filename (for example,
 `/uploads/3ddfb7a0765f10f8c7b6c495.jpg` to
 `/uploads/pride-and-prejudice-poster.jpg`). Rows without a known original
@@ -149,7 +153,7 @@ has no redirect layer.
 ## 7. Create writable runtime directories
 
 ```bash
-mkdir -p var/twig var/doctrine
+mkdir -p var/twig var/doctrine var/locks var/log
 chown -R www-data:www-data var/ www/uploads
 chmod -R 750 var/ www/uploads
 ```
@@ -157,7 +161,20 @@ chmod -R 750 var/ www/uploads
 - `var/twig` — Twig template cache
 - `var/doctrine` — Doctrine metadata cache (used once `dev_mode` is `false`)
 - `var/sessions` — PHP session storage
+- `var/locks` — scheduler locks, one per task (created on first `schedule:run` if missing)
+- `var/log` — the scheduler's cron log (see below)
 - `www/uploads/` — user-uploaded images (`src/Services/ImageUploadService.php`)
+
+### Schedule recurring tasks
+
+Plugins and themes register recurring tasks (e.g. box-office syncs) that `bin/theatrecms schedule:run`
+runs when due. Add one crontab entry for the user that owns `var/`:
+
+```cron
+* * * * * cd /path/to/theatrecms && php bin/theatrecms schedule:run >> var/log/schedule.log 2>&1
+```
+
+`bin/theatrecms schedule:list` shows each task's last run and status. See `documentation/console.md`.
 
 ## 8. Configure nginx + PHP-FPM
 
@@ -167,10 +184,10 @@ chmod -R 750 var/ www/uploads
 
 ## 9. Create the first administrator
 
-Use the `./create-admin` script at the repo root — it boots the app container (reading `app/config.yaml` the same way `app/bootstrap.php` does) and creates a user with the admin role directly via `UserRepository`, so it works before any admin exists and doesn't depend on `/admin/register`. It's idempotent: if an admin already exists it does nothing unless you pass `--force`.
+Use `bin/theatrecms user:create-admin` — it boots the app container (reading `app/config.yaml` the same way `app/bootstrap.php` does) and creates a user with the admin role directly via `UserRepository`, so it works before any admin exists and doesn't depend on `/admin/register`. It's idempotent: if an admin already exists it does nothing unless you pass `--force`.
 
 ```bash
-./create-admin --email=admin@your-domain.example --username=admin --password='<strong password>'
+bin/theatrecms user:create-admin --email=admin@your-domain.example --username=admin --password='<strong password>'
 ```
 
 Omit any of `--email`, `--username`, `--password` to be prompted for it interactively (password entry is hidden), or supply them via `THEATRECMS_ADMIN_EMAIL` / `THEATRECMS_ADMIN_USERNAME` / `THEATRECMS_ADMIN_PASSWORD` environment variables instead of flags.

@@ -33,7 +33,10 @@
         "delight-im/auth": "^9.0",
         "clubdeuce/schema-php": "^0.3",
         "intervention/image": "^3.0",
-        "slim/csrf": "^1.5"
+        "slim/csrf": "^1.5",
+        "symfony/console": "^7.4",
+        "symfony/process": "^7.4",
+        "psr/clock": "^1.0"
     },
     "require-dev": {
         "consolidation/robo": "^5.1",
