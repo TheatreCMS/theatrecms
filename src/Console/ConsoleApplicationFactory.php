@@ -13,6 +13,7 @@ use Symfony\Component\Console\Command\LazyCommand;
 use TheatreCMS\Console\Command\MediaBackfillCommand;
 use TheatreCMS\Console\Command\MediaRegenerateThumbnailsCommand;
 use TheatreCMS\Console\Command\MediaRenameFilenamesCommand;
+use TheatreCMS\Console\Command\MigrateCommand;
 use TheatreCMS\Console\Command\ScheduleListCommand;
 use TheatreCMS\Console\Command\ScheduleRunCommand;
 use TheatreCMS\Console\Command\UserCreateAdminCommand;
@@ -31,6 +32,7 @@ class ConsoleApplicationFactory
      * @var class-string<Command>[]
      */
     public const CORE_COMMANDS = [
+        MigrateCommand::class,
         UserCreateAdminCommand::class,
         MediaBackfillCommand::class,
         MediaRegenerateThumbnailsCommand::class,

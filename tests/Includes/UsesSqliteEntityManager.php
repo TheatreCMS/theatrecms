@@ -11,11 +11,12 @@ use TheatreCMS\Repositories\MediaRepository;
 
 /**
  * Builds an EntityManager on an in-memory SQLite database with the full schema created from
- * the models in src/Models. Skips the test when the pdo_sqlite driver is unavailable.
+ * the models in src/Models (or no tables, with $createSchema false). Skips the test when the
+ * pdo_sqlite driver is unavailable.
  */
 trait UsesSqliteEntityManager
 {
-    protected function createSqliteEntityManager(): EntityManager
+    protected function createSqliteEntityManager(bool $createSchema = true): EntityManager
     {
         if (!in_array('sqlite', \PDO::getAvailableDrivers(), true)) {
             $this->markTestSkipped('PDO SQLite driver is not available; skipping.');
@@ -24,7 +25,9 @@ trait UsesSqliteEntityManager
         $config = ORMSetup::createAttributeMetadataConfiguration([dirname(__DIR__, 2) . '/src/Models'], true);
         $config->enableNativeLazyObjects(true);
         $em = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]), $config);
-        (new SchemaTool($em))->createSchema($em->getMetadataFactory()->getAllMetadata());
+        if ($createSchema) {
+            (new SchemaTool($em))->createSchema($em->getMetadataFactory()->getAllMetadata());
+        }
 
         return $em;
     }

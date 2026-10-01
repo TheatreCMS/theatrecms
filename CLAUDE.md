@@ -21,10 +21,12 @@ It deliberately follows WordPress's core/plugin/theme architecture (a theme's `f
 - Robo shortcuts (optional): `./vendor/bin/robo tests`, `./vendor/bin/robo phpstan`.
 - Playwright e2e: start a local server first (`php -S 127.0.0.1:8080 -t www`), then `npm run test:e2e`.
   - Single browser/spec: `npx playwright test --project=chrome tests/e2e/home.spec.ts` (or `--project=firefox`).
-- `./doctrine` — Doctrine ORM console (schema tools etc.), wired to the app's `EntityManager` via `app/bootstrap.php`. Note: `migrations/` holds hand-written, timestamp-named raw `.sql` files, not Doctrine Migrations bundle output — apply them directly.
+- `./doctrine` — Doctrine ORM console (schema tools etc.), wired to the app's `EntityManager` via `app/bootstrap.php`. Use `orm:schema-tool:update --dump-sql` to check entities against the database, not to change the schema.
+- `bin/theatrecms migrate [--dry-run] [--baseline]` — applies pending migrations. `migrations/` holds hand-written, timestamp-named raw `.sql` files (not Doctrine Migrations bundle output); `migrations/20261001_baseline.sql` is the full schema for an empty database, and `migrations/legacy/` holds the older incremental files, never run. Plugins add migration directories via `migrationPaths()`. Applied files are recorded in `schema_migrations` (`SchemaMigration` entity, `src/Migrations/Migrator.php`). Every entity change needs a new migration producing the same schema; never edit an applied migration.
 - `bin/theatrecms` — the console (Symfony Console, WP-CLI-like): `bin/theatrecms list` shows every core and plugin command. See `documentation/console.md`.
   - `bin/theatrecms user:create-admin` — creates the first admin user (flags or interactive prompt); safe to re-run, no-ops once an admin exists.
   - `bin/theatrecms media:backfill|media:regenerate-thumbnails|media:rename-filenames [--dry-run]` — media maintenance.
+  - `bin/theatrecms migrate` — database migrations (see the `migrate` entry above).
   - `bin/theatrecms schedule:run` — runs due scheduled tasks (cron calls it every minute); `schedule:list` shows them.
   - The old root scripts (`./create-admin`, `./backfill-images`, `./regenerate-media-thumbnails`, `./rename-media-filenames`) are deprecated wrappers around these commands.
 
