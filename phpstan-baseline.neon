@@ -1,12 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Constant APP_ROOT not found\.$#'
-			identifier: constant.notFound
-			count: 6
-			path: src/DI/ServiceRegistrar.php
-
-		-
 			message: '#^Instanceof between TheatreCMS\\Models\\Work and TheatreCMS\\Models\\Work will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
 			count: 1
