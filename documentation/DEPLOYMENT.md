@@ -106,9 +106,11 @@ and have no `schema_migrations` table; `migrate` refuses to run on them until th
 1. Bring the schema up to date by hand with the files in `migrations/legacy/`, as before (including
    the media transition below, if the install still has `featured_image_url` columns). The last
    legacy file is `20261001_create_scheduled_task_runs_table.sql`.
-2. Confirm `./doctrine orm:schema-tool:update --dump-sql` reports nothing to update.
-3. Run `bin/theatrecms migrate --baseline` once. It records every current migration as applied
-   without running it. From then on, use `bin/theatrecms migrate`.
+2. Run `bin/theatrecms migrate --baseline` once. It records `migrations/20261001_baseline.sql`
+   as applied without running it, since the schema already matches that snapshot.
+3. Run `bin/theatrecms migrate` to apply every migration added after the baseline.
+4. Confirm `./doctrine orm:schema-tool:update --dump-sql` reports nothing to update. From then on,
+   use `bin/theatrecms migrate`.
 
 #### Legacy media transition
 

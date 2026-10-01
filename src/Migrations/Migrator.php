@@ -3,6 +3,7 @@
 namespace TheatreCMS\Migrations;
 
 use Doctrine\DBAL\Connection;
+use TheatreCMS\Models\SchemaMigration;
 use TheatreCMS\Repositories\SchemaMigrationRepository;
 
 /**
@@ -11,10 +12,14 @@ use TheatreCMS\Repositories\SchemaMigrationRepository;
  */
 class Migrator
 {
+    /** Core's snapshot of the complete schema when the migrator was introduced. */
+    public const BASELINE = '20261001_baseline.sql';
+
     public function __construct(
         private readonly MigrationLocator $locator,
         private readonly SchemaMigrationRepository $applied,
         private readonly Connection $connection,
+        private readonly string $baselineFilename = self::BASELINE,
     ) {
     }
 
@@ -81,7 +86,7 @@ class Migrator
         if ($this->needsBaseline()) {
             throw new \RuntimeException(
                 'This database already has tables but no recorded migrations. If its schema is current, '
-                . 'run `bin/theatrecms migrate --baseline` once to record the existing migrations as applied.'
+                . 'run `bin/theatrecms migrate --baseline` once to record the baseline as applied, then `migrate`.'
             );
         }
 
@@ -101,21 +106,38 @@ class Migrator
     }
 
     /**
-     * Records every pending migration as applied without running it, for a database whose schema
-     * is already current.
+     * Records core's baseline snapshot (and any core migration before it) as applied without
+     * running it, for a database created before the migrator whose schema matches the snapshot.
+     * Later core and plugin migrations stay pending, so the next migrate() applies them: they were
+     * never applied by hand.
      *
      * @return Migration[] the migrations recorded
+     *
+     * @throws \RuntimeException when core has no baseline migration
      */
     public function baseline(): array
     {
+        $snapshot = array_filter(
+            $this->locator->all(),
+            fn(Migration $migration): bool => $migration->source === SchemaMigration::SOURCE_CORE
+                && $migration->filename === $this->baselineFilename,
+        );
+        if ($snapshot === []) {
+            throw new \RuntimeException(sprintf('The baseline migration %s was not found.', $this->baselineFilename));
+        }
+
         $this->ensureTable();
 
-        $pending = $this->pending();
-        foreach ($pending as $migration) {
+        $recorded = array_values(array_filter(
+            $this->pending(),
+            fn(Migration $migration): bool => $migration->source === SchemaMigration::SOURCE_CORE
+                && strcmp($migration->filename, $this->baselineFilename) <= 0,
+        ));
+        foreach ($recorded as $migration) {
             $this->applied->record($migration->source, $migration->filename, $migration->checksum(), true);
         }
 
-        return $pending;
+        return $recorded;
     }
 
     private function ensureTable(): void

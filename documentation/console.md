@@ -98,11 +98,15 @@ its SHA-256 checksum once every statement has succeeded.
 ```bash
 bin/theatrecms migrate --dry-run   # list pending migrations
 bin/theatrecms migrate             # apply them
-bin/theatrecms migrate --baseline  # record them as applied without running them
+bin/theatrecms migrate --baseline  # once, on a pre-runner database: record the baseline as applied
 ```
 
-- **Naming**: `YYYYMMDD_short_description.sql`, or `YYYYMMDDHHMMSS_...` when several land on one
-  day. Plugins use the same scheme, so their files interleave with core's by date.
+- **Naming**: always `YYYYMMDD_short_description.sql`. Files run in plain filename order, so
+  files from the same day run alphabetically by description; when their order matters, choose
+  descriptions that sort correctly (or date the later one a day on). Don't mix in other formats
+  such as `YYYYMMDDHHMMSS_`: `_` sorts after digits, so `20261001120000_x.sql` would run before
+  `20261001_baseline.sql`. Plugins use the same scheme, so their files interleave with core's by
+  date.
 - **Never edit an applied migration.** `migrate` warns about files whose checksum changed but does
   not re-run them; put the change in a new migration.
 - **Keep entities and migrations in step.** A new or changed Doctrine entity needs a migration that
@@ -117,8 +121,10 @@ bin/theatrecms migrate --baseline  # record them as applied without running them
 `migrations/20261001_baseline.sql` holds the complete schema as of the runner's introduction, so an
 empty database is built by `migrate` alone. The older incremental files are kept in
 `migrations/legacy/` for reference; they are never run. A database created before the runner has
-tables but no `schema_migrations` rows, and `migrate` refuses to run there: bring it up to date,
-then run `migrate --baseline` once (see `documentation/DEPLOYMENT.md`).
+tables but no `schema_migrations` rows, and `migrate` refuses to run there: bring it up to date
+with the legacy files, run `migrate --baseline` once (it records only the baseline snapshot, and
+any core migration before it, as applied), then `migrate` to apply everything since (see
+`documentation/DEPLOYMENT.md`).
 
 ## Scheduling tasks
 
