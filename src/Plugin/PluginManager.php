@@ -200,7 +200,10 @@ class PluginManager
         try {
             if (!class_exists($descriptor->class)) {
                 throw new \RuntimeException(
-                    sprintf('Plugin class %s was not found; is it autoloaded?', $descriptor->class)
+                    sprintf(
+                        'Plugin class %s is not autoloadable; run bin/composer-local after adding a plugin',
+                        $descriptor->class,
+                    )
                 );
             }
 

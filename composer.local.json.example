@@ -1,0 +1,19 @@
+{
+    "name": "theatrecms/local-install",
+    "description": "Core plus every plugin in plugins/. Copied to composer.local.json and run by bin/composer-local (see documentation/plugins.md).",
+    "config": {
+        "allow-plugins": {
+            "wikimedia/composer-merge-plugin": true
+        }
+    },
+    "extra": {
+        "merge-plugin": {
+            "include": [
+                "composer.json",
+                "plugins/*/composer.json"
+            ],
+            "merge-dev": true,
+            "merge-scripts": true
+        }
+    }
+}

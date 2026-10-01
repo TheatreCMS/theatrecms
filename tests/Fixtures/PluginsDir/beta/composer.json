@@ -1,0 +1,9 @@
+{
+    "name": "acme/beta-plugin",
+    "type": "theatrecms-plugin",
+    "extra": {
+        "theatrecms": {
+            "plugin": "\\TheatreCMS\\Tests\\Fixtures\\Plugins\\Stubs\\BetaPlugin"
+        }
+    }
+}

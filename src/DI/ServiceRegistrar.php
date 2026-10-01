@@ -38,7 +38,7 @@ use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Controllers\VenueController;
 use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
-use TheatreCMS\Plugin\ComposerPluginDiscovery;
+use TheatreCMS\Plugin\DirectoryPluginDiscovery;
 use TheatreCMS\Plugin\PluginDiscovery;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Settings\SiteSettings;
@@ -146,7 +146,8 @@ class ServiceRegistrar
         });
 
         $container->set(PluginDiscovery::class, static function (ContainerInterface $c): PluginDiscovery {
-            return new ComposerPluginDiscovery(logger: $c->get(LoggerInterface::class));
+            $pluginsDir = $c->get('settings')['plugins']['dir'] ?? APP_ROOT . '/plugins';
+            return new DirectoryPluginDiscovery($pluginsDir, $c->get(LoggerInterface::class));
         });
         $container->set(PluginManager::class, static function (ContainerInterface $c): PluginManager {
             return new PluginManager($c->get(PluginDiscovery::class), $c->get(LoggerInterface::class));

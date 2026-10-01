@@ -17,6 +17,8 @@ parameters:
     # Declares the global add_filter()/apply_filters()/add_action()/do_action() helpers
     # (WordPress-style hooks) so PHPStan recognizes them when src/ code calls them.
     - app/hooks.php
+    # Defines APP_ROOT, which app/bootstrap.php defines at runtime.
+    - phpstan-bootstrap.php
 
   # Exclude generated or vendor code from analysis explicitly (defensive)
   excludePaths:

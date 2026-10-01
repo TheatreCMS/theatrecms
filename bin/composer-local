@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# Installs core plus every plugin in plugins/ (see documentation/plugins.md).
+#
+# composer.local.json merges core's composer.json with each plugins/*/composer.json and keeps its
+# own lock file, so core's committed composer.lock is never touched. The local lock is re-seeded
+# from composer.lock on every run and updated with --minimal-changes, so core's packages stay at
+# exactly the versions in composer.lock and only what the plugins need is added.
+#
+# Usage: bin/composer-local            (inside DDEV: ddev exec bin/composer-local)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+[ -f composer.local.json ] || cp composer.local.json.example composer.local.json
+
+# Core's own locked dependencies, which include the merge plugin.
+COMPOSER=composer.json composer install --no-interaction
+
+cp composer.lock composer.local.lock
+COMPOSER=composer.local.json composer update --minimal-changes --no-interaction "$@"
