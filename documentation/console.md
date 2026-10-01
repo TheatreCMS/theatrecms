@@ -114,14 +114,15 @@ Each minute, for every registered task:
 3. The task runs as a separate `php bin/theatrecms <command>` process with its timeout, so a fatal
    error or memory leak in one task can't stop the others.
 4. The start and finish times, status, exit code and the last 4,000 characters of output are
-   stored in the `scheduled_task_runs` table. Failures are also logged.
+   stored in the `scheduled_task_runs` table (`TheatreCMS\Models\ScheduledTaskRun`). Failures are
+   also logged.
 
 `schedule:run` exits non-zero if any task failed. Use `schedule:list` to see each task's last
 status and when it is next due (times are UTC).
 
-The `scheduled_task_runs` table comes from
-`migrations/20261001_create_scheduled_task_runs_table.sql`. It is written with DBAL, not as a
-Doctrine entity, and is excluded from Doctrine's schema tool.
+On an existing installation, create the table by applying
+`migrations/20261001_create_scheduled_task_runs_table.sql`; a fresh install gets it from
+`orm:schema-tool:create` like every other table.
 
 ### Cron
 

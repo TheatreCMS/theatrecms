@@ -80,7 +80,6 @@ procedure for a fresh install and an upgrade.
 ```bash
 mysql -u theatrecms -p theatrecms_prod < vendor/delight-im/auth/Database/MySQL.sql
 ./doctrine orm:schema-tool:create
-mysql -u theatrecms -p theatrecms_prod < migrations/20261001_create_scheduled_task_runs_table.sql
 ```
 
 `./doctrine` is the Doctrine ORM console script at the repo root; it boots the
@@ -89,10 +88,7 @@ Doctrine metadata creates the complete content schema, including `media`,
 `caption`, and `media_variants`. **Do not replay historical migrations after
 `orm:schema-tool:create`**: many describe older versions of tables that Doctrine
 has already created. The three September 2026 media transition migrations are
-idempotent on a fresh schema, but are unnecessary for a fresh install. The
-scheduler's `scheduled_task_runs` table is the exception: it isn't a Doctrine
-entity, so `orm:schema-tool:create` doesn't create it and its migration must be
-applied (it is also safe to apply on an upgrade).
+idempotent on a fresh schema, but are unnecessary for a fresh install.
 
 ### Upgrade an existing installation
 
@@ -175,6 +171,8 @@ runs when due. Add one crontab entry for the user that owns `var/`:
 ```
 
 `bin/theatrecms schedule:list` shows each task's last run and status. See `documentation/console.md`.
+When upgrading an installation that predates the scheduler, first apply
+`migrations/20261001_create_scheduled_task_runs_table.sql`.
 
 ## 8. Configure nginx + PHP-FPM
 

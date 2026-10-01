@@ -45,7 +45,6 @@ use TheatreCMS\Plugin\PluginDiscovery;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Scheduler\ProcessTaskRunner;
 use TheatreCMS\Scheduler\ScheduledTaskRegistry;
-use TheatreCMS\Scheduler\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\Scheduler;
 use TheatreCMS\Scheduler\SystemClock;
 use TheatreCMS\Scheduler\TaskLocker;
@@ -59,6 +58,7 @@ use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Repositories\ScheduledTaskRunRepository;
 use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
@@ -168,9 +168,6 @@ class ServiceRegistrar
             return new ConsoleApplicationFactory($c, $c->get(PluginManager::class), $c->get(LoggerInterface::class));
         });
         $container->set(ScheduledTaskRegistry::class, static fn(): ScheduledTaskRegistry => new ScheduledTaskRegistry());
-        $container->set(ScheduledTaskRunRepository::class, static function (ContainerInterface $c): ScheduledTaskRunRepository {
-            return new ScheduledTaskRunRepository($c->get(EntityManager::class)->getConnection());
-        });
         $container->set(ClockInterface::class, static fn(): ClockInterface => new SystemClock());
         $container->set(TaskRunner::class, static fn(): TaskRunner => new ProcessTaskRunner(APP_ROOT . '/bin/theatrecms', APP_ROOT));
         $container->set(TaskLocker::class, static fn(): TaskLocker => new TaskLocker(APP_ROOT . '/var/locks'));

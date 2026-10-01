@@ -6,6 +6,8 @@ use DateTimeImmutable;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use TheatreCMS\Models\ScheduledTaskRun;
+use TheatreCMS\Repositories\ScheduledTaskRunRepository;
 
 /**
  * Runs every registered task that is due. A task is due when it has never run, or when at least
@@ -49,7 +51,7 @@ class Scheduler
 
     public function nextDueAt(ScheduledTask $task, ?ScheduledTaskRun $run): ?DateTimeImmutable
     {
-        return $run?->lastStartedAt?->modify(sprintf('+%d seconds', $task->intervalSeconds));
+        return $run?->getLastStartedAt()?->modify(sprintf('+%d seconds', $task->intervalSeconds));
     }
 
     /**

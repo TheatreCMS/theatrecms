@@ -10,18 +10,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use TheatreCMS\Console\Command\ScheduleListCommand;
 use TheatreCMS\Console\Command\ScheduleRunCommand;
+use TheatreCMS\Repositories\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\ScheduledTaskRegistry;
-use TheatreCMS\Scheduler\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\Scheduler;
 use TheatreCMS\Scheduler\TaskLocker;
 use TheatreCMS\Scheduler\TaskResult;
 use TheatreCMS\Tests\Fixtures\Scheduler\FakeClock;
-use TheatreCMS\Tests\Fixtures\Scheduler\SchedulerSchema;
+use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 use TheatreCMS\Tests\Fixtures\Scheduler\StubTaskRunner;
 
 class ScheduleCommandsTest extends TestCase
 {
-    use SchedulerSchema;
+    use UsesSqliteEntityManager;
 
     private ScheduledTaskRegistry $registry;
     private ScheduledTaskRunRepository $runs;
@@ -32,7 +32,7 @@ class ScheduleCommandsTest extends TestCase
     protected function setUp(): void
     {
         $this->registry = new ScheduledTaskRegistry();
-        $this->runs = new ScheduledTaskRunRepository($this->createSchedulerConnection());
+        $this->runs = new ScheduledTaskRunRepository($this->createSqliteEntityManager());
         $this->runner = new StubTaskRunner();
         $this->clock = new FakeClock(new DateTimeImmutable('2026-10-01 12:00:00', new DateTimeZone('UTC')));
         $this->scheduler = new Scheduler(

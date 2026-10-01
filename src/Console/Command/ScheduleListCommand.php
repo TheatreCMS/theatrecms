@@ -8,8 +8,8 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use TheatreCMS\Repositories\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\ScheduledTaskRegistry;
-use TheatreCMS\Scheduler\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\Scheduler;
 
 #[AsCommand(name: 'schedule:list', description: 'List scheduled tasks and when they last and next run')]
@@ -42,8 +42,8 @@ class ScheduleListCommand extends Command
                 $name,
                 $task->command,
                 $this->duration($task->intervalSeconds),
-                $this->time($run?->lastStartedAt),
-                $run->lastStatus ?? 'never run',
+                $this->time($run?->getLastStartedAt()),
+                $run?->getLastStatus() ?? 'never run',
                 $nextDue === null ? 'next schedule:run' : $this->time($nextDue),
             ]);
         }

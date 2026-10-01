@@ -4,21 +4,21 @@ namespace TheatreCMS\Tests\Unit\Scheduler;
 
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Models\ScheduledTaskRun;
 use TheatreCMS\Scheduler\ScheduledTask;
+use TheatreCMS\Repositories\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\ScheduledTaskRegistry;
-use TheatreCMS\Scheduler\ScheduledTaskRun;
-use TheatreCMS\Scheduler\ScheduledTaskRunRepository;
 use TheatreCMS\Scheduler\Scheduler;
 use TheatreCMS\Scheduler\TaskLocker;
 use TheatreCMS\Scheduler\TaskResult;
 use TheatreCMS\Tests\Fixtures\Plugins\Stubs\RecordingLogger;
 use TheatreCMS\Tests\Fixtures\Scheduler\FakeClock;
-use TheatreCMS\Tests\Fixtures\Scheduler\SchedulerSchema;
+use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 use TheatreCMS\Tests\Fixtures\Scheduler\StubTaskRunner;
 
 class SchedulerTest extends TestCase
 {
-    use SchedulerSchema;
+    use UsesSqliteEntityManager;
 
     private ScheduledTaskRegistry $registry;
     private ScheduledTaskRunRepository $runs;
@@ -31,7 +31,7 @@ class SchedulerTest extends TestCase
     protected function setUp(): void
     {
         $this->registry = new ScheduledTaskRegistry();
-        $this->runs = new ScheduledTaskRunRepository($this->createSchedulerConnection());
+        $this->runs = new ScheduledTaskRunRepository($this->createSqliteEntityManager());
         $this->runner = new StubTaskRunner();
         $this->clock = new FakeClock(new DateTimeImmutable('2026-10-01 12:00:00', new \DateTimeZone('UTC')));
         $this->logger = new RecordingLogger();
@@ -79,10 +79,10 @@ class SchedulerTest extends TestCase
         $this->scheduler->runDue();
 
         $run = $this->runs->find('sync');
-        $this->assertSame(ScheduledTaskRun::STATUS_SUCCESS, $run?->lastStatus);
-        $this->assertSame(0, $run?->lastExitCode);
-        $this->assertSame('ok', $run?->lastOutput);
-        $this->assertSame('2026-10-01 12:00', $run?->lastStartedAt?->format('Y-m-d H:i'));
+        $this->assertSame(ScheduledTaskRun::STATUS_SUCCESS, $run?->getLastStatus());
+        $this->assertSame(0, $run?->getLastExitCode());
+        $this->assertSame('ok', $run?->getLastOutput());
+        $this->assertEquals($this->clock->now(), $run?->getLastStartedAt());
         $this->assertSame([], $this->logger->records);
     }
 
@@ -94,9 +94,9 @@ class SchedulerTest extends TestCase
         $this->assertSame(['sync' => Scheduler::OUTCOME_FAILED], $this->scheduler->runDue());
 
         $run = $this->runs->find('sync');
-        $this->assertSame(ScheduledTaskRun::STATUS_FAILED, $run?->lastStatus);
-        $this->assertSame(2, $run?->lastExitCode);
-        $this->assertSame('API unreachable', $run?->lastOutput);
+        $this->assertSame(ScheduledTaskRun::STATUS_FAILED, $run?->getLastStatus());
+        $this->assertSame(2, $run?->getLastExitCode());
+        $this->assertSame('API unreachable', $run?->getLastOutput());
         $this->assertCount(1, $this->logger->records);
         $this->assertSame('sync', $this->logger->records[0]['context']['task']);
     }
@@ -110,8 +110,8 @@ class SchedulerTest extends TestCase
         $outcomes = $this->scheduler->runDue();
 
         $this->assertSame(['broken' => Scheduler::OUTCOME_FAILED, 'fine' => Scheduler::OUTCOME_SUCCESS], $outcomes);
-        $this->assertNull($this->runs->find('broken')?->lastExitCode);
-        $this->assertSame('could not start', $this->runs->find('broken')?->lastOutput);
+        $this->assertNull($this->runs->find('broken')?->getLastExitCode());
+        $this->assertSame('could not start', $this->runs->find('broken')?->getLastOutput());
     }
 
     public function testSkipsATaskWhoseLockIsHeld(): void
@@ -150,9 +150,9 @@ class SchedulerTest extends TestCase
         $started = new DateTimeImmutable('2026-10-01 12:00:00');
 
         $this->assertNull($this->scheduler->nextDueAt($task, null));
-        $this->assertSame('2026-10-01 13:00:00', $this->scheduler->nextDueAt(
+        $this->assertEquals($started->modify('+1 hour'), $this->scheduler->nextDueAt(
             $task,
-            new ScheduledTaskRun('sync', $started, null, null, null, ''),
-        )?->format('Y-m-d H:i:s'));
+            (new ScheduledTaskRun('sync'))->markStarted($started),
+        ));
     }
 }

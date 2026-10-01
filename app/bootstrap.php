@@ -70,13 +70,12 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 
     $connection = DriverManager::getConnection($settings['doctrine']['connection']);
 
-    // Tables Doctrine must not manage: Delight Auth owns the users table and all users_* tables,
-    // and the scheduler's scheduled_task_runs is written through DBAL (src/Scheduler).
+    // Delight Auth owns the users table and all users_* tables.
     $connection->getConfiguration()->setSchemaAssetsFilter(static function (string|AbstractAsset $assetName): bool {
         if ($assetName instanceof AbstractAsset) {
             $assetName = $assetName->getName();
         }
-        return $assetName !== 'scheduled_task_runs' && !preg_match('~^users(?:_|$)~', $assetName);
+        return !preg_match('~^users(?:_|$)~', $assetName);
     });
     return new EntityManager($connection, $config);
 });
