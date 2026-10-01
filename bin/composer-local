@@ -13,6 +13,19 @@ cd "$(dirname "$0")/.."
 
 [ -f composer.local.json ] || cp composer.local.json.example composer.local.json
 
+# composer.local.json is git-ignored, so an install created from an older example keeps its old
+# contents. It must replace theatrecms/theatrecms: core is the root project here, and without this a
+# plugin that requires core would make Composer install a second copy of it into vendor/.
+php -r '
+$file = "composer.local.json";
+$json = json_decode(file_get_contents($file), true, flags: JSON_THROW_ON_ERROR);
+if (!isset($json["replace"]["theatrecms/theatrecms"])) {
+    $json["replace"]["theatrecms/theatrecms"] = "*";
+    file_put_contents($file, json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+    fwrite(STDERR, "Updated composer.local.json: added \"replace\": {\"theatrecms/theatrecms\": \"*\"}.\n");
+}
+'
+
 # Core's own locked dependencies, which include the merge plugin.
 COMPOSER=composer.json composer install --no-interaction
 

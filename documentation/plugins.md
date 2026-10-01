@@ -136,6 +136,7 @@ through a second, git-ignored Composer file so core's committed `composer.lock` 
 - It `replace`s `theatrecms/theatrecms`: in a local install core is the root project, so a plugin
   that requires `theatrecms/theatrecms` (to extend core classes, and so its own CI can install core)
   is satisfied without Composer installing a second copy of core into `vendor/`.
+  `bin/composer-local` adds this to an existing `composer.local.json` that predates it.
 
 To add, update or remove a plugin, change the `plugins/` folder, then run:
 
