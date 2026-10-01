@@ -71,34 +71,53 @@ FLUSH PRIVILEGES;
 
 ## 5. Initialize or upgrade the schema
 
-There is no migration-tracking table in this project. Keep an external record
-of the last migration applied to each environment. Do not use the same schema
-procedure for a fresh install and an upgrade.
+Schema changes ship as hand-written, timestamp-named `.sql` files in `migrations/` (and in
+plugins' migration directories). `bin/theatrecms migrate` applies the ones not yet applied, in
+filename order, and records each in the `schema_migrations` table. See
+`documentation/console.md` for writing migrations.
 
 ### Fresh install
 
 ```bash
-mysql -u theatrecms -p theatrecms_prod < vendor/delight-im/auth/Database/MySQL.sql
-./doctrine orm:schema-tool:create
+bin/theatrecms migrate
 ```
 
-`./doctrine` is the Doctrine ORM console script at the repo root; it boots the
-app container and reads `app/config.yaml` via `app/bootstrap.php`. The current
-Doctrine metadata creates the complete content schema, including `media`,
-`caption`, and `media_variants`. **Do not replay historical migrations after
-`orm:schema-tool:create`**: many describe older versions of tables that Doctrine
-has already created. The three September 2026 media transition migrations are
-idempotent on a fresh schema, but are unnecessary for a fresh install.
+On an empty database this applies `migrations/20261001_baseline.sql`, the complete schema
+(including delight-im/auth's `users` tables), then any later core and plugin migrations.
 
-### Upgrade an existing installation
+### Upgrade an installation that already uses `migrate`
 
-Back up the database and `www/uploads`, then apply only migrations not already
-recorded for that environment. For an installation that still has legacy
+Back up the database, deploy the new code, run `composer install --no-dev --optimize-autoloader`,
+then:
+
+```bash
+bin/theatrecms migrate --dry-run   # review what will run
+bin/theatrecms migrate
+```
+
+A migration that fails stops the run and is not recorded. MySQL commits DDL immediately, so
+statements before the failing one may have taken effect: fix the database or the file, then re-run.
+
+### Upgrade an installation from before the migration runner
+
+These installs got their schema from `./doctrine orm:schema-tool:create` plus hand-applied files,
+and have no `schema_migrations` table; `migrate` refuses to run on them until they are baselined.
+
+1. Bring the schema up to date by hand with the files in `migrations/legacy/`, as before (including
+   the media transition below, if the install still has `featured_image_url` columns). The last
+   legacy file is `20261001_create_scheduled_task_runs_table.sql`.
+2. Confirm `./doctrine orm:schema-tool:update --dump-sql` reports nothing to update.
+3. Run `bin/theatrecms migrate --baseline` once. It records every current migration as applied
+   without running it. From then on, use `bin/theatrecms migrate`.
+
+#### Legacy media transition
+
+Back up the database and `www/uploads` first. For an installation that still has legacy
 `featured_image_url` columns and no `images` table:
 
 1. While the previous application release is still deployed, apply
-   `20260903_create_images_table.sql` and
-   `20260903_add_featured_image_id_to_content_tables.sql`.
+   `migrations/legacy/20260903_create_images_table.sql` and
+   `migrations/legacy/20260903_add_featured_image_id_to_content_tables.sql`.
 2. Run that release's `./backfill-images` to register existing uploads and copy
    legacy URL references. It is safe to repeat before cutover.
 3. Put the site in maintenance mode or otherwise stop uploads and content
@@ -108,9 +127,9 @@ recorded for that environment. For an installation that still has legacy
 5. Apply these transition migrations in order:
 
    ```bash
-   mysql -u theatrecms -p theatrecms_prod < migrations/20260912_rename_images_table_to_media.sql
-   mysql -u theatrecms -p theatrecms_prod < migrations/20260915_add_caption_to_media.sql
-   mysql -u theatrecms -p theatrecms_prod < migrations/20260915_create_media_variants_table.sql
+   mysql -u theatrecms -p theatrecms_prod < migrations/legacy/20260912_rename_images_table_to_media.sql
+   mysql -u theatrecms -p theatrecms_prod < migrations/legacy/20260915_add_caption_to_media.sql
+   mysql -u theatrecms -p theatrecms_prod < migrations/legacy/20260915_create_media_variants_table.sql
    ```
 
    The rename preserves rows and repoints existing featured-image foreign keys.
@@ -124,7 +143,7 @@ recorded for that environment. For an installation that still has legacy
 8. Run `bin/theatrecms media:regenerate-thumbnails` to fill every remaining registered image
    size. Re-run it with `--size=<name>` when a new size is registered.
 9. Start the application and verify it. Once the deployment is healthy, apply
-   `20260903_drop_featured_image_url_columns.sql` as a follow-up cleanup for
+   `migrations/legacy/20260903_drop_featured_image_url_columns.sql` as a follow-up cleanup for
    installations that still have those legacy columns.
 
 Installations that already completed part of this sequence should start at
@@ -171,8 +190,6 @@ runs when due. Add one crontab entry for the user that owns `var/`:
 ```
 
 `bin/theatrecms schedule:list` shows each task's last run and status. See `documentation/console.md`.
-When upgrading an installation that predates the scheduler, first apply
-`migrations/20261001_create_scheduled_task_runs_table.sql`.
 
 ## 8. Configure nginx + PHP-FPM
 

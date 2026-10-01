@@ -16,6 +16,7 @@ In DDEV, run it inside the web container: `ddev exec bin/theatrecms list`.
 
 | Command | What it does |
 |---|---|
+| `migrate [--dry-run] [--baseline]` | Apply pending database migrations from core and plugins (see [Migrations](#migrations)) |
 | `user:create-admin [--email=] [--username=] [--password=] [--force]` | Create an administrator. Options fall back to `THEATRECMS_ADMIN_EMAIL` / `_USERNAME` / `_PASSWORD`, then to prompts (password entry is hidden). Does nothing once an admin exists, unless `--force` is passed |
 | `media:backfill [--dry-run]` | Register files in `www/uploads/` as media and repoint legacy image URLs at them |
 | `media:regenerate-thumbnails [--dry-run] [--force] [--size=<name>]` | Generate missing image-size variants; `--force` regenerates all of them (see `documentation/Theme/image-sizes.md`) |
@@ -86,6 +87,39 @@ public function commands(): array
 A class that isn't a `Command`, or has no `#[AsCommand]`, is logged and skipped; the other
 commands still load.
 
+## Migrations
+
+Schema changes are hand-written, timestamp-named `.sql` files (not Doctrine Migrations classes):
+core's in `migrations/`, a plugin's in the directories its `migrationPaths()` returns.
+`bin/theatrecms migrate` runs the pending ones in filename order across core and plugins (core
+first on equal names), statement by statement, and records each file in `schema_migrations` with
+its SHA-256 checksum once every statement has succeeded.
+
+```bash
+bin/theatrecms migrate --dry-run   # list pending migrations
+bin/theatrecms migrate             # apply them
+bin/theatrecms migrate --baseline  # record them as applied without running them
+```
+
+- **Naming**: `YYYYMMDD_short_description.sql`, or `YYYYMMDDHHMMSS_...` when several land on one
+  day. Plugins use the same scheme, so their files interleave with core's by date.
+- **Never edit an applied migration.** `migrate` warns about files whose checksum changed but does
+  not re-run them; put the change in a new migration.
+- **Keep entities and migrations in step.** A new or changed Doctrine entity needs a migration that
+  produces the same schema: write the DDL by hand, or start from
+  `./doctrine orm:schema-tool:update --dump-sql`. Afterwards that command should report nothing to
+  update. A plugin's entity tables come from its own migrations too.
+- **Don't touch the `users` / `users_*` tables**; they belong to delight-im/auth.
+- A failing statement stops the run and its file is not recorded. MySQL commits DDL immediately,
+  so earlier statements in that file may have taken effect; fix things up, then re-run.
+- MySQL `DELIMITER` blocks (stored procedures and triggers) aren't supported.
+
+`migrations/20261001_baseline.sql` holds the complete schema as of the runner's introduction, so an
+empty database is built by `migrate` alone. The older incremental files are kept in
+`migrations/legacy/` for reference; they are never run. A database created before the runner has
+tables but no `schema_migrations` rows, and `migrate` refuses to run there: bring it up to date,
+then run `migrate --baseline` once (see `documentation/DEPLOYMENT.md`).
+
 ## Scheduling tasks
 
 Register a recurring task from a plugin's `register()` or a theme's `functions.php`:
@@ -120,9 +154,7 @@ Each minute, for every registered task:
 `schedule:run` exits non-zero if any task failed. Use `schedule:list` to see each task's last
 status and when it is next due (times are UTC).
 
-On an existing installation, create the table by applying
-`migrations/20261001_create_scheduled_task_runs_table.sql`; a fresh install gets it from
-`orm:schema-tool:create` like every other table.
+`bin/theatrecms migrate` creates the table; it is part of the baseline migration.
 
 ### Cron
 

@@ -108,7 +108,7 @@ logged and skipped.
 | `boot()` | Routes and middleware on the Slim `App` |
 | `entityPaths()` | Directories of Doctrine attribute-mapped entities, added to the EntityManager |
 | `twigPaths()` | Template directories keyed by namespace, used as `@namespace/...`; avoid `core`, which is reserved |
-| `migrationPaths()` | Directories of timestamp-named `.sql` migrations, applied by the migration runner (THE-103) |
+| `migrationPaths()` | Directories of timestamp-named `.sql` migrations, applied by `bin/theatrecms migrate` with core's (see `documentation/console.md`) |
 | `commands()` | Console command classes for `bin/theatrecms`, each with `#[AsCommand]` (see `documentation/console.md`) |
 | `capabilities()` | Capabilities granted per `Delight\Auth\Role` constant, added on top of core's (see `documentation/capabilities-system-plan.md`) |
 | `adminMenuItems()` | `AdminMenuItem`s for the admin sidebar. A new group label creates a new section between Appearance and Administration |

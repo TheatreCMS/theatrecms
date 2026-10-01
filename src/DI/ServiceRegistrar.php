@@ -42,6 +42,8 @@ use TheatreCMS\Controllers\WorksController;
 use TheatreCMS\Menus\MenuItemResolver;
 use TheatreCMS\Plugin\DirectoryPluginDiscovery;
 use TheatreCMS\Plugin\PluginDiscovery;
+use TheatreCMS\Migrations\MigrationLocator;
+use TheatreCMS\Migrations\Migrator;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Scheduler\ProcessTaskRunner;
 use TheatreCMS\Scheduler\ScheduledTaskRegistry;
@@ -59,6 +61,7 @@ use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ScheduledTaskRunRepository;
+use TheatreCMS\Repositories\SchemaMigrationRepository;
 use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
@@ -168,6 +171,16 @@ class ServiceRegistrar
             return new ConsoleApplicationFactory($c, $c->get(PluginManager::class), $c->get(LoggerInterface::class));
         });
         $container->set(ScheduledTaskRegistry::class, static fn(): ScheduledTaskRegistry => new ScheduledTaskRegistry());
+        $container->set(MigrationLocator::class, static function (ContainerInterface $c): MigrationLocator {
+            return new MigrationLocator(APP_ROOT . '/migrations', $c->get(PluginManager::class));
+        });
+        $container->set(Migrator::class, static function (ContainerInterface $c): Migrator {
+            return new Migrator(
+                $c->get(MigrationLocator::class),
+                $c->get(SchemaMigrationRepository::class),
+                $c->get(EntityManager::class)->getConnection(),
+            );
+        });
         $container->set(ClockInterface::class, static fn(): ClockInterface => new SystemClock());
         $container->set(TaskRunner::class, static fn(): TaskRunner => new ProcessTaskRunner(APP_ROOT . '/bin/theatrecms', APP_ROOT));
         $container->set(TaskLocker::class, static fn(): TaskLocker => new TaskLocker(APP_ROOT . '/var/locks'));
