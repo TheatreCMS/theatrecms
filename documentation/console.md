@@ -98,7 +98,7 @@ its SHA-256 checksum once every statement has succeeded.
 ```bash
 bin/theatrecms migrate --dry-run   # list pending migrations
 bin/theatrecms migrate             # apply them
-bin/theatrecms migrate --baseline  # record them as applied without running them
+bin/theatrecms migrate --baseline  # once, on a pre-runner database: record the baseline as applied
 ```
 
 - **Naming**: always `YYYYMMDD_short_description.sql`. Files run in plain filename order, so
@@ -121,8 +121,10 @@ bin/theatrecms migrate --baseline  # record them as applied without running them
 `migrations/20261001_baseline.sql` holds the complete schema as of the runner's introduction, so an
 empty database is built by `migrate` alone. The older incremental files are kept in
 `migrations/legacy/` for reference; they are never run. A database created before the runner has
-tables but no `schema_migrations` rows, and `migrate` refuses to run there: bring it up to date,
-then run `migrate --baseline` once (see `documentation/DEPLOYMENT.md`).
+tables but no `schema_migrations` rows, and `migrate` refuses to run there: bring it up to date
+with the legacy files, run `migrate --baseline` once (it records only the baseline snapshot, and
+any core migration before it, as applied), then `migrate` to apply everything since (see
+`documentation/DEPLOYMENT.md`).
 
 ## Scheduling tasks
 

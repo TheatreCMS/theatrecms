@@ -28,7 +28,7 @@ class MigrateCommand extends Command
                 'baseline',
                 null,
                 InputOption::VALUE_NONE,
-                'Record every pending migration as applied without running it (for a database whose schema is already current)',
+                'Record the baseline snapshot as applied without running it (once, for a database created before migrate); then run migrate',
             );
     }
 
@@ -45,11 +45,17 @@ class MigrateCommand extends Command
         }
 
         if ($input->getOption('baseline')) {
-            $recorded = $this->migrator->baseline();
+            try {
+                $recorded = $this->migrator->baseline();
+            } catch (\RuntimeException $e) {
+                $errors->writeln("<error>{$e->getMessage()}</error>");
+
+                return Command::FAILURE;
+            }
             foreach ($recorded as $migration) {
                 $output->writeln("Recorded {$migration->label()} as applied.");
             }
-            $output->writeln(sprintf('Baselined %d migration(s).', count($recorded)));
+            $output->writeln(sprintf('Baselined %d migration(s). Run `bin/theatrecms migrate` to apply later ones.', count($recorded)));
 
             return Command::SUCCESS;
         }

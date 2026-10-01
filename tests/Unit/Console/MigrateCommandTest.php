@@ -34,6 +34,7 @@ class MigrateCommandTest extends TestCase
             new MigrationLocator($this->directory, $plugins),
             new SchemaMigrationRepository($this->em),
             $this->em->getConnection(),
+            '20261001_create_a.sql',
         );
         $this->tester = new CommandTester(new MigrateCommand($migrator));
     }
@@ -88,7 +89,8 @@ class MigrateCommandTest extends TestCase
 
         $this->assertSame(Command::SUCCESS, $this->tester->execute(['--baseline' => true]));
         $this->assertSame(
-            "Recorded core/20261001_create_a.sql as applied.\nBaselined 1 migration(s).\n",
+            "Recorded core/20261001_create_a.sql as applied.\n"
+            . "Baselined 1 migration(s). Run `bin/theatrecms migrate` to apply later ones.\n",
             $this->tester->getDisplay(true),
         );
 

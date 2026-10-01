@@ -51,6 +51,7 @@ class ServiceRegistrarTest extends TestCase
             Controllers\SettingsController::class,
             Controllers\ThemesController::class,
             Repositories\EventRepository::class,
+            Repositories\ExternalReferenceRepository::class,
             Repositories\MediaRepository::class,
             Repositories\MenuRepository::class,
             Repositories\PageRepository::class,

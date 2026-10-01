@@ -95,10 +95,11 @@ class MigratorTest extends TestCase
         $this->assertFalse($this->em->getConnection()->createSchemaManager()->tablesExist(['c']));
     }
 
-    public function testAnExistingSchemaNeedsABaselineFirst(): void
+    public function testAnExistingSchemaIsBaselinedThenGetsLaterMigrations(): void
     {
+        // A pre-runner install: its schema already matches the baseline snapshot.
         $this->em->getConnection()->executeStatement('CREATE TABLE a (id INTEGER PRIMARY KEY)');
-        $this->file('20261001_create_a.sql', 'CREATE TABLE a (id INTEGER PRIMARY KEY);');
+        $this->file('20261001_baseline.sql', 'CREATE TABLE a (id INTEGER PRIMARY KEY);');
         $this->file('20261002_create_b.sql', 'CREATE TABLE b (id INTEGER PRIMARY KEY);');
         $migrator = $this->migrator();
 
@@ -110,11 +111,43 @@ class MigratorTest extends TestCase
             $this->assertStringContainsString('migrate --baseline', $e->getMessage());
         }
 
-        $this->assertSame(['20261001_create_a.sql', '20261002_create_b.sql'], $this->filenames($migrator->baseline()));
+        $this->assertSame(['20261001_baseline.sql'], $this->filenames($migrator->baseline()), 'only the snapshot');
         $this->assertFalse($migrator->needsBaseline());
-        $this->assertSame([], $migrator->migrate(), 'baseline followed by migrate is a no-op');
-        $this->assertFalse($this->em->getConnection()->createSchemaManager()->tablesExist(['b']), 'baselined files are not run');
-        $this->assertTrue((new SchemaMigrationRepository($this->em))->all()['core/20261002_create_b.sql']->isBaselined());
+        $this->assertTrue((new SchemaMigrationRepository($this->em))->all()['core/20261001_baseline.sql']->isBaselined());
+        $this->assertSame(['20261002_create_b.sql'], $this->filenames($migrator->pending()));
+
+        $this->assertSame(['20261002_create_b.sql'], $this->filenames($migrator->migrate()), 'later migrations still run');
+        $this->assertTrue($this->em->getConnection()->createSchemaManager()->tablesExist(['b']));
+        $this->assertSame([], $migrator->migrate());
+    }
+
+    public function testBaselineLeavesPluginMigrationsPending(): void
+    {
+        $this->em->getConnection()->executeStatement('CREATE TABLE a (id INTEGER PRIMARY KEY)');
+        $this->file('20261001_baseline.sql', 'CREATE TABLE a (id INTEGER PRIMARY KEY);');
+        $plugins = new PluginManager(new DirectoryPluginDiscovery(dirname(__DIR__, 2) . '/Fixtures/PluginsDir'));
+        $plugins->discover();
+        $migrator = $this->migrator($plugins);
+
+        $migrator->baseline();
+
+        $this->assertSame(
+            ['theatrecms/example-plugin/20261002_create_examples_table.sql'],
+            array_map(static fn(Migration $migration): string => $migration->label(), $migrator->pending()),
+        );
+    }
+
+    public function testBaselineNeedsTheSnapshotFile(): void
+    {
+        $this->file('20261002_create_b.sql', 'CREATE TABLE b (id INTEGER PRIMARY KEY);');
+
+        try {
+            $this->migrator()->baseline();
+            $this->fail('Expected baseline() to fail without the snapshot.');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('20261001_baseline.sql was not found', $e->getMessage());
+        }
+        $this->assertFalse((new SchemaMigrationRepository($this->em))->tableExists(), 'nothing recorded');
     }
 
     public function testListingPendingMigrationsDoesNotCreateTheTable(): void
