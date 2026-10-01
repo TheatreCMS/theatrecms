@@ -76,7 +76,7 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
         if ($assetName instanceof AbstractAsset) {
             $assetName = $assetName->getName();
         }
-        return !preg_match('~^(?:users(?:_|$)|scheduled_task_runs$)~', $assetName);
+        return $assetName !== 'scheduled_task_runs' && !preg_match('~^users(?:_|$)~', $assetName);
     });
     return new EntityManager($connection, $config);
 });
