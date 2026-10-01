@@ -101,8 +101,12 @@ bin/theatrecms migrate             # apply them
 bin/theatrecms migrate --baseline  # record them as applied without running them
 ```
 
-- **Naming**: `YYYYMMDD_short_description.sql`, or `YYYYMMDDHHMMSS_...` when several land on one
-  day. Plugins use the same scheme, so their files interleave with core's by date.
+- **Naming**: always `YYYYMMDD_short_description.sql`. Files run in plain filename order, so
+  files from the same day run alphabetically by description; when their order matters, choose
+  descriptions that sort correctly (or date the later one a day on). Don't mix in other formats
+  such as `YYYYMMDDHHMMSS_`: `_` sorts after digits, so `20261001120000_x.sql` would run before
+  `20261001_baseline.sql`. Plugins use the same scheme, so their files interleave with core's by
+  date.
 - **Never edit an applied migration.** `migrate` warns about files whose checksum changed but does
   not re-run them; put the change in a new migration.
 - **Keep entities and migrations in step.** A new or changed Doctrine entity needs a migration that
