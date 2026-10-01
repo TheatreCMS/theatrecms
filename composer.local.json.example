@@ -15,5 +15,8 @@
             "merge-dev": true,
             "merge-scripts": true
         }
+    },
+    "replace": {
+        "theatrecms/theatrecms": "*"
     }
 }
