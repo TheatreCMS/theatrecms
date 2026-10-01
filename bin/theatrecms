@@ -14,17 +14,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * Deprecated: use `bin/theatrecms media:rename-filenames`. This wrapper forwards its arguments
- * there and will be removed in a future release.
+ * The TheatreCMS console: core commands plus every plugin's. Run `bin/theatrecms list` to see them,
+ * and see documentation/console.md for writing and scheduling commands.
  */
 
+use TheatreCMS\Console\ConsoleApplicationFactory;
+
 if (PHP_SAPI !== 'cli') {
+    fwrite(STDERR, "bin/theatrecms must be run from the command line.\n");
     exit(1);
 }
 
-fwrite(STDERR, "./rename-media-filenames is deprecated; use bin/theatrecms media:rename-filenames instead.\n");
+/** @var \DI\Container $container */
+$container = require dirname(__DIR__) . '/app/bootstrap.php';
 
-$_SERVER['argv'] = array_merge([__DIR__ . '/bin/theatrecms', 'media:rename-filenames'], array_slice($_SERVER['argv'], 1));
-$_SERVER['argc'] = count($_SERVER['argv']);
-
-require __DIR__ . '/bin/theatrecms';
+$container->get(ConsoleApplicationFactory::class)->create()->run();

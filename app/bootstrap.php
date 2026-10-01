@@ -27,6 +27,7 @@ use TheatreCMS\Auth\Capability;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Plugin\PluginManager;
+use TheatreCMS\Scheduler\ScheduledTaskRegistry;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Theme\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
@@ -45,6 +46,7 @@ require_once APP_ROOT . '/app/image-sizes.php';
 require_once APP_ROOT . '/app/taxonomies.php';
 require_once APP_ROOT . '/app/template-tags.php';
 require_once APP_ROOT . '/app/admin-menu.php';
+require_once APP_ROOT . '/app/scheduler.php';
 
 $container = new Container(require __DIR__ . '/settings.php');
 
@@ -68,12 +70,13 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
 
     $connection = DriverManager::getConnection($settings['doctrine']['connection']);
 
-    // Delight Auth owns the users table and all users_* tables.
+    // Tables Doctrine must not manage: Delight Auth owns the users table and all users_* tables,
+    // and the scheduler's scheduled_task_runs is written through DBAL (src/Scheduler).
     $connection->getConfiguration()->setSchemaAssetsFilter(static function (string|AbstractAsset $assetName): bool {
         if ($assetName instanceof AbstractAsset) {
             $assetName = $assetName->getName();
         }
-        return !preg_match('~^users(?:_|$)~', $assetName);
+        return !preg_match('~^(?:users(?:_|$)|scheduled_task_runs$)~', $assetName);
     });
     return new EntityManager($connection, $config);
 });
@@ -119,6 +122,9 @@ QueriedObject::setInstance($queriedObject);
 $adminMenuRegistry = $container->get(AdminMenuRegistry::class);
 AdminMenuRegistry::setInstance($adminMenuRegistry);
 require_once APP_ROOT . '/app/admin-menu-items.php';
+
+$scheduledTaskRegistry = $container->get(ScheduledTaskRegistry::class);
+ScheduledTaskRegistry::setInstance($scheduledTaskRegistry);
 
 // Plugins register after core's registries exist and before the theme's functions.php,
 // so themes can rely on anything a plugin provides.

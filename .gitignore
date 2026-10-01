@@ -22,6 +22,9 @@ Thumbs.db
 .phpunit.result.cache
 /build/
 
+# Runtime caches, locks and logs (Twig, Doctrine, scheduler)
+/var/
+
 /sql/
 /www/themes/*
 !/www/themes/default
