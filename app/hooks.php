@@ -1,6 +1,6 @@
 <?php
 
-use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Hooks\HookManager;
 
 /**
  * Register a callback to run when a filter tag is applied.

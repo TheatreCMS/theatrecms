@@ -1,6 +1,6 @@
 <?php
 
-use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Hooks\HookManager;
 
 define( 'SRC_DIR', dirname(__DIR__));
 

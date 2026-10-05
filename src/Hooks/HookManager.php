@@ -1,6 +1,6 @@
 <?php
 
-namespace TheatreCMS\Theme;
+namespace TheatreCMS\Hooks;
 
 class HookManager
 {

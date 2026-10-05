@@ -26,7 +26,7 @@ use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Settings\SiteSettings;
-use TheatreCMS\Theme\ContentTypeRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;

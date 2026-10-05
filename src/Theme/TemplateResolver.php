@@ -4,6 +4,7 @@ namespace TheatreCMS\Theme;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
+use TheatreCMS\ContentType\QueriedObject;
 use TheatreCMS\Models\Term;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
 

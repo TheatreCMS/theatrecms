@@ -4,7 +4,7 @@
 
 TheatreCMS currently has no way for admins to manage site navigation — the header nav (`templates/partials/header.html.twig`, or theme-specific `www/themes/avlt/templates/partials/nav.html.twig`, which is currently an **empty placeholder file**) is hardcoded. The goal is a WordPress-style menu builder: admins create named menus, add items that link to internal content (Pages, Posts, Productions) or custom URLs, arrange them into a nested drag-and-drop tree, and assign a menu to a "location" that the active theme declares (mirroring WP's `register_nav_menu()` / `wp_nav_menu()`).
 
-This fits naturally into the existing architecture: TheatreCMS already has a WordPress-inspired theme system (`src/Theme/ThemeManager.php` loads a theme's `functions.php` like WP does, and `src/Theme/HookManager.php` is a WP-style `add_filter`/`apply_filters` system exposed via global functions in `app/hooks.php`). The menu system extends this same pattern with a `register_menu_location()` global function and a `render_menu()` Twig function.
+This fits naturally into the existing architecture: TheatreCMS already has a WordPress-inspired theme system (`src/Theme/ThemeManager.php` loads a theme's `functions.php` like WP does, and `src/Hooks/HookManager.php` is a WP-style `add_filter`/`apply_filters` system exposed via global functions in `app/hooks.php`). The menu system extends this same pattern with a `register_menu_location()` global function and a `render_menu()` Twig function.
 
 **Stack** (confirmed by reading the code — this is Slim Framework 4 + Doctrine ORM 3 + Twig, *not* Laravel): PHP-DI container, Twig views via `slim/twig-view`, HTMX for progressive enhancement, Tailwind (CDN) + Flowbite for admin UI styling. No JS framework and no drag-and-drop library exist yet — one small addition (SortableJS via CDN `<script>`, matching how HTMX/Tailwind/Flowbite are already loaded) is needed for the nested tree editor.
 
@@ -24,7 +24,7 @@ Doctrine has no native polymorphic association without extra packages, so `MenuI
 
 ## Menu Location Registry (theme-registered locations)
 
-- **`src/Theme/MenuLocationRegistry.php`** — singleton-style service (`setInstance`/`getInstance`, same shape as `src/Theme/HookManager.php`) holding a `slug => label` map via `register()`/`all()`/`has()`/`label()`.
+- **`src/Theme/MenuLocationRegistry.php`** — singleton-style service (`setInstance`/`getInstance`, same shape as `src/Hooks/HookManager.php`) holding a `slug => label` map via `register()`/`all()`/`has()`/`label()`.
 - **`app/menu-locations.php`** (new, alongside existing `app/hooks.php`) — defines the global `register_menu_location(string $slug, string $label): void` function that themes call, delegating to `MenuLocationRegistry::getInstance()->register(...)`.
 - **`app/bootstrap.php`** — add `require_once APP_ROOT . '/app/menu-locations.php';` next to the existing `require_once APP_ROOT . '/app/hooks.php';`, and `MenuLocationRegistry::setInstance($container->get(MenuLocationRegistry::class));` next to the existing `HookManager::setInstance($hookManager);` call. This runs before `ThemeManager::loadFunctions()` (called lazily inside the `Twig::class` factory), so the registry is ready when a theme's `functions.php` calls `register_menu_location()`.
 - Example usage in `www/themes/avlt/functions.php` (currently empty): `register_menu_location('primary', 'Primary Navigation'); register_menu_location('footer', 'Footer Menu');`

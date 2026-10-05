@@ -16,7 +16,7 @@ TheatreCMS currently has only a binary admin/not-admin distinction (`UserReposit
 
 The auth library already in use is not a passive bitmask store — its own docs (delight-im/php-auth README, "Permissions or access rights") explicitly recommend wrapping `hasRole()`/`hasAnyRole()` checks behind a centralized permission helper rather than scattering role checks through the codebase, and it reserves 23 named bitmask constants (`Role::ADMIN`, `Role::AUTHOR`, `Role::EDITOR`, `Role::CONTRIBUTOR`, `Role::MODERATOR`, ...) — far more than the single `ADMIN` bit currently used. This plan builds the capability layer directly on top of this mechanism (capability string → Delight `Role` constants) rather than inventing a parallel role-storage concept, so future roles need zero migrations — just assigning an already-reserved bit.
 
-This follows the same WordPress-inspired registry pattern already established in this codebase for extensibility: `src/Theme/HookManager.php` and `src/Theme/MenuLocationRegistry.php` are singletons (`setInstance`/`getInstance`) populated at bootstrap time from small config files (`app/hooks.php`, `app/menu-locations.php`), registered in `src/DI/ServiceRegistrar.php`.
+This follows the same WordPress-inspired registry pattern already established in this codebase for extensibility: `src/Hooks/HookManager.php` and `src/Theme/MenuLocationRegistry.php` are singletons (`setInstance`/`getInstance`) populated at bootstrap time from small config files (`app/hooks.php`, `app/menu-locations.php`), registered in `src/DI/ServiceRegistrar.php`.
 
 ## Architecture
 

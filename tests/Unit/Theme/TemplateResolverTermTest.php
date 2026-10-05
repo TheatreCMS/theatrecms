@@ -5,7 +5,7 @@ namespace TheatreCMS\Tests\Unit\Theme;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Slim\Views\Twig;
-use TheatreCMS\Theme\QueriedObject;
+use TheatreCMS\ContentType\QueriedObject;
 use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Theme\TitleResolver;

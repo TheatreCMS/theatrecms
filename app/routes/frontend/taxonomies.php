@@ -5,7 +5,7 @@ use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Taxonomy\TermArchiveQuery;
-use TheatreCMS\Theme\ContentTypeRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

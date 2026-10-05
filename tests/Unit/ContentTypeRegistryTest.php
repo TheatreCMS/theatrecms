@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use TheatreCMS\Theme\ContentTypeRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 
 class ContentTypeRegistryTest extends TestCase
 {

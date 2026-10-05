@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
-use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\StructuredDataBuilder;
 use TheatreCMS\Theme\ThemeManager;

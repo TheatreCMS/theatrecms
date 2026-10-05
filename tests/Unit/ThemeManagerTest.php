@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
-use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\Theme\ThemeManager;
