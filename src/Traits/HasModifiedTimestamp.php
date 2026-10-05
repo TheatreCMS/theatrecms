@@ -4,15 +4,14 @@ namespace TheatreCMS\Traits;
 
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\PrePersist;
+use Doctrine\ORM\Mapping\PreUpdate;
 
 /**
- * The shared mutation-tracking timestamp: a mapped `modified_at` column
- * plus its accessors, reused by every content type that needs to track
- * when it was last edited instead of each entity defining its own
- * parallel field.
+ * A mapped `modified_at` column, kept current automatically: set when the entity is first persisted
+ * and refreshed whenever Doctrine flushes a change to it. No controller or repository needs to set it.
  *
- * Composing classes must set `modifiedAt` themselves (typically in their
- * constructor) — this trait does not assume a default.
+ * The callbacks only run on entities marked `#[HasLifecycleCallbacks]`; see documentation/timestamps.md.
  */
 trait HasModifiedTimestamp
 {
@@ -31,8 +30,26 @@ trait HasModifiedTimestamp
         return $this;
     }
 
+    /**
+     * Marks the entity modified now. Flushing any change does this automatically; call it only to
+     * record a modification that doesn't change a mapped field.
+     */
     public function touchModified(): self
     {
         return $this->setModifiedAt(new DateTimeImmutable());
+    }
+
+    #[PrePersist]
+    public function initializeModifiedTimestamp(): void
+    {
+        if (!isset($this->modifiedAt)) {
+            $this->modifiedAt = new DateTimeImmutable();
+        }
+    }
+
+    #[PreUpdate]
+    public function refreshModifiedTimestamp(): void
+    {
+        $this->modifiedAt = new DateTimeImmutable();
     }
 }

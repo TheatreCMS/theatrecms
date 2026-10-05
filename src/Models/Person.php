@@ -11,12 +11,18 @@ use JsonSerializable;
 use TheatreCMS\Text\RichTextSanitizer;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'people')]
 class Person extends ModelBase implements JsonSerializable
 {
     use HasFeaturedImage;
     use HasHeroImage;
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;

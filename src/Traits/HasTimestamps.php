@@ -7,25 +7,16 @@ use Doctrine\ORM\Mapping\Column;
 
 /**
  * The shared creation/publication timestamps: mapped `created_at` and
- * `published_at` columns plus their accessors, reused by every content
- * type that needs them instead of each entity defining its own parallel
- * fields.
- *
- * Composing classes must set `createdAt` themselves (typically in their
- * constructor) — this trait does not assume a default.
+ * `published_at` columns plus their accessors, for content types that are
+ * published. `created_at` comes from HasCreatedTimestamp and is filled in on
+ * persist; `published_at` stays whatever the content sets.
  */
 trait HasTimestamps
 {
-    #[Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
+    use HasCreatedTimestamp;
 
     #[Column(name: 'published_at', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeImmutable $publishedAt = null;
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
 
     public function getPublishedAt(): ?DateTimeImmutable
     {

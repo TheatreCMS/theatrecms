@@ -10,10 +10,17 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'works')]
 class Work extends ModelBase implements \JsonSerializable
 {
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 

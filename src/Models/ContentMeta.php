@@ -9,6 +9,9 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
 /**
  * A single key/value row of metadata attached to any content item, identified by
@@ -18,11 +21,15 @@ use Doctrine\ORM\Mapping\UniqueConstraint;
  * registered by future theme/plugin extensions can use this table without code changes
  * here, matching this codebase's WordPress-inspired extensibility goals.
  */
+#[HasLifecycleCallbacks]
 #[Entity]
 #[Table(name: 'content_meta')]
 #[UniqueConstraint(name: 'uniq_content_meta_key', columns: ['content_type', 'content_id', 'meta_key'])]
 class ContentMeta
 {
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
@@ -37,12 +44,6 @@ class ContentMeta
 
     #[Column(name: 'meta_value', type: 'text', nullable: true)]
     private ?string $metaValue = null;
-
-    #[Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
-
-    #[Column(name: 'modified_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $modifiedAt;
 
     public function __construct(string $contentType, int $contentId, string $metaKey, ?string $metaValue = null)
     {
@@ -83,23 +84,6 @@ class ContentMeta
     {
         $this->metaValue = $metaValue;
         $this->touchModified();
-
-        return $this;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getModifiedAt(): DateTimeImmutable
-    {
-        return $this->modifiedAt;
-    }
-
-    public function touchModified(): self
-    {
-        $this->modifiedAt = new DateTimeImmutable();
 
         return $this;
     }

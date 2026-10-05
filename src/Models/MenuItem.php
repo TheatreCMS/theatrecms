@@ -15,10 +15,17 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Enums\MenuItemType;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'menu_items')]
 class MenuItem
 {
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
@@ -58,12 +65,6 @@ class MenuItem
 
     #[Column(name: 'custom_url', type: 'string', length: 2048, nullable: true)]
     private ?string $customUrl = null;
-
-    #[Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
-
-    #[Column(name: 'modified_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $modifiedAt;
 
     public function __construct(Menu $menu, MenuItemType $linkType)
     {
@@ -167,23 +168,6 @@ class MenuItem
     public function setCustomUrl(?string $customUrl): self
     {
         $this->customUrl = $customUrl;
-
-        return $this;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
-    public function getModifiedAt(): DateTimeImmutable
-    {
-        return $this->modifiedAt;
-    }
-
-    public function touchModified(): self
-    {
-        $this->modifiedAt = new DateTimeImmutable();
 
         return $this;
     }

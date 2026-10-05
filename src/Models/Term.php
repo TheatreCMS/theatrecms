@@ -11,6 +11,8 @@ use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
 
 /**
  * A single term (e.g. "Comedy") within a registered taxonomy (e.g. `genre`).
@@ -18,12 +20,14 @@ use TheatreCMS\Traits\HasModifiedTimestamp;
  * Deliberately does not extend ModelBase: its slug column is unique across the whole
  * table, whereas term slugs only need to be unique within their taxonomy.
  */
+#[HasLifecycleCallbacks]
 #[Entity]
 #[Table(name: 'terms')]
 #[UniqueConstraint(name: 'uniq_terms_taxonomy_slug', columns: ['taxonomy', 'slug'])]
 #[Index(name: 'idx_terms_taxonomy', columns: ['taxonomy'])]
 class Term
 {
+    use HasCreatedTimestamp;
     use HasModifiedTimestamp;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
@@ -44,9 +48,6 @@ class Term
 
     #[Column(type: 'text', nullable: true)]
     private ?string $description = null;
-
-    #[Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
 
     public function __construct(string $taxonomy, string $name, string $slug)
     {
@@ -101,10 +102,5 @@ class Term
         $this->description = $description;
 
         return $this;
-    }
-
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
     }
 }

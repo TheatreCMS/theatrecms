@@ -14,13 +14,19 @@ use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasSponsors;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'seasons')]
 class Season extends ModelBase implements \JsonSerializable
 {
     use HasFeaturedImage;
     use HasHeroImage;
     use HasSponsors;
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id = 0;
