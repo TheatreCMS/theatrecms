@@ -20,9 +20,9 @@ use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
-use TheatreCMS\Theme\ContentTypeRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
-use TheatreCMS\Theme\PermalinkResolver;
+use TheatreCMS\ContentType\PermalinkResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class MenuControllerTest extends TestCase

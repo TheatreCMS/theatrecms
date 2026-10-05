@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\ContentType\PermalinkResolver;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Sponsor;

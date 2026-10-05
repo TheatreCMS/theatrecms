@@ -1,10 +1,10 @@
 <?php
 
-namespace TheatreCMS\Tests\Unit\Theme;
+namespace TheatreCMS\Tests\Unit\ContentType;
 
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Term;
-use TheatreCMS\Theme\QueriedObject;
+use TheatreCMS\ContentType\QueriedObject;
 
 class QueriedObjectTest extends TestCase
 {

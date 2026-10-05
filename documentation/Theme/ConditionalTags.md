@@ -2,7 +2,7 @@
 
 TheatreCMS's corollary to WordPress' `is_single()`/`is_archive()`/etc. family of conditional
 tags — small boolean checks theme code and templates use to branch on what kind of page is
-currently being rendered. Backed by `QueriedObject` (`src/Theme/QueriedObject.php`), which is
+currently being rendered. Backed by `QueriedObject` (`src/ContentType/QueriedObject.php`), which is
 populated by `TemplateResolver::renderSingle()`/`renderList()`/`renderTerm()` (the methods every
 frontend content route funnels through) right before the template renders.
 

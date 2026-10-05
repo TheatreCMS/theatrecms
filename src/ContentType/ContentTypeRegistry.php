@@ -1,6 +1,6 @@
 <?php
 
-namespace TheatreCMS\Theme;
+namespace TheatreCMS\ContentType;
 
 /**
  * Maps a built-in content type to the URL path segment and display label used for its

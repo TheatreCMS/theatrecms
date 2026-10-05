@@ -29,10 +29,10 @@ use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Scheduler\ScheduledTaskRegistry;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
-use TheatreCMS\Theme\HookManager;
+use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
-use TheatreCMS\Theme\QueriedObject;
+use TheatreCMS\ContentType\QueriedObject;
 use TheatreCMS\Theme\ThemeManager;
 
 if (!defined('APP_ROOT')) {

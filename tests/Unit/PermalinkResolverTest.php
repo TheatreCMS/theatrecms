@@ -11,8 +11,8 @@ use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Term;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
-use TheatreCMS\Theme\ContentTypeRegistry;
-use TheatreCMS\Theme\PermalinkResolver;
+use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\ContentType\PermalinkResolver;
 use TheatreCMS\Twig\PermalinkExtension;
 
 class PermalinkResolverTest extends TestCase

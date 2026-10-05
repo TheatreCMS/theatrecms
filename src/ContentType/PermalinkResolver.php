@@ -1,6 +1,6 @@
 <?php
 
-namespace TheatreCMS\Theme;
+namespace TheatreCMS\ContentType;
 
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;

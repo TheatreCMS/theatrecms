@@ -31,7 +31,7 @@ class ThemeHeadExtension extends \Twig\Extension\AbstractExtension
         $headContent = '';
 
         // Apply filters to allow themes and plugins to modify the head content
-        $headContent = \TheatreCMS\Theme\HookManager::getInstance()->applyFilters('theme_head', $headContent);
+        $headContent = \TheatreCMS\Hooks\HookManager::getInstance()->applyFilters('theme_head', $headContent);
 
         // Emit the computed SEO meta tags, if TemplateResolver populated them.
         $headContent .= $this->renderSeoTags($context);

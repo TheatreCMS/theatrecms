@@ -8,8 +8,8 @@ use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
-use TheatreCMS\Theme\ContentTypeRegistry;
-use TheatreCMS\Theme\PermalinkResolver;
+use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\ContentType\PermalinkResolver;
 
 /**
  * Resolves a MenuItem's rendered URL and label by looking up its linked

@@ -1,6 +1,6 @@
 <?php
 
-use TheatreCMS\Theme\QueriedObject;
+use TheatreCMS\ContentType\QueriedObject;
 
 if (!function_exists('is_single')) {
     /**

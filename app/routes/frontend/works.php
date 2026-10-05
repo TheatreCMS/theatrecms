@@ -2,7 +2,7 @@
 
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Repositories\WorkRepository;
-use TheatreCMS\Theme\ContentTypeRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

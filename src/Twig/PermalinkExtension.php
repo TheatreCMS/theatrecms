@@ -2,7 +2,7 @@
 
 namespace TheatreCMS\Twig;
 
-use TheatreCMS\Theme\PermalinkResolver;
+use TheatreCMS\ContentType\PermalinkResolver;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
