@@ -12,10 +12,17 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'menus')]
 class Menu
 {
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
+
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
@@ -29,12 +36,6 @@ class Menu
      */
     #[Column(type: 'string', length: 100, nullable: true, unique: true)]
     private ?string $location = null;
-
-    #[Column(name: 'created_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $createdAt;
-
-    #[Column(name: 'modified_at', type: 'datetime_immutable')]
-    private DateTimeImmutable $modifiedAt;
 
     #[OneToMany(targetEntity: MenuItem::class, mappedBy: 'menu', cascade: ['persist', 'remove'], orphanRemoval: true)]
     #[OrderBy(['position' => 'ASC'])]
@@ -77,22 +78,8 @@ class Menu
         return $this;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
 
-    public function getModifiedAt(): DateTimeImmutable
-    {
-        return $this->modifiedAt;
-    }
 
-    public function touchModified(): self
-    {
-        $this->modifiedAt = new DateTimeImmutable();
-
-        return $this;
-    }
 
     /**
      * @return Collection<int, MenuItem>

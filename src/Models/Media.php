@@ -11,15 +11,22 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
 /**
  * A single uploaded file in the media library (image, PDF, audio, or video),
  * shared across content types (Production, Post, Season, Venue) via a
  * `featured_image_id` foreign key.
  */
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'media')]
 class Media
 {
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
+
     public const TYPE_IMAGE = 'image';
     public const TYPE_PDF = 'pdf';
     public const TYPE_AUDIO = 'audio';

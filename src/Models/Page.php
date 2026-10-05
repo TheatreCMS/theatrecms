@@ -12,7 +12,9 @@ use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
 use TheatreCMS\Traits\HasModifiedTimestamp;
 use TheatreCMS\Traits\HasTimestamps;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'pages')]
 class Page extends ModelBase
 {

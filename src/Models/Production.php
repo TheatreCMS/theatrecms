@@ -17,13 +17,19 @@ use DateTime;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasSponsors;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\Traits\HasCreatedTimestamp;
+use TheatreCMS\Traits\HasModifiedTimestamp;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'productions')]
 class Production extends ModelBase
 {
     use HasFeaturedImage;
     use HasHeroImage;
     use HasSponsors;
+    use HasCreatedTimestamp;
+    use HasModifiedTimestamp;
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;

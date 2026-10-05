@@ -14,7 +14,9 @@ use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
 use TheatreCMS\Traits\HasTimestamps;
+use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 
+#[HasLifecycleCallbacks]
 #[Entity, Table(name: 'posts')]
 class Post extends ModelBase
 {
