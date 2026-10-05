@@ -94,6 +94,10 @@ return [
             // Directory where plugins are stored, one per subdirectory, each with a composer.json
             // of type `theatrecms-plugin`. See documentation/plugins.md.
             'dir' => APP_ROOT . '/plugins',
+
+            // Each plugin's own settings, from the `plugins` key in app/config.yaml, keyed by
+            // package name (e.g. `theatrecms/wp-import`). Each plugin documents its keys.
+            'config' => $config['plugins'] ?? [],
         ],
 
         // Per-site overrides for the URL prefix of a built-in content type's frontend

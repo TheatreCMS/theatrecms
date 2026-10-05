@@ -116,6 +116,26 @@ logged and skipped.
 Themes and plugins can also add sidebar items from code with `register_admin_menu_item()`
 (`app/admin-menu.php`). Core's own sidebar items live in `app/admin-menu-items.php`.
 
+## Settings
+
+A plugin's settings live in the git-ignored `app/config.yaml`, under `plugins` and the plugin's
+package name, so credentials never go in the plugin's repository:
+
+```yaml
+plugins:
+    acme/box-office:
+        api_url: https://boxoffice.example/api
+        api_key: '<secret>'
+```
+
+Read them in `register()`:
+
+```php
+$settings = $container->get('settings')['plugins']['config']['acme/box-office'] ?? [];
+```
+
+Document your keys in the plugin's README, with defaults for anything optional.
+
 ## Failures
 
 A plugin that cannot be loaded, or that throws while declaring, registering or booting, is logged

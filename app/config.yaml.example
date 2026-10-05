@@ -33,6 +33,15 @@ theme: default
 #     seasons:
 #         has_archive: false
 
+# Settings for installed plugins, keyed by package name. Each plugin documents its
+# own keys; anything secret (API credentials, passwords) belongs here, never in a
+# plugin's repository. For example, the WordPress importer's source database:
+# plugins:
+#     theatrecms/wp-import:
+#         source:
+#             dbname: wp_source      # defaults: the `database` settings below, with
+#             table_prefix: wp_      # dbname wp_source and table prefix wp_
+
 database:
     driver: pdo_mysql
     host: db

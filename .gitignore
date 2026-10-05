@@ -26,6 +26,14 @@ Thumbs.db
 /var/
 
 /sql/
+
+# Database dumps (e.g. WordPress exports) hold secrets and personal data: never commit one.
+# Keep them outside the repository; these catch stray copies. migrations/*.sql stays tracked.
+/*.sql
+*.sql.gz
+*.sql.bz2
+*.sql.xz
+/dumps/
 /www/themes/*
 !/www/themes/default
 
