@@ -22,22 +22,22 @@ class ContentTypeRegistry
      * @var array<string, string>
      */
     private const DEFAULT_PREFIXES = [
-        'seasons' => 'seasons',
+        'seasons'     => 'seasons',
         'productions' => 'productions',
-        'people' => 'people',
-        'works' => 'works',
-        'posts' => 'posts',
+        'people'      => 'people',
+        'works'       => 'works',
+        'posts'       => 'posts',
     ];
 
     /**
      * @var array<string, string>
      */
     private const DEFAULT_LABELS = [
-        'seasons' => 'Seasons',
+        'seasons'     => 'Seasons',
         'productions' => 'Productions',
-        'people' => 'People',
-        'works' => 'Works',
-        'posts' => 'Posts',
+        'people'      => 'People',
+        'works'       => 'Works',
+        'posts'       => 'Posts',
     ];
 
     /**
