@@ -30,7 +30,7 @@ class PermalinkResolverTest extends TestCase
     {
         $season = new Season('2026', '2026 Season');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/shows/2026', $resolver->resolve($season));
     }
@@ -41,7 +41,7 @@ class PermalinkResolverTest extends TestCase
         $production = new Production('Hamlet', $season);
         $production->setSlug('hamlet');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/shows/2026/hamlet', $resolver->resolve($production));
     }
@@ -63,14 +63,14 @@ class PermalinkResolverTest extends TestCase
         $page = new Page('About', \TheatreCMS\Enums\ContentStatus::PUBLISHED, 'body');
         $page->setSlug('about');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/about', $resolver->resolve($page));
     }
 
     public function testArchiveUrlUsesRewrittenPrefix(): void
     {
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/shows', $resolver->archiveUrl('seasons'));
     }
@@ -79,7 +79,7 @@ class PermalinkResolverTest extends TestCase
     {
         $season = new Season('2026', '2026 Season');
 
-        $extension = new PermalinkExtension(new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry()));
+        $extension = new PermalinkExtension($this->resolverWithSeasonsAtShows());
 
         $this->assertSame('/shows/2026', $extension->thePermalink($season));
         $this->assertSame('/shows', $extension->archiveUrl('seasons'));
@@ -95,5 +95,16 @@ class PermalinkResolverTest extends TestCase
 
         $this->assertSame('/category/news', $resolver->resolve(new Term('post_category', 'News', 'news')));
         $this->assertSame('/genre/comedy', $resolver->resolve(new Term('genre', 'Comedy', 'comedy')));
+    }
+
+    /**
+     * A resolver whose `seasons` content type is overridden to serve under `/shows`.
+     */
+    private function resolverWithSeasonsAtShows(): PermalinkResolver
+    {
+        return new PermalinkResolver(
+            new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']]),
+            new TaxonomyRegistry()
+        );
     }
 }

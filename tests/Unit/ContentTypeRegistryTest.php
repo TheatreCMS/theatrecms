@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TheatreCMS\Tests\Unit;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 
@@ -18,7 +19,7 @@ class ContentTypeRegistryTest extends TestCase
 
     public function testOverridePrefixFromConfig(): void
     {
-        $registry = new ContentTypeRegistry(['seasons' => 'shows']);
+        $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']]);
 
         $this->assertSame('shows', $registry->prefix('seasons'));
     }
@@ -37,18 +38,10 @@ class ContentTypeRegistryTest extends TestCase
         $this->assertSame('Seasons', $registry->label('seasons'));
     }
 
-    public function testShorthandOverrideDerivesLabelFromPrefix(): void
-    {
-        $registry = new ContentTypeRegistry(['seasons' => 'shows']);
-
-        $this->assertSame('shows', $registry->prefix('seasons'));
-        $this->assertSame('Shows', $registry->label('seasons'));
-    }
-
     public function testExpandedOverrideSetsIndependentLabel(): void
     {
         $registry = new ContentTypeRegistry([
-            'seasons' => ['url_prefix' => 'shows', 'label' => 'Our Shows'],
+            'seasons' => ['urlPrefix' => 'shows', 'label' => 'Our Shows'],
         ]);
 
         $this->assertSame('shows', $registry->prefix('seasons'));
@@ -73,7 +66,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testArchiveDisabledFromConfig(): void
     {
         $registry = new ContentTypeRegistry([
-            'seasons' => ['has_archive' => false],
+            'seasons' => ['hasArchive' => false],
         ]);
 
         $this->assertFalse($registry->hasArchive('seasons'));
@@ -82,10 +75,23 @@ class ContentTypeRegistryTest extends TestCase
     public function testArchiveDisabledAlongsideUrlPrefixOverride(): void
     {
         $registry = new ContentTypeRegistry([
-            'seasons' => ['url_prefix' => 'shows', 'has_archive' => false],
+            'seasons' => ['urlPrefix' => 'shows', 'hasArchive' => false],
         ]);
 
         $this->assertSame('shows', $registry->prefix('seasons'));
         $this->assertFalse($registry->hasArchive('seasons'));
+    }
+
+    public function testStringOverrideThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new ContentTypeRegistry(['seasons' => 'shows']);
+    }
+
+    public function testUnknownOverrideKeyThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('url_prefix');
+        new ContentTypeRegistry(['seasons' => ['url_prefix' => 'shows']]);
     }
 }

@@ -2,94 +2,87 @@
 
 namespace TheatreCMS\ContentType;
 
+use InvalidArgumentException;
+use RuntimeException;
+
 /**
- * Maps a built-in content type to the URL path segment and display label used for its
- * frontend routes and page titles.
+ * Holds a definition (see `ContentTypeDefinition`) for every content type: its URL path
+ * segment, display labels and whether it has an archive page.
  *
- * Defaults match the content type's own name (e.g. `seasons` serves under `/seasons`
- * with the label "Seasons"), but a site can override either via the `content_types` key
- * in `app/config.yaml` — e.g. a theatre that calls its season listing "Shows" can serve
- * it under `/shows` with "Shows" as the label everywhere (URLs, menu links, permalinks,
- * and page `<title>`s), without any code or template changes.
+ * The built-in types are seeded from `BUILT_IN`, and a site can override their prefix,
+ * labels or archive flag via the `content_types` key in `app/config.yaml`. For example, a
+ * theatre that calls its season listing "Shows" can serve it under `/shows` with "Shows"
+ * as the label everywhere (URLs, menu links, permalinks and page `<title>`s), without any
+ * code or template changes:
  *
- * A content type's archive (listing) page is enabled by default; setting `has_archive:
- * false` on a type disables it (its frontend route 404s) without affecting single-entity
- * routes, e.g. a site can turn off `/seasons` while keeping `/seasons/{slug}` working.
+ *     content_types:
+ *         seasons:
+ *             urlPrefix: shows
+ *             label: Shows
+ *
+ * A content type's archive (listing) page is enabled by default; `hasArchive: false`
+ * disables it (its frontend route 404s) without affecting single-entity routes, e.g. a
+ * site can turn off `/seasons` while keeping `/seasons/{slug}` working.
  */
 class ContentTypeRegistry
 {
     /**
-     * @var array<string, string>
+     * Keys a `content_types` config override may set, named as ContentTypeDefinition's
+     * constructor parameters so a validated override can be spread straight into it.
+     *
+     * @var list<string>
      */
-    private const DEFAULT_PREFIXES = [
-        'seasons'     => 'seasons',
-        'productions' => 'productions',
-        'people'      => 'people',
-        'works'       => 'works',
-        'posts'       => 'posts',
+    private const VALID_OVERRIDES = [
+        'label',
+        'singularLabel',
+        'urlPrefix',
+        'hasArchive',
     ];
 
     /**
-     * @var array<string, string>
+     * Built-in content types: key => [URL prefix, label, singular label].
+     *
+     * @var array<string, array{string, string, string}>
      */
-    private const DEFAULT_LABELS = [
-        'seasons'     => 'Seasons',
-        'productions' => 'Productions',
-        'people'      => 'People',
-        'works'       => 'Works',
-        'posts'       => 'Posts',
+    private const BUILT_IN = [
+        'seasons'     => ['seasons', 'Seasons', 'Season'],
+        'productions' => ['productions', 'Productions', 'Production'],
+        'people'      => ['people', 'People', 'Person'],
+        'works'       => ['works', 'Works', 'Work'],
+        'posts'       => ['posts', 'Posts', 'Post'],
     ];
 
     /**
-     * @var array<string, string>
+     * @var array<string, ContentTypeDefinition>
      */
-    private array $prefixes;
+    private array $contentTypes = [];
+
+    private static ?ContentTypeRegistry $instance = null;
 
     /**
-     * @var array<string, string>
-     */
-    private array $labels;
-
-    /**
-     * @var array<string, bool>
-     */
-    private array $hasArchive = [];
-
-    /**
-     * @param array<string, mixed> $overrides Content type => URL prefix (shorthand string)
-     *                                         or `['url_prefix' => ..., 'label' => ..., 'has_archive' => ...]`,
-     *                                         from config.
+     * @param array<string, mixed> $overrides content type => override map from config, e.g.
+     *        `['seasons' => ['urlPrefix' => 'shows', 'label' => 'Shows', 'hasArchive' => false]]`.
+     *        Allowed keys are listed in VALID_OVERRIDES.
+     * @throws InvalidArgumentException for an override that isn't a map, or an unknown key
      */
     public function __construct(array $overrides = [])
     {
-        $this->prefixes = self::DEFAULT_PREFIXES;
-        $this->labels = self::DEFAULT_LABELS;
+        $overrides = $this->parseOverrides($overrides);
+        $this->registerBuiltIn($overrides);
+    }
 
-        foreach ($overrides as $type => $override) {
-            if (is_string($override)) {
-                $override = ['url_prefix' => $override];
-            }
+    public static function setInstance(ContentTypeRegistry $instance): void
+    {
+        self::$instance = $instance;
+    }
 
-            if (!is_array($override)) {
-                continue;
-            }
-
-            if (isset($override['url_prefix'])) {
-                $this->prefixes[$type] = (string) $override['url_prefix'];
-
-                if (!isset($override['label'])) {
-                    $this->labels[$type] = ucfirst((string) $override['url_prefix']);
-                }
-            }
-
-            if (isset($override['label'])) {
-                $this->labels[$type] = (string) $override['label'];
-            }
-
-            if (isset($override['has_archive'])) {
-                $this->hasArchive[$type] = (bool) $override['has_archive'];
-            }
+    public static function getInstance(): ContentTypeRegistry
+    {
+        if (self::$instance === null) {
+            throw new RuntimeException('The ContentTypeRegistry has not been initialized.');
         }
+
+        return self::$instance;
     }
 
     /**
@@ -98,7 +91,7 @@ class ContentTypeRegistry
      */
     public function prefix(string $type): string
     {
-        return $this->prefixes[$type] ?? $type;
+        return $this->contentTypes[$type]->urlPrefix ?? $type;
     }
 
     /**
@@ -107,16 +100,90 @@ class ContentTypeRegistry
      */
     public function label(string $type): string
     {
-        return $this->labels[$type] ?? ucfirst($type);
+        return $this->contentTypes[$type]->label ?? ucfirst($type);
     }
 
     /**
      * Whether a content type's archive (listing) page should be served. Defaults to true
-     * for every type, including unknown/custom ones; disabled via `has_archive: false`
+     * for every type, including unknown/custom ones; disabled via `hasArchive: false`
      * in the type's `content_types` config entry.
      */
     public function hasArchive(string $type): bool
     {
-        return $this->hasArchive[$type] ?? true;
+        return $this->contentTypes[$type]->hasArchive ?? true;
+    }
+
+    /**
+     * @return array<string, ContentTypeDefinition>
+     */
+    public function all(): array
+    {
+        return $this->contentTypes;
+    }
+
+    public function get(string $type): ?ContentTypeDefinition
+    {
+        return $this->contentTypes[$type] ?? null;
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, array<string, mixed>>
+     * @throws InvalidArgumentException for an override that isn't a map, or a key outside VALID_OVERRIDES
+     */
+    private function parseOverrides(array $overrides): array
+    {
+        foreach ($overrides as $type => $typeOverrides) {
+            if (!is_array($typeOverrides)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Invalid content_types override for "%s": expected a map of %s.',
+                    $type,
+                    implode(', ', self::VALID_OVERRIDES)
+                ));
+            }
+
+            $unknown = array_diff(array_keys($typeOverrides), self::VALID_OVERRIDES);
+
+            if ($unknown !== []) {
+                throw new InvalidArgumentException(sprintf(
+                    'Unknown content_types override key(s) for "%s": %s. Allowed: %s.',
+                    $type,
+                    implode(', ', $unknown),
+                    implode(', ', self::VALID_OVERRIDES)
+                ));
+            }
+        }
+
+        return $overrides;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $overrides
+     */
+    private function registerBuiltIn(array $overrides): void
+    {
+        foreach (self::BUILT_IN as $type => $defaults) {
+            $args = $this->prepareArgsForType($type, $defaults, $overrides[$type] ?? []);
+            $this->contentTypes[$type] = new ContentTypeDefinition(...$args);
+        }
+    }
+
+    /**
+     * @param array{string, string, string} $defaults [URL prefix, label, singular label]
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed> ContentTypeDefinition constructor arguments, by name
+     */
+    private function prepareArgsForType(string $type, array $defaults, array $overrides = []): array
+    {
+        [$urlPrefix, $label, $singularLabel] = $defaults;
+
+        $defaultArgs = [
+            'name'          => $type,
+            'label'         => $label,
+            'singularLabel' => $singularLabel,
+            'urlPrefix'     => $urlPrefix,
+        ];
+
+        return array_replace($defaultArgs, $overrides);
     }
 }
