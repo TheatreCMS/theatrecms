@@ -4,6 +4,7 @@ namespace TheatreCMS\ContentType;
 
 use InvalidArgumentException;
 use RuntimeException;
+use TheatreCMS\Routing\UrlPrefixRegistry;
 
 /**
  * Holds a definition (see `ContentTypeDefinition`) for every content type: its URL path
@@ -57,16 +58,23 @@ class ContentTypeRegistry
      */
     private array $contentTypes = [];
 
+    private readonly UrlPrefixRegistry $urlPrefixes;
+
     private static ?ContentTypeRegistry $instance = null;
 
     /**
      * @param array<string, mixed> $overrides content type => override map from config, e.g.
      *        `['seasons' => ['urlPrefix' => 'shows', 'label' => 'Shows', 'hasArchive' => false]]`.
      *        Allowed keys are listed in VALID_OVERRIDES.
-     * @throws InvalidArgumentException for an override that isn't a map, or an unknown key
+     * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `TaxonomyRegistry`, so
+     *        a content type and a taxonomy can't use the same prefix; a private one if omitted
+     * @throws InvalidArgumentException for an override that isn't a map, an unknown key, or a
+     *        built-in's prefix that is invalid or already claimed
      */
-    public function __construct(array $overrides = [])
+    public function __construct(array $overrides = [], ?UrlPrefixRegistry $urlPrefixes = null)
     {
+        $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
+
         $overrides = $this->parseOverrides($overrides);
         $this->registerBuiltIn($overrides);
     }
@@ -183,6 +191,7 @@ class ContentTypeRegistry
     {
         foreach (self::BUILT_IN as $type => $defaults) {
             $args = $this->prepareArgsForType($type, $defaults, $overrides[$type] ?? []);
+            $this->urlPrefixes->claim($args['urlPrefix'], self::owner($type));
             $this->contentTypes[$type] = new ContentTypeDefinition(...$args);
         }
     }
@@ -204,5 +213,13 @@ class ContentTypeRegistry
         ];
 
         return array_replace($defaultArgs, $overrides);
+    }
+
+    /**
+     * How a content type is named when claiming a URL prefix, e.g. `content type "seasons"`.
+     */
+    private static function owner(string $type): string
+    {
+        return sprintf('content type "%s"', $type);
     }
 }

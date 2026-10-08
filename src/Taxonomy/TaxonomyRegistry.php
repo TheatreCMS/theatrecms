@@ -4,6 +4,8 @@ namespace TheatreCMS\Taxonomy;
 
 use InvalidArgumentException;
 use TheatreCMS\Auth\Capability;
+use TheatreCMS\Routing\NamingRules;
+use TheatreCMS\Routing\UrlPrefixRegistry;
 
 class TaxonomyRegistry
 {
@@ -12,7 +14,18 @@ class TaxonomyRegistry
      */
     private array $taxonomies = [];
 
+    private readonly UrlPrefixRegistry $urlPrefixes;
+
     private static ?self $instance = null;
+
+    /**
+     * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `ContentTypeRegistry`, so
+     *        a taxonomy and a content type can't use the same prefix; a private one if omitted
+     */
+    public function __construct(?UrlPrefixRegistry $urlPrefixes = null)
+    {
+        $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
+    }
 
     public static function setInstance(self $instance): void
     {
@@ -38,15 +51,12 @@ class TaxonomyRegistry
      *     url_prefix?: string,
      *     has_archive?: bool
      * } $args
+     * @throws InvalidArgumentException for an invalid name or URL prefix, no content types, or a
+     *        prefix another taxonomy or content type already serves routes under
      */
     public function register(string $name, array $contentTypes, array $args = []): TaxonomyDefinition
     {
-        if (!preg_match('/^[a-z0-9_]{1,32}$/', $name)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid taxonomy name "%s": use 1-32 lowercase letters, digits, or underscores.',
-                $name
-            ));
-        }
+        NamingRules::assertTypeName($name, 'taxonomy');
 
         if ($contentTypes === []) {
             throw new InvalidArgumentException(
@@ -55,7 +65,17 @@ class TaxonomyRegistry
         }
 
         $fallbackLabel = ucwords(str_replace('_', ' ', $name));
-        $urlPrefix = $this->validateUrlPrefix($name, $args['url_prefix'] ?? str_replace('_', '-', $name));
+        $urlPrefix = $args['url_prefix'] ?? str_replace('_', '-', $name);
+        $hasArchive = $args['has_archive'] ?? true;
+        $owner = sprintf('taxonomy "%s"', $name);
+
+        // Term archives (`/{prefix}/{term}`) are the only routes a taxonomy serves, so only a
+        // taxonomy with archives claims its prefix. The format is checked either way.
+        NamingRules::assertUrlPrefix($urlPrefix, $owner);
+
+        if ($hasArchive) {
+            $this->urlPrefixes->claim($urlPrefix, $owner);
+        }
 
         $definition = new TaxonomyDefinition(
             $name,
@@ -65,7 +85,7 @@ class TaxonomyRegistry
             $args['multiple'] ?? true,
             $args['capability'] ?? Capability::MANAGE_OPTIONS,
             $urlPrefix,
-            $args['has_archive'] ?? true,
+            $hasArchive,
         );
 
         $this->taxonomies[$name] = $definition;
@@ -126,41 +146,7 @@ class TaxonomyRegistry
     {
         return array_filter(
             $this->taxonomies,
-            static fn(TaxonomyDefinition $taxonomy): bool => $taxonomy->appliesTo($contentType)
+            static fn (TaxonomyDefinition $taxonomy): bool => $taxonomy->appliesTo($contentType)
         );
-    }
-
-    /**
-     * Term archives are top-level routes (`/{prefix}/{term}`), so a prefix must be a single
-     * URL-safe path segment, can't shadow the admin, and can't be shared with another taxonomy.
-     * Re-registering a taxonomy under its own name keeps its prefix.
-     */
-    private function validateUrlPrefix(string $name, string $urlPrefix): string
-    {
-        if (!preg_match('/^[a-z0-9-]+$/', $urlPrefix)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid URL prefix "%s" for taxonomy "%s": use lowercase letters, digits, or hyphens.',
-                $urlPrefix,
-                $name
-            ));
-        }
-
-        if ($urlPrefix === 'admin') {
-            throw new InvalidArgumentException(
-                sprintf('Taxonomy "%s" cannot use the reserved URL prefix "admin".', $name)
-            );
-        }
-
-        $existing = $this->findByUrlPrefix($urlPrefix);
-        if ($existing !== null && $existing->name !== $name) {
-            throw new InvalidArgumentException(sprintf(
-                'Taxonomy "%s" cannot use URL prefix "%s": taxonomy "%s" already uses it.',
-                $name,
-                $urlPrefix,
-                $existing->name
-            ));
-        }
-
-        return $urlPrefix;
     }
 }

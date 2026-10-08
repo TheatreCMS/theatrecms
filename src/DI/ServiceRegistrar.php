@@ -83,6 +83,7 @@ use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\AddressResolver;
 use TheatreCMS\Theme\ContentResolver;
 use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\Routing\UrlPrefixRegistry;
 use TheatreCMS\Theme\DateResolver;
 use TheatreCMS\Theme\ExcerptResolver;
 use TheatreCMS\Hooks\HookManager;
@@ -203,9 +204,12 @@ class ServiceRegistrar
 
         $container->set(SponsorsResolver::class, static fn(): SponsorsResolver => new SponsorsResolver());
 
+        // One shared set of URL prefix claims, so a content type and a taxonomy can't use the same prefix.
+        $container->set(UrlPrefixRegistry::class, static fn(): UrlPrefixRegistry => new UrlPrefixRegistry());
+
         $container->set(ContentTypeRegistry::class, static function (ContainerInterface $c): ContentTypeRegistry {
             $settings = $c->get('settings');
-            return new ContentTypeRegistry($settings['content_types'] ?? []);
+            return new ContentTypeRegistry($settings['content_types'] ?? [], $c->get(UrlPrefixRegistry::class));
         });
 
         $container->set(PermalinkResolver::class, static function (ContainerInterface $c): PermalinkResolver {
@@ -334,7 +338,9 @@ class ServiceRegistrar
 
         $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
 
-        $container->set(TaxonomyRegistry::class, static fn(): TaxonomyRegistry => new TaxonomyRegistry());
+        $container->set(TaxonomyRegistry::class, static function (ContainerInterface $c): TaxonomyRegistry {
+            return new TaxonomyRegistry($c->get(UrlPrefixRegistry::class));
+        });
 
         $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {
             return new MenuItemResolver(

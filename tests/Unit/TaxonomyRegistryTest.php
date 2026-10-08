@@ -80,6 +80,7 @@ class TaxonomyRegistryTest extends TestCase
             'empty' => [''],
             'slash' => ['works/genre'],
             'uppercase' => ['Genre'],
+            'digit' => ['top-10'],
             'reserved admin' => ['admin'],
         ];
     }
@@ -91,6 +92,24 @@ class TaxonomyRegistryTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $registry->register('work_category', ['work'], ['url_prefix' => 'category']);
+    }
+
+    public function testTaxonomiesWithoutArchivesDoNotClaimTheirUrlPrefix(): void
+    {
+        $registry = new TaxonomyRegistry();
+        $registry->register('post_category', ['post'], ['url_prefix' => 'category', 'has_archive' => false]);
+
+        $this->assertSame(
+            'category',
+            $registry->register('work_category', ['work'], ['url_prefix' => 'category'])->urlPrefix
+        );
+    }
+
+    public function testRegisterValidatesUrlPrefixEvenWithoutArchives(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new TaxonomyRegistry())->register('genre', ['work'], ['url_prefix' => 'admin', 'has_archive' => false]);
     }
 
     public function testReRegisteringATaxonomyMayKeepItsUrlPrefix(): void
@@ -133,6 +152,13 @@ class TaxonomyRegistryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         (new TaxonomyRegistry())->register('Bad Name', ['work']);
+    }
+
+    public function testRegisterRejectsDigitsInName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new TaxonomyRegistry())->register('genre_2026', ['work']);
     }
 
     public function testRegisterRejectsEmptyContentTypes(): void
