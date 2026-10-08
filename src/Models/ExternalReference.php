@@ -41,7 +41,7 @@ class ExternalReference
     private string $sourceId;
 
     /** The TheatreCMS content type, e.g. `production` (the same keys as term relationships). */
-    #[Column(name: 'content_type', type: 'string', length: 32)]
+    #[Column(name: 'content_type', type: 'string')]
     private string $contentType;
 
     #[Column(name: 'content_id', type: 'integer')]

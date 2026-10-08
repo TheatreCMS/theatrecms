@@ -32,7 +32,7 @@ class TermRelationship
     #[JoinColumn(name: 'term_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Term $term;
 
-    #[Column(name: 'content_type', type: 'string', length: 32, nullable: false)]
+    #[Column(name: 'content_type', type: 'string', nullable: false)]
     private string $contentType;
 
     #[Column(name: 'content_id', type: 'integer', nullable: false)]

@@ -14,7 +14,7 @@ use TheatreCMS\Auth\Capability;
 final class TaxonomyDefinition
 {
     /**
-     * @param string $name machine key stored in `terms.taxonomy` (max 32 chars)
+     * @param string $name machine key stored in `terms.taxonomy`
      * @param string[] $contentTypes singular content-type keys, matching `content_meta.content_type`
      *        (e.g. 'work', 'post')
      * @param string $label plural display label, e.g. "Genres"

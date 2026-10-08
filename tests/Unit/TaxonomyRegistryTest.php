@@ -154,6 +154,14 @@ class TaxonomyRegistryTest extends TestCase
         (new TaxonomyRegistry())->register('Bad Name', ['work']);
     }
 
+    public function testRegisterAcceptsNamesLongerThan32Characters(): void
+    {
+        $name = 'production_department_and_crew_role';
+
+        $this->assertGreaterThan(32, strlen($name));
+        $this->assertSame($name, (new TaxonomyRegistry())->register($name, ['production'])->name);
+    }
+
     public function testRegisterRejectsDigitsInName(): void
     {
         $this->expectException(InvalidArgumentException::class);
