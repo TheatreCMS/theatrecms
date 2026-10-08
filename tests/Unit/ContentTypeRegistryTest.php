@@ -10,6 +10,14 @@ use TheatreCMS\ContentType\ContentTypeRegistry;
 
 class ContentTypeRegistryTest extends TestCase
 {
+    private const BUILTIN_CONTENT_TYPES = [
+        'seasons',
+        'productions',
+        'works',
+        'people',
+        'posts',
+    ];
+
     public function testDefaultPrefixMatchesTypeName(): void
     {
         $registry = new ContentTypeRegistry();
@@ -93,5 +101,38 @@ class ContentTypeRegistryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('url_prefix');
         new ContentTypeRegistry(['seasons' => ['url_prefix' => 'shows']]);
+    }
+
+    public function testHasForBuiltInTypes(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        foreach (self::BUILTIN_CONTENT_TYPES as $contentType) {
+            $this->assertTrue($registry->has($contentType), "Unknown content type: {$contentType}");
+        }
+    }
+
+    public function testHasForUnknownTypeReturnsFalse(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        $this->assertFalse($registry->has('foo'));
+    }
+
+    public function testRequireForBuiltInTypes(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        foreach (self::BUILTIN_CONTENT_TYPES as $type) {
+            $this->assertSame($type, $registry->require($type)->name);
+        }
+    }
+
+    public function testRequireForUnknownTypeThrowsError(): void
+    {
+        $registry = new ContentTypeRegistry();
+
+        $this->expectException(InvalidArgumentException::class);
+        $registry->require('foo');
     }
 }

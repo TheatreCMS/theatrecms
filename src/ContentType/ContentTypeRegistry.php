@@ -126,6 +126,25 @@ class ContentTypeRegistry
         return $this->contentTypes[$type] ?? null;
     }
 
+    public function has(string $type): bool
+    {
+        return $this->get($type) !== null;
+    }
+
+    /**
+     * @throws InvalidArgumentException for a non-existent type name
+     */
+    public function require(string $type): ContentTypeDefinition
+    {
+        $object = $this->get($type);
+
+        if ($object) {
+            return $object;
+        }
+
+        throw new InvalidArgumentException(sprintf('Content type: %s not registered', $type));
+    }
+
     /**
      * @param array<string, mixed> $overrides
      * @return array<string, array<string, mixed>>
