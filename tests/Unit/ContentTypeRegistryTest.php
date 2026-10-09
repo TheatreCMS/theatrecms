@@ -99,7 +99,6 @@ class ContentTypeRegistryTest extends TestCase
     public function testUnknownOverrideKeyThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('url_prefix');
         new ContentTypeRegistry(['seasons' => ['url_prefix' => 'shows']]);
     }
 

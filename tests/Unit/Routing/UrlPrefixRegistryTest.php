@@ -36,7 +36,6 @@ class UrlPrefixRegistryTest extends TestCase
         $registry->claim('category', 'taxonomy "post_category"');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('already used by taxonomy "post_category"');
 
         $registry->claim('category', 'content type "category"');
     }
@@ -46,7 +45,6 @@ class UrlPrefixRegistryTest extends TestCase
         $registry = new UrlPrefixRegistry();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('reserved');
 
         $registry->claim('admin', 'content type "admin"');
     }

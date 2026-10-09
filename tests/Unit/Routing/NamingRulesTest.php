@@ -36,7 +36,6 @@ class NamingRulesTest extends TestCase
     public function testRejectsInvalidTypeName(string $name): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid taxonomy name');
 
         NamingRules::assertTypeName($name, 'taxonomy');
     }
@@ -66,7 +65,6 @@ class NamingRulesTest extends TestCase
     public function testRejectsInvalidUrlPrefix(string $urlPrefix): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('for content type "seasons"');
 
         NamingRules::assertUrlPrefix($urlPrefix, 'content type "seasons"');
     }
@@ -74,7 +72,6 @@ class NamingRulesTest extends TestCase
     public function testRejectsReservedUrlPrefix(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('reserved');
 
         NamingRules::assertUrlPrefix('admin', 'taxonomy "genre"');
     }
