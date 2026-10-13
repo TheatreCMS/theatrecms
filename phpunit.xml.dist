@@ -13,7 +13,7 @@
     </source>
     <testsuites>
         <testsuite name="unit">
-            <directory>tests/Unit/</directory>
+         <directory>tests/Unit/</directory>
         </testsuite>
         <testsuite name="integration">
             <directory>tests/Integration/</directory>
