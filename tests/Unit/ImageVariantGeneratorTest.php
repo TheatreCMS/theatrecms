@@ -5,6 +5,7 @@ namespace TheatreCMS\Tests\Unit;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Intervention\Image\ImageManager;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Models\MediaVariant;
@@ -15,6 +16,7 @@ use TheatreCMS\Theme\ImageSizeRegistry;
 /**
  * @coversDefaultClass \TheatreCMS\Services\ImageVariantGenerator
  */
+#[AllowMockObjectsWithoutExpectations]
 class ImageVariantGeneratorTest extends TestCase
 {
     private string $uploadsDir;
