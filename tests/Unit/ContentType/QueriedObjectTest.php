@@ -118,7 +118,6 @@ class QueriedObjectTest extends TestCase
     public function testGetInstanceThrowsWhenNotInitialized(): void
     {
         $reflection = new \ReflectionProperty(QueriedObject::class, 'instance');
-        $reflection->setAccessible(true);
         $reflection->setValue(null, null);
 
         $this->expectException(\RuntimeException::class);

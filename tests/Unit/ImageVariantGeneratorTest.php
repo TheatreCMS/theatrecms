@@ -38,7 +38,6 @@ class ImageVariantGeneratorTest extends TestCase
         $this->sourcePath = $this->uploadsDir . '/source.jpg';
         $image = imagecreatetruecolor(400, 300);
         imagejpeg($image, $this->sourcePath);
-        imagedestroy($image);
 
         $this->registry = new ImageSizeRegistry();
         $this->registry->register('square-crop', 100, 100, true);
