@@ -6,7 +6,7 @@
         displayDetailsOnPhpunitDeprecations="true"
         displayDetailsOnPhpunitNotices="true"
 >
-    <source>
+    <source ignoreIndirectDeprecations="true">
         <include>
             <directory>src</directory>
         </include>
