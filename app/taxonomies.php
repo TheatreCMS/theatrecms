@@ -10,16 +10,16 @@ use TheatreCMS\Taxonomy\TaxonomyRegistry;
  * @param string[] $contentTypes singular content-type keys, e.g. 'work', 'post'
  * @param array{
  *     label?: string,
- *     singular_label?: string,
+ *     singularLabel?: string,
  *     multiple?: bool,
  *     capability?: string,
- *     url_prefix?: string,
- *     has_archive?: bool
+ *     urlPrefix?: string,
+ *     hasArchive?: bool
  * } $args
  *        `capability` gates managing the taxonomy's terms; defaults to manage_options, so match it to
  *        the content type's own capability to show the terms page wherever that content type is shown.
- *        `url_prefix` is the path segment term archives are served under (`/{url_prefix}/{term-slug}`);
- *        defaults to the name with underscores as hyphens. `has_archive: false` turns the archives off.
+ *        `urlPrefix` is the path segment term archives are served under (`/{urlPrefix}/{term-slug}`);
+ *        defaults to the name with underscores as hyphens. `hasArchive: false` turns the archives off.
  */
 function register_taxonomy(string $name, array $contentTypes, array $args = []): void
 {

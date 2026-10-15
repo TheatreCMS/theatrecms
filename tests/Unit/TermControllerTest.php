@@ -46,7 +46,7 @@ class TermControllerTest extends TestCase
         $this->registry = new TaxonomyRegistry();
         $this->registry->register('genre', ['work'], [
             'label' => 'Genres',
-            'singular_label' => 'Genre',
+            'singularLabel' => 'Genre',
             'capability' => Capability::MANAGE_PEOPLE,
         ]);
         $this->registry->register('post_category', ['post'], ['capability' => Capability::EDIT_POSTS]);

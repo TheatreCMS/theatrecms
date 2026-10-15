@@ -12,7 +12,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
 /**
- * Term archives: one `/{url_prefix}/{term-slug}` route per taxonomy with `has_archive` on.
+ * Term archives: one `/{urlPrefix}/{term-slug}` route per taxonomy with `hasArchive` on.
  * Routes are registered per prefix rather than as a `/{taxonomy}/{slug}` wildcard, which
  * would collide with other two-segment routes like `/seasons/{slug}/{productionSlug}`.
  *

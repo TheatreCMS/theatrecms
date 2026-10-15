@@ -18,7 +18,7 @@ class TaxonomyRegistry
     private readonly UrlPrefixRegistry $urlPrefixes;
 
     private static ?self $instance = null;
-    private const VALID_OVERRIDES = ['label', 'singular_label', 'capability', 'multiple', 'url_prefix', 'has_archive'];
+    private const VALID_OVERRIDES = ['label', 'singularLabel', 'capability', 'multiple', 'urlPrefix', 'hasArchive'];
 
     /**
      * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `ContentTypeRegistry`, so
@@ -47,11 +47,11 @@ class TaxonomyRegistry
      * @param string[] $contentTypes
      * @param array{
      *     label?: string,
-     *     singular_label?: string,
+     *     singularLabel?: string,
      *     multiple?: bool,
      *     capability?: string,
-     *     url_prefix?: string,
-     *     has_archive?: bool
+     *     urlPrefix?: string,
+     *     hasArchive?: bool
      * } $args
      * @throws InvalidArgumentException for an invalid or already registered name, an invalid URL
      *        prefix, no content types, or a prefix another taxonomy or content type already uses
@@ -72,8 +72,8 @@ class TaxonomyRegistry
 
         $args          = Args::withoutUnknownKeys($args, self::VALID_OVERRIDES, 'taxonomy');
         $fallbackLabel = ucwords(str_replace('_', ' ', $name));
-        $urlPrefix     = $args['url_prefix'] ?? str_replace('_', '-', $name);
-        $hasArchive    = $args['has_archive'] ?? true;
+        $urlPrefix     = $args['urlPrefix'] ?? str_replace('_', '-', $name);
+        $hasArchive    = $args['hasArchive'] ?? true;
 
         // Every taxonomy claims its prefix, with or without term archives: a prefix belongs to
         // exactly one content type or taxonomy.
@@ -84,7 +84,7 @@ class TaxonomyRegistry
             $name,
             array_values($contentTypes),
             $args['label'] ?? $fallbackLabel,
-            $args['singular_label'] ?? $fallbackLabel,
+            $args['singularLabel'] ?? $fallbackLabel,
             $args['multiple'] ?? true,
             $args['capability'] ?? Capability::MANAGE_OPTIONS,
             $urlPrefix,

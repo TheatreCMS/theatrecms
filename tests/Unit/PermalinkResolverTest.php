@@ -88,7 +88,7 @@ class PermalinkResolverTest extends TestCase
     public function testResolvesTermUrlUnderItsTaxonomysUrlPrefix(): void
     {
         $taxonomies = new TaxonomyRegistry();
-        $taxonomies->register('post_category', ['post'], ['url_prefix' => 'category']);
+        $taxonomies->register('post_category', ['post'], ['urlPrefix' => 'category']);
         $taxonomies->register('genre', ['work']);
 
         $resolver = new PermalinkResolver(new ContentTypeRegistry(), $taxonomies);

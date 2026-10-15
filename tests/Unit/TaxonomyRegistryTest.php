@@ -19,7 +19,7 @@ class TaxonomyRegistryTest extends TestCase
     public function testRegisterStoresDefinitionWithArgs(): void
     {
         $registry = new TaxonomyRegistry();
-        $registry->register('genre', ['work'], ['label' => 'Genres', 'singular_label' => 'Genre', 'multiple' => false]);
+        $registry->register('genre', ['work'], ['label' => 'Genres', 'singularLabel' => 'Genre', 'multiple' => false]);
 
         $genre = $registry->get('genre');
 
@@ -55,7 +55,7 @@ class TaxonomyRegistryTest extends TestCase
         $registry = new TaxonomyRegistry();
 
         $this->assertSame('post-category', $registry->register('post_category', ['post'])->urlPrefix);
-        $this->assertSame('genres', $registry->register('genre', ['work'], ['url_prefix' => 'genres'])->urlPrefix);
+        $this->assertSame('genres', $registry->register('genre', ['work'], ['urlPrefix' => 'genres'])->urlPrefix);
     }
 
     public function testHasArchiveDefaultsTrueAndCanBeDisabled(): void
@@ -63,7 +63,7 @@ class TaxonomyRegistryTest extends TestCase
         $registry = new TaxonomyRegistry();
 
         $this->assertTrue($registry->register('genre', ['work'])->hasArchive);
-        $this->assertFalse($registry->register('audience', ['work'], ['has_archive' => false])->hasArchive);
+        $this->assertFalse($registry->register('audience', ['work'], ['hasArchive' => false])->hasArchive);
     }
 
     #[DataProvider('invalidUrlPrefixProvider')]
@@ -71,7 +71,7 @@ class TaxonomyRegistryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('genre', ['work'], ['url_prefix' => $prefix]);
+        (new TaxonomyRegistry())->register('genre', ['work'], ['urlPrefix' => $prefix]);
     }
 
     /**
@@ -91,26 +91,26 @@ class TaxonomyRegistryTest extends TestCase
     public function testRegisterRejectsUrlPrefixUsedByAnotherTaxonomy(): void
     {
         $registry = new TaxonomyRegistry();
-        $registry->register('post_category', ['post'], ['url_prefix' => 'category']);
+        $registry->register('post_category', ['post'], ['urlPrefix' => 'category']);
 
         $this->expectException(InvalidArgumentException::class);
-        $registry->register('work_category', ['work'], ['url_prefix' => 'category']);
+        $registry->register('work_category', ['work'], ['urlPrefix' => 'category']);
     }
 
     public function testTaxonomiesWithoutArchivesStillClaimTheirUrlPrefix(): void
     {
         $registry = new TaxonomyRegistry();
-        $registry->register('post_category', ['post'], ['url_prefix' => 'category', 'has_archive' => false]);
+        $registry->register('post_category', ['post'], ['urlPrefix' => 'category', 'hasArchive' => false]);
 
         $this->expectException(InvalidArgumentException::class);
-        $registry->register('work_category', ['work'], ['url_prefix' => 'category']);
+        $registry->register('work_category', ['work'], ['urlPrefix' => 'category']);
     }
 
     public function testRegisterValidatesUrlPrefixEvenWithoutArchives(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('genre', ['work'], ['url_prefix' => 'admin', 'has_archive' => false]);
+        (new TaxonomyRegistry())->register('genre', ['work'], ['urlPrefix' => 'admin', 'hasArchive' => false]);
     }
 
     public function testRegisterRejectsANameRegisteredTwice(): void
@@ -125,7 +125,7 @@ class TaxonomyRegistryTest extends TestCase
     public function testFindByUrlPrefix(): void
     {
         $registry = new TaxonomyRegistry();
-        $registry->register('post_category', ['post'], ['url_prefix' => 'category']);
+        $registry->register('post_category', ['post'], ['urlPrefix' => 'category']);
 
         $this->assertSame('post_category', $registry->findByUrlPrefix('category')?->name);
         $this->assertNull($registry->findByUrlPrefix('post-category'));

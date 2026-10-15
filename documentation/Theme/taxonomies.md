@@ -6,14 +6,14 @@ a public archive page listing the content items that carry it, like WordPress's
 
 ### URLs
 
-Term archives are served at `/{url_prefix}/{term-slug}`. `url_prefix` is a
+Term archives are served at `/{urlPrefix}/{term-slug}`. `urlPrefix` is a
 `register_taxonomy()` argument that defaults to the taxonomy name with underscores turned
 into hyphens:
 
 ```php
 register_taxonomy('genre', ['work']);                                        // /genre/comedy
-register_taxonomy('post_category', ['post'], ['url_prefix' => 'category']);  // /category/news
-register_taxonomy('audience', ['work'], ['has_archive' => false]);           // no archive pages
+register_taxonomy('post_category', ['post'], ['urlPrefix' => 'category']);   // /category/news
+register_taxonomy('audience', ['work'], ['hasArchive' => false]);            // no archive pages
 ```
 
 A prefix must be lowercase letters, digits or hyphens. It can't be `admin` and can't be

@@ -105,14 +105,14 @@ $taxonomyRegistry = $container->get(TaxonomyRegistry::class);
 TaxonomyRegistry::setInstance($taxonomyRegistry);
 register_taxonomy('genre', ['work'], [
     'label' => 'Genres',
-    'singular_label' => 'Genre',
+    'singularLabel' => 'Genre',
     'capability' => Capability::MANAGE_PEOPLE,
 ]);
 register_taxonomy('post_category', ['post'], [
     'label' => 'Categories',
-    'singular_label' => 'Category',
+    'singularLabel' => 'Category',
     'capability' => Capability::EDIT_POSTS,
-    'url_prefix' => 'category',
+    'urlPrefix' => 'category',
 ]);
 
 $queriedObject = $container->get(QueriedObject::class);

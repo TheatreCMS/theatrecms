@@ -22,13 +22,13 @@ class SharedUrlPrefixTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry($urlPrefixes))->register('season_tag', ['season'], ['url_prefix' => 'seasons']);
+        (new TaxonomyRegistry($urlPrefixes))->register('season_tag', ['season'], ['urlPrefix' => 'seasons']);
     }
 
     public function testContentTypeCannotUseATaxonomysPrefix(): void
     {
         $urlPrefixes = new UrlPrefixRegistry();
-        (new TaxonomyRegistry($urlPrefixes))->register('genre', ['work'], ['url_prefix' => 'shows']);
+        (new TaxonomyRegistry($urlPrefixes))->register('genre', ['work'], ['urlPrefix' => 'shows']);
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -43,7 +43,7 @@ class SharedUrlPrefixTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         (new TaxonomyRegistry($urlPrefixes))
-            ->register('season_tag', ['season'], ['url_prefix' => 'seasons', 'has_archive' => false]);
+            ->register('season_tag', ['season'], ['urlPrefix' => 'seasons', 'hasArchive' => false]);
     }
 
     public function testTaxonomyCannotTakeARegisteredContentTypesDerivedPrefix(): void
@@ -70,7 +70,7 @@ class SharedUrlPrefixTest extends TestCase
     public function testContentTypeCannotTakeThePrefixOfATaxonomyWithoutArchives(): void
     {
         $urlPrefixes = new UrlPrefixRegistry();
-        (new TaxonomyRegistry($urlPrefixes))->register('press_release', ['post'], ['has_archive' => false]);
+        (new TaxonomyRegistry($urlPrefixes))->register('press_release', ['post'], ['hasArchive' => false]);
         $registry = new ContentTypeRegistry([], $urlPrefixes);
 
         $this->expectException(InvalidArgumentException::class);
