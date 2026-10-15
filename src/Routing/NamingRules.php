@@ -41,16 +41,16 @@ final class NamingRules
      * A URL prefix (e.g. `press-releases`) is a single path segment of lowercase letters and
      * hyphens, and can't be one of RESERVED_URL_PREFIXES.
      *
-     * @param string $owner who wants the prefix, for the error message (e.g. `content type "seasons"`)
+     * @param string $subject what the prefix is for, in the error message (e.g. `content type "seasons"`)
      * @throws InvalidArgumentException
      */
-    public static function assertUrlPrefix(string $urlPrefix, string $owner): void
+    public static function assertUrlPrefix(string $urlPrefix, string $subject): void
     {
         if (!preg_match('/^[a-z-]+$/', $urlPrefix)) {
             throw new InvalidArgumentException(sprintf(
                 'Invalid URL prefix "%s" for %s: use lowercase letters and hyphens.',
                 $urlPrefix,
-                $owner
+                $subject
             ));
         }
 
@@ -58,7 +58,7 @@ final class NamingRules
             throw new InvalidArgumentException(sprintf(
                 'URL prefix "%s" for %s is reserved for core routes.',
                 $urlPrefix,
-                $owner
+                $subject
             ));
         }
     }

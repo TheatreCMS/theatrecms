@@ -51,12 +51,16 @@ class TaxonomyRegistry
      *     url_prefix?: string,
      *     has_archive?: bool
      * } $args
-     * @throws InvalidArgumentException for an invalid name or URL prefix, no content types, or a
-     *        prefix another taxonomy or content type already serves routes under
+     * @throws InvalidArgumentException for an invalid or already registered name, an invalid URL
+     *        prefix, no content types, or a prefix another taxonomy or content type already uses
      */
     public function register(string $name, array $contentTypes, array $args = []): TaxonomyDefinition
     {
         NamingRules::assertTypeName($name, 'taxonomy');
+
+        if ($this->has($name)) {
+            throw new InvalidArgumentException(sprintf('Taxonomy "%s" is already registered.', $name));
+        }
 
         if ($contentTypes === []) {
             throw new InvalidArgumentException(
@@ -67,15 +71,11 @@ class TaxonomyRegistry
         $fallbackLabel = ucwords(str_replace('_', ' ', $name));
         $urlPrefix = $args['url_prefix'] ?? str_replace('_', '-', $name);
         $hasArchive = $args['has_archive'] ?? true;
-        $owner = sprintf('taxonomy "%s"', $name);
 
-        // Term archives (`/{prefix}/{term}`) are the only routes a taxonomy serves, so only a
-        // taxonomy with archives claims its prefix. The format is checked either way.
-        NamingRules::assertUrlPrefix($urlPrefix, $owner);
-
-        if ($hasArchive) {
-            $this->urlPrefixes->claim($urlPrefix, $owner);
-        }
+        // Every taxonomy claims its prefix, with or without term archives: a prefix belongs to
+        // exactly one content type or taxonomy.
+        NamingRules::assertUrlPrefix($urlPrefix, sprintf('taxonomy "%s"', $name));
+        $this->urlPrefixes->claim($urlPrefix);
 
         $definition = new TaxonomyDefinition(
             $name,

@@ -35,15 +35,15 @@ class SharedUrlPrefixTest extends TestCase
         new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']], $urlPrefixes);
     }
 
-    public function testTaxonomyWithoutArchivesMayShareAContentTypesPrefix(): void
+    public function testTaxonomyWithoutArchivesCannotUseAContentTypesPrefix(): void
     {
         $urlPrefixes = new UrlPrefixRegistry();
         new ContentTypeRegistry([], $urlPrefixes);
 
-        $definition = (new TaxonomyRegistry($urlPrefixes))
-            ->register('season_tag', ['season'], ['url_prefix' => 'seasons', 'has_archive' => false]);
+        $this->expectException(InvalidArgumentException::class);
 
-        $this->assertSame('seasons', $definition->urlPrefix);
+        (new TaxonomyRegistry($urlPrefixes))
+            ->register('season_tag', ['season'], ['url_prefix' => 'seasons', 'has_archive' => false]);
     }
 
     public function testContentTypeOverrideCannotUseAReservedPrefix(): void

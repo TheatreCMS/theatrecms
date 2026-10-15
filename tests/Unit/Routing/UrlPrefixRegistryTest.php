@@ -10,42 +10,23 @@ use TheatreCMS\Routing\UrlPrefixRegistry;
 
 class UrlPrefixRegistryTest extends TestCase
 {
-    public function testDifferentOwnersCanClaimDifferentPrefixes(): void
+    public function testDifferentPrefixesCanBeClaimed(): void
     {
         $registry = new UrlPrefixRegistry();
 
-        $registry->claim('seasons', 'content type "seasons"');
-        $registry->claim('genre', 'taxonomy "genre"');
+        $registry->claim('seasons');
+        $registry->claim('genre');
 
         $this->addToAssertionCount(1);
     }
 
-    public function testSameOwnerCanClaimItsPrefixAgain(): void
+    public function testRejectsAPrefixClaimedTwice(): void
     {
         $registry = new UrlPrefixRegistry();
-
-        $registry->claim('genre', 'taxonomy "genre"');
-        $registry->claim('genre', 'taxonomy "genre"');
-
-        $this->addToAssertionCount(1);
-    }
-
-    public function testRejectsPrefixClaimedByAnotherOwner(): void
-    {
-        $registry = new UrlPrefixRegistry();
-        $registry->claim('category', 'taxonomy "post_category"');
+        $registry->claim('category');
 
         $this->expectException(InvalidArgumentException::class);
 
-        $registry->claim('category', 'content type "category"');
-    }
-
-    public function testValidatesPrefixBeforeClaiming(): void
-    {
-        $registry = new UrlPrefixRegistry();
-
-        $this->expectException(InvalidArgumentException::class);
-
-        $registry->claim('admin', 'content type "admin"');
+        $registry->claim('category');
     }
 }

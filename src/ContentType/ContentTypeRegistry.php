@@ -4,6 +4,7 @@ namespace TheatreCMS\ContentType;
 
 use InvalidArgumentException;
 use RuntimeException;
+use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 
 /**
@@ -191,7 +192,8 @@ class ContentTypeRegistry
     {
         foreach (self::BUILT_IN as $type => $defaults) {
             $args = $this->prepareArgsForType($type, $defaults, $overrides[$type] ?? []);
-            $this->urlPrefixes->claim($args['urlPrefix'], self::owner($type));
+            NamingRules::assertUrlPrefix($args['urlPrefix'], self::describe($type));
+            $this->urlPrefixes->claim($args['urlPrefix']);
             $this->contentTypes[$type] = new ContentTypeDefinition(...$args);
         }
     }
@@ -216,9 +218,9 @@ class ContentTypeRegistry
     }
 
     /**
-     * How a content type is named when claiming a URL prefix, e.g. `content type "seasons"`.
+     * How a content type is named in error messages, e.g. `content type "seasons"`.
      */
-    private static function owner(string $type): string
+    private static function describe(string $type): string
     {
         return sprintf('content type "%s"', $type);
     }
