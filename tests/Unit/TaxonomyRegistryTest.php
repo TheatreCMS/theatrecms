@@ -7,12 +7,15 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Auth\Capability;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Tests\Includes\CapturesUserNotices;
 
 /**
  * @coversDefaultClass \TheatreCMS\Taxonomy\TaxonomyRegistry
  */
 class TaxonomyRegistryTest extends TestCase
 {
+    use CapturesUserNotices;
+
     public function testRegisterStoresDefinitionWithArgs(): void
     {
         $registry = new TaxonomyRegistry();
@@ -166,6 +169,28 @@ class TaxonomyRegistryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         (new TaxonomyRegistry())->register('genre_2026', ['work']);
+    }
+
+    public function testRegisterIgnoresUnknownArgsWithOneNoticeEach(): void
+    {
+        $registry = new TaxonomyRegistry();
+
+        [$definition, $levels] = $this->captureUserNotices(
+            static fn() => $registry->register('genre', ['work'], ['hierarchy' => true, 'icon' => 'tag'])
+        );
+
+        $this->assertSame([E_USER_NOTICE, E_USER_NOTICE], $levels);
+        $this->assertSame('genre', $definition->name);
+        $this->assertTrue($registry->has('genre'));
+    }
+
+    public function testRegisterWithOnlyKnownArgsRaisesNoNotice(): void
+    {
+        [, $levels] = $this->captureUserNotices(
+            static fn() => (new TaxonomyRegistry())->register('genre', ['work'], ['label' => 'Genres'])
+        );
+
+        $this->assertSame([], $levels);
     }
 
     public function testRegisterRejectsEmptyContentTypes(): void

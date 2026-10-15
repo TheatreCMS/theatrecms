@@ -4,6 +4,7 @@ namespace TheatreCMS\Taxonomy;
 
 use InvalidArgumentException;
 use TheatreCMS\Auth\Capability;
+use TheatreCMS\Helpers\Args;
 use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 
@@ -17,6 +18,7 @@ class TaxonomyRegistry
     private readonly UrlPrefixRegistry $urlPrefixes;
 
     private static ?self $instance = null;
+    private const VALID_OVERRIDES = ['label', 'singular_label', 'capability', 'multiple', 'url_prefix', 'has_archive'];
 
     /**
      * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `ContentTypeRegistry`, so
@@ -68,9 +70,10 @@ class TaxonomyRegistry
             );
         }
 
+        $args          = Args::withoutUnknownKeys($args, self::VALID_OVERRIDES, 'taxonomy');
         $fallbackLabel = ucwords(str_replace('_', ' ', $name));
-        $urlPrefix = $args['url_prefix'] ?? str_replace('_', '-', $name);
-        $hasArchive = $args['has_archive'] ?? true;
+        $urlPrefix     = $args['url_prefix'] ?? str_replace('_', '-', $name);
+        $hasArchive    = $args['has_archive'] ?? true;
 
         // Every taxonomy claims its prefix, with or without term archives: a prefix belongs to
         // exactly one content type or taxonomy.
