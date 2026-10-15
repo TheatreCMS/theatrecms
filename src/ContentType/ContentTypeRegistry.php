@@ -4,6 +4,7 @@ namespace TheatreCMS\ContentType;
 
 use InvalidArgumentException;
 use RuntimeException;
+use TheatreCMS\Helpers\Args;
 use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 
@@ -39,6 +40,9 @@ class ContentTypeRegistry
         'singularLabel',
         'urlPrefix',
         'hasArchive',
+        'public',
+        'supports',
+        'capability',
     ];
 
     /**
@@ -47,17 +51,18 @@ class ContentTypeRegistry
      * @var array<string, array{string, string, string}>
      */
     private const BUILT_IN = [
-        'seasons'     => ['seasons', 'Seasons', 'Season'],
-        'productions' => ['productions', 'Productions', 'Production'],
-        'people'      => ['people', 'People', 'Person'],
-        'works'       => ['works', 'Works', 'Work'],
-        'posts'       => ['posts', 'Posts', 'Post'],
+        'seasons'     => ['label' => 'Seasons', 'singularLabel' => 'Season'],
+        'productions' => ['label' => 'Productions', 'singularLabel' => 'Production'],
+        'people'      => ['label' => 'People', 'singularLabel' => 'Person'],
+        'works'       => ['label' => 'Works', 'singularLabel' => 'Work'],
+        'posts'       => ['label' => 'Posts', 'singularLabel' => 'Post'],
     ];
 
     /**
      * @var array<string, ContentTypeDefinition>
      */
     private array $contentTypes = [];
+    private readonly array $overrides;
 
     private readonly UrlPrefixRegistry $urlPrefixes;
 
@@ -76,7 +81,7 @@ class ContentTypeRegistry
     {
         $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
 
-        $overrides = $this->parseOverrides($overrides);
+        $this->overrides = $this->parseOverrides($overrides);
         $this->registerBuiltIn($overrides);
     }
 
@@ -154,6 +159,30 @@ class ContentTypeRegistry
         throw new InvalidArgumentException(sprintf('Content type: %s not registered', $type));
     }
 
+    public function register(string $type, array $params = [])
+    {
+        if ($this->get($type)) {
+            throw new InvalidArgumentException("Content type {$type} is already registered");
+        }
+
+        if (isset($params['name'])) {
+            unset($params['name']);
+            trigger_error('Specifying a name different from the "type" property is not supported');
+        }
+
+        $prepared = $this->prepareArgsForType($type, $params, $this->overrides[$type] ?? []);
+
+        NamingRules::assertTypeName($type, 'content type');
+        NamingRules::assertUrlPrefix($prepared['urlPrefix'], self::describe($type));
+
+        $this->urlPrefixes->claim($prepared['urlPrefix']);
+
+        $def = new ContentTypeDefinition(...$prepared);
+        $this->contentTypes[$type] = $def;
+
+        return $def;
+    }
+
     /**
      * @param array<string, mixed> $overrides
      * @return array<string, array<string, mixed>>
@@ -190,8 +219,8 @@ class ContentTypeRegistry
      */
     private function registerBuiltIn(array $overrides): void
     {
-        foreach (self::BUILT_IN as $type => $defaults) {
-            $args = $this->prepareArgsForType($type, $defaults, $overrides[$type] ?? []);
+        foreach (self::BUILT_IN as $type => $params) {
+            $args = $this->prepareArgsForType($type, $params, $overrides[$type] ?? []);
             NamingRules::assertUrlPrefix($args['urlPrefix'], self::describe($type));
             $this->urlPrefixes->claim($args['urlPrefix']);
             $this->contentTypes[$type] = new ContentTypeDefinition(...$args);
@@ -199,22 +228,25 @@ class ContentTypeRegistry
     }
 
     /**
-     * @param array{string, string, string} $defaults [URL prefix, label, singular label]
+     * @param array{string, string, string} $specified [URL prefix, label, singular label]
      * @param array<string, mixed> $overrides
      * @return array<string, mixed> ContentTypeDefinition constructor arguments, by name
      */
-    private function prepareArgsForType(string $type, array $defaults, array $overrides = []): array
+    private function prepareArgsForType(string $type, array $specified, array $overrides = []): array
     {
-        [$urlPrefix, $label, $singularLabel] = $defaults;
+        $label = $specified['label'] ?? ucwords(str_replace('_', ' ', $type));
 
         $defaultArgs = [
-            'name'          => $type,
             'label'         => $label,
-            'singularLabel' => $singularLabel,
-            'urlPrefix'     => $urlPrefix,
+            'singularLabel' => $singularLabel ?? $label,
+            'urlPrefix'     => $urlPrefix ?? strtolower(str_replace('_', '-', $type)),
         ];
 
-        return array_replace($defaultArgs, $overrides);
+        $prepared = array_merge($defaultArgs, $specified, $overrides ?? []);
+        $prepared = Args::withoutUnknownKeys($prepared, self::VALID_OVERRIDES, 'content type');
+        $prepared['name'] = $type;
+
+        return $prepared;
     }
 
     /**
