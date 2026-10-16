@@ -46,9 +46,9 @@ class ContentTypeRegistry
     ];
 
     /**
-     * Built-in content types: key => [URL prefix, label, singular label].
+     * Built-in content types: key => registration args. Their URL prefixes default to the key.
      *
-     * @var array<string, array{string, string, string}>
+     * @var array<string, array{label: string, singularLabel: string}>
      */
     private const BUILT_IN = [
         'seasons'     => ['label' => 'Seasons', 'singularLabel' => 'Season'],
@@ -228,8 +228,11 @@ class ContentTypeRegistry
     }
 
     /**
-     * @param array{string, string, string} $specified [URL prefix, label, singular label]
-     * @param array<string, mixed> $overrides
+     * Merges the defaults derived from the type's name, the args it is registered with, and its
+     * config override, each winning over the one before, keeping only keys in VALID_OVERRIDES.
+     *
+     * @param array<string, mixed> $specified the args the type is registered with
+     * @param array<string, mixed> $overrides the type's `content_types` config override
      * @return array<string, mixed> ContentTypeDefinition constructor arguments, by name
      */
     private function prepareArgsForType(string $type, array $specified, array $overrides = []): array
@@ -238,11 +241,11 @@ class ContentTypeRegistry
 
         $defaultArgs = [
             'label'         => $label,
-            'singularLabel' => $singularLabel ?? $label,
-            'urlPrefix'     => $urlPrefix ?? strtolower(str_replace('_', '-', $type)),
+            'singularLabel' => $label,
+            'urlPrefix'     => strtolower(str_replace('_', '-', $type)),
         ];
 
-        $prepared = array_merge($defaultArgs, $specified, $overrides ?? []);
+        $prepared = array_merge($defaultArgs, $specified, $overrides);
         $prepared = Args::withoutUnknownKeys($prepared, self::VALID_OVERRIDES, 'content type');
         $prepared['name'] = $type;
 
