@@ -66,11 +66,15 @@ class SeoTagBuilderTest extends TestCase
     private function makeBuilder(SiteSettings $siteSettings): SeoTagBuilder
     {
         $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
+        $contentTypes = new ContentTypeRegistry();
+        foreach (['seasons', 'productions', 'people', 'works', 'posts'] as $type) {
+            $contentTypes->register($type);
+        }
 
         return new SeoTagBuilder(
             $siteSettings,
             new TitleResolver(),
-            new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry()),
+            new PermalinkResolver($contentTypes, new TaxonomyRegistry()),
             new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager))
         );
     }

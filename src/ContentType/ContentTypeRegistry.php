@@ -9,11 +9,16 @@ use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 
 /**
- * Holds a definition (see `ContentTypeDefinition`) for every content type: its URL path
- * segment, display labels and whether it has an archive page.
+ * Holds a definition (see `ContentTypeDefinition`) for every registered content type: its URL
+ * path segment, display labels and whether it has an archive page.
  *
- * The built-in types are seeded from `BUILT_IN`, and a site can override their prefix,
- * labels or archive flag via the `content_types` key in `app/config.yaml`. For example, a
+ * The registry starts empty and only provides the mechanism. Core's own types are registered
+ * at bootstrap from `app/core-content-types.php`; plugins and themes call
+ * `register_content_type()` (`app/content-types.php`).
+ *
+ * A site can override any registered type's prefix, labels or archive flag via the
+ * `content_types` key in `app/config.yaml`; the override is applied when the type registers,
+ * whoever registers it. For example, a
  * theatre that calls its season listing "Shows" can serve it under `/shows` with "Shows"
  * as the label everywhere (URLs, menu links, permalinks and page `<title>`s), without any
  * code or template changes:
@@ -46,22 +51,13 @@ class ContentTypeRegistry
     ];
 
     /**
-     * Built-in content types: key => registration args. Their URL prefixes default to the key.
-     *
-     * @var array<string, array{label: string, singularLabel: string}>
-     */
-    private const BUILT_IN = [
-        'seasons'     => ['label' => 'Seasons', 'singularLabel' => 'Season'],
-        'productions' => ['label' => 'Productions', 'singularLabel' => 'Production'],
-        'people'      => ['label' => 'People', 'singularLabel' => 'Person'],
-        'works'       => ['label' => 'Works', 'singularLabel' => 'Work'],
-        'posts'       => ['label' => 'Posts', 'singularLabel' => 'Post'],
-    ];
-
-    /**
      * @var array<string, ContentTypeDefinition>
      */
     private array $contentTypes = [];
+
+    /**
+     * @var array<string, array<string, mixed>> content type => its `content_types` config override
+     */
     private readonly array $overrides;
 
     private readonly UrlPrefixRegistry $urlPrefixes;
@@ -74,15 +70,13 @@ class ContentTypeRegistry
      *        Allowed keys are listed in VALID_OVERRIDES.
      * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `TaxonomyRegistry`, so
      *        a content type and a taxonomy can't use the same prefix; a private one if omitted
-     * @throws InvalidArgumentException for an override that isn't a map, an unknown key, or a
-     *        built-in's prefix that is invalid or already claimed
+     * @throws InvalidArgumentException for an override that isn't a map, or an unknown key
      */
     public function __construct(array $overrides = [], ?UrlPrefixRegistry $urlPrefixes = null)
     {
         $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
 
         $this->overrides = $this->parseOverrides($overrides);
-        $this->registerBuiltIn($overrides);
     }
 
     public static function setInstance(ContentTypeRegistry $instance): void
@@ -159,7 +153,16 @@ class ContentTypeRegistry
         throw new InvalidArgumentException(sprintf('Content type: %s not registered', $type));
     }
 
-    public function register(string $type, array $params = [])
+    /**
+     * Registers a content type, applying its `content_types` config override (which wins over
+     * `$params`) and claiming its URL prefix. Unknown keys in `$params` raise one E_USER_NOTICE
+     * each and are ignored.
+     *
+     * @param array<string, mixed> $params ContentTypeDefinition constructor arguments other than `name`
+     * @throws InvalidArgumentException for an invalid or already registered name, or an invalid or
+     *        already claimed URL prefix
+     */
+    public function register(string $type, array $params = []): ContentTypeDefinition
     {
         if ($this->get($type)) {
             throw new InvalidArgumentException("Content type {$type} is already registered");
@@ -212,19 +215,6 @@ class ContentTypeRegistry
         }
 
         return $overrides;
-    }
-
-    /**
-     * @param array<string, array<string, mixed>> $overrides
-     */
-    private function registerBuiltIn(array $overrides): void
-    {
-        foreach (self::BUILT_IN as $type => $params) {
-            $args = $this->prepareArgsForType($type, $params, $overrides[$type] ?? []);
-            NamingRules::assertUrlPrefix($args['urlPrefix'], self::describe($type));
-            $this->urlPrefixes->claim($args['urlPrefix']);
-            $this->contentTypes[$type] = new ContentTypeDefinition(...$args);
-        }
     }
 
     /**

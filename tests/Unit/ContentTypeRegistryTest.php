@@ -15,17 +15,15 @@ class ContentTypeRegistryTest extends TestCase
 {
     use CapturesUserNotices;
 
-    private const BUILTIN_CONTENT_TYPES = [
-        'seasons',
-        'productions',
-        'works',
-        'people',
-        'posts',
-    ];
+    public function testANewRegistryHasNoTypes(): void
+    {
+        $this->assertSame([], (new ContentTypeRegistry())->all());
+    }
 
     public function testDefaultPrefixMatchesTypeName(): void
     {
         $registry = new ContentTypeRegistry();
+        $registry->register('seasons');
 
         $this->assertSame('seasons', $registry->prefix('seasons'));
     }
@@ -33,6 +31,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testOverridePrefixFromConfig(): void
     {
         $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']]);
+        $registry->register('seasons');
 
         $this->assertSame('shows', $registry->prefix('seasons'));
     }
@@ -47,6 +46,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testDefaultLabelMatchesCapitalizedTypeName(): void
     {
         $registry = new ContentTypeRegistry();
+        $registry->register('seasons');
 
         $this->assertSame('Seasons', $registry->label('seasons'));
     }
@@ -56,6 +56,7 @@ class ContentTypeRegistryTest extends TestCase
         $registry = new ContentTypeRegistry([
             'seasons' => ['urlPrefix' => 'shows', 'label' => 'Our Shows'],
         ]);
+        $registry->register('seasons');
 
         $this->assertSame('shows', $registry->prefix('seasons'));
         $this->assertSame('Our Shows', $registry->label('seasons'));
@@ -71,6 +72,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testArchiveEnabledByDefault(): void
     {
         $registry = new ContentTypeRegistry();
+        $registry->register('seasons');
 
         $this->assertTrue($registry->hasArchive('seasons'));
         $this->assertTrue($registry->hasArchive('widgets'));
@@ -81,6 +83,7 @@ class ContentTypeRegistryTest extends TestCase
         $registry = new ContentTypeRegistry([
             'seasons' => ['hasArchive' => false],
         ]);
+        $registry->register('seasons');
 
         $this->assertFalse($registry->hasArchive('seasons'));
     }
@@ -90,6 +93,7 @@ class ContentTypeRegistryTest extends TestCase
         $registry = new ContentTypeRegistry([
             'seasons' => ['urlPrefix' => 'shows', 'hasArchive' => false],
         ]);
+        $registry->register('seasons');
 
         $this->assertSame('shows', $registry->prefix('seasons'));
         $this->assertFalse($registry->hasArchive('seasons'));
@@ -107,13 +111,12 @@ class ContentTypeRegistryTest extends TestCase
         new ContentTypeRegistry(['seasons' => ['url_prefix' => 'shows']]);
     }
 
-    public function testHasForBuiltInTypes(): void
+    public function testInvalidOverridePrefixThrowsWhenTheTypeRegisters(): void
     {
-        $registry = new ContentTypeRegistry();
+        $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'admin']]);
 
-        foreach (self::BUILTIN_CONTENT_TYPES as $contentType) {
-            $this->assertTrue($registry->has($contentType), "Unknown content type: {$contentType}");
-        }
+        $this->expectException(InvalidArgumentException::class);
+        $registry->register('seasons');
     }
 
     public function testHasForUnknownTypeReturnsFalse(): void
@@ -121,15 +124,6 @@ class ContentTypeRegistryTest extends TestCase
         $registry = new ContentTypeRegistry();
 
         $this->assertFalse($registry->has('foo'));
-    }
-
-    public function testRequireForBuiltInTypes(): void
-    {
-        $registry = new ContentTypeRegistry();
-
-        foreach (self::BUILTIN_CONTENT_TYPES as $type) {
-            $this->assertSame($type, $registry->require($type)->name);
-        }
     }
 
     public function testRequireForUnknownTypeThrowsError(): void
@@ -233,13 +227,6 @@ class ContentTypeRegistryTest extends TestCase
         (new ContentTypeRegistry())->register($name);
     }
 
-    public function testRegisterRejectsABuiltInName(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        (new ContentTypeRegistry())->register('seasons');
-    }
-
     public function testRegisterRejectsANameRegisteredTwice(): void
     {
         $registry = new ContentTypeRegistry();
@@ -273,6 +260,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testRegisterRejectsAPrefixAnotherContentTypeUses(): void
     {
         $registry = new ContentTypeRegistry();
+        $registry->register('seasons');
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -282,6 +270,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testRegisterFailureLeavesTheTypeUnregistered(): void
     {
         $registry = new ContentTypeRegistry();
+        $registry->register('seasons');
 
         try {
             $registry->register('press_release', ['urlPrefix' => 'seasons']);

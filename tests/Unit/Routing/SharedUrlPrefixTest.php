@@ -18,7 +18,7 @@ class SharedUrlPrefixTest extends TestCase
     public function testTaxonomyCannotUseAContentTypesPrefix(): void
     {
         $urlPrefixes = new UrlPrefixRegistry();
-        new ContentTypeRegistry([], $urlPrefixes);
+        (new ContentTypeRegistry([], $urlPrefixes))->register('seasons');
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -29,16 +29,17 @@ class SharedUrlPrefixTest extends TestCase
     {
         $urlPrefixes = new UrlPrefixRegistry();
         (new TaxonomyRegistry($urlPrefixes))->register('genre', ['work'], ['urlPrefix' => 'shows']);
+        $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']], $urlPrefixes);
 
         $this->expectException(InvalidArgumentException::class);
 
-        new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']], $urlPrefixes);
+        $registry->register('seasons');
     }
 
     public function testTaxonomyWithoutArchivesCannotUseAContentTypesPrefix(): void
     {
         $urlPrefixes = new UrlPrefixRegistry();
-        new ContentTypeRegistry([], $urlPrefixes);
+        (new ContentTypeRegistry([], $urlPrefixes))->register('seasons');
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -80,8 +81,10 @@ class SharedUrlPrefixTest extends TestCase
 
     public function testContentTypeOverrideCannotUseAReservedPrefix(): void
     {
+        $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'admin']]);
+
         $this->expectException(InvalidArgumentException::class);
 
-        new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'admin']]);
+        $registry->register('seasons');
     }
 }

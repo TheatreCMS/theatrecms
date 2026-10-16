@@ -21,7 +21,7 @@ class PermalinkResolverTest extends TestCase
     {
         $season = new Season('2026', '2026 Season');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry());
+        $resolver = new PermalinkResolver($this->contentTypes(), new TaxonomyRegistry());
 
         $this->assertSame('/seasons/2026', $resolver->resolve($season));
     }
@@ -53,7 +53,7 @@ class PermalinkResolverTest extends TestCase
         $person->setLastName('Doe');
         $person->setSlug('jane-doe');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry());
+        $resolver = new PermalinkResolver($this->contentTypes(), new TaxonomyRegistry());
 
         $this->assertSame('/people/jane-doe', $resolver->resolve($person));
     }
@@ -91,7 +91,7 @@ class PermalinkResolverTest extends TestCase
         $taxonomies->register('post_category', ['post'], ['urlPrefix' => 'category']);
         $taxonomies->register('genre', ['work']);
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(), $taxonomies);
+        $resolver = new PermalinkResolver($this->contentTypes(), $taxonomies);
 
         $this->assertSame('/category/news', $resolver->resolve(new Term('post_category', 'News', 'news')));
         $this->assertSame('/genre/comedy', $resolver->resolve(new Term('genre', 'Comedy', 'comedy')));
@@ -103,8 +103,24 @@ class PermalinkResolverTest extends TestCase
     private function resolverWithSeasonsAtShows(): PermalinkResolver
     {
         return new PermalinkResolver(
-            new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']]),
+            $this->contentTypes(['seasons' => ['urlPrefix' => 'shows']]),
             new TaxonomyRegistry()
         );
+    }
+
+    /**
+     * A registry with the content types these tests link to.
+     *
+     * @param array<string, array<string, mixed>> $overrides
+     */
+    private function contentTypes(array $overrides = []): ContentTypeRegistry
+    {
+        $registry = new ContentTypeRegistry($overrides);
+
+        foreach (['seasons', 'people', 'works', 'posts'] as $type) {
+            $registry->register($type);
+        }
+
+        return $registry;
     }
 }

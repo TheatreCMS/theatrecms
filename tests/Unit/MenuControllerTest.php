@@ -51,6 +51,9 @@ class MenuControllerTest extends TestCase
         $this->locations = new MenuLocationRegistry();
         $this->locations->register('primary', 'Primary');
         $contentTypes = new ContentTypeRegistry();
+        foreach (['seasons', 'productions', 'posts'] as $type) {
+            $contentTypes->register($type);
+        }
         $this->resolver = new MenuItemResolver(
             $this->pages,
             $this->posts,
