@@ -9,6 +9,8 @@ The application is comprised of the following content types:
 - [[Pages]]
 - [[Posts]]
 
+Plugins and themes can add their own types: see [[Registering Custom Types]].
+
 With these six content types, any performing arts organization can create  a website for their organization:
 
 -  Any one person can be associated with multiple works or productions. For example, the playwright `William Shakespeare` can be associated with both the works `Othello` and `Hamlet`, sharing the Shakespeare person post type information between them.

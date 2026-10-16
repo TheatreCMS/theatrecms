@@ -94,7 +94,7 @@ logged and skipped.
    the start. Keep constructors and these methods free of side effects.
 2. **`register(Container)`** (`app/bootstrap.php`, after core registries exist and before the active
    theme's `functions.php`). Register DI services and hooks, and call core helpers such as
-   `register_taxonomy()`. It runs for both web requests and console scripts. If it succeeds, the
+   `register_content_type()` and `register_taxonomy()`. It runs for both web requests and console scripts. If it succeeds, the
    plugin's capabilities and admin menu items are applied. The `theatrecms/plugins_loaded` action
    fires once every plugin has registered; hook it when your plugin depends on another one.
 3. **`boot(App)`** (`www/index.php`, web requests only). Register routes and middleware. It runs
@@ -115,6 +115,9 @@ logged and skipped.
 
 Themes and plugins can also add sidebar items from code with `register_admin_menu_item()`
 (`app/admin-menu.php`). Core's own sidebar items live in `app/admin-menu-items.php`.
+
+Content types and taxonomies are registered from code too, in `register()`: see
+`documentation/Content Types/Registering Custom Types.md` and `documentation/Theme/taxonomies.md`.
 
 ## Settings
 
