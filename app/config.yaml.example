@@ -12,15 +12,16 @@ site:
 # The active theme, matching a subdirectory name under www/themes.
 theme: default
 
-# Override settings of a content type: a built-in one (seasons, productions, people,
-# works, posts) or one a plugin or theme registers. Each override is a map that
-# may set urlPrefix, label, singularLabel, hasArchive, public, supports and
-# capability; any other key is an error. A urlPrefix override doesn't change the
-# label, so set both when they should match. For example, a theatre whose site
-# calls its season listing "Shows" can serve it under /shows, with "Shows" used in
-# menu links and page <title>s, instead of /seasons and "Seasons":
+# Override settings of a content type, keyed by its singular name: a built-in one
+# (season, production, person, work, post) or one a plugin or theme registers. Each
+# override is a map that may set urlPrefix, label, singularLabel, hasArchive,
+# public, supports and capability; any other key is an error. A urlPrefix override
+# doesn't change the label, so set both when they should match. For example, a
+# theatre whose site calls its season listing "Shows" can serve it under /shows,
+# with "Shows" used in menu links and page <title>s, instead of /seasons and
+# "Seasons":
 # content_types:
-#     seasons:
+#     season:
 #         urlPrefix: shows
 #         label: Shows
 #
@@ -28,7 +29,7 @@ theme: default
 # hasArchive: false to disable one — its listing route 404s, while
 # single-entity routes (e.g. /seasons/{slug}) keep working:
 # content_types:
-#     seasons:
+#     season:
 #         hasArchive: false
 
 # Settings for installed plugins, keyed by package name. Each plugin documents its

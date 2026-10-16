@@ -24,7 +24,7 @@ use TheatreCMS\Routing\UrlPrefixRegistry;
  * code or template changes:
  *
  *     content_types:
- *         seasons:
+ *         season:
  *             urlPrefix: shows
  *             label: Shows
  *
@@ -66,7 +66,7 @@ class ContentTypeRegistry
 
     /**
      * @param array<string, mixed> $overrides content type => override map from config, e.g.
-     *        `['seasons' => ['urlPrefix' => 'shows', 'label' => 'Shows', 'hasArchive' => false]]`.
+     *        `['season' => ['urlPrefix' => 'shows', 'label' => 'Shows', 'hasArchive' => false]]`.
      *        Allowed keys are listed in VALID_OVERRIDES.
      * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `TaxonomyRegistry`, so
      *        a content type and a taxonomy can't use the same prefix; a private one if omitted
@@ -95,30 +95,33 @@ class ContentTypeRegistry
 
     /**
      * Returns the URL path segment (no leading/trailing slash) for a content type.
-     * Unknown types pass through unchanged, so new/custom types work without registration.
+     *
+     * @throws InvalidArgumentException for an unregistered type
      */
     public function prefix(string $type): string
     {
-        return $this->contentTypes[$type]->urlPrefix ?? $type;
+        return $this->require($type)->urlPrefix;
     }
 
     /**
      * Returns the display label (e.g. for page titles and menu links) for a content type.
-     * Unknown types fall back to a capitalized version of the type key.
+     *
+     * @throws InvalidArgumentException for an unregistered type
      */
     public function label(string $type): string
     {
-        return $this->contentTypes[$type]->label ?? ucfirst($type);
+        return $this->require($type)->label;
     }
 
     /**
-     * Whether a content type's archive (listing) page should be served. Defaults to true
-     * for every type, including unknown/custom ones; disabled via `hasArchive: false`
-     * in the type's `content_types` config entry.
+     * Whether a content type's archive (listing) page should be served; turned off by registering
+     * it with, or overriding it to, `hasArchive: false`.
+     *
+     * @throws InvalidArgumentException for an unregistered type
      */
     public function hasArchive(string $type): bool
     {
-        return $this->contentTypes[$type]->hasArchive ?? true;
+        return $this->require($type)->hasArchive;
     }
 
     /**
@@ -243,7 +246,7 @@ class ContentTypeRegistry
     }
 
     /**
-     * How a content type is named in error messages, e.g. `content type "seasons"`.
+     * How a content type is named in error messages, e.g. `content type "season"`.
      */
     private static function describe(string $type): string
     {

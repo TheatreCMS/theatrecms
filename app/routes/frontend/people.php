@@ -14,7 +14,7 @@ use Slim\Views\Twig;
  */
 
 if (isset($app)) {
-    $app->group('/' . $contentTypes->prefix('people'), function ($group) use ($resolver) {
+    $app->group('/' . $contentTypes->prefix('person'), function ($group) use ($resolver) {
         $container = $group->getContainer();
 
         $group->get('/{slug}', function (
@@ -40,7 +40,7 @@ if (isset($app)) {
             /** @var Twig $twig */
             $twig = $container->get(Twig::class);
 
-            return $resolver->renderSingle($twig, $response, 'people', $person, ['person' => $person]);
+            return $resolver->renderSingle($twig, $response, 'person', $person, ['person' => $person], 'people');
         });
     })->add(new RequireTwigMiddleware($app->getContainer()));
 }

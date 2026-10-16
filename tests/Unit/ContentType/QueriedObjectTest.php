@@ -14,7 +14,7 @@ class QueriedObjectTest extends TestCase
 
         $this->assertFalse($queriedObject->isSingle());
         $this->assertFalse($queriedObject->isArchive());
-        $this->assertFalse($queriedObject->isSingular('productions'));
+        $this->assertFalse($queriedObject->isSingular('production'));
         $this->assertFalse($queriedObject->isItem('some-slug'));
         $this->assertFalse($queriedObject->isItemId(1));
     }
@@ -22,8 +22,8 @@ class QueriedObjectTest extends TestCase
     public function testSetSingleMarksIsSingleAndClearsIsArchive(): void
     {
         $queriedObject = new QueriedObject();
-        $queriedObject->setArchive('productions');
-        $queriedObject->setSingle('productions', $this->makeEntity(1, 'hamlet'));
+        $queriedObject->setArchive('production');
+        $queriedObject->setSingle('production', $this->makeEntity(1, 'hamlet'));
 
         $this->assertTrue($queriedObject->isSingle());
         $this->assertFalse($queriedObject->isArchive());
@@ -32,16 +32,16 @@ class QueriedObjectTest extends TestCase
     public function testIsSingularMatchesOnlyTheQueriedType(): void
     {
         $queriedObject = new QueriedObject();
-        $queriedObject->setSingle('productions', $this->makeEntity(1, 'hamlet'));
+        $queriedObject->setSingle('production', $this->makeEntity(1, 'hamlet'));
 
-        $this->assertTrue($queriedObject->isSingular('productions'));
-        $this->assertFalse($queriedObject->isSingular('seasons'));
+        $this->assertTrue($queriedObject->isSingular('production'));
+        $this->assertFalse($queriedObject->isSingular('season'));
     }
 
     public function testIsItemMatchesOnlyTheQueriedSlug(): void
     {
         $queriedObject = new QueriedObject();
-        $queriedObject->setSingle('productions', $this->makeEntity(1, 'hamlet'));
+        $queriedObject->setSingle('production', $this->makeEntity(1, 'hamlet'));
 
         $this->assertTrue($queriedObject->isItem('hamlet'));
         $this->assertFalse($queriedObject->isItem('macbeth'));
@@ -50,7 +50,7 @@ class QueriedObjectTest extends TestCase
     public function testIsItemIdMatchesOnlyTheQueriedId(): void
     {
         $queriedObject = new QueriedObject();
-        $queriedObject->setSingle('productions', $this->makeEntity(42, 'hamlet'));
+        $queriedObject->setSingle('production', $this->makeEntity(42, 'hamlet'));
 
         $this->assertTrue($queriedObject->isItemId(42));
         $this->assertTrue($queriedObject->isItemId('42'));
@@ -60,8 +60,8 @@ class QueriedObjectTest extends TestCase
     public function testSetArchiveMarksIsArchiveAndClearsIsSingle(): void
     {
         $queriedObject = new QueriedObject();
-        $queriedObject->setSingle('productions', $this->makeEntity(1, 'hamlet'));
-        $queriedObject->setArchive('productions');
+        $queriedObject->setSingle('production', $this->makeEntity(1, 'hamlet'));
+        $queriedObject->setArchive('production');
 
         $this->assertTrue($queriedObject->isArchive());
         $this->assertFalse($queriedObject->isSingle());
@@ -72,11 +72,11 @@ class QueriedObjectTest extends TestCase
     public function testIsArchiveMatchesOnlyTheQueriedTypeWhenGiven(): void
     {
         $queriedObject = new QueriedObject();
-        $queriedObject->setArchive('productions');
+        $queriedObject->setArchive('production');
 
         $this->assertTrue($queriedObject->isArchive());
-        $this->assertTrue($queriedObject->isArchive('productions'));
-        $this->assertFalse($queriedObject->isArchive('seasons'));
+        $this->assertTrue($queriedObject->isArchive('production'));
+        $this->assertFalse($queriedObject->isArchive('season'));
     }
 
     public function testSetTermIsAnArchiveButNotAContentTypesArchive(): void
@@ -85,7 +85,7 @@ class QueriedObjectTest extends TestCase
         $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
 
         $this->assertTrue($queriedObject->isArchive());
-        $this->assertFalse($queriedObject->isArchive('works'));
+        $this->assertFalse($queriedObject->isArchive('work'));
         $this->assertFalse($queriedObject->isSingle());
     }
 
@@ -107,11 +107,11 @@ class QueriedObjectTest extends TestCase
         $this->assertFalse($queriedObject->isTax());
 
         $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
-        $queriedObject->setSingle('works', $this->makeEntity(1, 'hamlet'));
+        $queriedObject->setSingle('work', $this->makeEntity(1, 'hamlet'));
         $this->assertFalse($queriedObject->isTax());
 
         $queriedObject->setTerm('genre', new Term('genre', 'Comedy', 'comedy'));
-        $queriedObject->setArchive('works');
+        $queriedObject->setArchive('work');
         $this->assertFalse($queriedObject->isTax());
     }
 

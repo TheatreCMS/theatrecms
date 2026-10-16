@@ -72,7 +72,7 @@ class PermalinkResolverTest extends TestCase
     {
         $resolver = $this->resolverWithSeasonsAtShows();
 
-        $this->assertSame('/shows', $resolver->archiveUrl('seasons'));
+        $this->assertSame('/shows', $resolver->archiveUrl('season'));
     }
 
     public function testExtensionDelegatesToResolver(): void
@@ -82,7 +82,7 @@ class PermalinkResolverTest extends TestCase
         $extension = new PermalinkExtension($this->resolverWithSeasonsAtShows());
 
         $this->assertSame('/shows/2026', $extension->thePermalink($season));
-        $this->assertSame('/shows', $extension->archiveUrl('seasons'));
+        $this->assertSame('/shows', $extension->archiveUrl('season'));
     }
 
     public function testResolvesTermUrlUnderItsTaxonomysUrlPrefix(): void
@@ -98,12 +98,12 @@ class PermalinkResolverTest extends TestCase
     }
 
     /**
-     * A resolver whose `seasons` content type is overridden to serve under `/shows`.
+     * A resolver whose `season` content type is overridden to serve under `/shows`.
      */
     private function resolverWithSeasonsAtShows(): PermalinkResolver
     {
         return new PermalinkResolver(
-            $this->contentTypes(['seasons' => ['urlPrefix' => 'shows']]),
+            $this->contentTypes(['season' => ['urlPrefix' => 'shows']]),
             new TaxonomyRegistry()
         );
     }
@@ -117,8 +117,9 @@ class PermalinkResolverTest extends TestCase
     {
         $registry = new ContentTypeRegistry($overrides);
 
-        foreach (['seasons', 'people', 'works', 'posts'] as $type) {
-            $registry->register($type);
+        $prefixes = ['season' => 'seasons', 'person' => 'people', 'work' => 'works', 'post' => 'posts'];
+        foreach ($prefixes as $type => $urlPrefix) {
+            $registry->register($type, ['urlPrefix' => $urlPrefix]);
         }
 
         return $registry;

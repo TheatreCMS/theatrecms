@@ -100,8 +100,8 @@ return [
             'config' => $config['plugins'] ?? [],
         ],
 
-        // Per-site overrides for the URL prefix of a built-in content type's frontend
-        // routes (e.g. serving Seasons under `/shows` instead of `/seasons`). See
+        // Per-site overrides for a content type's settings, keyed by its singular name (e.g.
+        // serving `season` under `/shows` instead of `/seasons`). See
         // `TheatreCMS\ContentType\ContentTypeRegistry` and the `content_types` key in
         // app/config.yaml.
         'content_types' => $config['content_types'] ?? []

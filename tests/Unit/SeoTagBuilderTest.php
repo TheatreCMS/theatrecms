@@ -67,8 +67,15 @@ class SeoTagBuilderTest extends TestCase
     {
         $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
         $contentTypes = new ContentTypeRegistry();
-        foreach (['seasons', 'productions', 'people', 'works', 'posts'] as $type) {
-            $contentTypes->register($type);
+        $prefixes = [
+            'season' => 'seasons',
+            'production' => 'productions',
+            'person' => 'people',
+            'work' => 'works',
+            'post' => 'posts',
+        ];
+        foreach ($prefixes as $type => $urlPrefix) {
+            $contentTypes->register($type, ['urlPrefix' => $urlPrefix]);
         }
 
         return new SeoTagBuilder(
@@ -180,7 +187,7 @@ class SeoTagBuilderTest extends TestCase
         $production = new Production('Hamlet', $season);
         $production->setSlug('hamlet');
 
-        $seo = $builder->forEntity($production, 'productions');
+        $seo = $builder->forEntity($production, 'production');
 
         // Production has no featured image set in this test, so it falls through to
         // the site default (also unset here), landing on '' and the 'summary' card.
@@ -197,7 +204,7 @@ class SeoTagBuilderTest extends TestCase
         $person->setSlug('jane-doe');
         $person->setHeadshotUrl('/uploads/jane.jpg');
 
-        $seo = $builder->forEntity($person, 'people');
+        $seo = $builder->forEntity($person, 'person');
 
         $this->assertSame('https://example.com/uploads/jane.jpg', $seo->ogImage);
         $this->assertSame('summary_large_image', $seo->twitterCard);
@@ -235,7 +242,7 @@ class SeoTagBuilderTest extends TestCase
         $post = new Post('Breaking News', ContentStatus::PUBLISHED, 'body');
         $post->setSlug('breaking-news');
 
-        $seo = $builder->forEntity($post, 'posts');
+        $seo = $builder->forEntity($post, 'post');
 
         $this->assertSame('article', $seo->ogType);
     }
@@ -290,7 +297,7 @@ class SeoTagBuilderTest extends TestCase
             'name' => 'Theatre',
         ]));
 
-        $seo = $builder->forArchive('productions', 'Productions');
+        $seo = $builder->forArchive('production', 'Productions');
 
         $this->assertSame('Productions — Theatre', $seo->title);
         $this->assertSame('https://example.com/productions', $seo->canonicalUrl);

@@ -26,17 +26,17 @@ class CoreRegistrationsTest extends TestCase
     {
         $registry = $this->registerCoreContentTypes();
 
-        $this->assertSame(['seasons', 'productions', 'people', 'works', 'posts'], array_keys($registry->all()));
-        $this->assertSame('people', $registry->prefix('people'));
-        $this->assertSame('People', $registry->label('people'));
-        $this->assertSame('Person', $registry->require('people')->singularLabel);
+        $this->assertSame(['season', 'production', 'person', 'work', 'post'], array_keys($registry->all()));
+        $this->assertSame('people', $registry->prefix('person'));
+        $this->assertSame('People', $registry->label('person'));
+        $this->assertSame('Person', $registry->require('person')->singularLabel);
     }
 
     public function testConfigOverrideAppliesToACoreContentType(): void
     {
-        $registry = $this->registerCoreContentTypes(['seasons' => ['urlPrefix' => 'shows']]);
+        $registry = $this->registerCoreContentTypes(['season' => ['urlPrefix' => 'shows']]);
 
-        $this->assertSame('shows', $registry->prefix('seasons'));
+        $this->assertSame('shows', $registry->prefix('season'));
     }
 
     public function testCoreTaxonomiesFileRegistersGenreAndPostCategory(): void

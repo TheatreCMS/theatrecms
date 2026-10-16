@@ -23,100 +23,107 @@ class ContentTypeRegistryTest extends TestCase
     public function testDefaultPrefixMatchesTypeName(): void
     {
         $registry = new ContentTypeRegistry();
-        $registry->register('seasons');
+        $registry->register('season');
 
-        $this->assertSame('seasons', $registry->prefix('seasons'));
+        $this->assertSame('season', $registry->prefix('season'));
     }
 
     public function testOverridePrefixFromConfig(): void
     {
-        $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'shows']]);
-        $registry->register('seasons');
+        $registry = new ContentTypeRegistry(['season' => ['urlPrefix' => 'shows']]);
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
-        $this->assertSame('shows', $registry->prefix('seasons'));
-    }
-
-    public function testUnknownTypePassesThroughUnchanged(): void
-    {
-        $registry = new ContentTypeRegistry();
-
-        $this->assertSame('widgets', $registry->prefix('widgets'));
+        $this->assertSame('shows', $registry->prefix('season'));
     }
 
     public function testDefaultLabelMatchesCapitalizedTypeName(): void
     {
         $registry = new ContentTypeRegistry();
-        $registry->register('seasons');
+        $registry->register('season');
 
-        $this->assertSame('Seasons', $registry->label('seasons'));
+        $this->assertSame('Season', $registry->label('season'));
     }
 
     public function testExpandedOverrideSetsIndependentLabel(): void
     {
         $registry = new ContentTypeRegistry([
-            'seasons' => ['urlPrefix' => 'shows', 'label' => 'Our Shows'],
+            'season' => ['urlPrefix' => 'shows', 'label' => 'Our Shows'],
         ]);
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
-        $this->assertSame('shows', $registry->prefix('seasons'));
-        $this->assertSame('Our Shows', $registry->label('seasons'));
-    }
-
-    public function testUnknownTypeLabelFallsBackToCapitalizedType(): void
-    {
-        $registry = new ContentTypeRegistry();
-
-        $this->assertSame('Widgets', $registry->label('widgets'));
+        $this->assertSame('shows', $registry->prefix('season'));
+        $this->assertSame('Our Shows', $registry->label('season'));
     }
 
     public function testArchiveEnabledByDefault(): void
     {
         $registry = new ContentTypeRegistry();
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
-        $this->assertTrue($registry->hasArchive('seasons'));
-        $this->assertTrue($registry->hasArchive('widgets'));
+        $this->assertTrue($registry->hasArchive('season'));
     }
 
     public function testArchiveDisabledFromConfig(): void
     {
         $registry = new ContentTypeRegistry([
-            'seasons' => ['hasArchive' => false],
+            'season' => ['hasArchive' => false],
         ]);
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
-        $this->assertFalse($registry->hasArchive('seasons'));
+        $this->assertFalse($registry->hasArchive('season'));
     }
 
     public function testArchiveDisabledAlongsideUrlPrefixOverride(): void
     {
         $registry = new ContentTypeRegistry([
-            'seasons' => ['urlPrefix' => 'shows', 'hasArchive' => false],
+            'season' => ['urlPrefix' => 'shows', 'hasArchive' => false],
         ]);
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
-        $this->assertSame('shows', $registry->prefix('seasons'));
-        $this->assertFalse($registry->hasArchive('seasons'));
+        $this->assertSame('shows', $registry->prefix('season'));
+        $this->assertFalse($registry->hasArchive('season'));
     }
 
     public function testStringOverrideThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ContentTypeRegistry(['seasons' => 'shows']);
+        new ContentTypeRegistry(['season' => 'shows']);
     }
 
     public function testUnknownOverrideKeyThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new ContentTypeRegistry(['seasons' => ['url_prefix' => 'shows']]);
+        new ContentTypeRegistry(['season' => ['url_prefix' => 'shows']]);
     }
 
     public function testInvalidOverridePrefixThrowsWhenTheTypeRegisters(): void
     {
-        $registry = new ContentTypeRegistry(['seasons' => ['urlPrefix' => 'admin']]);
+        $registry = new ContentTypeRegistry(['season' => ['urlPrefix' => 'admin']]);
 
         $this->expectException(InvalidArgumentException::class);
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function lookupMethods(): array
+    {
+        return [
+            'prefix' => ['prefix'],
+            'label' => ['label'],
+            'hasArchive' => ['hasArchive'],
+        ];
+    }
+
+    #[DataProvider('lookupMethods')]
+    public function testLookupThrowsForAnUnregisteredType(string $method): void
+    {
+        $registry = new ContentTypeRegistry();
+        $registry->register('season', ['urlPrefix' => 'seasons']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $registry->$method('seasons');
     }
 
     public function testHasForUnknownTypeReturnsFalse(): void
@@ -260,7 +267,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testRegisterRejectsAPrefixAnotherContentTypeUses(): void
     {
         $registry = new ContentTypeRegistry();
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
         $this->expectException(InvalidArgumentException::class);
 
@@ -270,7 +277,7 @@ class ContentTypeRegistryTest extends TestCase
     public function testRegisterFailureLeavesTheTypeUnregistered(): void
     {
         $registry = new ContentTypeRegistry();
-        $registry->register('seasons');
+        $registry->register('season', ['urlPrefix' => 'seasons']);
 
         try {
             $registry->register('press_release', ['urlPrefix' => 'seasons']);
