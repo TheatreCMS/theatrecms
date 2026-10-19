@@ -24,8 +24,8 @@ type's `ContentTypeDefinition` (`src/ContentType/`).
 
 | Arg | Default | Meaning |
 |-----|---------|---------|
-| `label` | The name in title case (`Press Release`) | Plural display label, used in page titles and menu links |
-| `singularLabel` | Same as `label` | Singular display label |
+| `label` | `singularLabel` plus "s" (`Press Releases`); set it when that isn't the plural | Plural display label, used in page titles and menu links |
+| `singularLabel` | The name in title case (`Press Release`) | Singular display label |
 | `urlPrefix` | The name with underscores as hyphens (`press-release`) | URL path segment the type is served under |
 | `hasArchive` | `true` | Whether the type gets a public listing page at `/{urlPrefix}` |
 | `public` | `true` | Whether its entries get frontend routes at all |

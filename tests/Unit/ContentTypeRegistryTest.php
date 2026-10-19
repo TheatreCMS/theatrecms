@@ -36,12 +36,27 @@ class ContentTypeRegistryTest extends TestCase
         $this->assertSame('shows', $registry->prefix('season'));
     }
 
-    public function testDefaultLabelMatchesCapitalizedTypeName(): void
+    public function testDefaultLabelIsThePluralOfTheCapitalizedTypeName(): void
     {
         $registry = new ContentTypeRegistry();
         $registry->register('season');
 
-        $this->assertSame('Season', $registry->label('season'));
+        $this->assertSame('Seasons', $registry->label('season'));
+    }
+
+    public function testDefaultSingularLabelComesFromTheNameNotTheLabel(): void
+    {
+        $definition = (new ContentTypeRegistry())->register('media_gallery', ['label' => 'Media Galleries']);
+
+        $this->assertSame('Media Galleries', $definition->label);
+        $this->assertSame('Media Gallery', $definition->singularLabel);
+    }
+
+    public function testDefaultLabelIsThePluralOfTheSpecifiedSingularLabel(): void
+    {
+        $definition = (new ContentTypeRegistry())->register('video_clip', ['singularLabel' => 'Video']);
+
+        $this->assertSame('Videos', $definition->label);
     }
 
     public function testExpandedOverrideSetsIndependentLabel(): void
@@ -159,7 +174,7 @@ class ContentTypeRegistryTest extends TestCase
         $definition = (new ContentTypeRegistry())->register('press_release');
 
         $this->assertSame('press-release', $definition->urlPrefix, 'Prefix');
-        $this->assertSame('Press Release', $definition->label, 'Label');
+        $this->assertSame('Press Releases', $definition->label, 'Label');
         $this->assertSame('Press Release', $definition->singularLabel, 'Singular Label');
     }
 

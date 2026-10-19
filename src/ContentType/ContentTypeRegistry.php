@@ -230,11 +230,11 @@ class ContentTypeRegistry
      */
     private function prepareArgsForType(string $type, array $specified, array $overrides = []): array
     {
-        $label = $specified['label'] ?? ucwords(str_replace('_', ' ', $type));
+        $singularLabel = $specified['singularLabel'] ?? ucwords(str_replace('_', ' ', $type));
 
         $defaultArgs = [
-            'label'         => $label,
-            'singularLabel' => $label,
+            'label'         => "{$singularLabel}s",
+            'singularLabel' => $singularLabel,
             'urlPrefix'     => strtolower(str_replace('_', '-', $type)),
         ];
 
