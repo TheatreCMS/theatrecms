@@ -7,7 +7,8 @@ use TheatreCMS\Taxonomy\TaxonomyRegistry;
  * can be attached to (e.g. ['work']), so admins can manage its terms and assign them.
  *
  * @param string $name machine name: lowercase letters and underscores (see `TheatreCMS\Routing\NamingRules`)
- * @param string[] $contentTypes singular content-type keys, e.g. 'work', 'post'
+ * @param string[] $contentTypes singular content-type keys, e.g. 'work', 'post'; each must already
+ *        be registered
  * @param array{
  *     label?: string,
  *     singularLabel?: string,

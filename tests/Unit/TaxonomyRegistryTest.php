@@ -6,7 +6,9 @@ use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Auth\Capability;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 use TheatreCMS\Tests\Includes\CapturesUserNotices;
 
 /**
@@ -14,11 +16,12 @@ use TheatreCMS\Tests\Includes\CapturesUserNotices;
  */
 class TaxonomyRegistryTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
     use CapturesUserNotices;
 
     public function testRegisterStoresDefinitionWithArgs(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work'], ['label' => 'Genres', 'singularLabel' => 'Genre', 'multiple' => false]);
 
         $genre = $registry->get('genre');
@@ -32,7 +35,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testLabelsDefaultFromNameAndMultipleDefaultsTrue(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $definition = $registry->register('post_category', ['post']);
 
         $this->assertSame('Post Category', $definition->label);
@@ -41,7 +44,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testCapabilityDefaultsToManageOptionsAndCanBeOverridden(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
 
         $this->assertSame(Capability::MANAGE_OPTIONS, $registry->register('audience', ['work'])->capability);
         $this->assertSame(
@@ -52,7 +55,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testUrlPrefixDefaultsToNameWithHyphensAndCanBeOverridden(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
 
         $this->assertSame('post-category', $registry->register('post_category', ['post'])->urlPrefix);
         $this->assertSame('genres', $registry->register('genre', ['work'], ['urlPrefix' => 'genres'])->urlPrefix);
@@ -60,7 +63,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testHasArchiveDefaultsTrueAndCanBeDisabled(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
 
         $this->assertTrue($registry->register('genre', ['work'])->hasArchive);
         $this->assertFalse($registry->register('audience', ['work'], ['hasArchive' => false])->hasArchive);
@@ -71,7 +74,7 @@ class TaxonomyRegistryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('genre', ['work'], ['urlPrefix' => $prefix]);
+        self::taxonomyRegistry()->register('genre', ['work'], ['urlPrefix' => $prefix]);
     }
 
     /**
@@ -90,7 +93,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testRegisterRejectsUrlPrefixUsedByAnotherTaxonomy(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('post_category', ['post'], ['urlPrefix' => 'category']);
 
         $this->expectException(InvalidArgumentException::class);
@@ -99,7 +102,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testTaxonomiesWithoutArchivesStillClaimTheirUrlPrefix(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('post_category', ['post'], ['urlPrefix' => 'category', 'hasArchive' => false]);
 
         $this->expectException(InvalidArgumentException::class);
@@ -110,12 +113,12 @@ class TaxonomyRegistryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('genre', ['work'], ['urlPrefix' => 'admin', 'hasArchive' => false]);
+        self::taxonomyRegistry()->register('genre', ['work'], ['urlPrefix' => 'admin', 'hasArchive' => false]);
     }
 
     public function testRegisterRejectsANameRegisteredTwice(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work']);
 
         $this->expectException(InvalidArgumentException::class);
@@ -124,7 +127,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testFindByUrlPrefix(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('post_category', ['post'], ['urlPrefix' => 'category']);
 
         $this->assertSame('post_category', $registry->findByUrlPrefix('category')?->name);
@@ -133,7 +136,7 @@ class TaxonomyRegistryTest extends TestCase
 
     public function testForContentTypeReturnsOnlyApplicableTaxonomies(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work']);
         $registry->register('post_category', ['post']);
         $registry->register('audience', ['work', 'production']);
@@ -146,14 +149,14 @@ class TaxonomyRegistryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->require('genre');
+        self::taxonomyRegistry()->require('genre');
     }
 
     public function testRegisterRejectsInvalidName(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('Bad Name', ['work']);
+        self::taxonomyRegistry()->register('Bad Name', ['work']);
     }
 
     public function testRegisterAcceptsNamesLongerThan32Characters(): void
@@ -161,19 +164,19 @@ class TaxonomyRegistryTest extends TestCase
         $name = 'production_department_and_crew_role';
 
         $this->assertGreaterThan(32, strlen($name));
-        $this->assertSame($name, (new TaxonomyRegistry())->register($name, ['production'])->name);
+        $this->assertSame($name, self::taxonomyRegistry()->register($name, ['production'])->name);
     }
 
     public function testRegisterRejectsDigitsInName(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('genre_2026', ['work']);
+        self::taxonomyRegistry()->register('genre_2026', ['work']);
     }
 
     public function testRegisterIgnoresUnknownArgsWithOneNoticeEach(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
 
         [$definition, $levels] = $this->captureUserNotices(
             static fn() => $registry->register('genre', ['work'], ['hierarchy' => true, 'icon' => 'tag'])
@@ -187,7 +190,7 @@ class TaxonomyRegistryTest extends TestCase
     public function testRegisterWithOnlyKnownArgsRaisesNoNotice(): void
     {
         [, $levels] = $this->captureUserNotices(
-            static fn() => (new TaxonomyRegistry())->register('genre', ['work'], ['label' => 'Genres'])
+            static fn() => self::taxonomyRegistry()->register('genre', ['work'], ['label' => 'Genres'])
         );
 
         $this->assertSame([], $levels);
@@ -197,6 +200,22 @@ class TaxonomyRegistryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new TaxonomyRegistry())->register('genre', []);
+        self::taxonomyRegistry()->register('genre', []);
+    }
+
+    public function testRegisterRejectsAnUnregisteredContentType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        self::taxonomyRegistry()->register('genre', ['work', 'venue']);
+    }
+
+    public function testRegisterAcceptsAContentTypeRegisteredAfterTheRegistryWasBuilt(): void
+    {
+        $contentTypes = new ContentTypeRegistry();
+        $registry = new TaxonomyRegistry($contentTypes);
+        $contentTypes->register('audio_clip');
+
+        $this->assertSame(['audio_clip'], $registry->register('audio_category', ['audio_clip'])->contentTypes);
     }
 }

@@ -21,7 +21,9 @@ Core's own taxonomies (`genre` for works, `post_category` for posts) are registe
 - **Names** are lowercase letters and underscores, with no length limit; registering a name
   twice throws.
 - **`$contentTypes`** are singular content-type names (`'work'`, `'press_release'`); at least one
-  is required.
+  is required, and each must already be registered, or `register_taxonomy()` throws. Register a
+  plugin's content types before its taxonomies; a taxonomy for another plugin's content type
+  belongs in a `theatrecms/plugins_loaded` hook.
 - **Unknown args** raise an `E_USER_NOTICE` each and are ignored; registration continues.
 
 ### URLs

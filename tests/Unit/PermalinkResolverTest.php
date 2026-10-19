@@ -10,18 +10,20 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Term;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\ContentType\PermalinkResolver;
 use TheatreCMS\Twig\PermalinkExtension;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 class PermalinkResolverTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     public function testResolvesSeasonUrlUnderDefaultPrefix(): void
     {
         $season = new Season('2026', '2026 Season');
 
-        $resolver = new PermalinkResolver($this->contentTypes(), new TaxonomyRegistry());
+        $resolver = new PermalinkResolver($this->contentTypes(), self::taxonomyRegistry());
 
         $this->assertSame('/seasons/2026', $resolver->resolve($season));
     }
@@ -53,7 +55,7 @@ class PermalinkResolverTest extends TestCase
         $person->setLastName('Doe');
         $person->setSlug('jane-doe');
 
-        $resolver = new PermalinkResolver($this->contentTypes(), new TaxonomyRegistry());
+        $resolver = new PermalinkResolver($this->contentTypes(), self::taxonomyRegistry());
 
         $this->assertSame('/people/jane-doe', $resolver->resolve($person));
     }
@@ -87,7 +89,7 @@ class PermalinkResolverTest extends TestCase
 
     public function testResolvesTermUrlUnderItsTaxonomysUrlPrefix(): void
     {
-        $taxonomies = new TaxonomyRegistry();
+        $taxonomies = self::taxonomyRegistry();
         $taxonomies->register('post_category', ['post'], ['urlPrefix' => 'category']);
         $taxonomies->register('genre', ['work']);
 
@@ -104,7 +106,7 @@ class PermalinkResolverTest extends TestCase
     {
         return new PermalinkResolver(
             $this->contentTypes(['season' => ['urlPrefix' => 'shows']]),
-            new TaxonomyRegistry()
+            self::taxonomyRegistry()
         );
     }
 

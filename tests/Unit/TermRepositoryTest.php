@@ -9,13 +9,15 @@ use Doctrine\ORM\Tools\SchemaTool;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Repositories\TermRepository;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 /**
  * @coversDefaultClass \TheatreCMS\Repositories\TermRepository
  */
 class TermRepositoryTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     private EntityManager $em;
     private TermRepository $repository;
 
@@ -34,7 +36,7 @@ class TermRepositoryTest extends TestCase
         $schemaTool = new SchemaTool($this->em);
         $schemaTool->createSchema($this->em->getMetadataFactory()->getAllMetadata());
 
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work']);
         $registry->register('post_category', ['post']);
 

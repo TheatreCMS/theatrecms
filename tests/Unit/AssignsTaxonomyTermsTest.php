@@ -9,14 +9,16 @@ use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Traits\AssignsTaxonomyTerms;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 /**
  * @coversDefaultClass \TheatreCMS\Traits\AssignsTaxonomyTerms
  */
 class AssignsTaxonomyTermsTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     private TermRepository $terms;
     private TermRelationshipRepository $relationships;
     private object $subject;
@@ -32,7 +34,7 @@ class AssignsTaxonomyTermsTest extends TestCase
         $em = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]), $config);
         (new SchemaTool($em))->createSchema($em->getMetadataFactory()->getAllMetadata());
 
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work']);
 
         $this->terms = new TermRepository($em, $registry);

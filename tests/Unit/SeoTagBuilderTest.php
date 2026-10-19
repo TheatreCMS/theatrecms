@@ -14,7 +14,6 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\ContentType\PermalinkResolver;
@@ -23,9 +22,12 @@ use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 class SeoTagBuilderTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     /** @var string[] */
     private array $tempFiles = [];
 
@@ -81,7 +83,7 @@ class SeoTagBuilderTest extends TestCase
         return new SeoTagBuilder(
             $siteSettings,
             new TitleResolver(),
-            new PermalinkResolver($contentTypes, new TaxonomyRegistry()),
+            new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
             new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager))
         );
     }

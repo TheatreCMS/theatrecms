@@ -339,7 +339,7 @@ class ServiceRegistrar
         $container->set(MenuLocationRegistry::class, static fn(): MenuLocationRegistry => new MenuLocationRegistry());
 
         $container->set(TaxonomyRegistry::class, static function (ContainerInterface $c): TaxonomyRegistry {
-            return new TaxonomyRegistry($c->get(UrlPrefixRegistry::class));
+            return new TaxonomyRegistry($c->get(ContentTypeRegistry::class), $c->get(UrlPrefixRegistry::class));
         });
 
         $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {

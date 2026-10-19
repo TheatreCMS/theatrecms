@@ -41,7 +41,7 @@ class CoreRegistrationsTest extends TestCase
 
     public function testCoreTaxonomiesFileRegistersGenreAndPostCategory(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = new TaxonomyRegistry($this->registerCoreContentTypes());
         TaxonomyRegistry::setInstance($registry);
 
         require self::APP_DIR . '/core-taxonomies.php';
@@ -53,8 +53,8 @@ class CoreRegistrationsTest extends TestCase
     public function testCoreContentTypesAndTaxonomiesCanShareOneSetOfPrefixes(): void
     {
         $urlPrefixes = new UrlPrefixRegistry();
-        $this->registerCoreContentTypes([], $urlPrefixes);
-        TaxonomyRegistry::setInstance(new TaxonomyRegistry($urlPrefixes));
+        $contentTypes = $this->registerCoreContentTypes([], $urlPrefixes);
+        TaxonomyRegistry::setInstance(new TaxonomyRegistry($contentTypes, $urlPrefixes));
 
         require self::APP_DIR . '/core-taxonomies.php';
 
