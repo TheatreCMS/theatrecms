@@ -73,10 +73,10 @@ class Entry
         $this->status = $args['status'];
         $this->createdAt = $args['createdAt'];
         $this->modifiedAt = $args['modifiedAt'];
-
-        if ($args['status'] === ContentStatus::PUBLISHED) {
-            $this->publishedAt = new DateTimeImmutable();
-        }
+        $this->content = $args['content'];
+        $this->excerpt = $args['excerpt'];
+        $this->publishedAt = $args['publishedAt']
+            ?? ($args['status'] === ContentStatus::PUBLISHED ? new DateTimeImmutable() : null);
     }
 
     public function getId(): int
