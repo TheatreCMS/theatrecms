@@ -209,7 +209,11 @@ class ServiceRegistrar
 
         $container->set(ContentTypeRegistry::class, static function (ContainerInterface $c): ContentTypeRegistry {
             $settings = $c->get('settings');
-            return new ContentTypeRegistry($settings['content_types'] ?? [], $c->get(UrlPrefixRegistry::class));
+            return new ContentTypeRegistry(
+                $settings['content_types'] ?? [],
+                $c->get(UrlPrefixRegistry::class),
+                $c->get(AdminMenuRegistry::class),
+            );
         });
 
         $container->set(PermalinkResolver::class, static function (ContainerInterface $c): PermalinkResolver {

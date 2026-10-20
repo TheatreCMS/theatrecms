@@ -63,6 +63,7 @@ class ContentTypeRegistry
     private readonly array $overrides;
 
     private readonly UrlPrefixRegistry $urlPrefixes;
+    private readonly AdminMenuRegistry $adminMenu;
 
     private static ?ContentTypeRegistry $instance = null;
 
@@ -74,9 +75,14 @@ class ContentTypeRegistry
      *        a content type and a taxonomy can't use the same prefix; a private one if omitted
      * @throws InvalidArgumentException for an override that isn't a map, or an unknown key
      */
-    public function __construct(array $overrides = [], ?UrlPrefixRegistry $urlPrefixes = null)
+    public function __construct(
+        array $overrides = [],
+        ?UrlPrefixRegistry $urlPrefixes = null,
+        ?AdminMenuRegistry $adminMenu = null
+    )
     {
         $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
+        $this->adminMenu = $adminMenu ?? new AdminMenuRegistry();
 
         $this->overrides = $this->parseOverrides($overrides);
     }
@@ -169,14 +175,7 @@ class ContentTypeRegistry
      */
     public function register(string $type, array $params = []): ContentTypeDefinition
     {
-        if ($this->get($type)) {
-            throw new InvalidArgumentException("Content type {$type} is already registered");
-        }
-
-        if (isset($params['name'])) {
-            unset($params['name']);
-            trigger_error('Specifying a name different from the "type" property is not supported');
-        }
+        $this->assertRegistrationArgs($type, $params);
 
         $prepared = $this->prepareArgsForType($type, $params, $this->overrides[$type] ?? []);
 
@@ -189,8 +188,9 @@ class ContentTypeRegistry
         $this->contentTypes[$type] = $def;
 
         // Add the content item to the admin menu
-        AdminMenuRegistry::getInstance()->add(
-            new AdminMenuItem($def->label, '#', $def->capability, 'content', 10));
+        $slug = $def->adminSlug();
+        $this->adminMenu->add(
+            new AdminMenuItem($def->label, "admin/{$slug}", $def->capability, 'Content', 10));
 
         return $def;
     }
@@ -236,6 +236,8 @@ class ContentTypeRegistry
      */
     private function prepareArgsForType(string $type, array $specified, array $overrides = []): array
     {
+        unset($specified['name']);
+        
         $singularLabel = $specified['singularLabel'] ?? ucwords(str_replace('_', ' ', $type));
 
         $defaultArgs = [
@@ -257,5 +259,21 @@ class ContentTypeRegistry
     private static function describe(string $type): string
     {
         return sprintf('content type "%s"', $type);
+    }
+
+    /**
+     * Verifies that the registration arguments for a content type are valid.
+     * 
+     * @throws InvalidArgumentException if the arguments are invalid.
+     */
+    private function assertRegistrationArgs(string $type, array $args): void
+    {
+        if ($this->get($type)) {
+            throw new InvalidArgumentException("Content type {$type} is already registered");
+        }
+
+        if (isset($args['name'])) {
+            trigger_error('Specifying a name different from the "type" property is not supported');
+        }
     }
 }
