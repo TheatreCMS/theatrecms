@@ -102,6 +102,10 @@ $imageSizeRegistry = $container->get(ImageSizeRegistry::class);
 ImageSizeRegistry::setInstance($imageSizeRegistry);
 register_image_size('admin-thumbnail', 300, 300, true);
 
+$adminMenuRegistry = $container->get(AdminMenuRegistry::class);
+AdminMenuRegistry::setInstance($adminMenuRegistry);
+require_once APP_ROOT . '/app/admin-menu-items.php';
+
 $contentTypeRegistry = $container->get(ContentTypeRegistry::class);
 ContentTypeRegistry::setInstance($contentTypeRegistry);
 require_once APP_ROOT . '/app/core-content-types.php';
@@ -112,10 +116,6 @@ require_once APP_ROOT . '/app/core-taxonomies.php';
 
 $queriedObject = $container->get(QueriedObject::class);
 QueriedObject::setInstance($queriedObject);
-
-$adminMenuRegistry = $container->get(AdminMenuRegistry::class);
-AdminMenuRegistry::setInstance($adminMenuRegistry);
-require_once APP_ROOT . '/app/admin-menu-items.php';
 
 $scheduledTaskRegistry = $container->get(ScheduledTaskRegistry::class);
 ScheduledTaskRegistry::setInstance($scheduledTaskRegistry);
