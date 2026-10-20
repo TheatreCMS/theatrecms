@@ -4,6 +4,8 @@ namespace TheatreCMS\ContentType;
 
 use InvalidArgumentException;
 use RuntimeException;
+use TheatreCMS\Admin\AdminMenuItem;
+use TheatreCMS\Admin\AdminMenuRegistry;
 use TheatreCMS\Helpers\Args;
 use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
@@ -185,6 +187,10 @@ class ContentTypeRegistry
 
         $def = new ContentTypeDefinition(...$prepared);
         $this->contentTypes[$type] = $def;
+
+        // Add the content item to the admin menu
+        AdminMenuRegistry::getInstance()->add(
+            new AdminMenuItem($def->label, '#', $def->capability, 'content', 10));
 
         return $def;
     }
