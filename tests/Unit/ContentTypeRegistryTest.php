@@ -173,9 +173,9 @@ class ContentTypeRegistryTest extends TestCase
     {
         $definition = (new ContentTypeRegistry())->register('press_release');
 
-        $this->assertSame('press-release', $definition->urlPrefix, 'Prefix');
-        $this->assertSame('Press Releases', $definition->label, 'Label');
-        $this->assertSame('Press Release', $definition->singularLabel, 'Singular Label');
+        $this->assertSame('press-release',  $definition->urlPrefix,     'Prefix');
+        $this->assertSame('Press Releases', $definition->label,         'Label');
+        $this->assertSame('Press Release',  $definition->singularLabel, 'Singular Label');
     }
 
     public function testRegisterUsesDefinitionDefaultsForOtherFields(): void
