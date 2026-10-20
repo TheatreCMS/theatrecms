@@ -34,12 +34,19 @@ final class ContentTypeDefinition
         public readonly bool $hasArchive = true,
         public readonly string $capability = Capability::EDIT_POSTS,
         public readonly bool $public = true,
-        public readonly array $supports = [],
+        public readonly array $supports = [
+            'editor',
+        ],
     ) {
     }
 
     public function supports(string $feature): bool
     {
         return in_array($feature, $this->supports);
+    }
+
+    public function adminSlug(): string
+    {
+        return strtolower(str_replace(' ', '_', $this->label));
     }
 }

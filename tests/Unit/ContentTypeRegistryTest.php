@@ -184,7 +184,7 @@ class ContentTypeRegistryTest extends TestCase
 
         $this->assertTrue($definition->hasArchive);
         $this->assertTrue($definition->public);
-        $this->assertSame([], $definition->supports);
+        $this->assertSame(['editor'], $definition->supports);
         $this->assertSame(Capability::EDIT_POSTS, $definition->capability);
     }
 
