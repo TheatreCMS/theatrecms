@@ -79,8 +79,7 @@ class ContentTypeRegistry
         array $overrides = [],
         ?UrlPrefixRegistry $urlPrefixes = null,
         ?AdminMenuRegistry $adminMenu = null
-    )
-    {
+    ) {
         $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
         $this->adminMenu = $adminMenu ?? new AdminMenuRegistry();
 
@@ -190,7 +189,8 @@ class ContentTypeRegistry
         // Add the content item to the admin menu
         $slug = $def->adminSlug();
         $this->adminMenu->add(
-            new AdminMenuItem($def->label, "admin/{$slug}", $def->capability, 'Content', 10));
+            new AdminMenuItem($def->label, $slug, $def->capability, 'Content', 10)
+        );
 
         return $def;
     }
@@ -237,7 +237,7 @@ class ContentTypeRegistry
     private function prepareArgsForType(string $type, array $specified, array $overrides = []): array
     {
         unset($specified['name']);
-        
+
         $singularLabel = $specified['singularLabel'] ?? ucwords(str_replace('_', ' ', $type));
 
         $defaultArgs = [
@@ -263,7 +263,7 @@ class ContentTypeRegistry
 
     /**
      * Verifies that the registration arguments for a content type are valid.
-     * 
+     *
      * @throws InvalidArgumentException if the arguments are invalid.
      */
     private function assertRegistrationArgs(string $type, array $args): void

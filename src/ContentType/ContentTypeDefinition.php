@@ -3,6 +3,7 @@
 namespace TheatreCMS\ContentType;
 
 use TheatreCMS\Auth\Capability;
+use TheatreCMS\Controllers\BaseController;
 
 /**
  * A registered content type (e.g. `press_release`): its machine name, how its URLs are
@@ -47,6 +48,7 @@ final class ContentTypeDefinition
 
     public function adminSlug(): string
     {
-        return strtolower(str_replace(' ', '_', $this->label));
+        $path = "admin/entries/";
+        return $path . strtolower(str_replace(' ', '_', $this->label));
     }
 }
