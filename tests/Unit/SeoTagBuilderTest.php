@@ -14,7 +14,6 @@ use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\Text\EditorJsHtmlConverter;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\ContentType\PermalinkResolver;
@@ -23,9 +22,12 @@ use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\SeoTagBuilder;
 use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 class SeoTagBuilderTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     /** @var string[] */
     private array $tempFiles = [];
 
@@ -66,11 +68,22 @@ class SeoTagBuilderTest extends TestCase
     private function makeBuilder(SiteSettings $siteSettings): SeoTagBuilder
     {
         $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
+        $contentTypes = new ContentTypeRegistry();
+        $prefixes = [
+            'season' => 'seasons',
+            'production' => 'productions',
+            'person' => 'people',
+            'work' => 'works',
+            'post' => 'posts',
+        ];
+        foreach ($prefixes as $type => $urlPrefix) {
+            $contentTypes->register($type, ['urlPrefix' => $urlPrefix]);
+        }
 
         return new SeoTagBuilder(
             $siteSettings,
             new TitleResolver(),
-            new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry()),
+            new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
             new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager))
         );
     }
@@ -176,7 +189,7 @@ class SeoTagBuilderTest extends TestCase
         $production = new Production('Hamlet', $season);
         $production->setSlug('hamlet');
 
-        $seo = $builder->forEntity($production, 'productions');
+        $seo = $builder->forEntity($production, 'production');
 
         // Production has no featured image set in this test, so it falls through to
         // the site default (also unset here), landing on '' and the 'summary' card.
@@ -193,7 +206,7 @@ class SeoTagBuilderTest extends TestCase
         $person->setSlug('jane-doe');
         $person->setHeadshotUrl('/uploads/jane.jpg');
 
-        $seo = $builder->forEntity($person, 'people');
+        $seo = $builder->forEntity($person, 'person');
 
         $this->assertSame('https://example.com/uploads/jane.jpg', $seo->ogImage);
         $this->assertSame('summary_large_image', $seo->twitterCard);
@@ -231,7 +244,7 @@ class SeoTagBuilderTest extends TestCase
         $post = new Post('Breaking News', ContentStatus::PUBLISHED, 'body');
         $post->setSlug('breaking-news');
 
-        $seo = $builder->forEntity($post, 'posts');
+        $seo = $builder->forEntity($post, 'post');
 
         $this->assertSame('article', $seo->ogType);
     }
@@ -286,7 +299,7 @@ class SeoTagBuilderTest extends TestCase
             'name' => 'Theatre',
         ]));
 
-        $seo = $builder->forArchive('productions', 'Productions');
+        $seo = $builder->forArchive('production', 'Productions');
 
         $this->assertSame('Productions — Theatre', $seo->title);
         $this->assertSame('https://example.com/productions', $seo->canonicalUrl);

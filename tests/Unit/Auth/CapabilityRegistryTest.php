@@ -57,7 +57,6 @@ class CapabilityRegistryTest extends TestCase
     public function testGetInstanceThrowsWhenNotInitialized(): void
     {
         $reflection = new \ReflectionProperty(CapabilityRegistry::class, 'instance');
-        $reflection->setAccessible(true);
         $reflection->setValue(null, null);
 
         $this->expectException(\RuntimeException::class);

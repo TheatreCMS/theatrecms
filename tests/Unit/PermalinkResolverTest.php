@@ -10,18 +10,20 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Term;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\ContentType\PermalinkResolver;
 use TheatreCMS\Twig\PermalinkExtension;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 class PermalinkResolverTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     public function testResolvesSeasonUrlUnderDefaultPrefix(): void
     {
         $season = new Season('2026', '2026 Season');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry());
+        $resolver = new PermalinkResolver($this->contentTypes(), self::taxonomyRegistry());
 
         $this->assertSame('/seasons/2026', $resolver->resolve($season));
     }
@@ -30,7 +32,7 @@ class PermalinkResolverTest extends TestCase
     {
         $season = new Season('2026', '2026 Season');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/shows/2026', $resolver->resolve($season));
     }
@@ -41,7 +43,7 @@ class PermalinkResolverTest extends TestCase
         $production = new Production('Hamlet', $season);
         $production->setSlug('hamlet');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/shows/2026/hamlet', $resolver->resolve($production));
     }
@@ -53,7 +55,7 @@ class PermalinkResolverTest extends TestCase
         $person->setLastName('Doe');
         $person->setSlug('jane-doe');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(), new TaxonomyRegistry());
+        $resolver = new PermalinkResolver($this->contentTypes(), self::taxonomyRegistry());
 
         $this->assertSame('/people/jane-doe', $resolver->resolve($person));
     }
@@ -63,37 +65,65 @@ class PermalinkResolverTest extends TestCase
         $page = new Page('About', \TheatreCMS\Enums\ContentStatus::PUBLISHED, 'body');
         $page->setSlug('about');
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
         $this->assertSame('/about', $resolver->resolve($page));
     }
 
     public function testArchiveUrlUsesRewrittenPrefix(): void
     {
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry());
+        $resolver = $this->resolverWithSeasonsAtShows();
 
-        $this->assertSame('/shows', $resolver->archiveUrl('seasons'));
+        $this->assertSame('/shows', $resolver->archiveUrl('season'));
     }
 
     public function testExtensionDelegatesToResolver(): void
     {
         $season = new Season('2026', '2026 Season');
 
-        $extension = new PermalinkExtension(new PermalinkResolver(new ContentTypeRegistry(['seasons' => 'shows']), new TaxonomyRegistry()));
+        $extension = new PermalinkExtension($this->resolverWithSeasonsAtShows());
 
         $this->assertSame('/shows/2026', $extension->thePermalink($season));
-        $this->assertSame('/shows', $extension->archiveUrl('seasons'));
+        $this->assertSame('/shows', $extension->archiveUrl('season'));
     }
 
     public function testResolvesTermUrlUnderItsTaxonomysUrlPrefix(): void
     {
-        $taxonomies = new TaxonomyRegistry();
-        $taxonomies->register('post_category', ['post'], ['url_prefix' => 'category']);
+        $taxonomies = self::taxonomyRegistry();
+        $taxonomies->register('post_category', ['post'], ['urlPrefix' => 'category']);
         $taxonomies->register('genre', ['work']);
 
-        $resolver = new PermalinkResolver(new ContentTypeRegistry(), $taxonomies);
+        $resolver = new PermalinkResolver($this->contentTypes(), $taxonomies);
 
         $this->assertSame('/category/news', $resolver->resolve(new Term('post_category', 'News', 'news')));
         $this->assertSame('/genre/comedy', $resolver->resolve(new Term('genre', 'Comedy', 'comedy')));
+    }
+
+    /**
+     * A resolver whose `season` content type is overridden to serve under `/shows`.
+     */
+    private function resolverWithSeasonsAtShows(): PermalinkResolver
+    {
+        return new PermalinkResolver(
+            $this->contentTypes(['season' => ['urlPrefix' => 'shows']]),
+            self::taxonomyRegistry()
+        );
+    }
+
+    /**
+     * A registry with the content types these tests link to.
+     *
+     * @param array<string, array<string, mixed>> $overrides
+     */
+    private function contentTypes(array $overrides = []): ContentTypeRegistry
+    {
+        $registry = new ContentTypeRegistry($overrides);
+
+        $prefixes = ['season' => 'seasons', 'person' => 'people', 'work' => 'works', 'post' => 'posts'];
+        foreach ($prefixes as $type => $urlPrefix) {
+            $registry->register($type, ['urlPrefix' => $urlPrefix]);
+        }
+
+        return $registry;
     }
 }

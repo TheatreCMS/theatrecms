@@ -104,14 +104,18 @@ class TemplateResolver
      *   (not nested under `page`) specifically so it survives routes like `pages/{slug}`
      *   that override `page` with the raw entity itself.
      *
+     * @param string $type the content-type key, as `QueriedObject` and `SeoTagBuilder` see it
      * @param array<string, mixed> $context
+     * @param string|null $templateDir the theme template directory, when it differs from `$type`;
+     *        exists only while theme template directories are plural (`productions/`) and keys singular
      */
     public function renderSingle(
         Twig $twig,
         Response $response,
         string $type,
         object $entity,
-        array $context = []
+        array $context = [],
+        ?string $templateDir = null
     ): Response {
         $slug = method_exists($entity, 'getSlug') ? (string) $entity->getSlug() : '';
         $context += [
@@ -122,7 +126,7 @@ class TemplateResolver
 
         $this->queriedObject->setSingle($type, $entity);
 
-        return $twig->render($response, $this->resolveSingle($twig, $type, $slug), $context);
+        return $twig->render($response, $this->resolveSingle($twig, $templateDir ?? $type, $slug), $context);
     }
 
     /**
@@ -137,8 +141,11 @@ class TemplateResolver
      * - `seo` (a `SeoMeta` value object built by `SeoTagBuilder`, from the archive's
      *   type/label rather than a single entity).
      *
+     * @param string $type the content-type key, as `QueriedObject` and `SeoTagBuilder` see it
      * @param array<int, object> $items
      * @param array<string, mixed> $context
+     * @param string|null $templateDir the theme template directory, when it differs from `$type`
+     *        (see `renderSingle()`)
      */
     public function renderList(
         Twig $twig,
@@ -146,7 +153,8 @@ class TemplateResolver
         string $type,
         string $pageTitle,
         array $items,
-        array $context = []
+        array $context = [],
+        ?string $templateDir = null
     ): Response {
         $context += [
             'posts' => $items,
@@ -156,7 +164,7 @@ class TemplateResolver
 
         $this->queriedObject->setArchive($type);
 
-        return $twig->render($response, $this->resolveList($twig, $type), $context);
+        return $twig->render($response, $this->resolveList($twig, $templateDir ?? $type), $context);
     }
 
     /**

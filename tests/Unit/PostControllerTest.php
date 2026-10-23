@@ -13,13 +13,14 @@ use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 #[AllowMockObjectsWithoutExpectations]
 class PostControllerTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
     use UsesSqliteEntityManager;
     use RendersControllerViews;
 
@@ -32,7 +33,7 @@ class PostControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->em = $this->createSqliteEntityManager();
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('post_category', ['post'], ['multiple' => false]);
         $this->meta = new ContentMetaRepository($this->em);
         $this->posts = new PostRepository($this->em, $this->meta);

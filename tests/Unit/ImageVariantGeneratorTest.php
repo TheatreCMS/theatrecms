@@ -5,6 +5,7 @@ namespace TheatreCMS\Tests\Unit;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Intervention\Image\ImageManager;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Models\MediaVariant;
@@ -15,6 +16,7 @@ use TheatreCMS\Theme\ImageSizeRegistry;
 /**
  * @coversDefaultClass \TheatreCMS\Services\ImageVariantGenerator
  */
+#[AllowMockObjectsWithoutExpectations]
 class ImageVariantGeneratorTest extends TestCase
 {
     private string $uploadsDir;
@@ -38,7 +40,6 @@ class ImageVariantGeneratorTest extends TestCase
         $this->sourcePath = $this->uploadsDir . '/source.jpg';
         $image = imagecreatetruecolor(400, 300);
         imagejpeg($image, $this->sourcePath);
-        imagedestroy($image);
 
         $this->registry = new ImageSizeRegistry();
         $this->registry->register('square-crop', 100, 100, true);

@@ -23,11 +23,11 @@ frontend content route funnels through) right before the template renders.
 On a term archive `is_archive()` is also true, as in WordPress, but `is_archive($typeSlug)`
 is false for every content type, even when the term's items are all of one type.
 
-`$typeSlug` matches the raw content-type string each route passes to `TemplateResolver` (e.g.
-`'seasons'`, `'productions'`, `'people'`, `'works'`, `'pages'`) — not a URL segment. A
-production is always type `'productions'` even though it's served nested under
-`/seasons/{slug}/{productionSlug}`, so `is_singular('productions')` is true there regardless of
-the URL shape.
+`$typeSlug` is the singular content-type key each route passes to `TemplateResolver` (e.g.
+`'season'`, `'production'`, `'person'`, `'work'`, `'page'`) — not a URL segment and not the
+(plural) theme template directory. A production is always type `'production'` even though it's
+served nested under `/seasons/{slug}/{productionSlug}`, so `is_singular('production')` is true
+there regardless of the URL shape.
 
 ### Usage
 
@@ -36,7 +36,7 @@ hook callbacks and other theme code) and as Twig functions:
 
 ```php
 add_filter('theatrecms/schedule_details_footer', function (string $value) {
-    if (is_singular('productions')) {
+    if (is_singular('production')) {
         $value .= '<p>Buy tickets for this production above.</p>';
     }
 
@@ -47,7 +47,7 @@ add_filter('theatrecms/schedule_details_footer', function (string $value) {
 ```twig
 {% if is_single() %}
     {{ the_title(production) }}
-{% elseif is_archive('productions') %}
+{% elseif is_archive('production') %}
     <h1>All productions</h1>
 {% endif %}
 ```

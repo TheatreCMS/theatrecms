@@ -4,6 +4,10 @@ namespace TheatreCMS\Taxonomy;
 
 use InvalidArgumentException;
 use TheatreCMS\Auth\Capability;
+use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\Helpers\Args;
+use TheatreCMS\Routing\NamingRules;
+use TheatreCMS\Routing\UrlPrefixRegistry;
 
 class TaxonomyRegistry
 {
@@ -12,7 +16,23 @@ class TaxonomyRegistry
      */
     private array $taxonomies = [];
 
+    private readonly UrlPrefixRegistry $urlPrefixes;
+
     private static ?self $instance = null;
+    private const VALID_OVERRIDES = ['label', 'singularLabel', 'capability', 'multiple', 'urlPrefix', 'hasArchive'];
+
+    /**
+     * @param ContentTypeRegistry $contentTypes the content types a taxonomy may apply to; each must be
+     *        registered before a taxonomy names it
+     * @param UrlPrefixRegistry|null $urlPrefixes prefix claims shared with `ContentTypeRegistry`, so
+     *        a taxonomy and a content type can't use the same prefix; a private one if omitted
+     */
+    public function __construct(
+        private readonly ContentTypeRegistry $contentTypes,
+        ?UrlPrefixRegistry $urlPrefixes = null,
+    ) {
+        $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
+    }
 
     public static function setInstance(self $instance): void
     {
@@ -32,20 +52,22 @@ class TaxonomyRegistry
      * @param string[] $contentTypes
      * @param array{
      *     label?: string,
-     *     singular_label?: string,
+     *     singularLabel?: string,
      *     multiple?: bool,
      *     capability?: string,
-     *     url_prefix?: string,
-     *     has_archive?: bool
+     *     urlPrefix?: string,
+     *     hasArchive?: bool
      * } $args
+     * @throws InvalidArgumentException for an invalid or already registered name, an invalid URL
+     *        prefix, no content types, an unregistered content type, or a prefix another taxonomy
+     *        or content type already uses
      */
     public function register(string $name, array $contentTypes, array $args = []): TaxonomyDefinition
     {
-        if (!preg_match('/^[a-z0-9_]{1,32}$/', $name)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid taxonomy name "%s": use 1-32 lowercase letters, digits, or underscores.',
-                $name
-            ));
+        NamingRules::assertTypeName($name, 'taxonomy');
+
+        if ($this->has($name)) {
+            throw new InvalidArgumentException(sprintf('Taxonomy "%s" is already registered.', $name));
         }
 
         if ($contentTypes === []) {
@@ -54,18 +76,35 @@ class TaxonomyRegistry
             );
         }
 
+        foreach ($contentTypes as $contentType) {
+            if (!$this->contentTypes->has($contentType)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Taxonomy "%s" applies to content type "%s", which is not registered.',
+                    $name,
+                    $contentType,
+                ));
+            }
+        }
+
+        $args          = Args::withoutUnknownKeys($args, self::VALID_OVERRIDES, 'taxonomy');
         $fallbackLabel = ucwords(str_replace('_', ' ', $name));
-        $urlPrefix = $this->validateUrlPrefix($name, $args['url_prefix'] ?? str_replace('_', '-', $name));
+        $urlPrefix     = $args['urlPrefix'] ?? str_replace('_', '-', $name);
+        $hasArchive    = $args['hasArchive'] ?? true;
+
+        // Every taxonomy claims its prefix, with or without term archives: a prefix belongs to
+        // exactly one content type or taxonomy.
+        NamingRules::assertUrlPrefix($urlPrefix, sprintf('taxonomy "%s"', $name));
+        $this->urlPrefixes->claim($urlPrefix);
 
         $definition = new TaxonomyDefinition(
             $name,
             array_values($contentTypes),
             $args['label'] ?? $fallbackLabel,
-            $args['singular_label'] ?? $fallbackLabel,
+            $args['singularLabel'] ?? $fallbackLabel,
             $args['multiple'] ?? true,
             $args['capability'] ?? Capability::MANAGE_OPTIONS,
             $urlPrefix,
-            $args['has_archive'] ?? true,
+            $hasArchive,
         );
 
         $this->taxonomies[$name] = $definition;
@@ -126,41 +165,7 @@ class TaxonomyRegistry
     {
         return array_filter(
             $this->taxonomies,
-            static fn(TaxonomyDefinition $taxonomy): bool => $taxonomy->appliesTo($contentType)
+            static fn (TaxonomyDefinition $taxonomy): bool => $taxonomy->appliesTo($contentType)
         );
-    }
-
-    /**
-     * Term archives are top-level routes (`/{prefix}/{term}`), so a prefix must be a single
-     * URL-safe path segment, can't shadow the admin, and can't be shared with another taxonomy.
-     * Re-registering a taxonomy under its own name keeps its prefix.
-     */
-    private function validateUrlPrefix(string $name, string $urlPrefix): string
-    {
-        if (!preg_match('/^[a-z0-9-]+$/', $urlPrefix)) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid URL prefix "%s" for taxonomy "%s": use lowercase letters, digits, or hyphens.',
-                $urlPrefix,
-                $name
-            ));
-        }
-
-        if ($urlPrefix === 'admin') {
-            throw new InvalidArgumentException(
-                sprintf('Taxonomy "%s" cannot use the reserved URL prefix "admin".', $name)
-            );
-        }
-
-        $existing = $this->findByUrlPrefix($urlPrefix);
-        if ($existing !== null && $existing->name !== $name) {
-            throw new InvalidArgumentException(sprintf(
-                'Taxonomy "%s" cannot use URL prefix "%s": taxonomy "%s" already uses it.',
-                $name,
-                $urlPrefix,
-                $existing->name
-            ));
-        }
-
-        return $urlPrefix;
     }
 }

@@ -32,12 +32,12 @@ class PermalinkResolver
     public function resolve(mixed $entity): string
     {
         $url = match (true) {
-            $entity instanceof Season => $this->archiveUrl('seasons') . '/' . $entity->getSlug(),
-            $entity instanceof Production => $this->archiveUrl('seasons') . '/' . $entity->getSeason()->getSlug()
+            $entity instanceof Season => $this->archiveUrl('season') . '/' . $entity->getSlug(),
+            $entity instanceof Production => $this->archiveUrl('season') . '/' . $entity->getSeason()->getSlug()
                 . '/' . $entity->getSlug(),
-            $entity instanceof Person => $this->archiveUrl('people') . '/' . $entity->getSlug(),
-            $entity instanceof Work => $this->archiveUrl('works') . '/' . $entity->getSlug(),
-            $entity instanceof Post => $this->archiveUrl('posts') . '/' . $entity->getSlug(),
+            $entity instanceof Person => $this->archiveUrl('person') . '/' . $entity->getSlug(),
+            $entity instanceof Work => $this->archiveUrl('work') . '/' . $entity->getSlug(),
+            $entity instanceof Post => $this->archiveUrl('post') . '/' . $entity->getSlug(),
             $entity instanceof Page => '/' . $entity->getSlug(),
             $entity instanceof Term => '/' . $this->taxonomies->require($entity->getTaxonomy())->urlPrefix
                 . '/' . $entity->getSlug(),
@@ -51,7 +51,7 @@ class PermalinkResolver
     }
 
     /**
-     * The listing/archive URL for a content type (e.g. `/shows` for `seasons` on a site
+     * The listing/archive URL for a content type (e.g. `/shows` for `season` on a site
      * that rewrites the prefix). Pages have no archive — every other built-in type does.
      */
     public function archiveUrl(string $type): string

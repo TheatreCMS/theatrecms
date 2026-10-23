@@ -63,7 +63,7 @@ class QueriedObject
 
     /**
      * A term archive counts as an archive (`is_archive()` is true, as in WordPress), but not
-     * as any content type's archive, so `is_archive('works')` stays false on `/genre/comedy`.
+     * as any content type's archive, so `is_archive('work')` stays false on `/genre/comedy`.
      */
     public function setTerm(string $taxonomy, Term $term): void
     {

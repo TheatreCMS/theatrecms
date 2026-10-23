@@ -18,21 +18,6 @@ use TheatreCMS\ContentType\PermalinkResolver;
  */
 class MenuItemResolver
 {
-    /**
-     * Content-type keys (see `ContentTypeRegistry`) for each linkable menu item type. A
-     * menu item of a given type with no targetId links to that type's archive rather
-     * than a specific piece of content — no separate "archive" enum case or DB column
-     * needed. Pages are deliberately excluded: they're always individually linked, with
-     * no archive/listing page.
-     *
-     * @var array<string, string>
-     */
-    private const ARCHIVE_TYPES = [
-        'post' => 'posts',
-        'production' => 'productions',
-        'season' => 'seasons',
-    ];
-
     public function __construct(
         private readonly PageRepository $pageRepository,
         private readonly PostRepository $postRepository,
@@ -49,8 +34,8 @@ class MenuItemResolver
      */
     public function resolveUrl(MenuItem $item): ?string
     {
-        if (!$item->getTargetId() && isset(self::ARCHIVE_TYPES[$item->getLinkType()->value])) {
-            return $this->permalinkResolver->archiveUrl(self::ARCHIVE_TYPES[$item->getLinkType()->value]);
+        if ($this->linksToArchive($item)) {
+            return $this->permalinkResolver->archiveUrl($item->getLinkType()->value);
         }
 
         return match ($item->getLinkType()) {
@@ -68,8 +53,8 @@ class MenuItemResolver
             return $item->getLabel();
         }
 
-        if (!$item->getTargetId() && isset(self::ARCHIVE_TYPES[$item->getLinkType()->value])) {
-            return 'All ' . $this->contentTypes->label(self::ARCHIVE_TYPES[$item->getLinkType()->value]);
+        if ($this->linksToArchive($item)) {
+            return 'All ' . $this->contentTypes->label($item->getLinkType()->value);
         }
 
         return $this->resolveSourceTitle($item) ?? '(untitled)';
@@ -138,5 +123,16 @@ class MenuItemResolver
         $season = $this->seasonRepository->fetch($item->getTargetId());
 
         return $season ? $this->permalinkResolver->resolve($season) : null;
+    }
+
+    /**
+     * A menu item with no target links to its content type's archive rather than a specific piece
+     * of content, so no separate "archive" enum case or DB column is needed. Its link type value
+     * (`post`, `production`, `season`) is the content-type key. Pages and custom links aren't
+     * content types, so they are always linked individually.
+     */
+    private function linksToArchive(MenuItem $item): bool
+    {
+        return !$item->getTargetId() && $this->contentTypes->has($item->getLinkType()->value);
     }
 }

@@ -33,7 +33,7 @@ class ContentMeta
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
-    #[Column(name: 'content_type', type: 'string', length: 32, nullable: false)]
+    #[Column(name: 'content_type', type: 'string', nullable: false)]
     private string $contentType;
 
     #[Column(name: 'content_id', type: 'integer', nullable: false)]

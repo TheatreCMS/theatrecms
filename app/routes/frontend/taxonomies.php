@@ -5,19 +5,18 @@ use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Taxonomy\TermArchiveQuery;
-use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\TemplateResolver;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 
 /**
- * Term archives: one `/{url_prefix}/{term-slug}` route per taxonomy with `has_archive` on.
+ * Term archives: one `/{urlPrefix}/{term-slug}` route per taxonomy with `hasArchive` on.
  * Routes are registered per prefix rather than as a `/{taxonomy}/{slug}` wildcard, which
- * would collide with other two-segment routes like `/seasons/{slug}/{productionSlug}`.
+ * would collide with other two-segment routes like `/seasons/{slug}/{productionSlug}`. A prefix
+ * clash with a content type is already rejected when the taxonomy registers (`UrlPrefixRegistry`).
  *
  * @var TemplateResolver $resolver
- * @var ContentTypeRegistry $contentTypes
  */
 
 if (isset($app)) {
@@ -25,22 +24,10 @@ if (isset($app)) {
 
     /** @var TaxonomyRegistry $taxonomyRegistry */
     $taxonomyRegistry = $container->get(TaxonomyRegistry::class);
-    $reservedPrefixes = array_map(
-        static fn(string $type): string => $contentTypes->prefix($type),
-        ['seasons', 'productions', 'people', 'works', 'posts']
-    );
 
     foreach ($taxonomyRegistry->all() as $taxonomy) {
         if (!$taxonomy->hasArchive) {
             continue;
-        }
-
-        if (in_array($taxonomy->urlPrefix, $reservedPrefixes, true)) {
-            throw new RuntimeException(sprintf(
-                'Taxonomy "%s" cannot serve term archives under "/%s": a content type already uses that URL prefix.',
-                $taxonomy->name,
-                $taxonomy->urlPrefix
-            ));
         }
 
         $app->get('/' . $taxonomy->urlPrefix . '/{slug}', function (

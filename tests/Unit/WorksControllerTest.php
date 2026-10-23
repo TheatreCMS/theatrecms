@@ -14,13 +14,14 @@ use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Repositories\WorkRepository;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 #[AllowMockObjectsWithoutExpectations]
 class WorksControllerTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
     use UsesSqliteEntityManager;
     use RendersControllerViews;
 
@@ -33,7 +34,7 @@ class WorksControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->em = $this->createSqliteEntityManager();
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work'], ['multiple' => false]);
         $this->works = new WorkRepository($this->em);
         $this->people = new PersonRepository($this->em, new ContentMetaRepository($this->em));

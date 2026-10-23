@@ -17,6 +17,7 @@ use TheatreCMS\Controllers\TermController;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 /**
  * @coversDefaultClass \TheatreCMS\Controllers\TermController
@@ -24,6 +25,8 @@ use TheatreCMS\Taxonomy\TaxonomyRegistry;
 #[AllowMockObjectsWithoutExpectations]
 class TermControllerTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     private EntityManager $em;
     private TermRepository $terms;
     private TermRelationshipRepository $relationships;
@@ -43,10 +46,10 @@ class TermControllerTest extends TestCase
         $this->em = new EntityManager(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]), $config);
         (new SchemaTool($this->em))->createSchema($this->em->getMetadataFactory()->getAllMetadata());
 
-        $this->registry = new TaxonomyRegistry();
+        $this->registry = self::taxonomyRegistry();
         $this->registry->register('genre', ['work'], [
             'label' => 'Genres',
-            'singular_label' => 'Genre',
+            'singularLabel' => 'Genre',
             'capability' => Capability::MANAGE_PEOPLE,
         ]);
         $this->registry->register('post_category', ['post'], ['capability' => Capability::EDIT_POSTS]);

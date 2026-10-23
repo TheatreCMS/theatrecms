@@ -11,13 +11,15 @@ use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Term;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 /**
  * @coversDefaultClass \TheatreCMS\Repositories\TermRelationshipRepository
  */
 class TermRelationshipRepositoryTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     private EntityManager $em;
     private TermRepository $terms;
     private TermRelationshipRepository $repository;
@@ -38,7 +40,7 @@ class TermRelationshipRepositoryTest extends TestCase
         $schemaTool = new SchemaTool($this->em);
         $schemaTool->createSchema($this->em->getMetadataFactory()->getAllMetadata());
 
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work']);
         $registry->register('audience', ['work']);
         $registry->register('post_category', ['post'], ['multiple' => false]);

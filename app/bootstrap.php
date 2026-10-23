@@ -23,7 +23,6 @@ use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use TheatreCMS\Admin\AdminMenuRegistry;
-use TheatreCMS\Auth\Capability;
 use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\DI\ServiceRegistrar;
 use TheatreCMS\Plugin\PluginManager;
@@ -32,6 +31,7 @@ use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\ContentType\QueriedObject;
 use TheatreCMS\Theme\ThemeManager;
 
@@ -43,6 +43,7 @@ require_once APP_ROOT . '/vendor/autoload.php';
 require_once APP_ROOT . '/app/hooks.php';
 require_once APP_ROOT . '/app/menu-locations.php';
 require_once APP_ROOT . '/app/image-sizes.php';
+require_once APP_ROOT . '/app/content-types.php';
 require_once APP_ROOT . '/app/taxonomies.php';
 require_once APP_ROOT . '/app/template-tags.php';
 require_once APP_ROOT . '/app/admin-menu.php';
@@ -101,26 +102,20 @@ $imageSizeRegistry = $container->get(ImageSizeRegistry::class);
 ImageSizeRegistry::setInstance($imageSizeRegistry);
 register_image_size('admin-thumbnail', 300, 300, true);
 
-$taxonomyRegistry = $container->get(TaxonomyRegistry::class);
-TaxonomyRegistry::setInstance($taxonomyRegistry);
-register_taxonomy('genre', ['work'], [
-    'label' => 'Genres',
-    'singular_label' => 'Genre',
-    'capability' => Capability::MANAGE_PEOPLE,
-]);
-register_taxonomy('post_category', ['post'], [
-    'label' => 'Categories',
-    'singular_label' => 'Category',
-    'capability' => Capability::EDIT_POSTS,
-    'url_prefix' => 'category',
-]);
-
-$queriedObject = $container->get(QueriedObject::class);
-QueriedObject::setInstance($queriedObject);
-
 $adminMenuRegistry = $container->get(AdminMenuRegistry::class);
 AdminMenuRegistry::setInstance($adminMenuRegistry);
 require_once APP_ROOT . '/app/admin-menu-items.php';
+
+$contentTypeRegistry = $container->get(ContentTypeRegistry::class);
+ContentTypeRegistry::setInstance($contentTypeRegistry);
+require_once APP_ROOT . '/app/core-content-types.php';
+
+$taxonomyRegistry = $container->get(TaxonomyRegistry::class);
+TaxonomyRegistry::setInstance($taxonomyRegistry);
+require_once APP_ROOT . '/app/core-taxonomies.php';
+
+$queriedObject = $container->get(QueriedObject::class);
+QueriedObject::setInstance($queriedObject);
 
 $scheduledTaskRegistry = $container->get(ScheduledTaskRegistry::class);
 ScheduledTaskRegistry::setInstance($scheduledTaskRegistry);

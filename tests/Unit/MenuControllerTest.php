@@ -17,16 +17,17 @@ use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\ContentType\PermalinkResolver;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 #[AllowMockObjectsWithoutExpectations]
 class MenuControllerTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
     use UsesSqliteEntityManager;
     use RendersControllerViews;
 
@@ -51,12 +52,15 @@ class MenuControllerTest extends TestCase
         $this->locations = new MenuLocationRegistry();
         $this->locations->register('primary', 'Primary');
         $contentTypes = new ContentTypeRegistry();
+        $contentTypes->register('season', ['urlPrefix' => 'seasons', 'label' => 'Seasons']);
+        $contentTypes->register('production', ['urlPrefix' => 'productions', 'label' => 'Productions']);
+        $contentTypes->register('post', ['urlPrefix' => 'posts', 'label' => 'Posts']);
         $this->resolver = new MenuItemResolver(
             $this->pages,
             $this->posts,
             $this->productions,
             $this->seasons,
-            new PermalinkResolver($contentTypes, new TaxonomyRegistry()),
+            new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
             $contentTypes,
         );
     }

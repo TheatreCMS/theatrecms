@@ -37,7 +37,7 @@ class Term
      * Registry key of the taxonomy this term belongs to. A free-form string rather than an
      * enum so theme/plugin-registered taxonomies need no code changes here.
      */
-    #[Column(type: 'string', length: 32, nullable: false)]
+    #[Column(type: 'string', nullable: false)]
     private string $taxonomy;
 
     #[Column(type: 'string', length: 255, nullable: false)]

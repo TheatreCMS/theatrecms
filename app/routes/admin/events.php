@@ -7,6 +7,10 @@ use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 
+/**
+ * @var \Slim\App $app
+ * @var \DI\Container $container
+ */
 if (isset($app)) {
     $app->group('/admin/events', function ($group) {
         $group->post('/bulk-create', [EventController::class, 'storeRecurring']);

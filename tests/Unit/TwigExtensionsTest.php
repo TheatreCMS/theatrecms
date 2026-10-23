@@ -15,7 +15,6 @@ use TheatreCMS\Models\Term;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
-use TheatreCMS\Taxonomy\TaxonomyRegistry;
 use TheatreCMS\Theme\AddressResolver;
 use TheatreCMS\Theme\EndDateResolver;
 use TheatreCMS\Theme\ExcerptResolver;
@@ -35,6 +34,7 @@ use TheatreCMS\Twig\TermsExtension;
 use TheatreCMS\Twig\TitleExtension;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
+use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 /**
  * The small Twig extensions that each expose a function or two over a resolver or service.
@@ -42,6 +42,8 @@ use Twig\TwigFunction;
 #[AllowMockObjectsWithoutExpectations]
 class TwigExtensionsTest extends TestCase
 {
+    use BuildsTaxonomyRegistries;
+
     public function testExtensionsRegisterTheirFunctions(): void
     {
         $authorization = $this->createMock(AuthorizationService::class);
@@ -56,7 +58,7 @@ class TwigExtensionsTest extends TestCase
             'media_type_icon' => new MediaTypeIconExtension(),
             'the_start_date' => new StartDateExtension(new StartDateResolver()),
             'taxonomies_for,admin_taxonomies,taxonomy_terms' => new TaxonomyExtension(
-                new TaxonomyRegistry(),
+                self::taxonomyRegistry(),
                 $authorization,
                 $this->createMock(TermRepository::class),
             ),
@@ -127,7 +129,7 @@ class TwigExtensionsTest extends TestCase
 
     public function testTaxonomyFunctionsFilterByCapabilityAndFetchTerms(): void
     {
-        $registry = new TaxonomyRegistry();
+        $registry = self::taxonomyRegistry();
         $registry->register('genre', ['work'], ['capability' => 'manage_people']);
         $registry->register('era', ['work'], ['capability' => 'manage_options']);
 

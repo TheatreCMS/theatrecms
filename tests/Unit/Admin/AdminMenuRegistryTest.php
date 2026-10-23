@@ -46,10 +46,9 @@ class AdminMenuRegistryTest extends TestCase
         require dirname(__DIR__, 3) . '/app/admin-menu-items.php';
 
         $groups = $registry->groups();
-        $this->assertSame([null, 'Content', 'Appearance', 'Administration'], array_column($groups, 'label'));
+        $this->assertSame([null, 'Appearance', 'Administration'], array_column($groups, 'label'));
         $this->assertSame('Dashboard', $groups[0]['items'][0]->label);
         $this->assertTrue($groups[0]['items'][0]->exact);
-        $this->assertSame('admin/seasons', $groups[1]['items'][0]->url);
     }
 
     public function testGetInstanceThrowsWhenNotInitialized(): void

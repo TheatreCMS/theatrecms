@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -10,6 +11,7 @@ use Slim\Views\Twig;
 use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Settings\SiteSettings;
 
+#[AllowMockObjectsWithoutExpectations]
 class SettingsControllerTest extends TestCase
 {
     private SiteSettings|MockObject $siteSettings;
@@ -35,7 +37,7 @@ class SettingsControllerTest extends TestCase
             ->with(
                 $this->isInstanceOf(Response::class),
                 'admin/settings/index.html.twig',
-                $this->callback(fn($ctx) => isset($ctx['settings']))
+                $this->callback(fn ($ctx) => isset($ctx['settings']))
             )
             ->willReturn($this->createMock(Response::class));
 
@@ -106,7 +108,7 @@ class SettingsControllerTest extends TestCase
             ->with(
                 $this->isInstanceOf(Response::class),
                 'admin/partials/_alert.html.twig',
-                $this->callback(fn($ctx) => $ctx['type'] === 'success')
+                $this->callback(fn ($ctx) => $ctx['type'] === 'success')
             )
             ->willReturn($this->createMock(Response::class));
 
