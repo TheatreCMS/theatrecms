@@ -2,6 +2,7 @@
 
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\Routing\RouteRegistry;
 
 /**
  * Declares a content type (e.g. 'press_release'), so its entries get admin screens and
@@ -28,5 +29,7 @@ use TheatreCMS\ContentType\ContentTypeRegistry;
  */
 function register_content_type(string $name, array $args = []): ContentTypeDefinition
 {
-    return ContentTypeRegistry::getInstance()->register($name, $args);
+    $definition = ContentTypeRegistry::getInstance()->register($name, $args);
+
+    return $definition;
 }

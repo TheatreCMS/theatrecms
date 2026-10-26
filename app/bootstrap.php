@@ -19,6 +19,7 @@ use DI\Container;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
@@ -33,6 +34,7 @@ use TheatreCMS\Theme\ImageSizeRegistry;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\ContentType\QueriedObject;
+use TheatreCMS\Routing\RouteRegistry;
 use TheatreCMS\Theme\ThemeManager;
 
 if (!defined('APP_ROOT')) {
@@ -80,6 +82,8 @@ $container->set(EntityManager::class, static function (Container $c): EntityMana
     });
     return new EntityManager($connection, $config);
 });
+// Lets autowired classes type-hint the interface and share the same EntityManager.
+$container->set(EntityManagerInterface::class, \DI\get(EntityManager::class));
 
 ServiceRegistrar::register($container);
 
@@ -102,14 +106,19 @@ $imageSizeRegistry = $container->get(ImageSizeRegistry::class);
 ImageSizeRegistry::setInstance($imageSizeRegistry);
 register_image_size('admin-thumbnail', 300, 300, true);
 
-$adminMenuRegistry = $container->get(AdminMenuRegistry::class);
-AdminMenuRegistry::setInstance($adminMenuRegistry);
-require_once APP_ROOT . '/app/admin-menu-items.php';
+$routeRegistry = $container->get(RouteRegistry::class);
+RouteRegistry::setInstance($routeRegistry);
 
+// Instantiate the content type registry and load core content types.
 $contentTypeRegistry = $container->get(ContentTypeRegistry::class);
 ContentTypeRegistry::setInstance($contentTypeRegistry);
 require_once APP_ROOT . '/app/core-content-types.php';
 
+// Instantiate the admin menu registry.
+$adminMenuRegistry = $container->get(AdminMenuRegistry::class);
+AdminMenuRegistry::setInstance($adminMenuRegistry);
+
+// Instantiate the taxonomy registry and load core taxonomies.
 $taxonomyRegistry = $container->get(TaxonomyRegistry::class);
 TaxonomyRegistry::setInstance($taxonomyRegistry);
 require_once APP_ROOT . '/app/core-taxonomies.php';
@@ -117,6 +126,7 @@ require_once APP_ROOT . '/app/core-taxonomies.php';
 $queriedObject = $container->get(QueriedObject::class);
 QueriedObject::setInstance($queriedObject);
 
+// Instantiate the scheduled task registry.
 $scheduledTaskRegistry = $container->get(ScheduledTaskRegistry::class);
 ScheduledTaskRegistry::setInstance($scheduledTaskRegistry);
 
@@ -124,6 +134,9 @@ ScheduledTaskRegistry::setInstance($scheduledTaskRegistry);
 // so themes can rely on anything a plugin provides.
 $pluginManager->registerAll($container, $capabilityRegistry, $adminMenuRegistry);
 do_action('theatrecms/plugins_loaded', $pluginManager);
+
+// Load admin menu items after plugins have registered.
+require_once APP_ROOT . '/app/admin-menu-items.php';
 
 $container->get(ThemeManager::class)->loadFunctions();
 

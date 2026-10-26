@@ -5,6 +5,7 @@ namespace TheatreCMS\Tests\Unit\Admin;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Admin\AdminMenuItem;
 use TheatreCMS\Admin\AdminMenuRegistry;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 
 /**
  * @coversDefaultClass \TheatreCMS\Admin\AdminMenuRegistry
@@ -42,6 +43,7 @@ class AdminMenuRegistryTest extends TestCase
     {
         $registry = new AdminMenuRegistry();
         AdminMenuRegistry::setInstance($registry);
+        ContentTypeRegistry::setInstance(new ContentTypeRegistry());
 
         require dirname(__DIR__, 3) . '/app/admin-menu-items.php';
 
@@ -49,6 +51,29 @@ class AdminMenuRegistryTest extends TestCase
         $this->assertSame([null, 'Appearance', 'Administration'], array_column($groups, 'label'));
         $this->assertSame('Dashboard', $groups[0]['items'][0]->label);
         $this->assertTrue($groups[0]['items'][0]->exact);
+    }
+
+    public function testCoreItemsFileAddsRegisteredContentTypesToTheContentGroup(): void
+    {
+        $registry = new AdminMenuRegistry();
+        AdminMenuRegistry::setInstance($registry);
+        $contentTypes = new ContentTypeRegistry();
+        ContentTypeRegistry::setInstance($contentTypes);
+        $definition = $contentTypes->register('press_release', [
+            'label'         => 'Press Releases',
+            'singularLabel' => 'Press Release',
+            'urlPrefix'     => 'press-releases',
+        ]);
+
+        require dirname(__DIR__, 3) . '/app/admin-menu-items.php';
+
+        $content = array_values(array_filter(
+            $registry->groups(),
+            static fn(array $group) => $group['label'] === 'Content'
+        ));
+        $this->assertCount(1, $content);
+        $this->assertSame($definition->adminSlug(), $content[0]['items'][0]->url);
+        $this->assertSame($definition->capability, $content[0]['items'][0]->capability);
     }
 
     public function testGetInstanceThrowsWhenNotInitialized(): void
