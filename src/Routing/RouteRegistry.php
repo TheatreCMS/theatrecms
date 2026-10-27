@@ -62,11 +62,13 @@ class RouteRegistry
         ];
     }
 
-    public function prepend(string $key, array $routes) {
-
+    public function prepend(string $key, array $routes)
+    {
     }
 
-    public function append(string $key, array $routes) {}
+    public function append(string $key, array $routes)
+    {
+    }
 
     /**
      * @return array<string, TypeRoutes>
