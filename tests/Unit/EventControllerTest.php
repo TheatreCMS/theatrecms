@@ -15,6 +15,7 @@ use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class EventControllerTest extends TestCase
@@ -330,7 +331,8 @@ class EventControllerTest extends TestCase
             $this->entityManager,
             $this->twig,
             $this->productionRepo,
-            $this->venueRepo
+            $this->venueRepo,
+            $this->createStub(TemplateResolver::class),
         );
     }
 }

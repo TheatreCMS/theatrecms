@@ -145,6 +145,28 @@ class EntryRepositoryTest extends TestCase
         $this->assertSame([$published], $news->fetchPublicByIds([$published->getId(), $draft->getId()]));
     }
 
+    public function testFetchPublicSeesOnlyPublishedEntriesOfTheBoundType(): void
+    {
+        $news = $this->entries->forType('press_release');
+        $published = $news->create(['title' => 'Out', 'status' => 'published']);
+        $news->create(['title' => 'Not yet']);
+        $this->entries->forType('blog_post')->create(['title' => 'Elsewhere', 'status' => 'published']);
+
+        $this->assertSame([$published], $news->fetchPublic());
+    }
+
+    public function testFetchPublicBySlugSkipsDraftsAndOtherTypes(): void
+    {
+        $news = $this->entries->forType('press_release');
+        $published = $news->create(['title' => 'Out', 'status' => 'published']);
+        $news->create(['title' => 'Not yet']);
+        $this->entries->forType('blog_post')->create(['title' => 'Elsewhere', 'status' => 'published']);
+
+        $this->assertSame($published, $news->fetchPublicBySlug('out'));
+        $this->assertNull($news->fetchPublicBySlug('not-yet'));
+        $this->assertNull($news->fetchPublicBySlug('elsewhere'));
+    }
+
     public function testUpdateSlugKeepsSlugsUniqueWithinTheType(): void
     {
         $news = $this->entries->forType('press_release');

@@ -13,6 +13,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * Class SeasonController
@@ -20,8 +22,9 @@ use Slim\Views\Twig;
  *
  * @extends BaseController<SeasonRepository>
  */
-class SeasonController extends BaseController
+class SeasonController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
     use HandlesContentImages;
 
     private SponsorRepository $sponsorRepo;
@@ -31,10 +34,16 @@ class SeasonController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         SponsorRepository $sponsorRepo,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig, $em);
         $this->sponsorRepo = $sponsorRepo;
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     protected function contentType(): string

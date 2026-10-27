@@ -24,6 +24,7 @@ use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class ProductionControllerTest extends TestCase
@@ -343,6 +344,7 @@ class ProductionControllerTest extends TestCase
                 new EventRepository($this->em),
             ),
             $this->meta,
+            $this->createStub(TemplateResolver::class),
         );
     }
 }

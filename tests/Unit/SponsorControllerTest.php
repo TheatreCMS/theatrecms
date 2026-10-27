@@ -14,6 +14,7 @@ use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class SponsorControllerTest extends TestCase
@@ -176,6 +177,6 @@ class SponsorControllerTest extends TestCase
 
     private function controller(): SponsorController
     {
-        return new SponsorController($this->sponsors, $this->recordingTwig(), $this->uploads);
+        return new SponsorController($this->sponsors, $this->recordingTwig(), $this->uploads, $this->createStub(TemplateResolver::class));
     }
 }

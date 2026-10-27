@@ -11,6 +11,7 @@ use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class PersonControllerTest extends TestCase
@@ -185,6 +186,6 @@ class PersonControllerTest extends TestCase
 
     private function controller(): PersonController
     {
-        return new PersonController($this->people, $this->recordingTwig(), $this->em, $this->meta);
+        return new PersonController($this->people, $this->recordingTwig(), $this->em, $this->meta, $this->createStub(TemplateResolver::class));
     }
 }

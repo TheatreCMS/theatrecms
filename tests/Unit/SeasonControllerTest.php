@@ -14,6 +14,7 @@ use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class SeasonControllerTest extends TestCase
@@ -225,6 +226,6 @@ class SeasonControllerTest extends TestCase
 
     private function controller(): SeasonController
     {
-        return new SeasonController($this->seasons, $this->em, $this->recordingTwig(), $this->sponsors, $this->meta);
+        return new SeasonController($this->seasons, $this->em, $this->recordingTwig(), $this->sponsors, $this->meta, $this->createStub(TemplateResolver::class));
     }
 }

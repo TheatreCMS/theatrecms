@@ -16,6 +16,7 @@ use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class PostControllerTest extends TestCase
@@ -204,6 +205,6 @@ class PostControllerTest extends TestCase
 
     private function controller(): PostController
     {
-        return new PostController($this->posts, $this->em, $this->recordingTwig(), $this->meta, $this->relationships);
+        return new PostController($this->posts, $this->em, $this->recordingTwig(), $this->meta, $this->relationships, $this->createStub(TemplateResolver::class));
     }
 }

@@ -21,6 +21,8 @@ use Slim\Views\Twig;
 use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * Class ProductionController
@@ -28,8 +30,9 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  *
  * @extends BaseController<ProductionRepository>
  */
-class ProductionController extends BaseController
+class ProductionController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
     use HandlesContentImages;
 
     public function __construct(
@@ -37,9 +40,15 @@ class ProductionController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         private readonly ProductionFormOptionsService $formOptions,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     protected function contentType(): string

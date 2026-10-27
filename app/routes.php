@@ -6,6 +6,7 @@ use Slim\Interfaces\RouteCollectorProxyInterface;
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\Controllers\PublicContentController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
@@ -26,12 +27,14 @@ foreach ($contentRegistry->all() as $definition) {
 
 /**
  * Builds a route handler that creates the type's controller with its own definition, so
- * types sharing a controller class (e.g. EntryController) each get the right one. Not
- * static: Slim binds route closures to the container.
+ * types sharing a controller class (e.g. EntryController) each get the right one. The
+ * definition is also attached to the request for controllers that aren't built with it
+ * (see RendersPublicContent). Not static: Slim binds route closures to the container.
  */
 $contentTypeHandler = function (ContentTypeDefinition $definition, string $action) use ($container): Closure {
     return function (Request $request, Response $response, array $args) use ($container, $definition, $action): Response {
         $controller = $container->make($definition->controller, ['definition' => $definition]);
+        $request = $request->withAttribute(ContentTypeDefinition::class, $definition);
 
         return $controller->{$action}($request, $response, $args);
     };
@@ -53,6 +56,15 @@ foreach ($routeRegistry->all() as ['definition' => $definition, 'admin' => $admi
       ->add($container->get(AuthMiddleware::class));
 
     if ($public !== null) {
+        if (!is_subclass_of($definition->controller, PublicContentController::class)) {
+            throw new RuntimeException(sprintf(
+                'Content type "%s" is public, but its controller %s does not implement %s.',
+                $definition->name,
+                $definition->controller,
+                PublicContentController::class
+            ));
+        }
+
         $app->group($public['prefix'], function (RouteCollectorProxyInterface $group) use ($addRoutes, $definition, $public) {
             $addRoutes($group, $definition, 'public', $public['routes']);
         })->add(new RequireTwigMiddleware($container));

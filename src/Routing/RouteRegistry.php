@@ -153,7 +153,6 @@ class RouteRegistry
         array_push(
             $routes,
             ['delete', '/{id}', 'destroy'],
-            ['get', '/{id}', 'show'],
             ['get', '', 'index'],
         );
 
@@ -173,11 +172,11 @@ class RouteRegistry
         }
 
         $routes = [
-            ['get', '/{id}', 'show'],
+            ['get', '/{slug}', 'single'],
         ];
 
         if ($definition->hasArchive) {
-            $routes[] = ['get', '', 'index'];
+            $routes[] = ['get', '', 'archive'];
         }
 
         return [

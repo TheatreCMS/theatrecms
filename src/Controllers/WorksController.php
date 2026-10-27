@@ -10,12 +10,15 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\Traits\AssignsTaxonomyTerms;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<WorkRepository>
  */
-class WorksController extends BaseController
+class WorksController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
     use AssignsTaxonomyTerms;
 
     private const SORTABLE_COLUMNS = ['title', 'author'];
@@ -27,9 +30,15 @@ class WorksController extends BaseController
         Twig $twig,
         PersonRepository $personRepo,
         private readonly TermRelationshipRepository $termRelationships,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig);
         $this->personRepo = $personRepo;
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     protected function termRelationships(): TermRelationshipRepository

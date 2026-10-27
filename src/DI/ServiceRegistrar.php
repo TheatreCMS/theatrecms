@@ -544,6 +544,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(ProductionFormOptionsService::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
@@ -553,6 +554,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(SponsorRepository::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {
@@ -562,6 +564,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(ProductionRepository::class),
                     $c->get(VenueRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             PostController::class => static function (ContainerInterface $c): PostController {
@@ -571,6 +574,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(ContentMetaRepository::class),
                     $c->get(TermRelationshipRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             PageController::class => static function (ContainerInterface $c): PageController {
@@ -596,6 +600,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             PersonController::class => static function (ContainerInterface $c): PersonController {
@@ -604,6 +609,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(EntityManager::class),
                     $c->get(ContentMetaRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             SponsorController::class => static function (ContainerInterface $c): SponsorController {
@@ -611,6 +617,7 @@ class ServiceRegistrar
                     $c->get(SponsorRepository::class),
                     $c->get(Twig::class),
                     $c->get(MediaUploadService::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             TermController::class => static function (ContainerInterface $c): TermController {
@@ -628,6 +635,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(PersonRepository::class),
                     $c->get(TermRelationshipRepository::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {

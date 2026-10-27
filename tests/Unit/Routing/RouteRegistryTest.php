@@ -21,7 +21,7 @@ class RouteRegistryTest extends TestCase
         $registry->assertNoCollisions($this->routes(
             ['/admin/seasons', RouteRegistry::routeName('season', 'admin', 'index')],
             ['/admin/seasons/{id}', RouteRegistry::routeName('season', 'admin', 'show')],
-            ['/seasons/{id}', RouteRegistry::routeName('season', 'public', 'show')],
+            ['/seasons/{id}', RouteRegistry::routeName('season', 'public', 'single')],
         ));
 
         $this->addToAssertionCount(1);

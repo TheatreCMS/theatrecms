@@ -14,21 +14,24 @@ use TheatreCMS\Models\Entry;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
+use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Traits\AssignsTaxonomyTerms;
 use TheatreCMS\Traits\HandlesContentImages;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * Admin screens for the entries of one content type. Each instance is built for a single
  * `ContentTypeDefinition` (see `app/routes.php`), which scopes the repository, the URLs and
  * the labels; the form shows the editor, excerpt and featured image only when the type
- * supports them.
+ * supports them. Public pages come from RendersPublicContent.
  *
  * @extends BaseController<EntryRepository>
  */
-class EntryController extends BaseController
+class EntryController extends BaseController implements PublicContentController
 {
     use HandlesContentImages;
     use AssignsTaxonomyTerms;
+    use RendersPublicContent;
 
     private const SORTABLE_COLUMNS = ['title', 'publishedAt'];
 
@@ -39,6 +42,7 @@ class EntryController extends BaseController
         private readonly ContentTypeDefinition $definition,
         private readonly ContentMetaRepository $contentMeta,
         private readonly TermRelationshipRepository $termRelationships,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository->forType($definition->name), $twig, $em);
     }
@@ -56,6 +60,11 @@ class EntryController extends BaseController
     protected function termRelationships(): TermRelationshipRepository
     {
         return $this->termRelationships;
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -77,20 +86,6 @@ class EntryController extends BaseController
         }
 
         return $this->twig->render($response, 'admin/entries/index.html.twig', $data);
-    }
-
-    /**
-     * The admin has no read-only view of an entry, so this goes straight to its edit form.
-     */
-    public function show(Request $request, Response $response, array $args = []): Response
-    {
-        $entry = $this->repository->fetch((int) $args['id']);
-
-        if (!$entry) {
-            return $response->withStatus(404);
-        }
-
-        return $response->withHeader('Location', $this->editUrl($entry))->withStatus(302);
     }
 
     public function create(Request $request, Response $response, array $args = []): Response

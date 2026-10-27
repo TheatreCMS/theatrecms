@@ -85,6 +85,33 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         return $builder->getQuery()->getResult();
     }
 
+    /**
+     * Every publicly visible item, in the repository's normal list order. Used by archive pages.
+     *
+     * @return array<int, object>
+     */
+    public function fetchPublic(): array
+    {
+        $builder = $this->createListQueryBuilder();
+        $this->applyPublicFilter($builder, 'e');
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
+     * The publicly visible item with this slug, or null. Used by single pages, so drafts 404.
+     */
+    public function fetchPublicBySlug(string $slug): ?object
+    {
+        $builder = $this->createListQueryBuilder()
+            ->andWhere('e.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1);
+        $this->applyPublicFilter($builder, 'e');
+
+        return $builder->getQuery()->getOneOrNullResult();
+    }
+
     public function fetch(int $id)
     {
         return $this->em->getRepository($this->entityClass)->findOneBy(['id' => $id]);

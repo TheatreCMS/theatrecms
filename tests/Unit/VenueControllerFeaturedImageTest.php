@@ -14,6 +14,7 @@ use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\VenueRepository;
+use TheatreCMS\Theme\TemplateResolver;
 
 /**
  * Venue is the net-new featured-image entity added alongside the media
@@ -44,7 +45,7 @@ class VenueControllerFeaturedImageTest extends TestCase
 
     private function buildController(): VenueController
     {
-        return new VenueController($this->venueRepo, $this->entityManager, $this->twig, $this->contentMeta);
+        return new VenueController($this->venueRepo, $this->entityManager, $this->twig, $this->contentMeta, $this->createStub(TemplateResolver::class));
     }
 
     private function mockVenueLookup(Venue $venue, int $id): void
