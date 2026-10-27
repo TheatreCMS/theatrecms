@@ -12,6 +12,7 @@ use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Routing\RouteRegistry;
+use TheatreCMS\Taxonomy\TaxonomyDefinition;
 
 class RouteRegistryTest extends TestCase
 {
@@ -101,6 +102,57 @@ class RouteRegistryTest extends TestCase
         $paths = array_column($registry->all()['season']['public']['routes'], 1);
 
         $this->assertSame(['/{slug}/{productionSlug}', '/{slug}', ''], $paths);
+    }
+
+    public function testATaxonomysOwnRoutesDoNotCollide(): void
+    {
+        $registry = $this->registryWithGenres();
+
+        $registry->assertNoCollisions($this->routes(
+            ['/admin/taxonomies/genre', RouteRegistry::taxonomyRouteName('genre', 'admin', 'index')],
+            ['/genre/{slug}', RouteRegistry::taxonomyRouteName('genre', 'public', 'archive')],
+        ));
+
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @return array<string, array{string, ?string}>
+     */
+    public static function routesCollidingWithATaxonomy(): array
+    {
+        return [
+            'under admin prefix' => ['/admin/taxonomies/genre/export', null],
+            'under public prefix' => ['/genre/{slug}', null],
+            'a content type\'s route name' => ['/genre/{slug}', RouteRegistry::routeName('genre', 'public', 'single')],
+        ];
+    }
+
+    #[DataProvider('routesCollidingWithATaxonomy')]
+    public function testRoutesTheTaxonomyDoesNotOwnCollide(string $pattern, ?string $name): void
+    {
+        $registry = $this->registryWithGenres();
+
+        $this->expectException(RuntimeException::class);
+
+        $registry->assertNoCollisions($this->routes([$pattern, $name]));
+    }
+
+    public function testATaxonomyWithoutAnArchiveHasNoPublicRoutes(): void
+    {
+        $registry = new RouteRegistry();
+        $registry->registerRoutesForTaxonomy(new TaxonomyDefinition('genre', ['work'], 'Genres', 'Genre', urlPrefix: 'genre', hasArchive: false));
+
+        $this->assertNull($registry->allTaxonomies()['genre']['public']);
+        $registry->assertNoCollisions($this->routes(['/genre/{slug}', null]));
+    }
+
+    private function registryWithGenres(): RouteRegistry
+    {
+        $registry = new RouteRegistry();
+        $registry->registerRoutesForTaxonomy(new TaxonomyDefinition('genre', ['work'], 'Genres', 'Genre', urlPrefix: 'genre'));
+
+        return $registry;
     }
 
     private function registryWithSeasons(): RouteRegistry

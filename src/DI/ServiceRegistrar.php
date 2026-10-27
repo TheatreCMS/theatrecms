@@ -629,6 +629,8 @@ class ServiceRegistrar
                     $c->get(TermRelationshipRepository::class),
                     $c->get(TaxonomyRegistry::class),
                     $c->get(AuthorizationService::class),
+                    $c->get(TemplateResolver::class),
+                    $c->get(TermArchiveQuery::class),
                 );
             },
             WorksController::class => static function (ContainerInterface $c): WorksController {

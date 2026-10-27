@@ -6,15 +6,18 @@ use RuntimeException;
 use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Controllers\PublicContentController;
+use TheatreCMS\Taxonomy\TaxonomyDefinition;
 
 /**
- * Collects the admin and public routes for each content type, keyed by type name. Each
- * route is `[method, path, action]`, where `action` is a method on the type's controller;
- * `app/routes.php` turns them into Slim route groups.
+ * Collects the admin and public routes for each content type and each taxonomy, keyed by
+ * name. Each route is `[method, path, action]`, where `action` is a method on the type's
+ * controller (TermController for taxonomies); `app/routes.php` turns them into Slim route
+ * groups.
  *
  * @phpstan-type RouteList list<array{0: string, 1: string, 2: string}>
  * @phpstan-type RouteGroup array{prefix: string, routes: RouteList}
  * @phpstan-type TypeRoutes array{definition: ContentTypeDefinition, admin: RouteGroup, public: RouteGroup|null}
+ * @phpstan-type TaxonomyRoutes array{definition: TaxonomyDefinition, admin: RouteGroup, public: RouteGroup|null}
  */
 class RouteRegistry
 {
@@ -22,6 +25,9 @@ class RouteRegistry
 
     /** @var array<string, TypeRoutes> */
     private array $routes = [];
+
+    /** @var array<string, TaxonomyRoutes> */
+    private array $taxonomyRoutes = [];
 
     public static function setInstance(RouteRegistry $instance): void
     {
@@ -37,20 +43,13 @@ class RouteRegistry
         return self::$instance;
     }
 
-    public function registerRoutesForTaxonomy($definition)
+    public function registerRoutesForTaxonomy(TaxonomyDefinition $definition): void
     {
-        $this->registerAdminRoutesForTaxonomy($definition);
-        $this->registerPublicRoutesForTaxonomy($definition);
-    }
-
-    private function registerAdminRoutesForTaxonomy($definition)
-    {
-        // Implement admin routes for taxonomy here
-    }
-
-    private function registerPublicRoutesForTaxonomy($definition)
-    {
-        // Implement public routes for taxonomy here
+        $this->taxonomyRoutes[$definition->name] = [
+            'definition' => $definition,
+            'admin'      => $this->adminRoutesForTaxonomy($definition),
+            'public'     => $this->publicRoutesForTaxonomy($definition),
+        ];
     }
 
     public function registerRoutesForContentType(ContentTypeDefinition $definition)
@@ -79,6 +78,14 @@ class RouteRegistry
     }
 
     /**
+     * @return array<string, TaxonomyRoutes>
+     */
+    public function allTaxonomies(): array
+    {
+        return $this->taxonomyRoutes;
+    }
+
+    /**
      * The route name for one of a content type's routes, e.g. `content_type.season.admin.index`.
      * assertNoCollisions() relies on it to tell a type's own routes from everyone else's.
      *
@@ -90,38 +97,72 @@ class RouteRegistry
     }
 
     /**
-     * Throws if a route a content type doesn't own is served at or under one of its prefixes,
-     * e.g. a plugin's `/admin/seasons/report` against the season type's `/admin/seasons`.
-     * Call once every route is registered: core, plugins and catch-alls.
+     * The route name for one of a taxonomy's routes, e.g. `taxonomy.genre.public.archive`.
+     *
+     * @param string $scope 'admin' or 'public'
+     */
+    public static function taxonomyRouteName(string $taxonomy, string $scope, string $action): string
+    {
+        return "taxonomy.{$taxonomy}.{$scope}.{$action}";
+    }
+
+    /**
+     * Throws if a route a content type or taxonomy doesn't own is served at or under one of its
+     * prefixes, e.g. a plugin's `/admin/seasons/report` against the season type's
+     * `/admin/seasons`. Call once every route is registered: core, plugins and catch-alls.
      *
      * @param iterable<RouteInterface> $routes
      * @throws RuntimeException naming the first colliding route
      */
     public function assertNoCollisions(iterable $routes): void
     {
+        $owners = $this->prefixOwners();
+
         foreach ($routes as $route) {
             $pattern = $route->getPattern();
 
-            foreach ($this->routes as $type => $typeRoutes) {
-                foreach ([$typeRoutes['admin'], $typeRoutes['public']] as $group) {
-                    if ($group === null || !self::isAtOrUnder($pattern, $group['prefix'])) {
-                        continue;
-                    }
+            foreach ($owners as [$prefix, $namePrefix, $owner]) {
+                if (!self::isAtOrUnder($pattern, $prefix) || str_starts_with($route->getName() ?? '', $namePrefix)) {
+                    continue;
+                }
 
-                    if (str_starts_with($route->getName() ?? '', "content_type.{$type}.")) {
-                        continue;
-                    }
+                throw new RuntimeException(sprintf(
+                    'Route "%s %s" collides with %s, which owns "%s".',
+                    implode('|', $route->getMethods()),
+                    $pattern,
+                    $owner,
+                    $prefix
+                ));
+            }
+        }
+    }
 
-                    throw new RuntimeException(sprintf(
-                        'Route "%s %s" collides with content type "%s", which owns "%s".',
-                        implode('|', $route->getMethods()),
-                        $pattern,
-                        $type,
-                        $group['prefix']
-                    ));
+    /**
+     * Every registered prefix, with the route-name prefix its owner's routes carry.
+     *
+     * @return list<array{0: string, 1: string, 2: string}> prefix, route-name prefix, owner description
+     */
+    private function prefixOwners(): array
+    {
+        $owners = [];
+
+        foreach ($this->routes as $type => $typeRoutes) {
+            foreach ([$typeRoutes['admin'], $typeRoutes['public']] as $group) {
+                if ($group !== null) {
+                    $owners[] = [$group['prefix'], "content_type.{$type}.", "content type \"{$type}\""];
                 }
             }
         }
+
+        foreach ($this->taxonomyRoutes as $taxonomy => $taxonomyRoutes) {
+            foreach ([$taxonomyRoutes['admin'], $taxonomyRoutes['public']] as $group) {
+                if ($group !== null) {
+                    $owners[] = [$group['prefix'], "taxonomy.{$taxonomy}.", "taxonomy \"{$taxonomy}\""];
+                }
+            }
+        }
+
+        return $owners;
     }
 
     /**
@@ -187,6 +228,44 @@ class RouteRegistry
         return [
             'prefix' => '/' . $definition->urlPrefix,
             'routes' => $routes,
+        ];
+    }
+
+    /**
+     * Term management at `/admin/taxonomies/{name}`, the URL the admin templates link to.
+     *
+     * @return RouteGroup
+     */
+    private function adminRoutesForTaxonomy(TaxonomyDefinition $definition): array
+    {
+        return [
+            'prefix' => '/admin/taxonomies/' . $definition->name,
+            'routes' => [
+                ['post', '', 'store'],
+                ['get', '/edit/{id}', 'edit'],
+                ['post', '/edit/{id}', 'update'],
+                ['delete', '/{id}', 'destroy'],
+                ['get', '', 'index'],
+            ],
+        ];
+    }
+
+    /**
+     * Term archives at `/{urlPrefix}/{slug}`. There's no page at `/{urlPrefix}` itself.
+     *
+     * @return RouteGroup|null null when the taxonomy has no archive
+     */
+    private function publicRoutesForTaxonomy(TaxonomyDefinition $definition): ?array
+    {
+        if (!$definition->hasArchive) {
+            return null;
+        }
+
+        return [
+            'prefix' => '/' . $definition->urlPrefix,
+            'routes' => [
+                ['get', '/{slug}', 'archive'],
+            ],
         ];
     }
 }

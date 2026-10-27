@@ -7,10 +7,13 @@ use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Controllers\PublicContentController;
+use TheatreCMS\Controllers\TermController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Routing\RouteRegistry;
+use TheatreCMS\Taxonomy\TaxonomyDefinition;
+use TheatreCMS\Taxonomy\TaxonomyRegistry;
 
 /**
  * Register all routes for the application
@@ -71,6 +74,35 @@ foreach ($routeRegistry->all() as ['definition' => $definition, 'admin' => $admi
     }
 }
 
-// foreach ($taxonomyRegistry->all() as $definition) {
-//     $routeRegistry->registerRoutesForTaxonomy($definition);
-// }
+foreach (TaxonomyRegistry::getInstance()->all() as $taxonomy) {
+    $routeRegistry->registerRoutesForTaxonomy($taxonomy);
+}
+
+/**
+ * Adds a taxonomy's routes, all handled by TermController with the taxonomy's name as the
+ * `taxonomy` route argument. Named like content-type routes, for the collision check.
+ */
+$addTaxonomyRoutes = function (RouteCollectorProxyInterface $group, TaxonomyDefinition $taxonomy, string $scope, array $routes) use ($container): void {
+    foreach ($routes as [$method, $path, $action]) {
+        $handler = function (Request $request, Response $response, array $args) use ($container, $taxonomy, $action): Response {
+            return $container->get(TermController::class)->{$action}($request, $response, ['taxonomy' => $taxonomy->name] + $args);
+        };
+
+        $group->{$method}($path, $handler)
+            ->setName(RouteRegistry::taxonomyRouteName($taxonomy->name, $scope, $action));
+    }
+};
+
+foreach ($routeRegistry->allTaxonomies() as ['definition' => $taxonomy, 'admin' => $admin, 'public' => $public]) {
+    $app->group($admin['prefix'], function (RouteCollectorProxyInterface $group) use ($addTaxonomyRoutes, $taxonomy, $admin) {
+        $addTaxonomyRoutes($group, $taxonomy, 'admin', $admin['routes']);
+    })->add(new RequireTwigMiddleware($container))
+      ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), $taxonomy->capability))
+      ->add($container->get(AuthMiddleware::class));
+
+    if ($public !== null) {
+        $app->group($public['prefix'], function (RouteCollectorProxyInterface $group) use ($addTaxonomyRoutes, $taxonomy, $public) {
+            $addTaxonomyRoutes($group, $taxonomy, 'public', $public['routes']);
+        })->add(new RequireTwigMiddleware($container));
+    }
+}

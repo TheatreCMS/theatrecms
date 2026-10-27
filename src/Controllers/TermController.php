@@ -12,12 +12,16 @@ use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Taxonomy\TermArchiveQuery;
+use TheatreCMS\Theme\TemplateResolver;
 
 /**
- * Admin screens for managing the terms of one registered taxonomy, at /admin/taxonomies/{taxonomy}.
+ * Admin screens for managing the terms of one registered taxonomy, at /admin/taxonomies/{taxonomy},
+ * and the public term archive at /{urlPrefix}/{slug}. `app/routes.php` registers both per
+ * taxonomy and passes the taxonomy's name as the `taxonomy` route argument.
  *
- * The required capability varies per taxonomy (TaxonomyDefinition::$capability), so it is checked
- * here rather than by route-group middleware.
+ * The admin actions also check the taxonomy's capability (TaxonomyDefinition::$capability)
+ * themselves, on top of the route group's middleware.
  *
  * @extends BaseController<TermRepository>
  */
@@ -31,8 +35,37 @@ class TermController extends BaseController
         private readonly TermRelationshipRepository $relationships,
         private readonly TaxonomyRegistry $taxonomies,
         private readonly AuthorizationService $authorization,
+        private readonly TemplateResolver $templateResolver,
+        private readonly TermArchiveQuery $archiveQuery,
     ) {
         parent::__construct($repository, $twig);
+    }
+
+    /**
+     * A term's public archive: the publicly visible items of every content type it's assigned to.
+     */
+    public function archive(Request $request, Response $response, array $args = []): Response
+    {
+        $taxonomy = $this->taxonomies->get((string) ($args['taxonomy'] ?? ''));
+        $term = $taxonomy !== null && $taxonomy->hasArchive
+            ? $this->repository->fetchBySlugInTaxonomy($taxonomy->name, (string) ($args['slug'] ?? ''))
+            : null;
+
+        if ($term === null) {
+            $response->getBody()->write('Term not found');
+
+            return $response->withStatus(404);
+        }
+
+        $term = apply_filters('theatrecms/term', $term, $request, $args);
+        $itemsByType = apply_filters(
+            'theatrecms/term_archive_items',
+            $this->archiveQuery->itemsFor($term, $taxonomy),
+            $term,
+            $request
+        );
+
+        return $this->templateResolver->renderTerm($this->twig, $response, $term, $taxonomy, $itemsByType);
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
