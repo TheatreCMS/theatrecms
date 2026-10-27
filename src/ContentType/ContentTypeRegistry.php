@@ -4,8 +4,6 @@ namespace TheatreCMS\ContentType;
 
 use InvalidArgumentException;
 use RuntimeException;
-use TheatreCMS\Admin\AdminMenuItem;
-use TheatreCMS\Admin\AdminMenuRegistry;
 use TheatreCMS\Controllers\EntryController;
 use TheatreCMS\Helpers\Args;
 use TheatreCMS\Routing\NamingRules;
@@ -64,7 +62,6 @@ class ContentTypeRegistry
     private readonly array $overrides;
 
     private readonly UrlPrefixRegistry $urlPrefixes;
-    private readonly AdminMenuRegistry $adminMenu;
 
     private static ?ContentTypeRegistry $instance = null;
 
@@ -79,10 +76,8 @@ class ContentTypeRegistry
     public function __construct(
         array $overrides = [],
         ?UrlPrefixRegistry $urlPrefixes = null,
-        ?AdminMenuRegistry $adminMenu = null
     ) {
         $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
-        $this->adminMenu = $adminMenu ?? new AdminMenuRegistry();
 
         $this->overrides = $this->parseOverrides($overrides);
     }

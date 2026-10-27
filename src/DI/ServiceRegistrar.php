@@ -211,8 +211,7 @@ class ServiceRegistrar
             $settings = $c->get('settings');
             return new ContentTypeRegistry(
                 $settings['content_types'] ?? [],
-                $c->get(UrlPrefixRegistry::class),
-                $c->get(AdminMenuRegistry::class),
+                $c->get(UrlPrefixRegistry::class)
             );
         });
 
