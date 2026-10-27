@@ -545,6 +545,7 @@ class ServiceRegistrar
                     $c->get(ProductionFormOptionsService::class),
                     $c->get(ContentMetaRepository::class),
                     $c->get(TemplateResolver::class),
+                    $c->get(EventRepository::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
@@ -555,6 +556,8 @@ class ServiceRegistrar
                     $c->get(SponsorRepository::class),
                     $c->get(ContentMetaRepository::class),
                     $c->get(TemplateResolver::class),
+                    $c->get(ProductionRepository::class),
+                    $c->get(EventRepository::class),
                 );
             },
             EventController::class => static function (ContainerInterface $c): EventController {

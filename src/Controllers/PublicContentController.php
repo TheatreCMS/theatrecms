@@ -24,4 +24,11 @@ interface PublicContentController
      */
     public function single(Request $request, Response $response, array $args = []): Response;
 
+    /**
+     * Extra public routes under `/{urlPrefix}`, as `[method, path, action]` (e.g. a season's
+     * `/{slug}/{productionSlug}`). They're registered ahead of the archive and single routes.
+     *
+     * @return list<array{0: string, 1: string, 2: string}>
+     */
+    public static function additionalPublicRoutes(): array;
 }

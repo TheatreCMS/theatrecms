@@ -21,6 +21,16 @@ trait RendersPublicContent
 {
     abstract protected function templateResolver(): TemplateResolver;
 
+    /**
+     * None by default; override to add routes such as a season's nested production page.
+     *
+     * @return list<array{0: string, 1: string, 2: string}>
+     */
+    public static function additionalPublicRoutes(): array
+    {
+        return [];
+    }
+
     public function archive(Request $request, Response $response, array $args = []): Response
     {
         $definition = $this->publicContentType($request);

@@ -10,6 +10,7 @@ use RuntimeException;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Routing\RouteRegistry;
 
 class RouteRegistryTest extends TestCase
@@ -84,6 +85,22 @@ class RouteRegistryTest extends TestCase
         $registry->assertNoCollisions($this->routes(['/seasons', null]));
 
         $this->addToAssertionCount(1);
+    }
+
+    public function testAControllersAdditionalPublicRoutesComeBeforeTheSingleRoute(): void
+    {
+        $registry = new RouteRegistry();
+        $registry->registerRoutesForContentType(new ContentTypeDefinition(
+            'season',
+            'Seasons',
+            'Season',
+            'seasons',
+            controller: SeasonController::class
+        ));
+
+        $paths = array_column($registry->all()['season']['public']['routes'], 1);
+
+        $this->assertSame(['/{slug}/{productionSlug}', '/{slug}', ''], $paths);
     }
 
     private function registryWithSeasons(): RouteRegistry

@@ -5,6 +5,7 @@ namespace TheatreCMS\Routing;
 use RuntimeException;
 use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Controllers\PublicContentController;
 
 /**
  * Collects the admin and public routes for each content type, keyed by type name. Each
@@ -171,9 +172,11 @@ class RouteRegistry
             return null;
         }
 
-        $routes = [
-            ['get', '/{slug}', 'single'],
-        ];
+        // A controller that isn't a PublicContentController is rejected in app/routes.php.
+        $routes = is_subclass_of($definition->controller, PublicContentController::class)
+            ? $definition->controller::additionalPublicRoutes()
+            : [];
+        $routes[] = ['get', '/{slug}', 'single'];
 
         if ($definition->hasArchive) {
             $routes[] = ['get', '', 'archive'];
