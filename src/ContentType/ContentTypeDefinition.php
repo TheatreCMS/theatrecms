@@ -49,6 +49,6 @@ final class ContentTypeDefinition
 
     public function adminSlug(): string
     {
-        return "admin/entries/{$this->urlPrefix}";
+        return "admin/{$this->urlPrefix}";
     }
 }

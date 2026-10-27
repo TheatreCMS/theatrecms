@@ -37,22 +37,24 @@ $contentTypeHandler = function (ContentTypeDefinition $definition, string $actio
     };
 };
 
-$addRoutes = function (RouteCollectorProxyInterface $group, ContentTypeDefinition $definition, array $routes) use ($contentTypeHandler): void {
+// Named so RouteRegistry::assertNoCollisions() can tell the type's own routes from others.
+$addRoutes = function (RouteCollectorProxyInterface $group, ContentTypeDefinition $definition, string $scope, array $routes) use ($contentTypeHandler): void {
     foreach ($routes as [$method, $path, $action]) {
-        $group->{$method}($path, $contentTypeHandler($definition, $action));
+        $group->{$method}($path, $contentTypeHandler($definition, $action))
+            ->setName(RouteRegistry::routeName($definition->name, $scope, $action));
     }
 };
 
 foreach ($routeRegistry->all() as ['definition' => $definition, 'admin' => $admin, 'public' => $public]) {
     $app->group($admin['prefix'], function (RouteCollectorProxyInterface $group) use ($addRoutes, $definition, $admin) {
-        $addRoutes($group, $definition, $admin['routes']);
+        $addRoutes($group, $definition, 'admin', $admin['routes']);
     })->add(new RequireTwigMiddleware($container))
       ->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), $definition->capability))
       ->add($container->get(AuthMiddleware::class));
 
     if ($public !== null) {
         $app->group($public['prefix'], function (RouteCollectorProxyInterface $group) use ($addRoutes, $definition, $public) {
-            $addRoutes($group, $definition, $public['routes']);
+            $addRoutes($group, $definition, 'public', $public['routes']);
         })->add(new RequireTwigMiddleware($container));
     }
 }

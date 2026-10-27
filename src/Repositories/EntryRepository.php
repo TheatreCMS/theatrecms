@@ -124,6 +124,24 @@ class EntryRepository extends BaseRepository
         parent::delete($item);
     }
 
+    /**
+     * Sets a new slug, made unique within the content type. A blank slug, or the entry's
+     * current one, leaves it unchanged.
+     *
+     * @throws InvalidArgumentException for an entry of another content type
+     */
+    public function updateSlug(Entry $entry, string $slug): void
+    {
+        $this->assertOwnType($entry);
+
+        $slug = trim($slug);
+        if ($slug === '' || strcasecmp($entry->getSlug(), $slug) === 0) {
+            return;
+        }
+
+        $entry->setSlug($this->generateUniqueSlug($slug));
+    }
+
     protected function taxonomyContentType(): ?string
     {
         return $this->requireType();

@@ -1,0 +1,87 @@
+{#
+    Scripts for the entry create and edit forms: submits through HTMX, first saving the
+    EditorJS content into the hidden `content` field when the type supports the editor.
+
+    Params:
+      content_type  the ContentTypeDefinition
+      form_action   the form's action URL, used to find the form
+      content       the entry's stored EditorJS JSON, or null on the create form
+#}
+<script type="module">
+    {% if content_type.supports('editor') %}
+    import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
+    {% endif %}
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector({{ ('form[action="' ~ form_action ~ '"]')|json_encode|raw }});
+
+        if (!form) {
+            return;
+        }
+
+        let isSaving = false;
+
+        form.addEventListener('htmx:afterRequest', () => {
+            isSaving = false;
+            document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        {% if content_type.supports('editor') %}
+        const contentField = document.getElementById('content');
+        const rawContent = {{ content|default('')|json_encode(constant('JSON_HEX_TAG'))|raw }};
+        let editorData = null;
+
+        if (rawContent && typeof rawContent === 'string') {
+            try {
+                const parsed = JSON.parse(rawContent);
+                if (parsed && typeof parsed === 'object' && Array.isArray(parsed.blocks)) {
+                    editorData = parsed;
+                }
+            } catch (error) {
+                console.warn('Existing content is not valid EditorJS JSON; opening with empty editor.', error);
+            }
+        }
+
+        const showEditorSaveError = () => {
+            document.getElementById('flash-messages').innerHTML =
+                '<div role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
+                '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+                '<p class="text-sm font-medium">Unable to save content. Please try again.</p></div>';
+        };
+
+        const editor = new EditorJS(buildEditorJsConfig({
+            holder: 'editorjs',
+            data: editorData,
+        }));
+        {% endif %}
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (isSaving) {
+                return;
+            }
+            isSaving = true;
+
+            {% if content_type.supports('editor') %}
+            editor.save().then((outputData) => {
+                contentField.value = JSON.stringify(outputData);
+                form.dispatchEvent(new Event('htmxSubmit'));
+            }).catch((error) => {
+                console.error('EditorJS save failed:', error);
+                showEditorSaveError();
+                isSaving = false;
+            });
+            {% else %}
+            form.dispatchEvent(new Event('htmxSubmit'));
+            {% endif %}
+        });
+    });
+</script>
+
+{% if content_type.supports('featured_image') %}
+    <script type="module">
+        import { initFeaturedImagePicker } from '/assets/js/featured-image-picker.js';
+        initFeaturedImagePicker();
+    </script>
+    {% include 'admin/partials/_image_picker_modal.html.twig' %}
+{% endif %}

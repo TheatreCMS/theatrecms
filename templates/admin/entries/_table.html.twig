@@ -1,0 +1,24 @@
+{% for entry in entries %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4">
+            <div class="text-sm font-medium text-gray-900">{{ entry.title }}</div>
+            <div class="text-xs text-gray-500">Slug: {{ entry.slug }}</div>
+        </td>
+        <td class="px-6 py-4">{{ status_labels[entry.status.value] ?? entry.status.label }}</td>
+        <td class="px-6 py-4">
+            {% if entry.publishedAt %}
+                {{ entry.publishedAt|date('Y-m-d H:i') }}
+            {% else %}
+                <span class="text-gray-500">Not published</span>
+            {% endif %}
+        </td>
+        <td class="px-6 py-4 text-right space-x-2">
+            <a href="{{ pagination.basePath }}/edit/{{ entry.id }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+            <button type="button" class="text-red-600 hover:text-red-900" hx-delete="{{ pagination.basePath }}/{{ entry.id }}?page={{ pagination.page }}" hx-target="#entryListContainer" hx-swap="outerHTML" hx-confirm="Delete this {{ content_type.singularLabel|lower }}? This cannot be undone.">Delete</button>
+        </td>
+    </tr>
+{% else %}
+    <tr class="bg-neutral-primary border-b border-default">
+        <td class="px-6 py-4" colspan="4">No {{ content_type.label|lower }} found.</td>
+    </tr>
+{% endfor %}

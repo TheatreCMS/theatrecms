@@ -25,6 +25,7 @@ use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Routing\RouteRegistry;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\SeoTagBuilder;
@@ -167,4 +168,8 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
         'seo' => $container->get(SeoTagBuilder::class)->forHome(),
     ]);
 });
+
+// Every route is registered by now; refuse to serve if one lands under a content type's prefix.
+RouteRegistry::getInstance()->assertNoCollisions($app->getRouteCollector()->getRoutes());
+
 $app->run();

@@ -3,6 +3,7 @@
 namespace TheatreCMS\Routing;
 
 use RuntimeException;
+use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 
 /**
@@ -75,21 +76,90 @@ class RouteRegistry
     }
 
     /**
+     * The route name for one of a content type's routes, e.g. `content_type.season.admin.index`.
+     * assertNoCollisions() relies on it to tell a type's own routes from everyone else's.
+     *
+     * @param string $scope 'admin' or 'public'
+     */
+    public static function routeName(string $type, string $scope, string $action): string
+    {
+        return "content_type.{$type}.{$scope}.{$action}";
+    }
+
+    /**
+     * Throws if a route a content type doesn't own is served at or under one of its prefixes,
+     * e.g. a plugin's `/admin/seasons/report` against the season type's `/admin/seasons`.
+     * Call once every route is registered: core, plugins and catch-alls.
+     *
+     * @param iterable<RouteInterface> $routes
+     * @throws RuntimeException naming the first colliding route
+     */
+    public function assertNoCollisions(iterable $routes): void
+    {
+        foreach ($routes as $route) {
+            $pattern = $route->getPattern();
+
+            foreach ($this->routes as $type => $typeRoutes) {
+                foreach ([$typeRoutes['admin'], $typeRoutes['public']] as $group) {
+                    if ($group === null || !self::isAtOrUnder($pattern, $group['prefix'])) {
+                        continue;
+                    }
+
+                    if (str_starts_with($route->getName() ?? '', "content_type.{$type}.")) {
+                        continue;
+                    }
+
+                    throw new RuntimeException(sprintf(
+                        'Route "%s %s" collides with content type "%s", which owns "%s".',
+                        implode('|', $route->getMethods()),
+                        $pattern,
+                        $type,
+                        $group['prefix']
+                    ));
+                }
+            }
+        }
+    }
+
+    /**
+     * Whether `$pattern` is `$prefix` itself or a path below it (`/seasons`, `/seasons/{id}`,
+     * `/seasons[/{page}]`), but not a sibling that merely starts with it (`/seasons-archive`).
+     */
+    private static function isAtOrUnder(string $pattern, string $prefix): bool
+    {
+        if (!str_starts_with($pattern, $prefix)) {
+            return false;
+        }
+
+        return in_array(substr($pattern, strlen($prefix), 1), ['', '/', '['], true);
+    }
+
+    /**
      * @return RouteGroup
      */
     private function adminRoutesForContentType(ContentTypeDefinition $definition): array
     {
+        $routes = [
+            ['get', '/create', 'create'],
+            ['post', '/create', 'store'],
+            ['post', '/edit', 'update'],
+            ['get', '/edit/{id}', 'edit'],
+        ];
+
+        if ($definition->supports('featured_image')) {
+            $routes[] = ['delete', '/{id}/featured-image', 'removeFeaturedImage'];
+        }
+
+        array_push(
+            $routes,
+            ['delete', '/{id}', 'destroy'],
+            ['get', '/{id}', 'show'],
+            ['get', '', 'index'],
+        );
+
         return [
             'prefix' => '/' . $definition->adminSlug(),
-            'routes' => [
-                ['get', '/create', 'create'],
-                ['post', '/create', 'store'],
-                ['post', '/edit', 'update'],
-                ['get', '/edit/{id}', 'edit'],
-                ['delete', '/{id}', 'destroy'],
-                ['get', '/{id}', 'show'],
-                ['get', '', 'index'],
-            ],
+            'routes' => $routes,
         ];
     }
 
