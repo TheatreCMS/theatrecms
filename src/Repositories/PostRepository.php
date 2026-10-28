@@ -35,6 +35,7 @@ class PostRepository extends BaseRepository
             'title' => null,
             'status' => ContentStatus::DRAFT->value,
             'content' => null,
+            'excerpt' => null,
             'slug' => null,
         ], $args);
 
@@ -52,6 +53,7 @@ class PostRepository extends BaseRepository
         }
 
         $post = new Post($args['title'], $status, $args['content']);
+        $post->setExcerpt($args['excerpt'] ?: null);
         $slugSource = $args['slug'] ?? $args['title'];
         $post->setSlug($this->generateUniqueSlug($slugSource));
 

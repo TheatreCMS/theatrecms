@@ -16,6 +16,7 @@ use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Models\Work;
 use TheatreCMS\Text\EditorJsHtmlConverter;
+use TheatreCMS\Theme\ExcerptResolver;
 use TheatreCMS\Theme\SeoDescriptionResolver;
 use TheatreCMS\Theme\ThemeManager;
 
@@ -27,7 +28,10 @@ class SeoDescriptionResolverTest extends TestCase
     {
         parent::setUp();
         $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
-        $this->resolver = new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager));
+        $this->resolver = new SeoDescriptionResolver(
+            new EditorJsHtmlConverter($themeManager),
+            new ExcerptResolver()
+        );
     }
 
     private function editorJsPayload(string $text): string

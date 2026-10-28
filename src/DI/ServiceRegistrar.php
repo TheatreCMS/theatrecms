@@ -228,7 +228,10 @@ class ServiceRegistrar
         $container->set(QueriedObject::class, static fn(): QueriedObject => new QueriedObject());
 
         $container->set(SeoDescriptionResolver::class, static function (ContainerInterface $c): SeoDescriptionResolver {
-            return new SeoDescriptionResolver($c->get(EditorJsHtmlConverter::class));
+            return new SeoDescriptionResolver(
+                $c->get(EditorJsHtmlConverter::class),
+                $c->get(ExcerptResolver::class)
+            );
         });
 
         $container->set(SeoTagBuilder::class, static function (ContainerInterface $c): SeoTagBuilder {

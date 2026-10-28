@@ -14,6 +14,7 @@ use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
 use DateTime;
+use TheatreCMS\Traits\HasExcerpt;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasSponsors;
@@ -25,6 +26,7 @@ use TheatreCMS\Traits\HasModifiedTimestamp;
 #[Entity, Table(name: 'productions')]
 class Production extends ModelBase
 {
+    use HasExcerpt;
     use HasFeaturedImage;
     use HasHeroImage;
     use HasSponsors;
@@ -39,9 +41,6 @@ class Production extends ModelBase
 
     #[Column(type: 'text', nullable: true)]
     private ?string $description = null;
-
-    #[Column(type: 'string', nullable: true)]
-    private ?string $excerpt = null;
 
     #[Column(type: 'date', nullable: true)]
     private ?DateTime $opening = null;
@@ -172,11 +171,6 @@ class Production extends ModelBase
         return $this->description ?? '';
     }
 
-    public function getExcerpt(): string
-    {
-        return $this->excerpt ?? '';
-    }
-
     public function getRuntime(): int
     {
         return $this->runtime ?? 0;
@@ -251,13 +245,6 @@ class Production extends ModelBase
     public function setDescription(?string $description): self
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function setExcerpt(?string $excerpt): self
-    {
-        $this->excerpt = $excerpt;
 
         return $this;
     }

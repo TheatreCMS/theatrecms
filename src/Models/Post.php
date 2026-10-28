@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasExcerpt;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
@@ -21,6 +22,7 @@ use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 class Post extends ModelBase
 {
     use HasContentStatus;
+    use HasExcerpt;
     use HasFeaturedImage;
     use HasHeroImage;
     use HasTimestamps;

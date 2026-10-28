@@ -144,6 +144,7 @@ class PostController extends BaseController implements PublicContentController
                 'title' => $data['title'] ?? null,
                 'status' => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
+                'excerpt' => $data['excerpt'] ?? null,
             ]);
             $this->applyFeaturedImage($post, $data['featuredImageId'] ?? null);
             $this->applyHeroImage($post->getId(), $data['heroImageId'] ?? null);
@@ -188,6 +189,7 @@ class PostController extends BaseController implements PublicContentController
             'title' => null,
             'status' => ContentStatus::DRAFT->value,
             'content' => null,
+            'excerpt' => null,
             'slug' => null,
             'publishedAt' => null,
             'featuredImageId' => null,
@@ -230,6 +232,7 @@ class PostController extends BaseController implements PublicContentController
         $post->setTitle($data['title']);
         $post->setStatus($status);
         $post->setContent($data['content']);
+        $post->setExcerpt($data['excerpt'] ?: null);
         $this->applyFeaturedImage($post, $data['featuredImageId']);
         $this->applyHeroImage($post->getId(), $data['heroImageId']);
         $post->touchModified();

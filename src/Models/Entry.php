@@ -13,6 +13,7 @@ use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasExcerpt;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
 use TheatreCMS\Traits\HasTimestamps;
@@ -34,6 +35,7 @@ use TheatreCMS\Helpers\Args;
 class Entry
 {
     use HasContentStatus;
+    use HasExcerpt;
     use HasFeaturedImage;
     use HasTimestamps;
     use HasModifiedTimestamp;
@@ -59,9 +61,6 @@ class Entry
      */
     #[Column(type: 'text', nullable: true)]
     private ?string $content = null;
-
-    #[Column(type: 'text', nullable: true)]
-    private ?string $excerpt = null;
 
     public function __construct(array $args)
     {
@@ -121,18 +120,6 @@ class Entry
     public function setContent(?string $content): self
     {
         $this->content = $content;
-
-        return $this;
-    }
-
-    public function getExcerpt(): ?string
-    {
-        return apply_filters('get_the_excerpt', $this->excerpt);
-    }
-
-    public function setExcerpt(?string $excerpt): self
-    {
-        $this->excerpt = $excerpt;
 
         return $this;
     }
