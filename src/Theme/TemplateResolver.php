@@ -18,7 +18,7 @@ use TheatreCMS\Taxonomy\TaxonomyDefinition;
  * - single.html.twig
  * - index.html.twig
  *
- * `resolveSingle()`/`resolveList()` (and their `render*()` counterparts) build exactly that
+ * `resolveSingle()`/`resolveArchive()` (and their `render*()` counterparts) build exactly that
  * candidate list for the two shapes every frontend route needs, so routes don't each repeat it.
  */
 class TemplateResolver
@@ -63,18 +63,18 @@ class TemplateResolver
     }
 
     /**
-     * Template hierarchy for a content-type list/archive view:
-     * {type}/list.html.twig -> list.html.twig -> index.html.twig
+     * Template hierarchy for a content-type archive view:
+     * {type}/archive.html.twig -> archive.html.twig -> index.html.twig
      */
-    public function resolveList(Twig $twig, string $type): string
+    public function resolveArchive(Twig $twig, string $type): string
     {
-        return $this->resolve($twig, "$type/list.html.twig", 'list.html.twig', 'index.html.twig');
+        return $this->resolve($twig, "$type/archive.html.twig", 'archive.html.twig', 'index.html.twig');
     }
 
     /**
      * Template hierarchy for a taxonomy term archive:
      * taxonomy/{taxonomy}-{slug}.html.twig -> taxonomy/{taxonomy}.html.twig -> taxonomy.html.twig
-     * -> list.html.twig -> index.html.twig
+     * -> archive.html.twig -> index.html.twig
      */
     public function resolveTerm(Twig $twig, string $taxonomy, string $slug): string
     {
@@ -83,7 +83,7 @@ class TemplateResolver
             "taxonomy/$taxonomy-$slug.html.twig",
             "taxonomy/$taxonomy.html.twig",
             'taxonomy.html.twig',
-            'list.html.twig',
+            'archive.html.twig',
             'index.html.twig'
         );
     }
@@ -130,13 +130,13 @@ class TemplateResolver
     }
 
     /**
-     * Resolve and render a content-type list/archive view in one step.
+     * Resolve and render a content-type archive view in one step.
      *
      * Adds the same generic context keys `renderSingle()` adds:
      * - `page` (there being no single entity to derive a title from, the caller supplies
      *   the page title directly).
      * - `posts` (the raw `$items` collection), used by the generic `index.html.twig`
-     *   fallback that both bundled themes rely on when no type-specific list template
+     *   fallback that both bundled themes rely on when no type-specific archive template
      *   exists yet.
      * - `seo` (a `SeoMeta` value object built by `SeoTagBuilder`, from the archive's
      *   type/label rather than a single entity).
@@ -147,7 +147,7 @@ class TemplateResolver
      * @param string|null $templateDir the theme template directory, when it differs from `$type`
      *        (see `renderSingle()`)
      */
-    public function renderList(
+    public function renderArchive(
         Twig $twig,
         Response $response,
         string $type,
@@ -164,15 +164,15 @@ class TemplateResolver
 
         $this->queriedObject->setArchive($type);
 
-        return $twig->render($response, $this->resolveList($twig, $templateDir ?? $type), $context);
+        return $twig->render($response, $this->resolveArchive($twig, $templateDir ?? $type), $context);
     }
 
     /**
      * Resolve and render a taxonomy term archive in one step.
      *
      * Adds `term`, `taxonomy` (its `TaxonomyDefinition`) and `items_by_type` (content type =>
-     * items), plus the same generic keys as `renderList()`: `posts` (every item, flattened across
-     * content types, for the generic list/index fallbacks), `page` (titled with the term's name)
+     * items), plus the same generic keys as `renderArchive()`: `posts` (every item, flattened across
+     * content types, for the generic archive/index fallbacks), `page` (titled with the term's name)
      * and `seo`.
      *
      * @param array<string, array<int, object>> $itemsByType

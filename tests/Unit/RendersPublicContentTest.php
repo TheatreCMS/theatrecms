@@ -35,7 +35,7 @@ class RendersPublicContentTest extends TestCase
 
         $resolver = $this->createMock(TemplateResolver::class);
         $resolver->expects($this->once())
-            ->method('renderList')
+            ->method('renderArchive')
             ->with(
                 $this->anything(),
                 $this->anything(),

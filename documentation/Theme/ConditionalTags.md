@@ -3,7 +3,7 @@
 TheatreCMS's corollary to WordPress' `is_single()`/`is_archive()`/etc. family of conditional
 tags — small boolean checks theme code and templates use to branch on what kind of page is
 currently being rendered. Backed by `QueriedObject` (`src/ContentType/QueriedObject.php`), which is
-populated by `TemplateResolver::renderSingle()`/`renderList()`/`renderTerm()` (the methods every
+populated by `TemplateResolver::renderSingle()`/`renderArchive()`/`renderTerm()` (the methods every
 frontend content route funnels through) right before the template renders.
 
 ### Available tags
@@ -58,7 +58,7 @@ Call these only from Twig templates, or from hook/action callbacks invoked *whil
 is rendering (e.g. a filter fired by `the_content()` or `apply_filters()` from inside a
 `.twig` file) — not from top-level code in a theme's `functions.php`. `functions.php` is
 loaded once per request when the `Twig` service is first resolved, which always happens
-*before* the matched route calls `renderSingle()`/`renderList()`; at that point no page has
+*before* the matched route calls `renderSingle()`/`renderArchive()`; at that point no page has
 been "queried" yet, so every conditional tag would report `false`.
 
 Requests that never go through `TemplateResolver` (the home page, admin pages) correctly see

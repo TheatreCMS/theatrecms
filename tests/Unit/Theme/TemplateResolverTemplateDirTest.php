@@ -16,7 +16,7 @@ use TheatreCMS\Theme\TitleResolver;
 use Twig\Loader\ArrayLoader;
 
 /**
- * renderSingle()/renderList() resolve templates from `$templateDir` when given, while
+ * renderSingle()/renderArchive() resolve templates from `$templateDir` when given, while
  * QueriedObject still sees the content-type key.
  */
 class TemplateResolverTemplateDirTest extends TestCase
@@ -28,9 +28,9 @@ class TemplateResolverTemplateDirTest extends TestCase
     protected function setUp(): void
     {
         $this->twig = new Twig(new ArrayLoader([
-            'productions/list.html.twig' => 'plural list',
+            'productions/archive.html.twig' => 'plural archive',
             'productions/single.html.twig' => 'plural single',
-            'production/list.html.twig' => 'key list',
+            'production/archive.html.twig' => 'key archive',
             'production/single.html.twig' => 'key single',
             'index.html.twig' => 'index',
         ]));
@@ -44,9 +44,9 @@ class TemplateResolverTemplateDirTest extends TestCase
         $this->resolver = new TemplateResolver(new TitleResolver(), $this->queriedObject, $seoTagBuilder);
     }
 
-    public function testRenderListUsesTheTemplateDir(): void
+    public function testRenderArchiveUsesTheTemplateDir(): void
     {
-        $response = $this->resolver->renderList(
+        $response = $this->resolver->renderArchive(
             $this->twig,
             new Response(),
             'production',
@@ -55,15 +55,15 @@ class TemplateResolverTemplateDirTest extends TestCase
             templateDir: 'productions'
         );
 
-        $this->assertSame('plural list', (string) $response->getBody());
+        $this->assertSame('plural archive', (string) $response->getBody());
         $this->assertTrue($this->queriedObject->isArchive('production'));
     }
 
-    public function testRenderListDefaultsTheTemplateDirToTheType(): void
+    public function testRenderArchiveDefaultsTheTemplateDirToTheType(): void
     {
-        $response = $this->resolver->renderList($this->twig, new Response(), 'production', 'Productions', []);
+        $response = $this->resolver->renderArchive($this->twig, new Response(), 'production', 'Productions', []);
 
-        $this->assertSame('key list', (string) $response->getBody());
+        $this->assertSame('key archive', (string) $response->getBody());
     }
 
     public function testRenderSingleUsesTheTemplateDir(): void

@@ -21,7 +21,7 @@ Priorities work like WordPress (lower values run earlier). You can register call
 |-----|-------------|----------------|---------------------|
 | `theatrecms/season` | Fired before rendering `templates/seasons/single*.twig`. | `Season` entity | `Request`, route arguments |
 | `theatrecms/production` | Fired before rendering `templates/seasons/production.html.twig`. | `Production` entity | `Request`, route arguments |
-| `theatrecms/seasons` | Fired before rendering `templates/seasons/list.html.twig`. | `array<Season>` | `Request` |
+| `theatrecms/seasons` | Fired before rendering `templates/seasons/archive.html.twig`. | `array<Season>` | `Request` |
 | `theatrecms/term` | Fired before rendering a taxonomy term archive (`/{urlPrefix}/{term-slug}`, see `taxonomies.md`). | `Term` entity | `Request`, route arguments |
 | `theatrecms/term_archive_items` | Fired before rendering a taxonomy term archive, with the publicly visible items carrying the term. | `array<string, array<object>>` (singular content type => items) | The `Term`, `Request` |
 | `theatrecms/the_title` | Fired by the `the_title()` Twig function (see `src/Twig/TitleExtension.php`), TheatreCMS's corollary to WordPress' `the_title()`/filterable `the_title`. Resolves the display title for whatever content entity is passed to it (`Page`/`Post`/`Work`/`Event` via `getTitle()`, `Production` via `getName()`, `Season` via `getLabel()`, `Person`/`Venue`/`Sponsor`/`Term` via `getName()`), then lets themes filter the resolved string. | `string` (the resolved title) | The entity passed to `the_title()` |

@@ -37,7 +37,7 @@ trait RendersPublicContent
         $key = str_replace('-', '_', $definition->urlPrefix);
         $items = apply_filters("theatrecms/{$key}", $this->repository->fetchPublic(), $request);
 
-        return $this->templateResolver()->renderList(
+        return $this->templateResolver()->renderArchive(
             $this->twig,
             $response,
             $definition->name,

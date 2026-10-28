@@ -61,7 +61,7 @@ the term and the listed items before rendering.
 1. `taxonomy/{taxonomy}-{term-slug}.html.twig`, e.g. `taxonomy/genre-comedy.html.twig`
 2. `taxonomy/{taxonomy}.html.twig`
 3. `taxonomy.html.twig`
-4. `list.html.twig`
+4. `archive.html.twig`
 5. `index.html.twig`
 
 Template context:

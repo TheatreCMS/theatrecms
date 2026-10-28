@@ -121,7 +121,7 @@ $releases->fetchPage(page: 1, perPage: 20, search: 'season', sort: 'publishedAt'
 Content-type keys are singular everywhere code asks about a type: `is_singular('production')`,
 `is_archive('season')` (see `documentation/Theme/ConditionalTags.md`). Theme template
 directories for the built-ins are still plural (`productions/single.html.twig`); routes pass the
-directory to `TemplateResolver::renderSingle()` / `renderList()` as `templateDir`.
+directory to `TemplateResolver::renderSingle()` / `renderArchive()` as `templateDir`.
 
 ## Taxonomies
 
