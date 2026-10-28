@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TheatreCMS\Tests\Unit;
 
+use Delight\Auth\Role;
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
@@ -61,6 +63,25 @@ class CoreRegistrationsTest extends TestCase
         require self::APP_DIR . '/core-taxonomies.php';
 
         $this->assertTrue(TaxonomyRegistry::getInstance()->has('genre'));
+    }
+
+    public function testAdminHoldsEveryCoreContentTypeAndTaxonomyCapability(): void
+    {
+        $capabilities = new CapabilityRegistry();
+        CapabilityRegistry::setInstance($capabilities);
+        require self::APP_DIR . '/capabilities.php';
+
+        $contentTypes = $this->registerCoreContentTypes();
+        $taxonomies = new TaxonomyRegistry($contentTypes);
+        TaxonomyRegistry::setInstance($taxonomies);
+        require self::APP_DIR . '/core-taxonomies.php';
+
+        $required = array_merge(
+            array_map(static fn($type) => $type->capability, $contentTypes->all()),
+            array_map(static fn($taxonomy) => $taxonomy->capability, $taxonomies->all()),
+        );
+
+        $this->assertSame([], array_values(array_diff($required, $capabilities->capabilitiesFor(Role::ADMIN))));
     }
 
     /**

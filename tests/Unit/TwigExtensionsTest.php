@@ -116,12 +116,12 @@ class TwigExtensionsTest extends TestCase
     public function testTitleCapabilityAndIconDelegate(): void
     {
         $authorization = $this->createMock(AuthorizationService::class);
-        $authorization->method('can')->willReturnCallback(fn(string $cap) => $cap === 'edit_posts');
+        $authorization->method('can')->willReturnCallback(fn(string $cap) => $cap === 'manage_posts');
         $capability = new CapabilityExtension($authorization);
         $icons = new MediaTypeIconExtension();
 
         $this->assertSame('About', (new TitleExtension(new TitleResolver()))->theTitle(new Page('About', ContentStatus::DRAFT, 'x')));
-        $this->assertTrue($capability->can('edit_posts'));
+        $this->assertTrue($capability->can('manage_posts'));
         $this->assertFalse($capability->can('manage_options'));
         $this->assertStringContainsString('polygon', $icons->icon(Media::TYPE_VIDEO));
         $this->assertNotSame($icons->icon(Media::TYPE_PDF), $icons->icon('unknown'));

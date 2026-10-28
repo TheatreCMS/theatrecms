@@ -185,7 +185,7 @@ class ContentTypeRegistryTest extends TestCase
         $this->assertTrue($definition->hasArchive);
         $this->assertTrue($definition->public);
         $this->assertSame(['editor'], $definition->supports);
-        $this->assertSame(Capability::EDIT_POSTS, $definition->capability);
+        $this->assertSame(Capability::MANAGE_POSTS, $definition->capability);
     }
 
     public function testRegisterAppliesEveryArg(): void

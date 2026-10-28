@@ -33,10 +33,10 @@ class CapabilityRegistryTest extends TestCase
     public function testGrantAddsCapabilitiesWithoutReplacingExistingOnes(): void
     {
         $registry = new CapabilityRegistry();
-        $registry->register(1, ['manage_users', 'edit_posts']);
-        $registry->grant(1, ['edit_posts', 'manage_forms']);
+        $registry->register(1, ['manage_users', 'manage_posts']);
+        $registry->grant(1, ['manage_posts', 'manage_forms']);
 
-        $this->assertSame(['manage_users', 'edit_posts', 'manage_forms'], $registry->capabilitiesFor(1));
+        $this->assertSame(['manage_users', 'manage_posts', 'manage_forms'], $registry->capabilitiesFor(1));
     }
 
     public function testGrantToUnregisteredRoleRegistersIt(): void

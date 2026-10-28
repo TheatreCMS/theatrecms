@@ -7,11 +7,11 @@ use TheatreCMS\Auth\Capability;
 register_taxonomy('genre', ['work'], [
     'label' => 'Genres',
     'singularLabel' => 'Genre',
-    'capability' => Capability::MANAGE_PEOPLE,
+    'capability' => Capability::MANAGE_WORKS,
 ]);
 register_taxonomy('post_category', ['post'], [
     'label' => 'Categories',
     'singularLabel' => 'Category',
-    'capability' => Capability::EDIT_POSTS,
+    'capability' => Capability::MANAGE_POSTS,
     'urlPrefix' => 'category',
 ]);

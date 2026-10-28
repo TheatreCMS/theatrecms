@@ -34,7 +34,7 @@ final class ContentTypeDefinition
         public readonly string $urlPrefix,
         public readonly string $controller = EntryController::class,
         public readonly bool $hasArchive = true,
-        public readonly string $capability = Capability::EDIT_POSTS,
+        public readonly string $capability = Capability::MANAGE_POSTS,
         public readonly bool $public = true,
         public readonly array $supports = [
             'editor',

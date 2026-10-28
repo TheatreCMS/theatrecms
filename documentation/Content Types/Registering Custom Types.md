@@ -30,7 +30,7 @@ type's `ContentTypeDefinition` (`src/ContentType/`).
 | `hasArchive` | `true` | Whether the type gets a public listing page at `/{urlPrefix}` |
 | `public` | `true` | Whether its entries get frontend routes at all |
 | `supports` | `[]` | Standard entry fields it uses: `editor`, `excerpt`, `featured_image` |
-| `capability` | `edit_posts` | Capability needed to manage its entries in the admin |
+| `capability` | `manage_posts` | Capability needed to manage its entries in the admin |
 
 - **Names** are lowercase letters and underscores (`TheatreCMS\Routing\NamingRules`), with no
   length limit. Use the singular: `press_release`, not `press_releases`.
