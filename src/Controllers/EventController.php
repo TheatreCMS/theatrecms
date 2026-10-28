@@ -16,12 +16,16 @@ use Slim\Psr7\Stream;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use Symfony\Component\Validator\Constraints\Date as DateConstraint;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<EventRepository>
  */
-class EventController extends BaseController
+class EventController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
+
     private ProductionRepository $productionRepo;
     private VenueRepository $venueRepo;
 
@@ -30,11 +34,17 @@ class EventController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         ProductionRepository $productionRepo,
-        VenueRepository $venueRepo
+        VenueRepository $venueRepo,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig, $em);
         $this->productionRepo = $productionRepo;
         $this->venueRepo      = $venueRepo;
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

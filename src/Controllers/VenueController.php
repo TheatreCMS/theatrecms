@@ -9,21 +9,30 @@ use TheatreCMS\Traits\HandlesContentImages;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<VenueRepository>
  */
-class VenueController extends BaseController
+class VenueController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
     use HandlesContentImages;
 
     public function __construct(
         VenueRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     protected function contentType(): string

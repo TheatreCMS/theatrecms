@@ -6,14 +6,18 @@ use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Response;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Repositories\ContentMetaRepository;
+use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class SeasonControllerTest extends TestCase
@@ -218,13 +222,91 @@ class SeasonControllerTest extends TestCase
         $this->assertSame('Season not found.', $this->rendered['data']['message']);
     }
 
+    public function testNestedProductionRendersAProductionOfThatSeason(): void
+    {
+        $this->registerProductionType();
+        $season = $this->season('2025-26');
+        $production = (new ProductionRepository($this->em, $this->meta))->create(['name' => 'Hamlet', 'seasonId' => $season->getId()]);
+
+        $resolver = $this->createMock(TemplateResolver::class);
+        $resolver->expects($this->once())
+            ->method('renderSingle')
+            ->with(
+                $this->anything(),
+                $this->anything(),
+                'production',
+                $production,
+                ['production' => $production, 'performances' => []],
+                'productions'
+            )
+            ->willReturn(new Response());
+
+        $this->controller($resolver)->production(
+            $this->request('GET'),
+            new Response(),
+            ['slug' => $season->getSlug(), 'productionSlug' => $production->getSlug()]
+        );
+    }
+
+    public function testNestedProductionIs404ForAProductionOfAnotherSeason(): void
+    {
+        $this->registerProductionType();
+        $season = $this->season('2025-26');
+        $other = $this->season('2026-27');
+        $production = (new ProductionRepository($this->em, $this->meta))->create(['name' => 'Hamlet', 'seasonId' => $other->getId()]);
+
+        $response = $this->controller()->production(
+            $this->request('GET'),
+            new Response(),
+            ['slug' => $season->getSlug(), 'productionSlug' => $production->getSlug()]
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testNestedProductionIs404ForAnUnknownSeason(): void
+    {
+        $this->registerProductionType();
+        $season = $this->season('2025-26');
+        $production = (new ProductionRepository($this->em, $this->meta))->create(['name' => 'Hamlet', 'seasonId' => $season->getId()]);
+
+        $response = $this->controller()->production(
+            $this->request('GET'),
+            new Response(),
+            ['slug' => 'no-such-season', 'productionSlug' => $production->getSlug()]
+        );
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testDeclaresTheNestedProductionRoute(): void
+    {
+        $this->assertContains(['get', '/{slug}/{productionSlug}', 'production'], SeasonController::additionalPublicRoutes());
+    }
+
+    private function registerProductionType(): void
+    {
+        $registry = new ContentTypeRegistry();
+        $registry->register('production', ['label' => 'Productions', 'singularLabel' => 'Production', 'urlPrefix' => 'productions']);
+        ContentTypeRegistry::setInstance($registry);
+    }
+
     private function season(string $label): Season
     {
         return $this->seasons->create(['label' => $label, 'startDate' => '2025-09-01', 'endDate' => '2026-06-01']);
     }
 
-    private function controller(): SeasonController
+    private function controller(?TemplateResolver $resolver = null): SeasonController
     {
-        return new SeasonController($this->seasons, $this->em, $this->recordingTwig(), $this->sponsors, $this->meta);
+        return new SeasonController(
+            $this->seasons,
+            $this->em,
+            $this->recordingTwig(),
+            $this->sponsors,
+            $this->meta,
+            $resolver ?? $this->createStub(TemplateResolver::class),
+            new ProductionRepository($this->em, $this->meta),
+            new EventRepository($this->em),
+        );
     }
 }

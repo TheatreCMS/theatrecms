@@ -1,0 +1,11 @@
+{% include 'admin/partials/_alert.html.twig' with {'type': 'success', 'message': content_type.singularLabel ~ ' saved successfully.'} %}
+{% if content_type.supports('featured_image') %}
+    {% include 'admin/partials/_featured_image_field.html.twig' with {
+        entityType: content_type.name,
+        entityId: entry.id,
+        deleteUrl: '/' ~ content_type.adminSlug() ~ '/' ~ entry.id ~ '/featured-image',
+        featuredImageUrl: entry.featuredImageUrl,
+        featuredImageId: entry.featuredImage.id|default(null),
+        oob: true
+    } %}
+{% endif %}

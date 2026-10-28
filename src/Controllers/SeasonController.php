@@ -2,10 +2,13 @@
 
 namespace TheatreCMS\Controllers;
 
+use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Models\Sponsorship;
 use TheatreCMS\Repositories\ContentMetaRepository;
+use TheatreCMS\Repositories\EventRepository;
+use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Repositories\SponsorRepository;
 use TheatreCMS\Traits\HandlesContentImages;
@@ -13,6 +16,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersProductionPage;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * Class SeasonController
@@ -20,8 +26,10 @@ use Slim\Views\Twig;
  *
  * @extends BaseController<SeasonRepository>
  */
-class SeasonController extends BaseController
+class SeasonController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
+    use RendersProductionPage;
     use HandlesContentImages;
 
     private SponsorRepository $sponsorRepo;
@@ -31,10 +39,54 @@ class SeasonController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         SponsorRepository $sponsorRepo,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TemplateResolver $templateResolver,
+        private readonly ProductionRepository $productions,
+        private readonly EventRepository $events,
     ) {
         parent::__construct($repository, $twig, $em);
         $this->sponsorRepo = $sponsorRepo;
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
+    }
+
+    protected function eventRepository(): EventRepository
+    {
+        return $this->events;
+    }
+
+    /**
+     * A production's page nested under its season, at `/{seasonPrefix}/{slug}/{productionSlug}`.
+     *
+     * @return list<array{0: string, 1: string, 2: string}>
+     */
+    public static function additionalPublicRoutes(): array
+    {
+        return [
+            ['get', '/{slug}/{productionSlug}', 'production'],
+        ];
+    }
+
+    /**
+     * The nested production page: 404 unless the production belongs to the season in the URL.
+     */
+    public function production(Request $request, Response $response, array $args = []): Response
+    {
+        $season = $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
+        $production = $season instanceof Season
+            ? $this->productions->fetchPublicBySlug((string) ($args['productionSlug'] ?? ''))
+            : null;
+
+        if (!$production instanceof Production || $production->getSeason()->getId() !== $season->getId()) {
+            $response->getBody()->write('Production not found in this season');
+
+            return $response->withStatus(404);
+        }
+
+        return $this->renderProductionPage($request, $response, $args, $production);
     }
 
     protected function contentType(): string

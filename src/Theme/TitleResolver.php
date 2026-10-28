@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
@@ -30,6 +31,7 @@ class TitleResolver
         $title = match (true) {
             $entity instanceof Page => $entity->getTitle(),
             $entity instanceof Post => $entity->getTitle(),
+            $entity instanceof Entry => $entity->getTitle(),
             $entity instanceof Work => $entity->getTitle(),
             $entity instanceof Production => $entity->getName(),
             $entity instanceof Season => $entity->getLabel(),

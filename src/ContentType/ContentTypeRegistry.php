@@ -4,8 +4,7 @@ namespace TheatreCMS\ContentType;
 
 use InvalidArgumentException;
 use RuntimeException;
-use TheatreCMS\Admin\AdminMenuItem;
-use TheatreCMS\Admin\AdminMenuRegistry;
+use TheatreCMS\Controllers\EntryController;
 use TheatreCMS\Helpers\Args;
 use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
@@ -63,7 +62,6 @@ class ContentTypeRegistry
     private readonly array $overrides;
 
     private readonly UrlPrefixRegistry $urlPrefixes;
-    private readonly AdminMenuRegistry $adminMenu;
 
     private static ?ContentTypeRegistry $instance = null;
 
@@ -78,10 +76,8 @@ class ContentTypeRegistry
     public function __construct(
         array $overrides = [],
         ?UrlPrefixRegistry $urlPrefixes = null,
-        ?AdminMenuRegistry $adminMenu = null
     ) {
         $this->urlPrefixes = $urlPrefixes ?? new UrlPrefixRegistry();
-        $this->adminMenu = $adminMenu ?? new AdminMenuRegistry();
 
         $this->overrides = $this->parseOverrides($overrides);
     }
@@ -174,9 +170,15 @@ class ContentTypeRegistry
      */
     public function register(string $type, array $params = []): ContentTypeDefinition
     {
+        if (isset($params['controller'])) {
+            $controller = $params['controller'];
+            unset($params['controller']);
+        }
+
         $this->assertRegistrationArgs($type, $params);
 
         $prepared = $this->prepareArgsForType($type, $params, $this->overrides[$type] ?? []);
+        $prepared['controller'] = $controller ?? EntryController::class;
 
         NamingRules::assertTypeName($type, 'content type');
         NamingRules::assertUrlPrefix($prepared['urlPrefix'], self::describe($type));
@@ -185,12 +187,6 @@ class ContentTypeRegistry
 
         $def = new ContentTypeDefinition(...$prepared);
         $this->contentTypes[$type] = $def;
-
-        // Add the content item to the admin menu
-        $slug = $def->adminSlug();
-        $this->adminMenu->add(
-            new AdminMenuItem($def->label, $slug, $def->capability, 'Content', 10)
-        );
 
         return $def;
     }

@@ -9,21 +9,30 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<PersonRepository>
  */
-class PersonController extends BaseController
+class PersonController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
     use HandlesContentImages;
 
     public function __construct(
         PersonRepository $repository,
         Twig $twig,
         EntityManagerInterface $em,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     protected function contentType(): string

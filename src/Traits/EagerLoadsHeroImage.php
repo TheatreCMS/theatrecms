@@ -11,7 +11,7 @@ use TheatreCMS\Models\Media;
  * image is only ever used for single-item display.
  *
  * Using classes must extend BaseRepository (for $this->em and parent::fetch()/
- * fetchBySlug()) and inject ContentMetaRepository as $this->contentMeta.
+ * fetchBySlug()/fetchPublicBySlug()) and inject ContentMetaRepository as $this->contentMeta.
  */
 trait EagerLoadsHeroImage
 {
@@ -25,6 +25,11 @@ trait EagerLoadsHeroImage
     public function fetchBySlug(string $slug): ?object
     {
         return $this->attachHeroImage(parent::fetchBySlug($slug));
+    }
+
+    public function fetchPublicBySlug(string $slug): ?object
+    {
+        return $this->attachHeroImage(parent::fetchPublicBySlug($slug));
     }
 
     private function attachHeroImage(?object $entity): ?object

@@ -11,6 +11,7 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\ContentMetaRepository;
+use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Traits\HandlesContentImages;
@@ -21,6 +22,9 @@ use Slim\Views\Twig;
 use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersProductionPage;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * Class ProductionController
@@ -28,8 +32,10 @@ use Symfony\Component\Validator\Mapping\ClassMetadata;
  *
  * @extends BaseController<ProductionRepository>
  */
-class ProductionController extends BaseController
+class ProductionController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
+    use RendersProductionPage;
     use HandlesContentImages;
 
     public function __construct(
@@ -37,9 +43,37 @@ class ProductionController extends BaseController
         EntityManagerInterface $em,
         Twig $twig,
         private readonly ProductionFormOptionsService $formOptions,
-        private readonly ContentMetaRepository $contentMeta
+        private readonly ContentMetaRepository $contentMeta,
+        private readonly TemplateResolver $templateResolver,
+        private readonly EventRepository $events,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
+    }
+
+    protected function eventRepository(): EventRepository
+    {
+        return $this->events;
+    }
+
+    /**
+     * Overrides RendersPublicContent::single() to add the production's performances.
+     */
+    public function single(Request $request, Response $response, array $args = []): Response
+    {
+        $production = $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
+
+        if (!$production instanceof Production) {
+            $response->getBody()->write('Production not found');
+
+            return $response->withStatus(404);
+        }
+
+        return $this->renderProductionPage($request, $response, $args, $production);
     }
 
     protected function contentType(): string

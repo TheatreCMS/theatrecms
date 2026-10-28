@@ -17,6 +17,8 @@ use TheatreCMS\Controllers\TermController;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
+use TheatreCMS\Taxonomy\TermArchiveQuery;
+use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
 
 /**
@@ -153,10 +155,52 @@ class TermControllerTest extends TestCase
         $this->assertSame('admin/taxonomies/_list.html.twig', $this->rendered['template']);
     }
 
+    public function testArchiveRendersTheTermWithItsItemsByType(): void
+    {
+        $term = $this->terms->create(['taxonomy' => 'genre', 'name' => 'Comedy']);
+        $items = ['work' => [(object) ['title' => 'Twelfth Night']]];
+
+        $archiveQuery = $this->createStub(TermArchiveQuery::class);
+        $archiveQuery->method('itemsFor')->willReturn($items);
+
+        $resolver = $this->createMock(TemplateResolver::class);
+        $resolver->expects($this->once())
+            ->method('renderTerm')
+            ->with($this->anything(), $this->anything(), $term, $this->registry->require('genre'), $items)
+            ->willReturn(new Response());
+
+        // Public page: no capabilities needed.
+        $this->controller([], $resolver, $archiveQuery)
+            ->archive($this->request('GET'), new Response(), ['taxonomy' => 'genre', 'slug' => 'comedy']);
+    }
+
+    public function testArchiveIs404ForATermOfAnotherTaxonomy(): void
+    {
+        $this->terms->create(['taxonomy' => 'post_category', 'name' => 'News']);
+
+        $response = $this->controller()->archive($this->request('GET'), new Response(), ['taxonomy' => 'genre', 'slug' => 'news']);
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testArchiveIs404WhenTheTaxonomyHasNoArchive(): void
+    {
+        $this->registry->register('mood', ['work'], ['hasArchive' => false]);
+        $this->terms->create(['taxonomy' => 'mood', 'name' => 'Dark']);
+
+        $response = $this->controller()->archive($this->request('GET'), new Response(), ['taxonomy' => 'mood', 'slug' => 'dark']);
+
+        $this->assertSame(404, $response->getStatusCode());
+    }
+
     /**
      * @param string[] $capabilities capabilities the current user holds
      */
-    private function controller(array $capabilities = [Capability::MANAGE_PEOPLE, Capability::EDIT_POSTS]): TermController
+    private function controller(
+        array $capabilities = [Capability::MANAGE_PEOPLE, Capability::EDIT_POSTS],
+        ?TemplateResolver $resolver = null,
+        ?TermArchiveQuery $archiveQuery = null,
+    ): TermController
     {
         $twig = $this->createMock(Twig::class);
         $twig->method('render')->willReturnCallback(function ($response, string $template, array $data = []) {
@@ -170,7 +214,15 @@ class TermControllerTest extends TestCase
             static fn(string $capability): bool => in_array($capability, $capabilities, true)
         );
 
-        return new TermController($this->terms, $twig, $this->relationships, $this->registry, $authorization);
+        return new TermController(
+            $this->terms,
+            $twig,
+            $this->relationships,
+            $this->registry,
+            $authorization,
+            $resolver ?? $this->createStub(TemplateResolver::class),
+            $archiveQuery ?? new TermArchiveQuery($this->relationships, []),
+        );
     }
 
     /**

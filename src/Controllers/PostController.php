@@ -13,12 +13,15 @@ use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Traits\AssignsTaxonomyTerms;
 use TheatreCMS\Traits\HandlesContentImages;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<PostRepository>
  */
-class PostController extends BaseController
+class PostController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
     use HandlesContentImages;
     use AssignsTaxonomyTerms;
 
@@ -30,8 +33,14 @@ class PostController extends BaseController
         Twig $twig,
         private readonly ContentMetaRepository $contentMeta,
         private readonly TermRelationshipRepository $termRelationships,
+        private readonly TemplateResolver $templateResolver,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     protected function termRelationships(): TermRelationshipRepository

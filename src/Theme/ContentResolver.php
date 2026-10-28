@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
@@ -12,7 +13,7 @@ use TheatreCMS\Text\EditorJsHtmlConverter;
 
 /**
  * Resolves rendered HTML content for any content entity, without callers needing to know
- * that a Page/Post/Production/Work/Season's content is Editor.js JSON (and must go through
+ * that a Page/Post/Entry/Production/Work/Season's content is Editor.js JSON (and must go through
  * `EditorJsHtmlConverter`) while a Person's biography is already-sanitized HTML.
  *
  * This is the plain-PHP counterpart to `Twig\ContentExtension`'s `the_content()` function,
@@ -29,6 +30,7 @@ class ContentResolver
         $html = match (true) {
             $entity instanceof Page => $this->converter->toHtml($entity->getContent()),
             $entity instanceof Post => $this->converter->toHtml($entity->getContent()),
+            $entity instanceof Entry => $this->converter->toHtml($entity->getContent()),
             $entity instanceof Production => $this->converter->toHtml($entity->getDescription()),
             $entity instanceof Work => $this->converter->toHtml($entity->getDescription()),
             $entity instanceof Season => $this->converter->toHtml($entity->getOverview()),

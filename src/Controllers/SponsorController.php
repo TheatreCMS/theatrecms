@@ -10,20 +10,33 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<SponsorRepository>
  */
-class SponsorController extends BaseController
+class SponsorController extends BaseController implements PublicContentController
 {
+    use RendersPublicContent;
+
     protected SponsorRepository $sponsorRepository;
     private MediaUploadService $imageUploadService;
 
-    public function __construct(SponsorRepository $repository, Twig $twig, MediaUploadService $imageUploadService)
-    {
+    public function __construct(
+        SponsorRepository $repository,
+        Twig $twig,
+        MediaUploadService $imageUploadService,
+        private readonly TemplateResolver $templateResolver,
+    ) {
         parent::__construct($repository, $twig);
         $this->sponsorRepository  = $repository;
         $this->imageUploadService = $imageUploadService;
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response

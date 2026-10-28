@@ -145,6 +145,58 @@ class EntryRepositoryTest extends TestCase
         $this->assertSame([$published], $news->fetchPublicByIds([$published->getId(), $draft->getId()]));
     }
 
+    public function testFetchPublicSeesOnlyPublishedEntriesOfTheBoundType(): void
+    {
+        $news = $this->entries->forType('press_release');
+        $published = $news->create(['title' => 'Out', 'status' => 'published']);
+        $news->create(['title' => 'Not yet']);
+        $this->entries->forType('blog_post')->create(['title' => 'Elsewhere', 'status' => 'published']);
+
+        $this->assertSame([$published], $news->fetchPublic());
+    }
+
+    public function testFetchPublicBySlugSkipsDraftsAndOtherTypes(): void
+    {
+        $news = $this->entries->forType('press_release');
+        $published = $news->create(['title' => 'Out', 'status' => 'published']);
+        $news->create(['title' => 'Not yet']);
+        $this->entries->forType('blog_post')->create(['title' => 'Elsewhere', 'status' => 'published']);
+
+        $this->assertSame($published, $news->fetchPublicBySlug('out'));
+        $this->assertNull($news->fetchPublicBySlug('not-yet'));
+        $this->assertNull($news->fetchPublicBySlug('elsewhere'));
+    }
+
+    public function testUpdateSlugKeepsSlugsUniqueWithinTheType(): void
+    {
+        $news = $this->entries->forType('press_release');
+        $news->create(['title' => 'Taken']);
+        $entry = $news->create(['title' => 'Original']);
+
+        $news->updateSlug($entry, 'taken');
+
+        $this->assertSame('taken-1', $entry->getSlug());
+    }
+
+    public function testUpdateSlugLeavesABlankOrUnchangedSlugAlone(): void
+    {
+        $news = $this->entries->forType('press_release');
+        $entry = $news->create(['title' => 'Original']);
+
+        $news->updateSlug($entry, '  ');
+        $news->updateSlug($entry, 'ORIGINAL');
+
+        $this->assertSame('original', $entry->getSlug());
+    }
+
+    public function testUpdateSlugRejectsAnEntryOfAnotherType(): void
+    {
+        $post = $this->entries->forType('blog_post')->create(['title' => 'Launch']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->entries->forType('press_release')->updateSlug($post, 'new-slug');
+    }
+
     public function testSearchMatchesTitleOrExcerpt(): void
     {
         $news = $this->entries->forType('press_release');

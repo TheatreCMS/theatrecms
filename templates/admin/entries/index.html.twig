@@ -1,0 +1,31 @@
+{% extends 'layouts/admin.html.twig' %}
+
+{% block title %}{{ content_type.label }} - {{ parent() }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h1 class="text-2xl font-bold">{{ content_type.label }}</h1>
+        {# TODO: show content_type.description once ContentTypeDefinition has one #}
+    </div>
+    <div>
+        <a href="{{ pagination.basePath }}/create" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700">Add New {{ content_type.singularLabel }}</a>
+    </div>
+</div>
+
+<div class="mb-4">
+    <input
+        type="search"
+        name="q"
+        value="{{ pagination.search }}"
+        placeholder="Search {{ content_type.label|lower }}..."
+        class="w-full max-w-sm rounded border border-default px-3 py-2 text-sm"
+        hx-get="{{ pagination.basePath }}"
+        hx-trigger="input changed delay:300ms, search"
+        hx-target="#entryListContainer"
+        hx-swap="outerHTML"
+        hx-push-url="true">
+</div>
+
+{% include 'admin/entries/_list.html.twig' with {'entries': entries, 'statuses': statuses, 'pagination': pagination} %}
+{% endblock %}

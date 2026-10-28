@@ -12,6 +12,7 @@ use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\VenueRepository;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 /**
  * Covers the CRUD actions; featured-image handling lives in VenueControllerFeaturedImageTest.
@@ -153,6 +154,6 @@ class VenueControllerTest extends TestCase
 
     private function controller(): VenueController
     {
-        return new VenueController($this->venues, $this->em, $this->recordingTwig(), $this->meta);
+        return new VenueController($this->venues, $this->em, $this->recordingTwig(), $this->meta, $this->createStub(TemplateResolver::class));
     }
 }

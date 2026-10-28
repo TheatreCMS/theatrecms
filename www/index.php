@@ -25,6 +25,7 @@ use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Plugin\PluginManager;
 use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
+use TheatreCMS\Routing\RouteRegistry;
 use TheatreCMS\Settings\SiteSettings;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Theme\SeoTagBuilder;
@@ -42,7 +43,13 @@ use Slim\Views\Twig;
 $container = require ROOT_DIR . '/app/bootstrap.php';
 AppFactory::setContainer($container);
 
+// Set up the different components for the application
 $app = AppFactory::create();
+$resolver = $container->get(TemplateResolver::class);
+$contentTypes = $container->get(ContentTypeRegistry::class);
+
+
+// configure the app
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
 
@@ -75,33 +82,53 @@ $app->add(function (Request $request, RequestHandlerInterface $handler) {
     return $handler->handle($request);
 });
 
-$resolver = $container->get(TemplateResolver::class);
-$contentTypes = $container->get(ContentTypeRegistry::class);
+$app->get('/debug-routes', function ($request, $response, $args) use ($app) {
+    $routes = $app->getRouteCollector()->getRoutes();
+
+    $data = [];
+    foreach ($routes as $route) {
+        $data[] = [
+            'identifier' => $route->getIdentifier(),
+            'name'       => $route->getName(),
+            'methods'    => $route->getMethods(),
+            'pattern'    => $route->getPattern(),
+            'callable'   => $route->getCallable(),
+        ];
+    }
+
+    $payload = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    $response->getBody()->write($payload);
+
+    return $response->withHeader('Content-Type', 'application/json');
+});
 
 // Load external route files
-require ROUTES_DIR . '/admin/seasons.php';
-require ROUTES_DIR . '/admin/events.php';
-require ROUTES_DIR . '/admin/people.php';
-require ROUTES_DIR . '/admin/productions.php';
-require ROUTES_DIR . '/admin/sponsors.php';
-require ROUTES_DIR . '/admin/taxonomies.php';
-require ROUTES_DIR . '/admin/users.php';
-require ROUTES_DIR . '/admin/profile.php';
-require ROUTES_DIR . '/admin/venues.php';
-require ROUTES_DIR . '/admin/works.php';
-require ROUTES_DIR . '/admin/posts.php';
-require ROUTES_DIR . '/admin/pages.php';
-require ROUTES_DIR . '/admin/menus.php';
-require ROUTES_DIR . '/admin/images.php';
-require ROUTES_DIR . '/admin/media.php';
-require ROUTES_DIR . '/admin/link-preview.php';
-require ROUTES_DIR . '/admin/settings.php';
-require ROUTES_DIR . '/admin/themes.php';
-require ROUTES_DIR . '/frontend/seasons.php';
-require ROUTES_DIR . '/frontend/productions.php';
-require ROUTES_DIR . '/frontend/people.php';
-require ROUTES_DIR . '/frontend/works.php';
-require ROUTES_DIR . '/frontend/taxonomies.php';
+// require ROUTES_DIR . '/admin/seasons.php';
+// require ROUTES_DIR . '/admin/events.php';
+// require ROUTES_DIR . '/admin/people.php';
+// require ROUTES_DIR . '/admin/productions.php';
+// require ROUTES_DIR . '/admin/sponsors.php';
+// require ROUTES_DIR . '/admin/taxonomies.php';
+// require ROUTES_DIR . '/admin/users.php';
+// require ROUTES_DIR . '/admin/profile.php';
+// require ROUTES_DIR . '/admin/venues.php';
+// require ROUTES_DIR . '/admin/works.php';
+// require ROUTES_DIR . '/admin/posts.php';
+// require ROUTES_DIR . '/admin/pages.php';
+// require ROUTES_DIR . '/admin/menus.php';
+// require ROUTES_DIR . '/admin/images.php';
+// require ROUTES_DIR . '/admin/media.php';
+// require ROUTES_DIR . '/admin/link-preview.php';
+// require ROUTES_DIR . '/admin/settings.php';
+// require ROUTES_DIR . '/admin/themes.php';
+// require ROUTES_DIR . '/frontend/seasons.php';
+// require ROUTES_DIR . '/frontend/productions.php';
+// require ROUTES_DIR . '/frontend/people.php';
+// require ROUTES_DIR . '/frontend/works.php';
+// require ROUTES_DIR . '/frontend/taxonomies.php';
+// require ROUTES_DIR . '/frontend/pages.php';
+
+require_once APP_ROOT . '/app/routes.php';
 
 // Plugin routes and middleware: after core routes, before the page catch-all below.
 $container->get(PluginManager::class)->bootAll($app);
@@ -117,8 +144,6 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
     return $twig->render($response, 'admin/index.html.twig');
 })->add(new RequireTwigMiddleware($container))
   ->add($container->get(AuthMiddleware::class));
-
-require ROUTES_DIR . '/frontend/pages.php';
 
 $app->get('/', function (Request $request, Response $response) use ($container) {
     $twig = $container->get(Twig::class);
@@ -143,4 +168,8 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
         'seo' => $container->get(SeoTagBuilder::class)->forHome(),
     ]);
 });
+
+// Every route is registered by now; refuse to serve if one lands under a content type's prefix.
+RouteRegistry::getInstance()->assertNoCollisions($app->getRouteCollector()->getRoutes());
+
 $app->run();

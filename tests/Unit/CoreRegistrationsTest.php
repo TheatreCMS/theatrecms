@@ -26,7 +26,9 @@ class CoreRegistrationsTest extends TestCase
     {
         $registry = $this->registerCoreContentTypes();
 
-        $this->assertSame(['season', 'production', 'person', 'work', 'post'], array_keys($registry->all()));
+        foreach (['season', 'production', 'person', 'work', 'venue', 'event', 'sponsor', 'post'] as $type) {
+            $this->assertTrue($registry->has($type), "Core content type '{$type}' is not registered.");
+        }
         $this->assertSame('people', $registry->prefix('person'));
         $this->assertSame('People', $registry->label('person'));
         $this->assertSame('Person', $registry->require('person')->singularLabel);
