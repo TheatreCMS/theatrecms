@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Response;
 use TheatreCMS\Controllers\PostController;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PostRepository;
@@ -107,6 +108,37 @@ class PostControllerTest extends TestCase
         $this->assertStringStartsWith('/admin/posts/edit/', $result->getHeaderLine('Location'));
     }
 
+    public function testStoreReportsSlugAllocationFailures(): void
+    {
+        $posts = $this->createMock(PostRepository::class);
+        $posts->method('create')->willThrowException(new SlugAllocationException(
+            'Unable to allocate a unique URL for the post. Please try again.'
+        ));
+
+        $result = $this->controller($posts)->store($this->request('POST', [
+            'title' => 'Opening night',
+            'content' => '{"blocks":[]}',
+        ], htmx: true), new Response());
+
+        $this->assertSame(409, $result->getStatusCode());
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame(
+            'Unable to allocate a unique URL for the post. Please try again.',
+            $this->rendered['data']['message']
+        );
+
+        $result = $this->controller($posts)->store($this->request('POST', [
+            'title' => 'Opening night',
+            'content' => '{"blocks":[]}',
+        ]), new Response());
+
+        $this->assertSame(409, $result->getStatusCode());
+        $this->assertSame(
+            'Unable to allocate a unique URL for the post. Please try again.',
+            (string) $result->getBody()
+        );
+    }
+
     public function testUpdateValidation(): void
     {
         $id = (string) $this->post('News')->getId();
@@ -203,8 +235,15 @@ class PostControllerTest extends TestCase
         return $this->posts->create(['title' => $title, 'content' => 'body']);
     }
 
-    private function controller(): PostController
+    private function controller(?PostRepository $posts = null): PostController
     {
-        return new PostController($this->posts, $this->em, $this->recordingTwig(), $this->meta, $this->relationships, $this->createStub(TemplateResolver::class));
+        return new PostController(
+            $posts ?? $this->posts,
+            $this->em,
+            $this->recordingTwig(),
+            $this->meta,
+            $this->relationships,
+            $this->createStub(TemplateResolver::class)
+        );
     }
 }
