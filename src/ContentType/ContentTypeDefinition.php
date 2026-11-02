@@ -21,11 +21,13 @@ final class ContentTypeDefinition
      * @param string $label plural display label, e.g. "Press Releases"
      * @param string $singularLabel singular display label, e.g. "Press Release"
      * @param string $urlPrefix URL path segment its entries are served under, e.g. `press-releases`
-     *        for `/press-releases/{slug}`
+     *        for `/press-releases/{slug}`; empty for the one type served at the site root (pages)
      * @param bool $hasArchive whether it gets a public archive (listing) page at `/{urlPrefix}`
      * @param string $capability capability required to manage its entries in the admin UI
      * @param bool $public whether its entries get frontend routes at all
      * @param string[] $supports standard entry fields it uses: 'editor', 'excerpt', 'featured_image'
+     * @param bool $hierarchical whether its items can have a parent item of the same type, served at
+     *        the parent's URL plus their own slug (`/about/board-of-directors`); the model must use `HasParent`
      */
     public function __construct(
         public readonly string $name,
@@ -39,6 +41,7 @@ final class ContentTypeDefinition
         public readonly array $supports = [
             'editor',
         ],
+        public readonly bool $hierarchical = false,
     ) {
     }
 
@@ -49,6 +52,27 @@ final class ContentTypeDefinition
 
     public function adminSlug(): string
     {
-        return "admin/{$this->urlPrefix}";
+        return 'admin/' . $this->directoryName();
+    }
+
+    /**
+     * The directory its theme templates live in, e.g. `seasons/single.html.twig`.
+     */
+    public function templateDir(): string
+    {
+        return $this->directoryName();
+    }
+
+    /**
+     * The URL prefix, or for the root type, which has none, its label as a path segment
+     * (`pages`), so its admin screens and templates still get a directory of their own.
+     */
+    private function directoryName(): string
+    {
+        if ($this->urlPrefix !== '') {
+            return $this->urlPrefix;
+        }
+
+        return trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($this->label)), '-');
     }
 }

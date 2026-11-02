@@ -1,0 +1,28 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block title %}{{ seo.title }}{% endblock %}
+
+{# Fallback for any content type without its own {prefix}/single.html.twig; uses only the generic context. #}
+{% block content %}
+    {% set item = posts|first %}
+    <article class="max-w-3xl mx-auto space-y-6">
+        <header class="space-y-2 border-b border-gray-200 pb-4">
+            <h1 class="text-4xl font-semibold text-gray-900">{{ the_title(item) }}</h1>
+            {% if item.publishedAt is defined and item.publishedAt %}
+                <p class="text-sm text-gray-500">
+                    <time datetime="{{ item.publishedAt|date('Y-m-d') }}">{{ item.publishedAt|date('F j, Y') }}</time>
+                </p>
+            {% endif %}
+        </header>
+
+        {% if item.featuredImageUrl is defined and item.featuredImageUrl %}
+            <img src="{{ the_featured_image_url(item) }}" alt="{{ the_title(item) }}" class="w-full rounded-lg object-cover">
+        {% endif %}
+
+        {% if item.content is defined %}
+            <section class="prose max-w-none text-gray-800">
+                {{ the_content(item) }}
+            </section>
+        {% endif %}
+    </article>
+{% endblock %}

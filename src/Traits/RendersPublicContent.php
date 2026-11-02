@@ -15,7 +15,9 @@ use TheatreCMS\Theme\TemplateResolver;
  * Filters and context keys match the frontend routes these replace, so themes keep working:
  * a single page gets `{type}` (e.g. `season`) through the `theatrecms/{type}` filter, and an
  * archive gets `{urlPrefix}` with hyphens as underscores (e.g. `seasons`) through
- * `theatrecms/{urlPrefix}`. Templates are looked up under the `{urlPrefix}/` directory.
+ * `theatrecms/{urlPrefix}`. Templates are looked up under the type's template directory
+ * (`ContentTypeDefinition::templateDir()`). A hierarchical type's single page is found by its
+ * path: its controller overrides fetchPublicItem() (see PageController).
  */
 trait RendersPublicContent
 {
@@ -31,6 +33,11 @@ trait RendersPublicContent
         return [];
     }
 
+    public static function hasSingleRoute(): bool
+    {
+        return true;
+    }
+
     public function archive(Request $request, Response $response, array $args = []): Response
     {
         $definition = $this->publicContentType($request);
@@ -44,14 +51,14 @@ trait RendersPublicContent
             $definition->label,
             $items,
             [$key => $items],
-            $definition->urlPrefix
+            $definition->templateDir()
         );
     }
 
     public function single(Request $request, Response $response, array $args = []): Response
     {
         $definition = $this->publicContentType($request);
-        $item = $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
+        $item = $this->fetchPublicItem($definition, $args);
 
         if (!$item) {
             $response->getBody()->write("{$definition->singularLabel} not found");
@@ -67,8 +74,28 @@ trait RendersPublicContent
             $definition->name,
             $item,
             [$definition->name => $item],
-            $definition->urlPrefix
+            $definition->templateDir()
         );
+    }
+
+    /**
+     * The publicly visible item a single route points at, or null. Looks it up by slug; a
+     * hierarchical type's controller overrides this to look it up by path (`ManagesHierarchy`).
+     *
+     * @param array<string, mixed> $args the route arguments
+     * @throws LogicException for a hierarchical type whose controller doesn't override this
+     */
+    protected function fetchPublicItem(ContentTypeDefinition $definition, array $args): ?object
+    {
+        if ($definition->hierarchical) {
+            throw new LogicException(sprintf(
+                'Content type "%s" is hierarchical, so %s must override fetchPublicItem() to find items by path.',
+                $definition->name,
+                static::class
+            ));
+        }
+
+        return $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
     }
 
     /**

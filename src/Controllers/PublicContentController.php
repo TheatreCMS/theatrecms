@@ -20,7 +20,7 @@ interface PublicContentController
     public function archive(Request $request, Response $response, array $args = []): Response;
 
     /**
-     * The single page at `/{urlPrefix}/{slug}`.
+     * The single page at `/{urlPrefix}/{slug}`, or `/{urlPrefix}/{path}` for a hierarchical type.
      */
     public function single(Request $request, Response $response, array $args = []): Response;
 
@@ -31,4 +31,10 @@ interface PublicContentController
      * @return list<array{0: string, 1: string, 2: string}>
      */
     public static function additionalPublicRoutes(): array;
+
+    /**
+     * Whether the type gets the single route at all. False for a type served only under another
+     * type's URL (productions, at `/{seasonPrefix}/{seasonSlug}/{slug}`).
+     */
+    public static function hasSingleRoute(): bool;
 }

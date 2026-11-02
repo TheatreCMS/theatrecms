@@ -2,13 +2,7 @@
 
 namespace TheatreCMS\ContentType;
 
-use TheatreCMS\Models\Page;
-use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
-use TheatreCMS\Models\Production;
-use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Term;
-use TheatreCMS\Models\Work;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
 
 /**
@@ -29,25 +23,51 @@ class PermalinkResolver
     ) {
     }
 
+    /**
+     * @throws \InvalidArgumentException for an entity that isn't content or a term, or whose type
+     *         isn't public (it has no frontend routes, so no URL)
+     */
     public function resolve(mixed $entity): string
     {
-        $url = match (true) {
-            $entity instanceof Season => $this->archiveUrl('season') . '/' . $entity->getSlug(),
-            $entity instanceof Production => $this->archiveUrl('season') . '/' . $entity->getSeason()->getSlug()
-                . '/' . $entity->getSlug(),
-            $entity instanceof Person => $this->archiveUrl('person') . '/' . $entity->getSlug(),
-            $entity instanceof Work => $this->archiveUrl('work') . '/' . $entity->getSlug(),
-            $entity instanceof Post => $this->archiveUrl('post') . '/' . $entity->getSlug(),
-            $entity instanceof Page => '/' . $entity->getSlug(),
+        return (string) apply_filters('theatrecms/the_permalink', $this->build($entity), $entity);
+    }
+
+    /**
+     * The URL before filtering: a child's URL builds on its parent's unfiltered URL, so the
+     * filter runs once, on the final URL.
+     */
+    private function build(mixed $entity): string
+    {
+        return match (true) {
             $entity instanceof Term => '/' . $this->taxonomies->require($entity->getTaxonomy())->urlPrefix
                 . '/' . $entity->getSlug(),
+            $entity instanceof IsHierarchical && $entity->hasParent() => $this->build($entity->getParent())
+                . '/' . $this->publicSlug($entity),
+            $entity instanceof HasContentType => '/' . ltrim(
+                $this->contentTypes->require($entity->getContentType())->urlPrefix . '/' . $this->publicSlug($entity),
+                '/'
+            ),
             default => throw new \InvalidArgumentException(sprintf(
                 'PermalinkResolver does not know how to resolve a URL for %s.',
                 is_object($entity) ? get_class($entity) : get_debug_type($entity)
             )),
         };
+    }
 
-        return (string) apply_filters('theatrecms/the_permalink', $url, $entity);
+    /**
+     * @throws \InvalidArgumentException when the entity's type isn't public
+     */
+    private function publicSlug(HasContentType $entity): string
+    {
+        $type = $entity->getContentType();
+
+        if (!$this->contentTypes->require($type)->public) {
+            throw new \InvalidArgumentException(
+                sprintf('Content type "%s" is not public, so it has no permalinks.', $type)
+            );
+        }
+
+        return $entity->getSlug();
     }
 
     /**

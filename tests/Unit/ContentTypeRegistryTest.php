@@ -186,6 +186,7 @@ class ContentTypeRegistryTest extends TestCase
         $this->assertTrue($definition->public);
         $this->assertSame(['editor'], $definition->supports);
         $this->assertSame(Capability::MANAGE_POSTS, $definition->capability);
+        $this->assertFalse($definition->hierarchical);
     }
 
     public function testRegisterAppliesEveryArg(): void
@@ -198,6 +199,7 @@ class ContentTypeRegistryTest extends TestCase
             'public' => false,
             'supports' => ['editor', 'excerpt'],
             'capability' => Capability::MANAGE_OPTIONS,
+            'hierarchical' => true,
         ]);
 
         $this->assertSame('Press Releases', $definition->label, 'Label not as expected');
@@ -207,6 +209,7 @@ class ContentTypeRegistryTest extends TestCase
         $this->assertFalse($definition->public, 'public not set as expected');
         $this->assertSame(['editor', 'excerpt'], $definition->supports);
         $this->assertSame(Capability::MANAGE_OPTIONS, $definition->capability);
+        $this->assertTrue($definition->hierarchical);
     }
 
     public function testRegisteredTypeIsUsedByTheLookupMethods(): void
@@ -277,6 +280,36 @@ class ContentTypeRegistryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         (new ContentTypeRegistry())->register('press_release', ['urlPrefix' => 'admin']);
+    }
+
+    public function testAnEmptyPrefixServesTheTypeAtTheRootUnderItsLabelsDirectory(): void
+    {
+        $definition = (new ContentTypeRegistry())->register('page', [
+            'label' => 'Pages',
+            'urlPrefix' => '',
+            'hasArchive' => false,
+        ]);
+
+        $this->assertSame('', $definition->urlPrefix);
+        $this->assertSame('admin/pages', $definition->adminSlug());
+        $this->assertSame('pages', $definition->templateDir());
+    }
+
+    public function testAnEmptyPrefixRejectsAnArchive(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ContentTypeRegistry())->register('page', ['urlPrefix' => '']);
+    }
+
+    public function testOnlyOneTypeCanHaveAnEmptyPrefix(): void
+    {
+        $registry = new ContentTypeRegistry();
+        $registry->register('page', ['urlPrefix' => '', 'hasArchive' => false]);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $registry->register('landing_page', ['urlPrefix' => '', 'hasArchive' => false]);
     }
 
     public function testRegisterRejectsAPrefixAnotherContentTypeUses(): void
