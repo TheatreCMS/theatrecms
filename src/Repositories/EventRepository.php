@@ -143,6 +143,23 @@ class EventRepository extends BaseRepository
     }
 
     /**
+     * The events archive lists what's coming up, soonest first. Past events keep their single
+     * pages (fetchPublicBySlug() is unchanged) but drop off the archive once they've started.
+     *
+     * @return Event[]
+     */
+    public function fetchPublic(): array
+    {
+        $builder = $this->createListQueryBuilder()
+            ->andWhere('e.startsAt >= :now')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->orderBy('e.startsAt', 'ASC');
+        $this->applyPublicFilter($builder, 'e');
+
+        return $builder->getQuery()->getResult();
+    }
+
+    /**
      * @return Event[]
      */
     public function fetchByProduction(int $productionId): array
