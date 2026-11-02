@@ -77,10 +77,10 @@ class SeasonController extends BaseController implements PublicContentController
     {
         $season = $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
         $production = $season instanceof Season
-            ? $this->productions->fetchPublicBySlug((string) ($args['productionSlug'] ?? ''))
+            ? $this->productions->fetchPublicBySeasonAndSlug($season, (string) ($args['productionSlug'] ?? ''))
             : null;
 
-        if (!$production instanceof Production || $production->getSeason()->getId() !== $season->getId()) {
+        if (!$production instanceof Production) {
             $response->getBody()->write('Production not found in this season');
 
             return $response->withStatus(404);
