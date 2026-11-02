@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Hooks\HookManager;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
@@ -27,6 +30,7 @@ class SeoDescriptionResolverTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        HookManager::setInstance(new HookManager());
         $themeManager = new ThemeManager(SRC_DIR . '/www/themes', 'default');
         $this->resolver = new SeoDescriptionResolver(
             new EditorJsHtmlConverter($themeManager),
@@ -99,6 +103,60 @@ class SeoDescriptionResolverTest extends TestCase
         $post = new Post('News', ContentStatus::PUBLISHED, $this->editorJsPayload('Post body text.'));
 
         $this->assertSame('Post body text.', $this->resolver->resolve($post));
+    }
+
+    public static function entitiesWithContent(): array
+    {
+        $content = '{"blocks":[{"type":"paragraph","data":{"text":"Full body text."}}]}';
+
+        return [
+            'post' => [new Post('News', ContentStatus::PUBLISHED, $content)],
+            'entry' => [new Entry(['contentType' => 'custom', 'title' => 'News', 'content' => $content])],
+        ];
+    }
+
+    #[DataProvider('entitiesWithContent')]
+    public function testPostAndEntryPreferExcerptOverContent(Post|Entry $entity): void
+    {
+        $entity->setExcerpt('A short teaser.');
+
+        $this->assertSame('A short teaser.', $this->resolver->resolve($entity));
+    }
+
+    #[DataProvider('entitiesWithContent')]
+    public function testPostAndEntryUseFilteredExcerpts(Post|Entry $entity): void
+    {
+        $entity->setExcerpt('A short teaser.');
+        HookManager::getInstance()->addFilter(
+            'theatrecms/the_excerpt',
+            fn(string $excerpt, mixed $filteredEntity): string => $filteredEntity === $entity
+                ? 'Filtered ' . $excerpt
+                : $excerpt
+        );
+
+        $this->assertSame('Filtered A short teaser.', $this->resolver->resolve($entity));
+    }
+
+    #[DataProvider('entitiesWithContent')]
+    public function testPostAndEntryFallBackToContentWithoutExcerpt(Post|Entry $entity): void
+    {
+        $this->assertSame('Full body text.', $this->resolver->resolve($entity));
+    }
+
+    #[DataProvider('entitiesWithContent')]
+    public function testPostAndEntryFallBackToContentWhenFilterEmptiesExcerpt(Post|Entry $entity): void
+    {
+        $entity->setExcerpt('A short teaser.');
+        HookManager::getInstance()->addFilter('theatrecms/the_excerpt', fn(): string => '');
+
+        $this->assertSame('Full body text.', $this->resolver->resolve($entity));
+    }
+
+    public function testEntryWithoutExcerptOrContentResolvesToEmptyString(): void
+    {
+        $entry = new Entry(['contentType' => 'custom', 'title' => 'News']);
+
+        $this->assertSame('', $this->resolver->resolve($entry));
     }
 
     public function testPersonUsesPlainTextBiography(): void
