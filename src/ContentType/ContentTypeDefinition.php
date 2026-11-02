@@ -26,6 +26,8 @@ final class ContentTypeDefinition
      * @param string $capability capability required to manage its entries in the admin UI
      * @param bool $public whether its entries get frontend routes at all
      * @param string[] $supports standard entry fields it uses: 'editor', 'excerpt', 'featured_image'
+     * @param string|null $menuIcon Font Awesome Free classes for its admin sidebar link, e.g.
+     *        `fa-solid fa-newspaper`; null for a generic icon
      */
     public function __construct(
         public readonly string $name,
@@ -39,6 +41,7 @@ final class ContentTypeDefinition
         public readonly array $supports = [
             'editor',
         ],
+        public readonly ?string $menuIcon = null,
     ) {
     }
 

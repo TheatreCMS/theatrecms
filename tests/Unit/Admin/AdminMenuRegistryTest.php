@@ -63,6 +63,7 @@ class AdminMenuRegistryTest extends TestCase
             'label'         => 'Press Releases',
             'singularLabel' => 'Press Release',
             'urlPrefix'     => 'press-releases',
+            'menuIcon'      => 'fa-solid fa-bullhorn',
         ]);
 
         require dirname(__DIR__, 3) . '/app/admin-menu-items.php';
@@ -74,6 +75,7 @@ class AdminMenuRegistryTest extends TestCase
         $this->assertCount(1, $content);
         $this->assertSame($definition->adminSlug(), $content[0]['items'][0]->url);
         $this->assertSame($definition->capability, $content[0]['items'][0]->capability);
+        $this->assertSame('fa-solid fa-bullhorn', $content[0]['items'][0]->icon);
     }
 
     public function testGetInstanceThrowsWhenNotInitialized(): void

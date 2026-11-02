@@ -14,6 +14,7 @@ final class AdminMenuItem
      * @param string|null $group      Sidebar section label (e.g. `Content`); null for the top, ungrouped section
      * @param int         $position   Sort order within the group (lower first)
      * @param bool        $exact      Only highlight the item on its own URL, not on URLs below it
+     * @param string|null $icon       Font Awesome Free classes, e.g. `fa-solid fa-ticket`; null for a generic icon
      */
     public function __construct(
         public readonly string $label,
@@ -22,6 +23,7 @@ final class AdminMenuItem
         public readonly ?string $group = 'Content',
         public readonly int $position = 100,
         public readonly bool $exact = false,
+        public readonly ?string $icon = null,
     ) {
     }
 }

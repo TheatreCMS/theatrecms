@@ -111,7 +111,7 @@ logged and skipped.
 | `migrationPaths()` | Directories of timestamp-named `.sql` migrations, applied by `bin/theatrecms migrate` with core's (see `documentation/console.md`) |
 | `commands()` | Console command classes for `bin/theatrecms`, each with `#[AsCommand]` (see `documentation/console.md`) |
 | `capabilities()` | Capabilities granted per `Delight\Auth\Role` constant, added on top of core's (see `documentation/capabilities-system-plan.md`) |
-| `adminMenuItems()` | `AdminMenuItem`s for the admin sidebar. A new group label creates a new section between Appearance and Administration |
+| `adminMenuItems()` | `AdminMenuItem`s for the admin sidebar. A new group label creates a new section between Appearance and Administration. Give each an `icon` ([Font Awesome Free](https://fontawesome.com/search?ic=free) classes, e.g. `fa-solid fa-ticket`); it's all that shows when the sidebar is collapsed |
 
 Themes and plugins can also add sidebar items from code with `register_admin_menu_item()`
 (`app/admin-menu.php`). Core's own sidebar items live in `app/admin-menu-items.php`.

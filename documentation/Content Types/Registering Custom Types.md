@@ -31,6 +31,7 @@ type's `ContentTypeDefinition` (`src/ContentType/`).
 | `public` | `true` | Whether its entries get frontend routes at all |
 | `supports` | `[]` | Standard entry fields it uses: `editor`, `excerpt`, `featured_image` |
 | `capability` | `edit_posts` | Capability needed to manage its entries in the admin |
+| `menuIcon` | `null` (a generic icon) | [Font Awesome Free](https://fontawesome.com/search?ic=free) classes for its admin sidebar link, e.g. `fa-solid fa-bullhorn` |
 
 - **Names** are lowercase letters and underscores (`TheatreCMS\Routing\NamingRules`), with no
   length limit. Use the singular: `press_release`, not `press_releases`.

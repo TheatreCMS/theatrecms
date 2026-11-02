@@ -49,6 +49,7 @@ class ContentTypeRegistry
         'public',
         'supports',
         'capability',
+        'menuIcon',
     ];
 
     /**
