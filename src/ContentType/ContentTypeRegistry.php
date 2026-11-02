@@ -50,6 +50,7 @@ class ContentTypeRegistry
         'supports',
         'capability',
         'hierarchical',
+        'menuIcon',
     ];
 
     /**

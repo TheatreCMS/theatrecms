@@ -28,6 +28,8 @@ final class ContentTypeDefinition
      * @param string[] $supports standard entry fields it uses: 'editor', 'excerpt', 'featured_image'
      * @param bool $hierarchical whether its items can have a parent item of the same type, served at
      *        the parent's URL plus their own slug (`/about/board-of-directors`); the model must use `HasParent`
+     * @param string|null $menuIcon Font Awesome Free classes for its admin sidebar link, e.g.
+     *        `fa-solid fa-newspaper`; null for a generic icon
      */
     public function __construct(
         public readonly string $name,
@@ -42,6 +44,7 @@ final class ContentTypeDefinition
             'editor',
         ],
         public readonly bool $hierarchical = false,
+        public readonly ?string $menuIcon = null,
     ) {
     }
 

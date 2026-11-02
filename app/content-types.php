@@ -16,7 +16,8 @@ use TheatreCMS\Routing\RouteRegistry;
  *     hasArchive?: bool,
  *     public?: bool,
  *     supports?: string[],
- *     capability?: string
+ *     capability?: string,
+ *     menuIcon?: string
  * } $args
  *        `singularLabel` defaults to the name in title case, and `label` to `singularLabel` plus
  *        "s"; set `label` when that isn't the plural. `urlPrefix` is the path segment its entries

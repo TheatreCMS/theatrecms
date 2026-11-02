@@ -21,6 +21,7 @@ $coreContentTypes = [
         'urlPrefix'     => 'seasons',
         'controller'    => \TheatreCMS\Controllers\SeasonController::class,
         'capability'    => Capability::MANAGE_SEASONS
+        'menuIcon'      => 'fa-solid fa-calendar-days',
     ],
     'production' => [
         'label' => 'Productions',
@@ -29,12 +30,15 @@ $coreContentTypes = [
         'controller'    => \TheatreCMS\Controllers\ProductionController::class,
         'capability'    => Capability::MANAGE_PRODUCTIONS
     ],  
+        'menuIcon'      => 'fa-solid fa-masks-theater',
+    ],
     'person' => [
         'label' => 'People',
         'singularLabel' => 'Person',
         'urlPrefix' => 'people',
         'controller'    => \TheatreCMS\Controllers\PersonController::class,
         'capability'    => Capability::MANAGE_PEOPLE
+        'menuIcon'      => 'fa-solid fa-user',
     ],
     'work' => [
         'label' => 'Works',
@@ -42,6 +46,7 @@ $coreContentTypes = [
         'urlPrefix' => 'works',
         'controller'    => \TheatreCMS\Controllers\WorksController::class,
         'capability'    => Capability::MANAGE_WORKS
+        'menuIcon'      => 'fa-solid fa-scroll',
     ],
     'venue' => [
         'label' => 'Venues',
@@ -49,6 +54,7 @@ $coreContentTypes = [
         'urlPrefix' => 'venues',
         'controller'    => \TheatreCMS\Controllers\VenueController::class,
         'capability'    => Capability::MANAGE_VENUES
+        'menuIcon'      => 'fa-solid fa-location-dot',
     ],
     'event' => [
         'label' => 'Events',
@@ -56,6 +62,7 @@ $coreContentTypes = [
         'urlPrefix' => 'events',
         'controller'    => \TheatreCMS\Controllers\EventController::class,
         'capability'    => Capability::MANAGE_EVENTS
+        'menuIcon'      => 'fa-solid fa-ticket',
     ],
     'sponsor' => [
         'label' => 'Sponsors',
@@ -65,6 +72,7 @@ $coreContentTypes = [
         'capability'    => Capability::MANAGE_SPONSORS,
         // Sponsors appear only on the seasons and productions they back, never on pages of their own.
         'public'        => false,
+        'menuIcon'      => 'fa-solid fa-handshake',
     ],
     'post' => [
         'label' => 'Posts',
@@ -72,6 +80,7 @@ $coreContentTypes = [
         'urlPrefix' => 'posts',
         'controller'    => \TheatreCMS\Controllers\PostController::class,
         'capability'    => Capability::MANAGE_POSTS
+        'menuIcon'      => 'fa-solid fa-newspaper',
     ],
 ];
 
