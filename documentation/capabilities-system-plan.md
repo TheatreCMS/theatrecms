@@ -22,10 +22,10 @@ This follows the same WordPress-inspired registry pattern already established in
 
 **Capability constants** — `src/Auth/Capability.php`, a plain final class of string constants (not an enum — WP capabilities are open-ended strings, and future roles/plugins should be able to introduce new ones without touching a closed enum):
 ```
-EDIT_PAGES = 'edit_pages'
 MANAGE_EVENTS = 'manage_events'
 MANAGE_MENUS = 'manage_menus'
 MANAGE_OPTIONS = 'manage_options'           // site settings
+MANAGE_PAGES = 'manage_pages'
 MANAGE_PEOPLE = 'manage_people'
 MANAGE_POSTS = 'manage_posts'               // posts, and the default for registered content types
 MANAGE_PRODUCTIONS = 'manage_productions'
@@ -46,7 +46,6 @@ Each core content type has its own `manage_*` capability (set as `capability` in
 Bootstrap file `app/capabilities.php` (same shape as `app/menu-locations.php`), `require_once`'d in `app/bootstrap.php` right after `menu-locations.php`:
 ```php
 $capabilities->register(Role::ADMIN, [
-    Capability::EDIT_PAGES,
     Capability::MANAGE_EVENTS,
     // ...every other capability
     Capability::UPLOAD_FILES,
@@ -79,8 +78,7 @@ On failure: return a plain `Response()->withStatus(403)` with a short text body 
 | Menus | `MANAGE_MENUS` |
 | Images / media uploads | `UPLOAD_FILES` |
 | Themes | `SWITCH_THEMES` |
-| Pages | `EDIT_PAGES` |
-| Seasons, productions, people, works, venues, events, sponsors, posts | the content type's `capability`: `MANAGE_SEASONS`, `MANAGE_PRODUCTIONS`, `MANAGE_PEOPLE`, `MANAGE_WORKS`, `MANAGE_VENUES`, `MANAGE_EVENTS`, `MANAGE_SPONSORS`, `MANAGE_POSTS` |
+| Pages, seasons, productions, people, works, venues, events, sponsors, posts | the content type's `capability`: `MANAGE_PAGES`, `MANAGE_SEASONS`, `MANAGE_PRODUCTIONS`, `MANAGE_PEOPLE`, `MANAGE_WORKS`, `MANAGE_VENUES`, `MANAGE_EVENTS`, `MANAGE_SPONSORS`, `MANAGE_POSTS` |
 | Registered content types without their own | `MANAGE_POSTS` |
 | A taxonomy's terms | the taxonomy's `capability` |
 

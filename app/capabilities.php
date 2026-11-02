@@ -7,10 +7,10 @@ use TheatreCMS\Auth\CapabilityRegistry;
 $capabilities = CapabilityRegistry::getInstance();
 
 $capabilities->register(Role::ADMIN, [
-    Capability::EDIT_PAGES,
     Capability::MANAGE_EVENTS,
     Capability::MANAGE_MENUS,
     Capability::MANAGE_OPTIONS,
+    Capability::MANAGE_PAGES,
     Capability::MANAGE_PEOPLE,
     Capability::MANAGE_POSTS,
     Capability::MANAGE_PRODUCTIONS,
