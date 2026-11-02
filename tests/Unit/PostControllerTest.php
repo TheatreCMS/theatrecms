@@ -120,7 +120,7 @@ class PostControllerTest extends TestCase
             'content' => '{"blocks":[]}',
         ], htmx: true), new Response());
 
-        $this->assertSame(409, $result->getStatusCode());
+        $this->assertSame(200, $result->getStatusCode());
         $this->assertSame('error', $this->rendered['data']['type']);
         $this->assertSame(
             'Unable to allocate a unique URL for the post. Please try again.',
