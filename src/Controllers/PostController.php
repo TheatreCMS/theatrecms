@@ -156,7 +156,7 @@ class PostController extends BaseController implements PublicContentController
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
                     'type'    => 'error',
                     'message' => $e->getMessage(),
-                ])->withStatus(409);
+                ]);
             }
             $response->getBody()->write($e->getMessage());
             return $response->withStatus(409);
