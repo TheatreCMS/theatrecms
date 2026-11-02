@@ -14,13 +14,14 @@ $coreContentTypes = [
         'hierarchical'  => true,
         'controller'    => \TheatreCMS\Controllers\PageController::class,
         'capability'    => Capability::MANAGE_PAGES,
+        'menuIcon'      => 'fa-solid fa-file-lines',
     ],
     'season' => [
         'label'         => 'Seasons',
         'singularLabel' => 'Season',
         'urlPrefix'     => 'seasons',
         'controller'    => \TheatreCMS\Controllers\SeasonController::class,
-        'capability'    => Capability::MANAGE_SEASONS
+        'capability'    => Capability::MANAGE_SEASONS,
         'menuIcon'      => 'fa-solid fa-calendar-days',
     ],
     'production' => [
@@ -28,8 +29,7 @@ $coreContentTypes = [
         'singularLabel' => 'Production',
         'urlPrefix' => 'productions',
         'controller'    => \TheatreCMS\Controllers\ProductionController::class,
-        'capability'    => Capability::MANAGE_PRODUCTIONS
-    ],  
+        'capability'    => Capability::MANAGE_PRODUCTIONS,
         'menuIcon'      => 'fa-solid fa-masks-theater',
     ],
     'person' => [
@@ -37,7 +37,7 @@ $coreContentTypes = [
         'singularLabel' => 'Person',
         'urlPrefix' => 'people',
         'controller'    => \TheatreCMS\Controllers\PersonController::class,
-        'capability'    => Capability::MANAGE_PEOPLE
+        'capability'    => Capability::MANAGE_PEOPLE,
         'menuIcon'      => 'fa-solid fa-user',
     ],
     'work' => [
@@ -45,7 +45,7 @@ $coreContentTypes = [
         'singularLabel' => 'Work',
         'urlPrefix' => 'works',
         'controller'    => \TheatreCMS\Controllers\WorksController::class,
-        'capability'    => Capability::MANAGE_WORKS
+        'capability'    => Capability::MANAGE_WORKS,
         'menuIcon'      => 'fa-solid fa-scroll',
     ],
     'venue' => [
@@ -53,7 +53,7 @@ $coreContentTypes = [
         'singularLabel' => 'Venue',
         'urlPrefix' => 'venues',
         'controller'    => \TheatreCMS\Controllers\VenueController::class,
-        'capability'    => Capability::MANAGE_VENUES
+        'capability'    => Capability::MANAGE_VENUES,
         'menuIcon'      => 'fa-solid fa-location-dot',
     ],
     'event' => [
@@ -61,7 +61,7 @@ $coreContentTypes = [
         'singularLabel' => 'Event',
         'urlPrefix' => 'events',
         'controller'    => \TheatreCMS\Controllers\EventController::class,
-        'capability'    => Capability::MANAGE_EVENTS
+        'capability'    => Capability::MANAGE_EVENTS,
         'menuIcon'      => 'fa-solid fa-ticket',
     ],
     'sponsor' => [
@@ -79,7 +79,7 @@ $coreContentTypes = [
         'singularLabel' => 'Post',
         'urlPrefix' => 'posts',
         'controller'    => \TheatreCMS\Controllers\PostController::class,
-        'capability'    => Capability::MANAGE_POSTS
+        'capability'    => Capability::MANAGE_POSTS,
         'menuIcon'      => 'fa-solid fa-newspaper',
     ],
 ];
