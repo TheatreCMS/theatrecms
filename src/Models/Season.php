@@ -17,10 +17,11 @@ use TheatreCMS\Traits\HasSponsors;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\ContentType\HasContentType;
 
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'seasons')]
-class Season extends ModelBase implements \JsonSerializable
+class Season extends ModelBase implements \JsonSerializable, HasContentType
 {
     use HasFeaturedImage;
     use HasHeroImage;
@@ -64,6 +65,11 @@ class Season extends ModelBase implements \JsonSerializable
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getContentType(): string
+    {
+        return 'season';
     }
 
     public function getLabel(): string

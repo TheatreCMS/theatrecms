@@ -12,10 +12,11 @@ use TheatreCMS\Traits\HasHeroImage;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\ContentType\HasContentType;
 
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'venues')]
-class Venue extends ModelBase
+class Venue extends ModelBase implements HasContentType
 {
     use HasFeaturedImage;
     use HasHeroImage;
@@ -74,6 +75,11 @@ class Venue extends ModelBase
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getContentType(): string
+    {
+        return 'venue';
     }
 
     public function getName(): string

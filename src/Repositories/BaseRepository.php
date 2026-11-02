@@ -241,13 +241,17 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         return (int) $builder->getQuery()->getSingleScalarResult();
     }
 
-    protected function generateUniqueSlug(string $string): string
+    /**
+     * @param array<string, mixed> $scope extra criteria the slug only has to be unique within,
+     *        e.g. `['season' => $season]` for productions or `['parent' => $parent]` for pages
+     */
+    protected function generateUniqueSlug(string $string, array $scope = []): string
     {
         $slug = $processed = $this->slugify($string);
         $i = 0;
 
         // if the slug already exists, append a number and increment until we find a unique slug
-        while ($this->slugExists($slug)) {
+        while ($this->slugExists($slug, $scope)) {
             $i++;
             $slug = $processed . '-' . $i;
         }
@@ -263,9 +267,12 @@ abstract class BaseRepository implements PaginatedRepositoryInterface
         return trim(preg_replace('/[^a-z0-9]+/i', '-', strtolower($string)), '-');
     }
 
-    protected function slugExists(string $slug): bool
+    /**
+     * @param array<string, mixed> $scope see generateUniqueSlug()
+     */
+    protected function slugExists(string $slug, array $scope = []): bool
     {
-        $existing = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug]);
+        $existing = $this->em->getRepository($this->entityClass)->findOneBy(['slug' => $slug] + $scope);
         return $existing !== null;
     }
 }

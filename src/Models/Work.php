@@ -13,10 +13,11 @@ use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\ContentType\HasContentType;
 
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'works')]
-class Work extends ModelBase implements \JsonSerializable
+class Work extends ModelBase implements \JsonSerializable, HasContentType
 {
     use HasCreatedTimestamp;
     use HasModifiedTimestamp;
@@ -45,6 +46,11 @@ class Work extends ModelBase implements \JsonSerializable
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getContentType(): string
+    {
+        return 'work';
     }
 
     public function getTitle(): string

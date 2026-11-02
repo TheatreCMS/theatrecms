@@ -267,4 +267,47 @@ class EntryRepositoryTest extends TestCase
             'contentId' => $id,
         ]));
     }
+    public function testAHierarchicalTypesEntriesAreFoundByPath(): void
+    {
+        $programs = $this->entries->forType('program');
+        $education = $programs->create(['title' => 'Education', 'status' => 'published']);
+        $camps = $programs->create(['title' => 'Camps', 'status' => 'published', 'parentId' => $education->getId()]);
+
+        $this->assertSame($camps, $programs->fetchPublicByPath('education/camps'));
+        $this->assertNull($programs->fetchPublicByPath('camps'));
+        $this->assertNull($this->entries->forType('press_release')->fetchPublicByPath('education/camps'));
+    }
+
+    public function testMovingAnEntryKeepsItsSlug(): void
+    {
+        $programs = $this->entries->forType('program');
+        $education = $programs->create(['title' => 'Education']);
+        $camps = $programs->create(['title' => 'Camps']);
+
+        $programs->moveTo($camps, $education);
+
+        $this->assertSame($education, $camps->getParent());
+        $this->assertSame('camps', $camps->getSlug());
+    }
+
+    public function testAParentMustBeOfTheSameType(): void
+    {
+        $page = $this->entries->forType('press_release')->create(['title' => 'Announced']);
+        $camps = $this->entries->forType('program')->create(['title' => 'Camps']);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $this->entries->forType('program')->moveTo($camps, $page);
+    }
+
+    public function testDeletingAnEntryMovesItsChildrenUp(): void
+    {
+        $programs = $this->entries->forType('program');
+        $education = $programs->create(['title' => 'Education']);
+        $camps = $programs->create(['title' => 'Camps', 'parentId' => $education->getId()]);
+
+        $programs->delete($education);
+
+        $this->assertNull($camps->getParent());
+    }
 }
