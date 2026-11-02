@@ -5,6 +5,16 @@ use TheatreCMS\Auth\Capability;
 // Core's built-in content types. Plugins and themes add their own with register_content_type().
 // Names are singular; URL prefixes are given explicitly because they default to the name.
 $coreContentTypes = [
+    // Served at the site root and nested by parent: /about, /about/board-of-directors.
+    'page' => [
+        'label'         => 'Pages',
+        'singularLabel' => 'Page',
+        'urlPrefix'     => '',
+        'hasArchive'    => false,
+        'hierarchical'  => true,
+        'controller'    => \TheatreCMS\Controllers\PageController::class,
+        'capability'    => Capability::MANAGE_PAGES,
+    ],
     'season' => [
         'label'         => 'Seasons',
         'singularLabel' => 'Season',
@@ -52,7 +62,9 @@ $coreContentTypes = [
         'singularLabel' => 'Sponsor',
         'urlPrefix' => 'sponsors',
         'controller'    => \TheatreCMS\Controllers\SponsorController::class,
-        'capability'    => Capability::MANAGE_SPONSORS
+        'capability'    => Capability::MANAGE_SPONSORS,
+        // Sponsors appear only on the seasons and productions they back, never on pages of their own.
+        'public'        => false,
     ],
     'post' => [
         'label' => 'Posts',

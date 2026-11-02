@@ -80,6 +80,7 @@ class SeoTagBuilderTest extends TestCase
         foreach ($prefixes as $type => $urlPrefix) {
             $contentTypes->register($type, ['urlPrefix' => $urlPrefix]);
         }
+        $contentTypes->register('page', ['urlPrefix' => '', 'hasArchive' => false, 'hierarchical' => true]);
 
         return new SeoTagBuilder(
             $siteSettings,

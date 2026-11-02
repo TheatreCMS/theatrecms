@@ -55,6 +55,7 @@ class MenuControllerTest extends TestCase
         $contentTypes->register('season', ['urlPrefix' => 'seasons', 'label' => 'Seasons']);
         $contentTypes->register('production', ['urlPrefix' => 'productions', 'label' => 'Productions']);
         $contentTypes->register('post', ['urlPrefix' => 'posts', 'label' => 'Posts']);
+        $contentTypes->register('page', ['urlPrefix' => '', 'hasArchive' => false, 'hierarchical' => true]);
         $this->resolver = new MenuItemResolver(
             $this->pages,
             $this->posts,

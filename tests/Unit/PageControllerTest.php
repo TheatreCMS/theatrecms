@@ -6,12 +6,14 @@ use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Response;
+use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\Theme\TemplateResolver;
 
 #[AllowMockObjectsWithoutExpectations]
 class PageControllerTest extends TestCase
@@ -141,13 +143,73 @@ class PageControllerTest extends TestCase
         $this->assertSame('/admin/pages', $result->getHeaderLine('Location'));
     }
 
+    public function testUpdateMovesThePageUnderANewParent(): void
+    {
+        $about = $this->page('About');
+        $board = $this->page('Board');
+
+        $this->controller()->update($this->request('POST', [
+            'pageId' => (string) $board->getId(),
+            'title' => 'Board',
+            'content' => 'body',
+            'parentId' => (string) $about->getId(),
+        ], htmx: true), new Response());
+
+        $this->assertSame($about, $board->getParent());
+    }
+
+    public function testUpdateRejectsADescendantAsParent(): void
+    {
+        $about = $this->page('About');
+        $board = $this->pages->create(['title' => 'Board', 'content' => 'body', 'parentId' => $about->getId()]);
+
+        $result = $this->controller()->update($this->request('POST', [
+            'pageId' => (string) $about->getId(),
+            'title' => 'About',
+            'content' => 'body',
+            'parentId' => (string) $board->getId(),
+        ]), new Response());
+
+        $this->assertSame(400, $result->getStatusCode());
+        $this->assertNull($about->getParent());
+    }
+
+    public function testSingleRendersThePublishedPageAtItsPath(): void
+    {
+        $about = $this->pages->create(['title' => 'About', 'content' => 'body', 'status' => 'published']);
+        $board = $this->pages->create([
+            'title' => 'Board of Directors',
+            'content' => 'body',
+            'status' => 'published',
+            'parentId' => $about->getId(),
+        ]);
+        $definition = new ContentTypeDefinition('page', 'Pages', 'Page', '', hasArchive: false, hierarchical: true);
+
+        $resolver = $this->createMock(TemplateResolver::class);
+        $resolver->expects($this->once())
+            ->method('renderSingle')
+            ->with($this->anything(), $this->anything(), 'page', $board, ['page' => $board], 'pages')
+            ->willReturn(new Response());
+
+        $request = $this->request('GET')->withAttribute(ContentTypeDefinition::class, $definition);
+        $this->controller($resolver)->single($request, new Response(), ['path' => 'about/board-of-directors']);
+
+        $missing = $this->controller()->single($request, new Response(), ['path' => 'board-of-directors']);
+        $this->assertSame(404, $missing->getStatusCode());
+    }
+
     private function page(string $title): Page
     {
         return $this->pages->create(['title' => $title, 'content' => 'body']);
     }
 
-    private function controller(): PageController
+    private function controller(?TemplateResolver $resolver = null): PageController
     {
-        return new PageController($this->pages, $this->em, $this->recordingTwig());
+        return new PageController(
+            $this->pages,
+            $this->em,
+            $this->recordingTwig(),
+            $resolver ?? $this->createStub(TemplateResolver::class)
+        );
     }
 }

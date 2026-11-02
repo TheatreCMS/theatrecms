@@ -6,17 +6,39 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
+use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Repositories\PageRepository;
+use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\RendersPublicContent;
 
 /**
  * @extends BaseController<PageRepository>
  */
-class PageController extends BaseController
+class PageController extends BaseController implements PublicContentController
 {
-    public function __construct(PageRepository $repository, EntityManagerInterface $em, Twig $twig)
-    {
+    use RendersPublicContent;
+
+    public function __construct(
+        PageRepository $repository,
+        EntityManagerInterface $em,
+        Twig $twig,
+        private readonly TemplateResolver $templateResolver,
+    ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function templateResolver(): TemplateResolver
+    {
+        return $this->templateResolver;
+    }
+
+    /**
+     * Pages are hierarchical, so a page is found by its path (`about/board-of-directors`).
+     */
+    protected function fetchPublicItem(ContentTypeDefinition $definition, array $args): ?object
+    {
+        return $this->repository->fetchPublicByPath((string) ($args['path'] ?? ''));
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -38,6 +60,7 @@ class PageController extends BaseController
     {
         return $this->twig->render($response, 'admin/pages/create.html.twig', [
             'statuses' => ContentStatus::labels(),
+            'parents'  => $this->repository->fetchPossibleParents(null),
         ]);
     }
 
@@ -52,6 +75,7 @@ class PageController extends BaseController
         return $this->twig->render($response, 'admin/pages/edit.html.twig', [
             'page'     => $page,
             'statuses' => ContentStatus::labels(),
+            'parents'  => $this->repository->fetchPossibleParents($page),
         ]);
     }
 
@@ -100,6 +124,7 @@ class PageController extends BaseController
                 'title'   => $data['title'] ?? null,
                 'status'  => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
+                'parentId' => $data['parentId'] ?? null,
             ]);
         } catch (\InvalidArgumentException $e) {
             if ($isHtmx) {
@@ -138,6 +163,7 @@ class PageController extends BaseController
 
         $data = $this->parseArgs($data, [
             'pageId' => 0, 'title' => null, 'status' => ContentStatus::DRAFT->value, 'content' => null, 'slug' => null,
+            'parentId' => null,
         ]);
 
         $page = $this->repository->fetch((int) $data['pageId']);
@@ -165,6 +191,17 @@ class PageController extends BaseController
             if ($isHtmx) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
                     'type' => 'error', 'message' => 'Invalid status.',
+                ]);
+            }
+            return $response->withStatus(400);
+        }
+
+        try {
+            $this->repository->moveTo($page, $this->repository->resolveParent($data['parentId']));
+        } catch (\InvalidArgumentException $e) {
+            if ($isHtmx) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type' => 'error', 'message' => $e->getMessage(),
                 ]);
             }
             return $response->withStatus(400);

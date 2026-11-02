@@ -587,6 +587,7 @@ class ServiceRegistrar
                     $c->get(PageRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             MenuController::class => static function (ContainerInterface $c): MenuController {

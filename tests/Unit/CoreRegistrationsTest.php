@@ -28,12 +28,30 @@ class CoreRegistrationsTest extends TestCase
     {
         $registry = $this->registerCoreContentTypes();
 
-        foreach (['season', 'production', 'person', 'work', 'venue', 'event', 'sponsor', 'post'] as $type) {
+        foreach (['page', 'season', 'production', 'person', 'work', 'venue', 'event', 'sponsor', 'post'] as $type) {
             $this->assertTrue($registry->has($type), "Core content type '{$type}' is not registered.");
         }
         $this->assertSame('people', $registry->prefix('person'));
         $this->assertSame('People', $registry->label('person'));
         $this->assertSame('Person', $registry->require('person')->singularLabel);
+    }
+
+    public function testPagesAreServedAtTheRootAndNest(): void
+    {
+        $page = $this->registerCoreContentTypes()->require('page');
+
+        $this->assertSame('', $page->urlPrefix);
+        $this->assertFalse($page->hasArchive);
+        $this->assertTrue($page->hierarchical);
+    }
+
+    public function testSponsorsAreNotPublicButEventsHaveAnArchive(): void
+    {
+        $registry = $this->registerCoreContentTypes();
+
+        $this->assertFalse($registry->require('sponsor')->public);
+        $this->assertTrue($registry->require('event')->public);
+        $this->assertTrue($registry->require('event')->hasArchive);
     }
 
     public function testConfigOverrideAppliesToACoreContentType(): void
