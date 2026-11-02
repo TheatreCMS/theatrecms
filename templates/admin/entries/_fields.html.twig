@@ -6,6 +6,7 @@
       content_type  the ContentTypeDefinition
       entry         the Entry being edited, or null on the create form
       statuses      ContentStatus::labels()
+      parents       for a hierarchical type, the entries this one may be placed under
 #}
 <div class="grid grid-cols-1 gap-6">
     <div>
@@ -22,6 +23,18 @@
             {% endfor %}
         </select>
     </div>
+
+    {% if content_type.hierarchical %}
+        <div>
+            <label for="parentId" class="block text-sm font-medium text-gray-700 mb-1">Parent {{ content_type.singularLabel }}</label>
+            <select name="parentId" id="parentId" class="w-full rounded-md border-gray-300 shadow-sm">
+                <option value="">(none: top level)</option>
+                {% for parent in parents %}
+                    <option value="{{ parent.id }}" {% if entry and entry.parent and entry.parent.id == parent.id %}selected{% endif %}>{{ parent.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
 
     {% if entry %}
         <div>

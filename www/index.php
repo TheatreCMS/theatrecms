@@ -103,31 +103,6 @@ $app->get('/debug-routes', function ($request, $response, $args) use ($app) {
 });
 
 // Load external route files
-// require ROUTES_DIR . '/admin/seasons.php';
-// require ROUTES_DIR . '/admin/events.php';
-// require ROUTES_DIR . '/admin/people.php';
-// require ROUTES_DIR . '/admin/productions.php';
-// require ROUTES_DIR . '/admin/sponsors.php';
-// require ROUTES_DIR . '/admin/taxonomies.php';
-// require ROUTES_DIR . '/admin/users.php';
-// require ROUTES_DIR . '/admin/profile.php';
-// require ROUTES_DIR . '/admin/venues.php';
-// require ROUTES_DIR . '/admin/works.php';
-// require ROUTES_DIR . '/admin/posts.php';
-// require ROUTES_DIR . '/admin/pages.php';
-// require ROUTES_DIR . '/admin/menus.php';
-// require ROUTES_DIR . '/admin/images.php';
-// require ROUTES_DIR . '/admin/media.php';
-// require ROUTES_DIR . '/admin/link-preview.php';
-// require ROUTES_DIR . '/admin/settings.php';
-// require ROUTES_DIR . '/admin/themes.php';
-// require ROUTES_DIR . '/frontend/seasons.php';
-// require ROUTES_DIR . '/frontend/productions.php';
-// require ROUTES_DIR . '/frontend/people.php';
-// require ROUTES_DIR . '/frontend/works.php';
-// require ROUTES_DIR . '/frontend/taxonomies.php';
-// require ROUTES_DIR . '/frontend/pages.php';
-
 require_once APP_ROOT . '/app/routes.php';
 
 // Plugin routes and middleware: after core routes, before the page catch-all below.
@@ -168,6 +143,9 @@ $app->get('/', function (Request $request, Response $response) use ($container) 
         'seo' => $container->get(SeoTagBuilder::class)->forHome(),
     ]);
 });
+
+// Last, so its catch-all pattern can't shadow any route above (see app/routes.php).
+$registerRootContentRoutes();
 
 // Every route is registered by now; refuse to serve if one lands under a content type's prefix.
 RouteRegistry::getInstance()->assertNoCollisions($app->getRouteCollector()->getRoutes());

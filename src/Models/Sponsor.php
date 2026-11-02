@@ -13,10 +13,11 @@ use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\ContentType\HasContentType;
 
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'sponsors')]
-class Sponsor extends ModelBase
+class Sponsor extends ModelBase implements HasContentType
 {
     use HasCreatedTimestamp;
     use HasModifiedTimestamp;
@@ -44,6 +45,11 @@ class Sponsor extends ModelBase
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getContentType(): string
+    {
+        return 'sponsor';
     }
 
     public function getName(): string

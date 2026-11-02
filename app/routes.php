@@ -51,6 +51,10 @@ $addRoutes = function (RouteCollectorProxyInterface $group, ContentTypeDefinitio
     }
 };
 
+// The root type's routes (empty prefix, e.g. pages at `/{path}`) match almost any URL, so
+// www/index.php registers them last, through $registerRootContentRoutes.
+$rootContentRoutes = [];
+
 foreach ($routeRegistry->all() as ['definition' => $definition, 'admin' => $admin, 'public' => $public]) {
     $app->group($admin['prefix'], function (RouteCollectorProxyInterface $group) use ($addRoutes, $definition, $admin) {
         $addRoutes($group, $definition, 'admin', $admin['routes']);
@@ -68,11 +72,24 @@ foreach ($routeRegistry->all() as ['definition' => $definition, 'admin' => $admi
             ));
         }
 
+        if ($public['prefix'] === '') {
+            $rootContentRoutes[] = [$definition, $public];
+            continue;
+        }
+
         $app->group($public['prefix'], function (RouteCollectorProxyInterface $group) use ($addRoutes, $definition, $public) {
             $addRoutes($group, $definition, 'public', $public['routes']);
         })->add(new RequireTwigMiddleware($container));
     }
 }
+
+$registerRootContentRoutes = function () use ($app, $container, $addRoutes, $rootContentRoutes): void {
+    foreach ($rootContentRoutes as [$definition, $public]) {
+        $app->group('', function (RouteCollectorProxyInterface $group) use ($addRoutes, $definition, $public) {
+            $addRoutes($group, $definition, 'public', $public['routes']);
+        })->add(new RequireTwigMiddleware($container));
+    }
+};
 
 foreach (TaxonomyRegistry::getInstance()->all() as $taxonomy) {
     $routeRegistry->registerRoutesForTaxonomy($taxonomy);

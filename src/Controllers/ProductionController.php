@@ -11,7 +11,6 @@ use TheatreCMS\Models\Person;
 use TheatreCMS\Models\RoleType;
 use TheatreCMS\Models\Venue;
 use TheatreCMS\Repositories\ContentMetaRepository;
-use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Traits\HandlesContentImages;
@@ -23,7 +22,6 @@ use Symfony\Component\Validator\Constraints\Date;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
 use TheatreCMS\Theme\TemplateResolver;
-use TheatreCMS\Traits\RendersProductionPage;
 use TheatreCMS\Traits\RendersPublicContent;
 
 /**
@@ -35,7 +33,6 @@ use TheatreCMS\Traits\RendersPublicContent;
 class ProductionController extends BaseController implements PublicContentController
 {
     use RendersPublicContent;
-    use RendersProductionPage;
     use HandlesContentImages;
 
     public function __construct(
@@ -45,7 +42,6 @@ class ProductionController extends BaseController implements PublicContentContro
         private readonly ProductionFormOptionsService $formOptions,
         private readonly ContentMetaRepository $contentMeta,
         private readonly TemplateResolver $templateResolver,
-        private readonly EventRepository $events,
     ) {
         parent::__construct($repository, $twig, $em);
     }
@@ -55,25 +51,13 @@ class ProductionController extends BaseController implements PublicContentContro
         return $this->templateResolver;
     }
 
-    protected function eventRepository(): EventRepository
-    {
-        return $this->events;
-    }
-
     /**
-     * Overrides RendersPublicContent::single() to add the production's performances.
+     * A production is served only under its season (SeasonController::production()), where its
+     * slug is unique; on its own, `/productions/{slug}` could match a production in any season.
      */
-    public function single(Request $request, Response $response, array $args = []): Response
+    public static function hasSingleRoute(): bool
     {
-        $production = $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
-
-        if (!$production instanceof Production) {
-            $response->getBody()->write('Production not found');
-
-            return $response->withStatus(404);
-        }
-
-        return $this->renderProductionPage($request, $response, $args, $production);
+        return false;
     }
 
     protected function contentType(): string
@@ -293,9 +277,9 @@ class ProductionController extends BaseController implements PublicContentContro
             return $response->withStatus(400);
         }
 
+        $this->repository->moveToSeason($item, $season);
         $item
             ->setName($data['name'])
-            ->setSeason($season)
             ->setVenue($venue)
             ->setOpening($opening)
             ->setClosing($closing)

@@ -7,7 +7,6 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Slim\Psr7\Response;
 use Symfony\Component\Validator\Mapping\ClassMetadata;
-use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Controllers\ProductionController;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Production;
@@ -300,45 +299,9 @@ class ProductionControllerTest extends TestCase
         $this->assertSame(['name', 'opening', 'closing'], $metadata->getConstrainedProperties());
     }
 
-    public function testSingleRendersThePublicProductionWithItsPerformances(): void
+    public function testProductionsHaveNoSingleRouteOfTheirOwn(): void
     {
-        $this->registerProductionType();
-        $production = $this->production('Hamlet');
-        $performance = (new EventRepository($this->em))->create([
-            'productionId' => $production->getId(),
-            'startsAt' => new \DateTime('2026-11-05 19:30:00'),
-        ]);
-
-        $resolver = $this->createMock(TemplateResolver::class);
-        $resolver->expects($this->once())
-            ->method('renderSingle')
-            ->with(
-                $this->anything(),
-                $this->anything(),
-                'production',
-                $production,
-                ['production' => $production, 'performances' => [$performance]],
-                'productions'
-            )
-            ->willReturn(new Response());
-
-        $this->controller($resolver)->single($this->request('GET'), new Response(), ['slug' => $production->getSlug()]);
-    }
-
-    public function testSingleIs404ForAnUnknownSlug(): void
-    {
-        $this->registerProductionType();
-
-        $response = $this->controller()->single($this->request('GET'), new Response(), ['slug' => 'no-such-production']);
-
-        $this->assertSame(404, $response->getStatusCode());
-    }
-
-    private function registerProductionType(): void
-    {
-        $registry = new ContentTypeRegistry();
-        $registry->register('production', ['label' => 'Productions', 'singularLabel' => 'Production', 'urlPrefix' => 'productions']);
-        ContentTypeRegistry::setInstance($registry);
+        $this->assertFalse(ProductionController::hasSingleRoute());
     }
 
     /**
@@ -387,7 +350,6 @@ class ProductionControllerTest extends TestCase
             ),
             $this->meta,
             $resolver ?? $this->createStub(TemplateResolver::class),
-            new EventRepository($this->em),
         );
     }
 }

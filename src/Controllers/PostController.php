@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\PostRepository;
@@ -144,11 +145,21 @@ class PostController extends BaseController implements PublicContentController
                 'title' => $data['title'] ?? null,
                 'status' => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $data['content'] ?? null,
+                'excerpt' => $data['excerpt'] ?? null,
             ]);
             $this->applyFeaturedImage($post, $data['featuredImageId'] ?? null);
             $this->applyHeroImage($post->getId(), $data['heroImageId'] ?? null);
             $this->applyTerms($this->contentType(), $post->getId(), $data);
             $this->entityManager->flush();
+        } catch (SlugAllocationException $e) {
+            if ($request->getHeaderLine('HX-Request')) {
+                return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                    'type'    => 'error',
+                    'message' => $e->getMessage(),
+                ]);
+            }
+            $response->getBody()->write($e->getMessage());
+            return $response->withStatus(409);
         } catch (\InvalidArgumentException $e) {
             if ($request->getHeaderLine('HX-Request')) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
@@ -188,6 +199,7 @@ class PostController extends BaseController implements PublicContentController
             'title' => null,
             'status' => ContentStatus::DRAFT->value,
             'content' => null,
+            'excerpt' => null,
             'slug' => null,
             'publishedAt' => null,
             'featuredImageId' => null,
@@ -230,6 +242,7 @@ class PostController extends BaseController implements PublicContentController
         $post->setTitle($data['title']);
         $post->setStatus($status);
         $post->setContent($data['content']);
+        $post->setExcerpt($data['excerpt'] ?: null);
         $this->applyFeaturedImage($post, $data['featuredImageId']);
         $this->applyHeroImage($post->getId(), $data['heroImageId']);
         $post->touchModified();

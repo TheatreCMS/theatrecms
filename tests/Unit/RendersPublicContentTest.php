@@ -35,7 +35,7 @@ class RendersPublicContentTest extends TestCase
 
         $resolver = $this->createMock(TemplateResolver::class);
         $resolver->expects($this->once())
-            ->method('renderList')
+            ->method('renderArchive')
             ->with(
                 $this->anything(),
                 $this->anything(),
@@ -76,6 +76,24 @@ class RendersPublicContentTest extends TestCase
         $response = $this->controller($repository, $resolver)->single($this->request(), new Response(), ['slug' => 'draft']);
 
         $this->assertSame(404, $response->getStatusCode());
+    }
+
+    public function testSingleThrowsForAHierarchicalTypeWhoseControllerFindsItemsOnlyBySlug(): void
+    {
+        $this->definition = new ContentTypeDefinition(
+            'press_release',
+            'Press Releases',
+            'Press Release',
+            'press-releases',
+            hierarchical: true
+        );
+        $controller = $this->controller(
+            $this->createStub(PublicRepository::class),
+            $this->createStub(TemplateResolver::class)
+        );
+
+        $this->expectException(LogicException::class);
+        $controller->single($this->request(), new Response(), ['path' => 'a/b']);
     }
 
     public function testThrowsWithoutTheContentTypeAttribute(): void

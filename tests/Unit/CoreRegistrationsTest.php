@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace TheatreCMS\Tests\Unit;
 
+use Delight\Auth\Role;
 use PHPUnit\Framework\TestCase;
+use TheatreCMS\Auth\CapabilityRegistry;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
@@ -26,12 +28,30 @@ class CoreRegistrationsTest extends TestCase
     {
         $registry = $this->registerCoreContentTypes();
 
-        foreach (['season', 'production', 'person', 'work', 'venue', 'event', 'sponsor', 'post'] as $type) {
+        foreach (['page', 'season', 'production', 'person', 'work', 'venue', 'event', 'sponsor', 'post'] as $type) {
             $this->assertTrue($registry->has($type), "Core content type '{$type}' is not registered.");
         }
         $this->assertSame('people', $registry->prefix('person'));
         $this->assertSame('People', $registry->label('person'));
         $this->assertSame('Person', $registry->require('person')->singularLabel);
+    }
+
+    public function testPagesAreServedAtTheRootAndNest(): void
+    {
+        $page = $this->registerCoreContentTypes()->require('page');
+
+        $this->assertSame('', $page->urlPrefix);
+        $this->assertFalse($page->hasArchive);
+        $this->assertTrue($page->hierarchical);
+    }
+
+    public function testSponsorsAreNotPublicButEventsHaveAnArchive(): void
+    {
+        $registry = $this->registerCoreContentTypes();
+
+        $this->assertFalse($registry->require('sponsor')->public);
+        $this->assertTrue($registry->require('event')->public);
+        $this->assertTrue($registry->require('event')->hasArchive);
     }
 
     public function testConfigOverrideAppliesToACoreContentType(): void
@@ -61,6 +81,25 @@ class CoreRegistrationsTest extends TestCase
         require self::APP_DIR . '/core-taxonomies.php';
 
         $this->assertTrue(TaxonomyRegistry::getInstance()->has('genre'));
+    }
+
+    public function testAdminHoldsEveryCoreContentTypeAndTaxonomyCapability(): void
+    {
+        $capabilities = new CapabilityRegistry();
+        CapabilityRegistry::setInstance($capabilities);
+        require self::APP_DIR . '/capabilities.php';
+
+        $contentTypes = $this->registerCoreContentTypes();
+        $taxonomies = new TaxonomyRegistry($contentTypes);
+        TaxonomyRegistry::setInstance($taxonomies);
+        require self::APP_DIR . '/core-taxonomies.php';
+
+        $required = array_merge(
+            array_map(static fn($type) => $type->capability, $contentTypes->all()),
+            array_map(static fn($taxonomy) => $taxonomy->capability, $taxonomies->all()),
+        );
+
+        $this->assertSame([], array_values(array_diff($required, $capabilities->capabilitiesFor(Role::ADMIN))));
     }
 
     /**

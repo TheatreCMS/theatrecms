@@ -2,7 +2,10 @@
 
 namespace TheatreCMS\Repositories;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Models\Post;
 use TheatreCMS\Traits\EagerLoadsHeroImage;
 use Doctrine\ORM\EntityManagerInterface;
@@ -11,6 +14,9 @@ use Doctrine\ORM\QueryBuilder;
 class PostRepository extends BaseRepository
 {
     use EagerLoadsHeroImage;
+
+    private const SLUG_LOCK_NAME = 'theatrecms:post-slugs';
+    private const SLUG_LOCK_TIMEOUT_SECONDS = 5;
 
     protected string $entityClass = Post::class;
 
@@ -29,12 +35,16 @@ class PostRepository extends BaseRepository
         return 'post';
     }
 
+    /**
+     * @throws SlugAllocationException when slug allocation cannot be serialized or persisted
+     */
     public function create(array $args): Post
     {
         $args = array_merge([
             'title' => null,
             'status' => ContentStatus::DRAFT->value,
             'content' => null,
+            'excerpt' => null,
             'slug' => null,
         ], $args);
 
@@ -51,14 +61,25 @@ class PostRepository extends BaseRepository
             throw new \InvalidArgumentException('Invalid status.');
         }
 
-        $post = new Post($args['title'], $status, $args['content']);
         $slugSource = $args['slug'] ?? $args['title'];
-        $post->setSlug($this->generateUniqueSlug($slugSource));
 
-        $this->em->persist($post);
-        $this->em->flush();
+        try {
+            return $this->withSlugAllocationLock(function () use ($args, $status, $slugSource): Post {
+                $post = new Post($args['title'], $status, $args['content']);
+                $post->setExcerpt($args['excerpt'] ?: null);
+                $post->setSlug($this->generateUniqueSlug($slugSource));
 
-        return $post;
+                $this->em->persist($post);
+                $this->em->flush();
+
+                return $post;
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            throw new SlugAllocationException(
+                'Unable to allocate a unique URL for the post. Please try again.',
+                previous: $e
+            );
+        }
     }
 
     protected function applyListOrder(QueryBuilder $builder, string $alias): void
@@ -129,5 +150,37 @@ class PostRepository extends BaseRepository
         }
 
         $post->setSlug($this->generateUniqueSlug($slug));
+    }
+
+    /**
+     * MariaDB's connection-level advisory lock serializes slug selection and insertion, closing
+     * the gap between checking a candidate and enforcing the unique index. SQLite serializes
+     * writes itself and is used only for tests.
+     *
+     * @param callable(): Post $callback
+     */
+    private function withSlugAllocationLock(callable $callback): Post
+    {
+        $connection = $this->em->getConnection();
+        if (!$connection->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+            return $callback();
+        }
+
+        $acquired = $connection->fetchOne(
+            'SELECT GET_LOCK(?, ?)',
+            [self::SLUG_LOCK_NAME, self::SLUG_LOCK_TIMEOUT_SECONDS]
+        );
+
+        if ((int) $acquired !== 1) {
+            throw new SlugAllocationException(
+                'Unable to allocate a unique URL for the post. Please try again.'
+            );
+        }
+
+        try {
+            return $callback();
+        } finally {
+            $connection->fetchOne('SELECT RELEASE_LOCK(?)', [self::SLUG_LOCK_NAME]);
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
 use TheatreCMS\Models\Post;
@@ -28,18 +29,22 @@ class SeoDescriptionResolver
 {
     private const MAX_LENGTH = 160;
 
-    public function __construct(private readonly EditorJsHtmlConverter $converter)
-    {
+    public function __construct(
+        private readonly EditorJsHtmlConverter $converter,
+        private readonly ExcerptResolver $excerptResolver
+    ) {
     }
 
     public function resolve(mixed $entity): string
     {
         $raw = match (true) {
-            $entity instanceof Production => $entity->getExcerpt() ?: $this->fromEditorJs($entity->getDescription()),
+            $entity instanceof Production => $this->excerptResolver->resolve($entity)
+                ?: $this->fromEditorJs($entity->getDescription()),
             $entity instanceof Work => $entity->getSynopsis() ?: $this->fromEditorJs($entity->getDescription()),
             $entity instanceof Season => $this->fromEditorJs($entity->getOverview()),
             $entity instanceof Page => $this->fromEditorJs($entity->getContent()),
-            $entity instanceof Post => $this->fromEditorJs($entity->getContent()),
+            $entity instanceof Post, $entity instanceof Entry => $this->excerptResolver->resolve($entity)
+                ?: $this->fromEditorJs($entity->getContent() ?? ''),
             $entity instanceof Person => PlainText::fromHtml($entity->getBiography()),
             $entity instanceof Venue => (string) $entity->getDescription(),
             $entity instanceof Term => $entity->getDescription(),

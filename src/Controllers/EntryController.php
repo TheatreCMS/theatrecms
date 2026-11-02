@@ -67,6 +67,17 @@ class EntryController extends BaseController implements PublicContentController
         return $this->templateResolver;
     }
 
+    /**
+     * A hierarchical type's entry is found by its path (`parent-slug/child-slug`), a flat type's
+     * by its slug.
+     */
+    protected function fetchPublicItem(ContentTypeDefinition $definition, array $args): ?object
+    {
+        return $definition->hierarchical
+            ? $this->repository->fetchPublicByPath((string) ($args['path'] ?? ''))
+            : $this->repository->fetchPublicBySlug((string) ($args['slug'] ?? ''));
+    }
+
     public function index(Request $request, Response $response, array $args = []): Response
     {
         [$search, $sort, $direction] = $this->resolveListQuery($request, self::SORTABLE_COLUMNS);
@@ -92,6 +103,7 @@ class EntryController extends BaseController implements PublicContentController
     {
         return $this->twig->render($response, 'admin/entries/create.html.twig', $this->viewData([
             'statuses' => ContentStatus::labels(),
+            'parents'  => $this->possibleParents(null),
         ]));
     }
 
@@ -106,6 +118,7 @@ class EntryController extends BaseController implements PublicContentController
         return $this->twig->render($response, 'admin/entries/edit.html.twig', $this->viewData([
             'entry'    => $entry,
             'statuses' => ContentStatus::labels(),
+            'parents'  => $this->possibleParents($entry),
         ]));
     }
 
@@ -123,6 +136,7 @@ class EntryController extends BaseController implements PublicContentController
                 'status'  => $data['status'] ?? ContentStatus::DRAFT->value,
                 'content' => $this->definition->supports('editor') ? ($data['content'] ?? null) : null,
                 'excerpt' => $this->definition->supports('excerpt') ? ($data['excerpt'] ?? null) : null,
+                'parentId' => $this->definition->hierarchical ? ($data['parentId'] ?? null) : null,
             ]);
 
             if ($this->definition->supports('featured_image')) {
@@ -158,6 +172,7 @@ class EntryController extends BaseController implements PublicContentController
             'content'         => null,
             'excerpt'         => null,
             'featuredImageId' => null,
+            'parentId'        => null,
         ]);
 
         $entry = $this->repository->fetch((int) $data['entryId']);
@@ -184,6 +199,9 @@ class EntryController extends BaseController implements PublicContentController
             }
             if ($this->definition->supports('featured_image')) {
                 $this->applyFeaturedImage($entry, $data['featuredImageId']);
+            }
+            if ($this->definition->hierarchical) {
+                $this->repository->moveTo($entry, $this->repository->resolveParent($data['parentId']));
             }
 
             $entry->setPublishedAt($this->resolvePublishedAt($entry, $status, $data['publishedAt']));
@@ -272,6 +290,14 @@ class EntryController extends BaseController implements PublicContentController
         }
 
         return $response->withStatus($status);
+    }
+
+    /**
+     * @return array<int, Entry> the entries `$entry` may be placed under; none for a flat type
+     */
+    private function possibleParents(?Entry $entry): array
+    {
+        return $this->definition->hierarchical ? $this->repository->fetchPossibleParents($entry) : [];
     }
 
     private function basePath(): string

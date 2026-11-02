@@ -49,6 +49,7 @@ class ContentTypeRegistry
         'public',
         'supports',
         'capability',
+        'hierarchical',
         'menuIcon',
     ];
 
@@ -182,7 +183,7 @@ class ContentTypeRegistry
         $prepared['controller'] = $controller ?? EntryController::class;
 
         NamingRules::assertTypeName($type, 'content type');
-        NamingRules::assertUrlPrefix($prepared['urlPrefix'], self::describe($type));
+        $this->assertUrlPrefix($type, $prepared);
 
         $this->urlPrefixes->claim($prepared['urlPrefix']);
 
@@ -248,6 +249,29 @@ class ContentTypeRegistry
         $prepared['name'] = $type;
 
         return $prepared;
+    }
+
+    /**
+     * An empty prefix serves the type at the site root (pages, at `/about`). Only one type can
+     * claim it, and it can't have an archive, which would be the home page.
+     *
+     * @param array<string, mixed> $prepared
+     * @throws InvalidArgumentException
+     */
+    private function assertUrlPrefix(string $type, array $prepared): void
+    {
+        if ($prepared['urlPrefix'] !== '') {
+            NamingRules::assertUrlPrefix($prepared['urlPrefix'], self::describe($type));
+
+            return;
+        }
+
+        if ($prepared['hasArchive'] ?? true) {
+            throw new InvalidArgumentException(sprintf(
+                'The %s has an empty URL prefix, so it cannot have an archive; register it with hasArchive: false.',
+                self::describe($type)
+            ));
+        }
     }
 
     /**

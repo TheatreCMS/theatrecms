@@ -148,7 +148,8 @@ class RouteRegistry
 
         foreach ($this->routes as $type => $typeRoutes) {
             foreach ([$typeRoutes['admin'], $typeRoutes['public']] as $group) {
-                if ($group !== null) {
+                // The root type (empty prefix) owns no prefix; its routes are registered last instead.
+                if ($group !== null && $group['prefix'] !== '') {
                     $owners[] = [$group['prefix'], "content_type.{$type}.", "content type \"{$type}\""];
                 }
             }
@@ -216,17 +217,25 @@ class RouteRegistry
         }
 
         // A controller that isn't a PublicContentController is rejected in app/routes.php.
-        $routes = is_subclass_of($definition->controller, PublicContentController::class)
-            ? $definition->controller::additionalPublicRoutes()
-            : [];
-        $routes[] = ['get', '/{slug}', 'single'];
+        $controller = is_subclass_of($definition->controller, PublicContentController::class)
+            ? $definition->controller
+            : null;
+        $routes = $controller ? $controller::additionalPublicRoutes() : [];
+
+        if ($controller === null || $controller::hasSingleRoute()) {
+            // A hierarchical type's items are addressed by their ancestors' slugs and their own.
+            $routes[] = $definition->hierarchical
+                ? ['get', '/{path:.+}', 'single']
+                : ['get', '/{slug}', 'single'];
+        }
 
         if ($definition->hasArchive) {
             $routes[] = ['get', '', 'archive'];
         }
 
         return [
-            'prefix' => '/' . $definition->urlPrefix,
+            // The root type's group has no prefix, so its routes start at `/`.
+            'prefix' => $definition->urlPrefix === '' ? '' : '/' . $definition->urlPrefix,
             'routes' => $routes,
         ];
     }

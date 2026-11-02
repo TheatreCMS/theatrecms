@@ -6,7 +6,7 @@ use TheatreCMS\Models\Term;
 
 /**
  * Tracks which content type (and, for a single item, which entity) the current frontend
- * request is rendering. Populated by `TemplateResolver::renderSingle()`/`renderList()` right
+ * request is rendering. Populated by `TemplateResolver::renderSingle()`/`renderArchive()` right
  * before the template renders, and read by the `is_single()`/`is_item()`/`is_item_id()`/
  * `is_archive()`/`is_singular()`/`is_tax()` template tags (`app/template-tags.php`) — TheatreCMS's
  * corollary to WordPress' conditional tags against `$wp_query`.

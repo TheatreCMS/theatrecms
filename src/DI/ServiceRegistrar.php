@@ -228,7 +228,10 @@ class ServiceRegistrar
         $container->set(QueriedObject::class, static fn(): QueriedObject => new QueriedObject());
 
         $container->set(SeoDescriptionResolver::class, static function (ContainerInterface $c): SeoDescriptionResolver {
-            return new SeoDescriptionResolver($c->get(EditorJsHtmlConverter::class));
+            return new SeoDescriptionResolver(
+                $c->get(EditorJsHtmlConverter::class),
+                $c->get(ExcerptResolver::class)
+            );
         });
 
         $container->set(SeoTagBuilder::class, static function (ContainerInterface $c): SeoTagBuilder {
@@ -544,7 +547,6 @@ class ServiceRegistrar
                     $c->get(ProductionFormOptionsService::class),
                     $c->get(ContentMetaRepository::class),
                     $c->get(TemplateResolver::class),
-                    $c->get(EventRepository::class),
                 );
             },
             SeasonController::class => static function (ContainerInterface $c): SeasonController {
@@ -584,6 +586,7 @@ class ServiceRegistrar
                     $c->get(PageRepository::class),
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
+                    $c->get(TemplateResolver::class),
                 );
             },
             MenuController::class => static function (ContainerInterface $c): MenuController {

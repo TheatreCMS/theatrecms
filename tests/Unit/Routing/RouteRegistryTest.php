@@ -10,6 +10,8 @@ use RuntimeException;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Controllers\PageController;
+use TheatreCMS\Controllers\ProductionController;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Routing\RouteRegistry;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
@@ -102,6 +104,51 @@ class RouteRegistryTest extends TestCase
         $paths = array_column($registry->all()['season']['public']['routes'], 1);
 
         $this->assertSame(['/{slug}/{productionSlug}', '/{slug}', ''], $paths);
+    }
+
+    public function testAHierarchicalTypesSingleRouteMatchesAPath(): void
+    {
+        $registry = new RouteRegistry();
+        $registry->registerRoutesForContentType(new ContentTypeDefinition(
+            'page',
+            'Pages',
+            'Page',
+            '',
+            controller: PageController::class,
+            hasArchive: false,
+            hierarchical: true
+        ));
+
+        $this->assertSame(
+            ['prefix' => '', 'routes' => [['get', '/{path:.+}', 'single']]],
+            $registry->all()['page']['public']
+        );
+    }
+
+    public function testATypeWhoseControllerHasNoSingleRouteKeepsOnlyItsArchive(): void
+    {
+        $registry = new RouteRegistry();
+        $registry->registerRoutesForContentType(new ContentTypeDefinition(
+            'production',
+            'Productions',
+            'Production',
+            'productions',
+            controller: ProductionController::class
+        ));
+
+        $this->assertSame([['get', '', 'archive']], $registry->all()['production']['public']['routes']);
+    }
+
+    public function testTheRootTypeClaimsNoPrefix(): void
+    {
+        $registry = $this->registryWithSeasons();
+        $registry->registerRoutesForContentType(
+            new ContentTypeDefinition('page', 'Pages', 'Page', '', hasArchive: false, hierarchical: true)
+        );
+
+        $registry->assertNoCollisions($this->routes(['/events/{slug}', null], ['/admin/settings', null]));
+
+        $this->addToAssertionCount(1);
     }
 
     public function testATaxonomysOwnRoutesDoNotCollide(): void

@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use LogicException;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Entry;
+use TheatreCMS\Traits\ManagesHierarchy;
 
 /**
  * Entries of registered content types (see `register_content_type()`), which all share the
@@ -16,10 +17,13 @@ use TheatreCMS\Models\Entry;
  *     $entries->forType('press_release')->fetchBySlug('season-announced');
  *
  * An unbound repository throws instead of reading entries of every type, and slugs are
- * unique within a type, so two types can share one.
+ * unique within a type, so two types can share one. That holds for hierarchical types too, so
+ * moving an entry to another parent never renames it.
  */
 class EntryRepository extends BaseRepository
 {
+    use ManagesHierarchy;
+
     protected string $entityClass = Entry::class;
 
     private ?string $contentType = null;
@@ -41,9 +45,10 @@ class EntryRepository extends BaseRepository
      *     slug?: string|null,
      *     status?: ContentStatus|string,
      *     content?: string|null,
-     *     excerpt?: string|null
+     *     excerpt?: string|null,
+     *     parentId?: int|string|null
      * } $args
-     * @throws InvalidArgumentException for a missing title or an invalid status
+     * @throws InvalidArgumentException for a missing title, an invalid status or an unknown parent
      */
     public function create(array $args): Entry
     {
@@ -68,6 +73,7 @@ class EntryRepository extends BaseRepository
         ]);
         $entry->setContent($args['content'] ?? null);
         $entry->setExcerpt($args['excerpt'] ?? null);
+        $entry->setParent($this->resolveParent($args['parentId'] ?? null));
 
         $this->em->persist($entry);
         $this->em->flush();
@@ -116,12 +122,51 @@ class EntryRepository extends BaseRepository
     }
 
     /**
+     * Deletes the entry, moving its children up to its own parent.
+     *
      * @throws InvalidArgumentException for an entry of another content type
      */
     public function delete($item): void
     {
         $this->assertOwnType($item);
+        $this->reparentChildren($item);
         parent::delete($item);
+    }
+
+    /**
+     * Moves the entry under `$parent` (null for top level). Slugs are unique per type, not per
+     * parent, so the slug never changes.
+     *
+     * @throws InvalidArgumentException for an entry or parent of another content type, or a
+     *         parent that is the entry or one of its descendants
+     */
+    public function moveTo(object $item, ?object $parent): void
+    {
+        $this->assertOwnType($item);
+        if ($parent !== null) {
+            $this->assertOwnType($parent);
+        }
+
+        $item->setParent($parent);
+    }
+
+    /**
+     * The entry of this type with this id, or null for none (top level).
+     *
+     * @throws InvalidArgumentException for an id that matches no entry of this type
+     */
+    public function resolveParent(mixed $parentId): ?Entry
+    {
+        if (empty($parentId)) {
+            return null;
+        }
+
+        $parent = $this->fetch((int) $parentId);
+        if ($parent === null) {
+            throw new InvalidArgumentException('Parent entry not found.');
+        }
+
+        return $parent;
     }
 
     /**
@@ -192,7 +237,7 @@ class EntryRepository extends BaseRepository
             ->setParameter('publicStatus', ContentStatus::PUBLISHED);
     }
 
-    protected function slugExists(string $slug): bool
+    protected function slugExists(string $slug, array $scope = []): bool
     {
         return $this->fetchBySlug($slug) !== null;
     }

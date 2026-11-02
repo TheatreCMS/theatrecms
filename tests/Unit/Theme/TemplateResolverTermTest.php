@@ -38,7 +38,7 @@ class TemplateResolverTermTest extends TestCase
             'taxonomy/genre-comedy.html.twig',
             'taxonomy/genre.html.twig',
             'taxonomy.html.twig',
-            'list.html.twig',
+            'archive.html.twig',
             'index.html.twig',
         ];
 
@@ -46,7 +46,7 @@ class TemplateResolverTermTest extends TestCase
             'term-specific' => [$all, 'taxonomy/genre-comedy.html.twig'],
             'taxonomy-specific' => [array_slice($all, 1), 'taxonomy/genre.html.twig'],
             'any taxonomy' => [array_slice($all, 2), 'taxonomy.html.twig'],
-            'generic list' => [array_slice($all, 3), 'list.html.twig'],
+            'generic archive' => [array_slice($all, 3), 'archive.html.twig'],
             'index' => [['index.html.twig'], 'index.html.twig'],
         ];
     }

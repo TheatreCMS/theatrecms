@@ -10,17 +10,20 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasExcerpt;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
 use TheatreCMS\Traits\HasTimestamps;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+use TheatreCMS\ContentType\HasContentType;
 
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'posts')]
-class Post extends ModelBase
+class Post extends ModelBase implements HasContentType
 {
     use HasContentStatus;
+    use HasExcerpt;
     use HasFeaturedImage;
     use HasHeroImage;
     use HasTimestamps;
@@ -51,6 +54,11 @@ class Post extends ModelBase
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getContentType(): string
+    {
+        return 'post';
     }
 
     public function getTitle(): string

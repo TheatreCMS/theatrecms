@@ -14,10 +14,11 @@ use TheatreCMS\Traits\HasHeroImage;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\ContentType\HasContentType;
 
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'people')]
-class Person extends ModelBase implements JsonSerializable
+class Person extends ModelBase implements JsonSerializable, HasContentType
 {
     use HasFeaturedImage;
     use HasHeroImage;
@@ -42,6 +43,11 @@ class Person extends ModelBase implements JsonSerializable
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getContentType(): string
+    {
+        return 'person';
     }
 
     public function getName(): string

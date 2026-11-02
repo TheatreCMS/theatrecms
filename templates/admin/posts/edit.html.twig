@@ -58,6 +58,11 @@
                 <textarea name="content" id="content" rows="10" class="hidden" aria-hidden="true">{{ post.content|default('') }}</textarea>
             </div>
 
+            <div class="md:col-span-2 space-y-3">
+                <label for="excerpt" class="block text-sm font-medium text-gray-700">Excerpt</label>
+                <textarea name="excerpt" id="excerpt" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Short teaser or summary...">{{ post.excerpt }}</textarea>
+            </div>
+
             {% include 'admin/partials/_taxonomy_fields.html.twig' with {'content_type': 'post', 'content_id': post.id} %}
         </div>
 

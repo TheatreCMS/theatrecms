@@ -54,7 +54,7 @@ class TermControllerTest extends TestCase
             'singularLabel' => 'Genre',
             'capability' => Capability::MANAGE_PEOPLE,
         ]);
-        $this->registry->register('post_category', ['post'], ['capability' => Capability::EDIT_POSTS]);
+        $this->registry->register('post_category', ['post'], ['capability' => Capability::MANAGE_POSTS]);
 
         $this->terms = new TermRepository($this->em, $this->registry);
         $this->relationships = new TermRelationshipRepository($this->em, $this->registry);
@@ -69,7 +69,7 @@ class TermControllerTest extends TestCase
 
     public function testIndexReturns403WithoutTaxonomyCapability(): void
     {
-        $controller = $this->controller([Capability::EDIT_POSTS]);
+        $controller = $this->controller([Capability::MANAGE_POSTS]);
 
         $result = $controller->index($this->request('GET'), new Response(), ['taxonomy' => 'genre']);
 
@@ -197,7 +197,7 @@ class TermControllerTest extends TestCase
      * @param string[] $capabilities capabilities the current user holds
      */
     private function controller(
-        array $capabilities = [Capability::MANAGE_PEOPLE, Capability::EDIT_POSTS],
+        array $capabilities = [Capability::MANAGE_PEOPLE, Capability::MANAGE_POSTS],
         ?TemplateResolver $resolver = null,
         ?TermArchiveQuery $archiveQuery = null,
     ): TermController

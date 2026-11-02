@@ -48,8 +48,8 @@ class TaxonomyRegistryTest extends TestCase
 
         $this->assertSame(Capability::MANAGE_OPTIONS, $registry->register('audience', ['work'])->capability);
         $this->assertSame(
-            Capability::EDIT_POSTS,
-            $registry->register('post_category', ['post'], ['capability' => Capability::EDIT_POSTS])->capability
+            Capability::MANAGE_POSTS,
+            $registry->register('post_category', ['post'], ['capability' => Capability::MANAGE_POSTS])->capability
         );
     }
 

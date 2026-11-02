@@ -22,16 +22,22 @@ This follows the same WordPress-inspired registry pattern already established in
 
 **Capability constants** — `src/Auth/Capability.php`, a plain final class of string constants (not an enum — WP capabilities are open-ended strings, and future roles/plugins should be able to introduce new ones without touching a closed enum):
 ```
-MANAGE_USERS = 'manage_users'
-MANAGE_OPTIONS = 'manage_options'      // site settings
+MANAGE_EVENTS = 'manage_events'
 MANAGE_MENUS = 'manage_menus'
-UPLOAD_FILES = 'upload_files'          // image uploads
-EDIT_POSTS = 'edit_posts'
-EDIT_PAGES = 'edit_pages'
-MANAGE_PRODUCTIONS = 'manage_productions'   // productions, seasons, events, venues, sponsors
-MANAGE_PEOPLE = 'manage_people'             // people, works (creator/work catalog)
+MANAGE_OPTIONS = 'manage_options'           // site settings
+MANAGE_PAGES = 'manage_pages'
+MANAGE_PEOPLE = 'manage_people'
+MANAGE_POSTS = 'manage_posts'               // posts, and the default for registered content types
+MANAGE_PRODUCTIONS = 'manage_productions'
+MANAGE_SEASONS = 'manage_seasons'
+MANAGE_SPONSORS = 'manage_sponsors'
+MANAGE_USERS = 'manage_users'
+MANAGE_VENUES = 'manage_venues'
+MANAGE_WORKS = 'manage_works'
+SWITCH_THEMES = 'switch_themes'
+UPLOAD_FILES = 'upload_files'               // image uploads
 ```
-Content areas get a few grouped capabilities (not one per admin route, not one giant `is_admin`) — granular enough that a future `editor`-style role can be given `edit_posts` without `manage_users`, but not so granular it's 15 near-duplicate constants for a 2-role system.
+Each core content type has its own `manage_*` capability (set as `capability` in `app/core-content-types.php`), so a future role can be given, say, `manage_posts` without `manage_users` or `manage_productions`. A content type registered without one gets `manage_posts` (`ContentTypeDefinition`'s default); a taxonomy declares its own (`app/core-taxonomies.php`).
 
 **CapabilityRegistry** — `src/Auth/CapabilityRegistry.php`, a singleton mirroring `src/Theme/MenuLocationRegistry.php` exactly: `private static ?self $instance`, `setInstance()`/`getInstance()`, plus:
 - `register(string $capability, array $roles): void` — `$roles` is a list of Delight `Role::*` int constants that grant this capability.
@@ -39,16 +45,13 @@ Content areas get a few grouped capabilities (not one per admin route, not one g
 
 Bootstrap file `app/capabilities.php` (same shape as `app/menu-locations.php`), `require_once`'d in `app/bootstrap.php` right after `menu-locations.php`:
 ```php
-$capabilities->register(Capability::MANAGE_USERS, [Role::ADMIN]);
-$capabilities->register(Capability::MANAGE_OPTIONS, [Role::ADMIN]);
-$capabilities->register(Capability::MANAGE_MENUS, [Role::ADMIN]);
-$capabilities->register(Capability::UPLOAD_FILES, [Role::ADMIN]);
-$capabilities->register(Capability::EDIT_POSTS, [Role::ADMIN]);
-$capabilities->register(Capability::EDIT_PAGES, [Role::ADMIN]);
-$capabilities->register(Capability::MANAGE_PRODUCTIONS, [Role::ADMIN]);
-$capabilities->register(Capability::MANAGE_PEOPLE, [Role::ADMIN]);
+$capabilities->register(Role::ADMIN, [
+    Capability::MANAGE_EVENTS,
+    // ...every other capability
+    Capability::UPLOAD_FILES,
+]);
 ```
-Every capability maps to `[Role::ADMIN]` today — `user` (0 bits set) is denied everything automatically, matching decision #2. Granting `user` (or a future role) partial access later is a one-line change here, no migration.
+Every capability is granted to `Role::ADMIN` today — `user` (0 bits set) is denied everything automatically, matching decision #2. Granting `user` (or a future role) partial access later is a one-line change here, no migration.
 
 Register in `ServiceRegistrar::registerSharedServices()`: `$container->set(CapabilityRegistry::class, static fn(): CapabilityRegistry => new CapabilityRegistry());`, and set the static instance in `bootstrap.php` the same way `HookManager`/`MenuLocationRegistry` are set.
 
@@ -68,18 +71,18 @@ On failure: return a plain `Response()->withStatus(403)` with a short text body 
 
 ## Rollout mapping (all require `Role::ADMIN` today via the capabilities above)
 
-| Route group | Capability |
+| Admin area | Capability |
 |---|---|
-| `app/routes/admin/users.php` | `MANAGE_USERS` |
-| `app/routes/admin/settings.php` | `MANAGE_OPTIONS` |
-| `app/routes/admin/menus.php` | `MANAGE_MENUS` |
-| `app/routes/admin/images.php` | `UPLOAD_FILES` |
-| `app/routes/admin/posts.php` | `EDIT_POSTS` |
-| `app/routes/admin/pages.php` | `EDIT_PAGES` |
-| `app/routes/admin/productions.php`, `seasons.php`, `events.php`, `venues.php`, `sponsors.php` | `MANAGE_PRODUCTIONS` |
-| `app/routes/admin/people.php`, `works.php` | `MANAGE_PEOPLE` |
+| Users | `MANAGE_USERS` |
+| Settings | `MANAGE_OPTIONS` |
+| Menus | `MANAGE_MENUS` |
+| Images / media uploads | `UPLOAD_FILES` |
+| Themes | `SWITCH_THEMES` |
+| Pages, seasons, productions, people, works, venues, events, sponsors, posts | the content type's `capability`: `MANAGE_PAGES`, `MANAGE_SEASONS`, `MANAGE_PRODUCTIONS`, `MANAGE_PEOPLE`, `MANAGE_WORKS`, `MANAGE_VENUES`, `MANAGE_EVENTS`, `MANAGE_SPONSORS`, `MANAGE_POSTS` |
+| Registered content types without their own | `MANAGE_POSTS` |
+| A taxonomy's terms | the taxonomy's `capability` |
 
-Each file gets one added middleware line as shown above; no other changes to these route files.
+Content-type and taxonomy admin routes get the middleware from `app/routes.php`, using the type's or taxonomy's `capability`.
 
 ## Tests
 

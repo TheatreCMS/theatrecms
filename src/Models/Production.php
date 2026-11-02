@@ -13,18 +13,28 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping\UniqueConstraint;
 use DateTime;
+use TheatreCMS\Traits\HasExcerpt;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasSponsors;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\ContentType\HasContentType;
+use TheatreCMS\ContentType\IsHierarchical;
 
+/**
+ * Served only under its season (`/seasons/2005/the-glass-menagerie`), so its slug is unique within
+ * the season rather than across all productions: two seasons can stage the same work.
+ */
 #[HasLifecycleCallbacks]
 #[Entity, Table(name: 'productions')]
-class Production extends ModelBase
+#[UniqueConstraint(name: 'uniq_productions_season_slug', columns: ['season_id', 'slug'])]
+class Production implements HasContentType, IsHierarchical
 {
+    use HasExcerpt;
     use HasFeaturedImage;
     use HasHeroImage;
     use HasSponsors;
@@ -37,11 +47,11 @@ class Production extends ModelBase
     #[Column(type: 'string', nullable: false)]
     private string $name;
 
+    #[Column(type: 'string', nullable: false)]
+    private string $slug;
+
     #[Column(type: 'text', nullable: true)]
     private ?string $description = null;
-
-    #[Column(type: 'string', nullable: true)]
-    private ?string $excerpt = null;
 
     #[Column(type: 'date', nullable: true)]
     private ?DateTime $opening = null;
@@ -157,6 +167,36 @@ class Production extends ModelBase
         return $this->id;
     }
 
+    public function getContentType(): string
+    {
+        return 'production';
+    }
+
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * Always true: every production belongs to a season.
+     */
+    public function hasParent(): bool
+    {
+        return true;
+    }
+
+    public function getParent(): Season
+    {
+        return $this->season;
+    }
+
     public function getName(): string
     {
         return $this->name;
@@ -170,11 +210,6 @@ class Production extends ModelBase
     public function getDescription(): string
     {
         return $this->description ?? '';
-    }
-
-    public function getExcerpt(): string
-    {
-        return $this->excerpt ?? '';
     }
 
     public function getRuntime(): int
@@ -251,13 +286,6 @@ class Production extends ModelBase
     public function setDescription(?string $description): self
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function setExcerpt(?string $excerpt): self
-    {
-        $this->excerpt = $excerpt;
 
         return $this;
     }

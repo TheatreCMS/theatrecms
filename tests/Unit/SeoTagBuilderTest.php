@@ -17,6 +17,7 @@ use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Hooks\HookManager;
 use TheatreCMS\ContentType\PermalinkResolver;
+use TheatreCMS\Theme\ExcerptResolver;
 use TheatreCMS\Theme\SeoDescriptionResolver;
 use TheatreCMS\Theme\SeoMeta;
 use TheatreCMS\Theme\SeoTagBuilder;
@@ -79,12 +80,13 @@ class SeoTagBuilderTest extends TestCase
         foreach ($prefixes as $type => $urlPrefix) {
             $contentTypes->register($type, ['urlPrefix' => $urlPrefix]);
         }
+        $contentTypes->register('page', ['urlPrefix' => '', 'hasArchive' => false, 'hierarchical' => true]);
 
         return new SeoTagBuilder(
             $siteSettings,
             new TitleResolver(),
             new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
-            new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager))
+            new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager), new ExcerptResolver())
         );
     }
 

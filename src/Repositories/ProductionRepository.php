@@ -95,7 +95,7 @@ class ProductionRepository extends BaseRepository
         $production = new Production($name, $season);
         $production->setVenue($venue);
 
-        $production->setSlug($this->generateUniqueSlug($name));
+        $production->setSlug($this->generateUniqueSlug($name, ['season' => $season]));
 
         if (!empty($args['description'])) {
             $production->setDescription($args['description']);
@@ -166,6 +166,39 @@ class ProductionRepository extends BaseRepository
         $this->em->flush();
 
         return $production;
+    }
+
+    /**
+     * The publicly visible production with this slug in `$season`, or null. Production slugs are
+     * only unique within a season.
+     */
+    public function fetchPublicBySeasonAndSlug(Season $season, string $slug): ?Production
+    {
+        $builder = $this->createListQueryBuilder()
+            ->andWhere('e.season = :season')
+            ->andWhere('e.slug = :slug')
+            ->setParameter('season', $season)
+            ->setParameter('slug', $slug)
+            ->setMaxResults(1);
+        $this->applyPublicFilter($builder, 'e');
+
+        /** @var ?Production $production */
+        $production = $this->attachHeroImage($builder->getQuery()->getOneOrNullResult());
+
+        return $production;
+    }
+
+    /**
+     * Moves the production to `$season`, renaming its slug if a production there already uses it.
+     */
+    public function moveToSeason(Production $production, Season $season): void
+    {
+        if ($production->getSeason() === $season) {
+            return;
+        }
+
+        $production->setSeason($season);
+        $production->setSlug($this->generateUniqueSlug($production->getSlug(), ['season' => $season]));
     }
 
     public function getBySlug(string $slug): ?object

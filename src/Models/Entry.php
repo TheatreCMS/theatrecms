@@ -11,10 +11,14 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Index;
 use Doctrine\ORM\Mapping\Table;
 use Doctrine\ORM\Mapping\UniqueConstraint;
+use TheatreCMS\ContentType\HasContentType;
+use TheatreCMS\ContentType\IsHierarchical;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasExcerpt;
 use TheatreCMS\Traits\HasFeaturedImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
+use TheatreCMS\Traits\HasParent;
 use TheatreCMS\Traits\HasTimestamps;
 use TheatreCMS\Helpers\Args;
 
@@ -25,15 +29,20 @@ use TheatreCMS\Helpers\Args;
  *
  * Deliberately does not extend ModelBase: its slug column is unique across the whole
  * table, whereas entry slugs only need to be unique within their content type.
+ *
+ * Entries of a hierarchical type (`hierarchical: true`) can have a parent entry of the same
+ * type; for other types `parent_id` stays NULL.
  */
 #[HasLifecycleCallbacks]
 #[Entity]
 #[Table(name: 'entries')]
 #[UniqueConstraint(name: 'uniq_entries_type_slug', columns: ['content_type', 'slug'])]
 #[Index(name: 'idx_entries_type_status', columns: ['content_type', 'status'])]
-class Entry
+class Entry implements HasContentType, IsHierarchical
 {
     use HasContentStatus;
+    use HasParent;
+    use HasExcerpt;
     use HasFeaturedImage;
     use HasTimestamps;
     use HasModifiedTimestamp;
@@ -59,9 +68,6 @@ class Entry
      */
     #[Column(type: 'text', nullable: true)]
     private ?string $content = null;
-
-    #[Column(type: 'text', nullable: true)]
-    private ?string $excerpt = null;
 
     public function __construct(array $args)
     {
@@ -121,18 +127,6 @@ class Entry
     public function setContent(?string $content): self
     {
         $this->content = $content;
-
-        return $this;
-    }
-
-    public function getExcerpt(): ?string
-    {
-        return apply_filters('get_the_excerpt', $this->excerpt);
-    }
-
-    public function setExcerpt(?string $excerpt): self
-    {
-        $this->excerpt = $excerpt;
 
         return $this;
     }
