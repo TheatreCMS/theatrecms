@@ -117,6 +117,33 @@ class PageRepositoryTest extends TestCase
         $this->assertSame($chair, $this->pages->fetchPublicByPath('about/chair'));
     }
 
+    public function testDeletingAPageReservesSlugsAcrossReparentedChildren(): void
+    {
+        $topLevelTeam = $this->page('Team');
+        $about = $this->page('About');
+        $team = $this->page('Team', $about);
+        $otherTeam = $this->page('Team', $about);
+        $this->assertSame('team', $team->getSlug());
+        $this->assertSame('team-1', $otherTeam->getSlug());
+        $aboutId = $about->getId();
+        $teamId = $team->getId();
+        $otherTeamId = $otherTeam->getId();
+
+        $this->pages->delete($about);
+        $this->em->clear();
+
+        $team = $this->pages->fetch($teamId);
+        $otherTeam = $this->pages->fetch($otherTeamId);
+        $this->assertNull($this->pages->fetch($aboutId));
+        $this->assertNull($team->getParent());
+        $this->assertNull($otherTeam->getParent());
+        $this->assertNotSame($team->getSlug(), $otherTeam->getSlug());
+        $this->assertNotSame($topLevelTeam->getSlug(), $team->getSlug());
+        $this->assertNotSame($topLevelTeam->getSlug(), $otherTeam->getSlug());
+        $this->assertSame($team, $this->pages->fetchPublicByPath($team->getSlug()));
+        $this->assertSame($otherTeam, $this->pages->fetchPublicByPath($otherTeam->getSlug()));
+    }
+
     public function testPossibleParentsLeaveOutThePageAndItsDescendants(): void
     {
         $about = $this->page('About');

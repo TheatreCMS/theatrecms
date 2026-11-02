@@ -91,8 +91,22 @@ trait ManagesHierarchy
             ->getQuery()
             ->getResult();
 
+        $reservedSlugs = [];
+
         foreach ($children as $child) {
             $this->moveTo($child, $item->getParent());
+            $slug = $child->getSlug();
+            $suffix = 0;
+
+            while (isset($reservedSlugs[$slug])) {
+                $slug = $this->generateUniqueSlug(
+                    $child->getSlug() . '-' . ++$suffix,
+                    ['parent' => $item->getParent()]
+                );
+            }
+
+            $child->setSlug($slug);
+            $reservedSlugs[$slug] = true;
         }
     }
 }
