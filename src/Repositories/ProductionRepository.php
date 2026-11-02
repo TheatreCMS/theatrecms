@@ -182,7 +182,10 @@ class ProductionRepository extends BaseRepository
             ->setMaxResults(1);
         $this->applyPublicFilter($builder, 'e');
 
-        return $builder->getQuery()->getOneOrNullResult();
+        /** @var ?Production $production */
+        $production = $this->attachHeroImage($builder->getQuery()->getOneOrNullResult());
+
+        return $production;
     }
 
     /**
