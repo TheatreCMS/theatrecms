@@ -5,17 +5,6 @@ use TheatreCMS\Auth\Capability;
 // Core's built-in content types. Plugins and themes add their own with register_content_type().
 // Names are singular; URL prefixes are given explicitly because they default to the name.
 $coreContentTypes = [
-    // Served at the site root and nested by parent: /about, /about/board-of-directors.
-    'page' => [
-        'label'         => 'Pages',
-        'singularLabel' => 'Page',
-        'urlPrefix'     => '',
-        'hasArchive'    => false,
-        'hierarchical'  => true,
-        'controller'    => \TheatreCMS\Controllers\PageController::class,
-        'capability'    => Capability::MANAGE_PAGES,
-        'menuIcon'      => 'fa-solid fa-file-lines',
-    ],
     'season' => [
         'label'         => 'Seasons',
         'singularLabel' => 'Season',
@@ -81,6 +70,17 @@ $coreContentTypes = [
         'controller'    => \TheatreCMS\Controllers\PostController::class,
         'capability'    => Capability::MANAGE_POSTS,
         'menuIcon'      => 'fa-solid fa-newspaper',
+    ],
+    // Served at the site root and nested by parent: /about, /about/board-of-directors.
+    'page' => [
+        'label'         => 'Pages',
+        'singularLabel' => 'Page',
+        'urlPrefix'     => '',
+        'hasArchive'    => false,
+        'hierarchical'  => true,
+        'controller'    => \TheatreCMS\Controllers\PageController::class,
+        'capability'    => Capability::MANAGE_PAGES,
+        'menuIcon'      => 'fa-solid fa-file-lines',
     ],
 ];
 
