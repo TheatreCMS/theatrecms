@@ -74,6 +74,7 @@ class PersonController extends BaseController implements PublicContentController
         $person = $this->repository->fetch($args['id']);
 
         return $this->twig->render($response, 'admin/people/edit.html.twig', [
+            'supportsHeroImage' => $this->supportsHeroImage($request),
             'person' => $person,
             'heroImageId' => $this->contentMeta->get($this->contentType(), $person->getId(), self::HERO_IMAGE_META_KEY),
         ]);
@@ -120,7 +121,7 @@ class PersonController extends BaseController implements PublicContentController
 
         $person = $this->repository->create($data);
         $this->applyFeaturedImage($person, $data['featuredImageId']);
-        $this->applyHeroImage($person->getId(), $data['heroImageId']);
+        $this->applyHeroImageIfSupported($request, $person->getId(), $data['heroImageId']);
         $this->entityManager->flush();
         $editUrl = '/admin/people/edit/' . $person->getId();
 
@@ -212,7 +213,7 @@ class PersonController extends BaseController implements PublicContentController
             ->setHeadshotUrl(filter_var($data['headshotUrl'], FILTER_VALIDATE_URL) ?: $data['headshotUrl']);
 
         $this->applyFeaturedImage($person, $data['featuredImageId']);
-        $this->applyHeroImage($person->getId(), $data['heroImageId']);
+        $this->applyHeroImageIfSupported($request, $person->getId(), $data['heroImageId']);
 
         $this->repository->update($person);
 

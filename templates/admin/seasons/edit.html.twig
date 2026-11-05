@@ -48,11 +48,13 @@
             </div>
 
             <div class="md:col-span-2">
+                {% if supportsHeroImage|default(true) %}
                 {% include 'admin/partials/_featured_image_field.html.twig' with {
                     entityType: 'season', entityId: season.id|default(null), field: 'hero', label: 'Hero Image',
                     deleteUrl: '/admin/seasons/' ~ season.id ~ '/hero-image',
                     featuredImageUrl: season.heroImageUrl|default(null), featuredImageId: heroImageId|default(null)
                 } %}
+                {% endif %}
             </div>
         </div>
 

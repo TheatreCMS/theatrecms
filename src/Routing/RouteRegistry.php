@@ -195,6 +195,10 @@ class RouteRegistry
             $routes[] = ['delete', '/{id}/featured-image', 'removeFeaturedImage'];
         }
 
+        if ($definition->supports('hero_image')) {
+            $routes[] = ['delete', '/{id}/hero-image', 'removeHeroImage'];
+        }
+
         array_push(
             $routes,
             ['delete', '/{id}', 'destroy'],

@@ -23,7 +23,7 @@ use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
 use TheatreCMS\Plugin\PluginManager;
-use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Routing\RouteRegistry;
 use TheatreCMS\Settings\SiteSettings;
@@ -122,7 +122,7 @@ $app->get('/admin', function (Request $request, Response $response) use ($contai
 
 $app->get('/', function (Request $request, Response $response) use ($container) {
     $twig = $container->get(Twig::class);
-    $posts = $container->get(PostRepository::class)->fetchPublished();
+    $posts = $container->get(EntryRepository::class)->forType('post')->fetchPublic();
     $featuredProduction = $container->get(ProductionRepository::class)->findFeatured();
 
     $featuredProductionStatus = null;

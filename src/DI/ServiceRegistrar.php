@@ -26,7 +26,6 @@ use TheatreCMS\Controllers\ImageUploadController;
 use TheatreCMS\Controllers\LinkPreviewController;
 use TheatreCMS\Controllers\MenuController;
 use TheatreCMS\Controllers\PageController;
-use TheatreCMS\Controllers\PostController;
 use TheatreCMS\Controllers\LoginController;
 use TheatreCMS\Controllers\PersonController;
 use TheatreCMS\Controllers\ProductionController;
@@ -59,7 +58,7 @@ use TheatreCMS\Repositories\EventRepository;
 use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
-use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\ScheduledTaskRunRepository;
 use TheatreCMS\Repositories\SchemaMigrationRepository;
 use TheatreCMS\Repositories\PersonRepository;
@@ -240,6 +239,7 @@ class ServiceRegistrar
                 $c->get(TitleResolver::class),
                 $c->get(PermalinkResolver::class),
                 $c->get(SeoDescriptionResolver::class),
+                $c->get(ContentTypeRegistry::class),
             );
         });
 
@@ -336,7 +336,7 @@ class ServiceRegistrar
         ): MenuLinkTargetOptionsService {
             return new MenuLinkTargetOptionsService(
                 $c->get(PageRepository::class),
-                $c->get(PostRepository::class),
+                $c->get(EntryRepository::class),
                 $c->get(ProductionRepository::class),
                 $c->get(SeasonRepository::class),
             );
@@ -351,7 +351,7 @@ class ServiceRegistrar
         $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {
             return new MenuItemResolver(
                 $c->get(PageRepository::class),
-                $c->get(PostRepository::class),
+                $c->get(EntryRepository::class),
                 $c->get(ProductionRepository::class),
                 $c->get(SeasonRepository::class),
                 $c->get(PermalinkResolver::class),
@@ -466,8 +466,9 @@ class ServiceRegistrar
             return new PersonRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
         });
 
-        $container->set(PostRepository::class, static function (ContainerInterface $c): PostRepository {
-            return new PostRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        // Unbound: callers scope it with forType() (route handlers get one per type).
+        $container->set(EntryRepository::class, static function (ContainerInterface $c): EntryRepository {
+            return new EntryRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
         });
 
         $container->set(SeasonRepository::class, static function (ContainerInterface $c): SeasonRepository {
@@ -495,7 +496,7 @@ class ServiceRegistrar
         $container->set(TermArchiveQuery::class, static function (ContainerInterface $c): TermArchiveQuery {
             return new TermArchiveQuery($c->get(TermRelationshipRepository::class), [
                 'work' => $c->get(WorkRepository::class),
-                'post' => $c->get(PostRepository::class),
+                'post' => $c->get(EntryRepository::class)->forType('post'),
             ]);
         });
     }
@@ -568,16 +569,6 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(ProductionRepository::class),
                     $c->get(VenueRepository::class),
-                    $c->get(TemplateResolver::class),
-                );
-            },
-            PostController::class => static function (ContainerInterface $c): PostController {
-                return new PostController(
-                    $c->get(PostRepository::class),
-                    $c->get(EntityManager::class),
-                    $c->get(Twig::class),
-                    $c->get(ContentMetaRepository::class),
-                    $c->get(TermRelationshipRepository::class),
                     $c->get(TemplateResolver::class),
                 );
             },
@@ -696,7 +687,7 @@ class ServiceRegistrar
                 'UserRepository',
                 'ProductionRepository',
                 'PersonRepository',
-                'PostRepository',
+                'EntryRepository',
                 'SeasonRepository',
                 'VenueRepository',
                 'TermRepository',

@@ -7,6 +7,7 @@
       entry         the Entry being edited, or null on the create form
       statuses      ContentStatus::labels()
       parents       for a hierarchical type, the entries this one may be placed under
+      heroImageId   the hero image's media id, when the type supports hero_image
 #}
 <div class="grid grid-cols-1 gap-6">
     <div>
@@ -58,6 +59,18 @@
             deleteUrl: entry ? '/' ~ content_type.adminSlug() ~ '/' ~ entry.id ~ '/featured-image' : null,
             featuredImageUrl: entry ? entry.featuredImageUrl : null,
             featuredImageId: entry ? entry.featuredImage.id|default(null) : null
+        } %}
+    {% endif %}
+
+    {% if content_type.supports('hero_image') %}
+        {% include 'admin/partials/_featured_image_field.html.twig' with {
+            entityType: content_type.name,
+            entityId: entry.id|default(null),
+            field: 'hero',
+            label: 'Hero Image',
+            deleteUrl: entry ? '/' ~ content_type.adminSlug() ~ '/' ~ entry.id ~ '/hero-image' : null,
+            featuredImageUrl: entry and entry.hasHeroImage ? entry.heroImageUrl : null,
+            featuredImageId: heroImageId|default(null)
         } %}
     {% endif %}
 

@@ -4,10 +4,9 @@ Besides the built-in types described in this folder, plugins and themes can add 
 content types, such as press releases or education resources, without changing core or the
 database schema.
 
-> **Status:** registration, URL prefixes, config overrides and storage (`Entry`,
-> `EntryRepository`) are in place. Admin screens and frontend routes for registered types are
-> not built yet, so `public`, `supports` and `capability` are stored on the definition but
-> nothing reads them so far.
+A registered type gets admin screens (`/admin/{urlPrefix}`) and frontend routes from the
+generic `EntryController`, and its items are stored as `Entry` rows. Core's `post` type works
+exactly this way, so it's the reference for what a registered type can do.
 
 ## Registering a type
 
@@ -29,10 +28,17 @@ type's `ContentTypeDefinition` (`src/ContentType/`).
 | `urlPrefix` | The name with underscores as hyphens (`press-release`) | URL path segment the type is served under |
 | `hasArchive` | `true` | Whether the type gets a public listing page at `/{urlPrefix}` |
 | `public` | `true` | Whether its entries get frontend routes at all |
-| `supports` | `[]` | Standard entry fields it uses: `editor`, `excerpt`, `featured_image` |
+| `supports` | `['editor']` | Standard fields it uses: `editor`, `excerpt`, `featured_image`, `hero_image` (see below) |
 | `capability` | `manage_posts` | Capability needed to manage its entries in the admin |
 | `hierarchical` | `false` | Whether an entry can have a parent entry of the same type (see below) |
 | `menuIcon` | `null` (a generic icon) | [Font Awesome Free](https://fontawesome.com/search?ic=free) classes for its admin sidebar link, e.g. `fa-solid fa-bullhorn` |
+| `ogType` | `website` | Open Graph `og:type` for its single pages; core's `post` uses `article` |
+
+`supports` decides which fields the admin form shows and saves, and which image-removal routes
+exist (`DELETE /admin/{urlPrefix}/{id}/featured-image` and `/hero-image`). Fields a type doesn't
+support are ignored on save, so turning one off leaves stored values alone. The hero image is a
+banner for the item's own single page, stored in `content_meta` as `hero_image_id`; core's
+season, production, person, venue and post types support it.
 
 - **Names** are lowercase letters and underscores (`TheatreCMS\Routing\NamingRules`), with no
   length limit. Use the singular: `press_release`, not `press_releases`.
@@ -123,9 +129,9 @@ and the `archive_url()` Twig function build a type's archive URL from its prefix
 ## Storing entries
 
 Items of registered types are `Entry` models (`src/Models/Entry.php`), all in one `entries`
-table keyed by `content_type`, so registering a type needs no migration. An entry has a title,
-slug, EditorJS `content`, `excerpt`, status, featured image, and created/modified/published
-timestamps.
+table keyed by `content_type`, so registering a type needs no migration. Posts are entries too
+(`content_type = 'post'`). An entry has a title, slug, EditorJS `content`, `excerpt`, status,
+featured image, hero image, and created/modified/published timestamps.
 
 `EntryRepository` scopes every query to one type. Bind the type with `forType()`, which returns
 a copy of the repository:
@@ -138,7 +144,11 @@ $releases->fetchBySlug('season-announced');
 $releases->fetchPage(page: 1, perPage: 20, search: 'season', sort: 'publishedAt', direction: 'desc');
 ```
 
-- Slugs are unique within a type, so two types can both have a `launch` entry.
+- Slugs are unique within a type, so two types can both have a `launch` entry. On MariaDB,
+  `create()` holds an advisory lock per type while it picks a slug; if one still can't be
+  allocated, it throws `SlugAllocationException`, which the admin reports as a 409.
+- Single-entry fetches (`fetch()`, `fetchBySlug()`, `fetchPublicBySlug()`, `fetchPublicByPath()`)
+  load the hero image; listings don't.
 - An unbound repository throws `LogicException` rather than reading every type's entries.
 - `update()` and `delete()` reject an entry of another type; `delete()` also removes the
   entry's taxonomy term assignments.

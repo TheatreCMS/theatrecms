@@ -11,6 +11,7 @@ $coreContentTypes = [
         'urlPrefix'     => 'seasons',
         'controller'    => \TheatreCMS\Controllers\SeasonController::class,
         'capability'    => Capability::MANAGE_SEASONS,
+        'supports'      => ['editor', 'featured_image', 'hero_image'],
         'menuIcon'      => 'fa-solid fa-calendar-days',
     ],
     'production' => [
@@ -19,6 +20,7 @@ $coreContentTypes = [
         'urlPrefix' => 'productions',
         'controller'    => \TheatreCMS\Controllers\ProductionController::class,
         'capability'    => Capability::MANAGE_PRODUCTIONS,
+        'supports'      => ['editor', 'excerpt', 'featured_image', 'hero_image'],
         'menuIcon'      => 'fa-solid fa-masks-theater',
     ],
     'person' => [
@@ -27,6 +29,7 @@ $coreContentTypes = [
         'urlPrefix' => 'people',
         'controller'    => \TheatreCMS\Controllers\PersonController::class,
         'capability'    => Capability::MANAGE_PEOPLE,
+        'supports'      => ['editor', 'featured_image', 'hero_image'],
         'menuIcon'      => 'fa-solid fa-user',
     ],
     'work' => [
@@ -43,6 +46,7 @@ $coreContentTypes = [
         'urlPrefix' => 'venues',
         'controller'    => \TheatreCMS\Controllers\VenueController::class,
         'capability'    => Capability::MANAGE_VENUES,
+        'supports'      => ['editor', 'featured_image', 'hero_image'],
         'menuIcon'      => 'fa-solid fa-location-dot',
     ],
     'event' => [
@@ -63,13 +67,16 @@ $coreContentTypes = [
         'public'        => false,
         'menuIcon'      => 'fa-solid fa-handshake',
     ],
+    // Posts use the generic EntryController and live in the entries table: the reference
+    // type for everything a registered content type can do.
     'post' => [
-        'label' => 'Posts',
+        'label'         => 'Posts',
         'singularLabel' => 'Post',
-        'urlPrefix' => 'posts',
-        'controller'    => \TheatreCMS\Controllers\PostController::class,
+        'urlPrefix'     => 'posts',
         'capability'    => Capability::MANAGE_POSTS,
+        'supports'      => ['editor', 'excerpt', 'featured_image', 'hero_image'],
         'menuIcon'      => 'fa-solid fa-newspaper',
+        'ogType'        => 'article',
     ],
     // Served at the site root and nested by parent: /about, /about/board-of-directors.
     'page' => [

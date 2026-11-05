@@ -4,7 +4,7 @@ namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Term;
-use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\WorkRepository;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
@@ -24,7 +24,7 @@ class TermArchiveQueryTest extends TestCase
             [$term, 'work', [7]],
         ]);
 
-        $posts = $this->createMock(PostRepository::class);
+        $posts = $this->createMock(EntryRepository::class);
         $posts->expects($this->once())->method('fetchPublicByIds')->with([3, 4])->willReturn([$post]);
 
         $works = $this->createMock(WorkRepository::class);

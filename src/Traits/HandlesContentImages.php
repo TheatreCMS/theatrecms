@@ -4,6 +4,7 @@ namespace TheatreCMS\Traits;
 
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
+use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Models\Media;
 
 /**
@@ -41,6 +42,29 @@ trait HandlesContentImages
         }
 
         $entity->setFeaturedImage($image);
+    }
+
+    /**
+     * Whether the request's content type supports a hero image (`supports: hero_image`). The
+     * definition is attached to every content-type route's request (see app/routes.php); a
+     * request without one, e.g. in a unit test, counts as supporting it.
+     */
+    protected function supportsHeroImage(Request $request): bool
+    {
+        $definition = $request->getAttribute(ContentTypeDefinition::class);
+
+        return !$definition instanceof ContentTypeDefinition || $definition->supports('hero_image');
+    }
+
+    /**
+     * applyHeroImage(), skipped for a type that doesn't support hero images, so turning the
+     * feature off leaves any stored hero image alone.
+     */
+    protected function applyHeroImageIfSupported(Request $request, int $entityId, mixed $heroImageId): void
+    {
+        if ($this->supportsHeroImage($request)) {
+            $this->applyHeroImage($entityId, $heroImageId);
+        }
     }
 
     protected function applyHeroImage(int $entityId, mixed $heroImageId): void

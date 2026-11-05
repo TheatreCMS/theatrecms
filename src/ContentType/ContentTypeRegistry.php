@@ -51,6 +51,7 @@ class ContentTypeRegistry
         'capability',
         'hierarchical',
         'menuIcon',
+        'ogType',
     ];
 
     /**

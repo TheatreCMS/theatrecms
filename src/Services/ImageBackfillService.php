@@ -9,7 +9,7 @@ use TheatreCMS\Repositories\MediaRepository;
 /**
  * One-time backfill for the media library: registers pre-existing files under
  * www/uploads/ as Media rows, then repoints the legacy `featured_image_url`
- * string columns on productions/posts/seasons at the matching Media row's id.
+ * string columns on productions/seasons at the matching Media row's id.
  *
  * Reads/writes the legacy `featured_image_url` columns via raw DBAL rather than
  * Doctrine entities, because by the time this runs against a deployed app the
@@ -23,7 +23,7 @@ use TheatreCMS\Repositories\MediaRepository;
  */
 class ImageBackfillService
 {
-    private const BACKFILLABLE_TABLES = ['productions', 'posts', 'seasons'];
+    private const BACKFILLABLE_TABLES = ['productions', 'seasons'];
 
     public function __construct(
         private readonly Connection $connection,

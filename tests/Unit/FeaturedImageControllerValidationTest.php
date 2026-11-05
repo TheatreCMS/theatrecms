@@ -8,13 +8,12 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Controllers\BaseController;
-use TheatreCMS\Controllers\PostController;
+use TheatreCMS\Controllers\EntryController;
 use TheatreCMS\Controllers\ProductionController;
 use TheatreCMS\Controllers\SeasonController;
 use TheatreCMS\Controllers\VenueController;
-use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Media;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
@@ -22,15 +21,15 @@ use TheatreCMS\Models\Venue;
 class FeaturedImageControllerValidationTest extends TestCase
 {
     /**
-     * @return iterable<string, array{class-string, Post|Production|Season|Venue}>
+     * @return iterable<string, array{class-string, Entry|Production|Season|Venue}>
      */
     public static function controllerAndEntityProvider(): iterable
     {
         $season = new Season('2026', '2026 Season');
 
-        yield 'post' => [
-            PostController::class,
-            new Post('News', ContentStatus::DRAFT, '{}'),
+        yield 'entry' => [
+            EntryController::class,
+            new Entry(['contentType' => 'post', 'title' => 'News']),
         ];
         yield 'production' => [
             ProductionController::class,

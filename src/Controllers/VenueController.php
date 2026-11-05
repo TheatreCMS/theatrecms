@@ -59,6 +59,7 @@ class VenueController extends BaseController implements PublicContentController
         $venue = $this->repository->fetch($args['id']);
 
         return $this->twig->render($response, 'admin/venues/edit.html.twig', [
+            'supportsHeroImage' => $this->supportsHeroImage($request),
             'venue' => $venue,
             'heroImageId' => $this->contentMeta->get($this->contentType(), $venue->getId(), self::HERO_IMAGE_META_KEY),
         ]);
@@ -113,7 +114,7 @@ class VenueController extends BaseController implements PublicContentController
 
         $venue = $this->repository->create($data);
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
-        $this->applyHeroImage($venue->getId(), $data['heroImageId']);
+        $this->applyHeroImageIfSupported($request, $venue->getId(), $data['heroImageId']);
         $this->entityManager->flush();
         $editUrl = '/admin/venues/edit/' . $venue->getId();
 
@@ -220,7 +221,7 @@ class VenueController extends BaseController implements PublicContentController
             ->setMapUrl($data['mapUrl']);
 
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
-        $this->applyHeroImage($venue->getId(), $data['heroImageId']);
+        $this->applyHeroImageIfSupported($request, $venue->getId(), $data['heroImageId']);
 
         $this->repository->update($venue);
 

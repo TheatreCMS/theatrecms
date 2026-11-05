@@ -11,6 +11,7 @@ use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Controllers\EntryController;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Repositories\ContentMetaRepository;
@@ -24,8 +25,8 @@ use TheatreCMS\Theme\TemplateResolver;
 
 /**
  * The admin screens of EntryController, run against three fixture types: `press_release`
- * (editor, excerpt and featured image), `notice` (no optional fields) and `program_page`
- * (hierarchical).
+ * (editor, excerpt, featured image and hero image), `notice` (no optional fields) and
+ * `program_page` (hierarchical).
  */
 #[AllowMockObjectsWithoutExpectations]
 class EntryControllerTest extends TestCase
@@ -52,8 +53,8 @@ class EntryControllerTest extends TestCase
         $taxonomies = new TaxonomyRegistry($contentTypes);
         $taxonomies->register('press_category', ['press_release']);
 
-        $this->entries = new EntryRepository($this->em);
         $this->meta = new ContentMetaRepository($this->em);
+        $this->entries = new EntryRepository($this->em, $this->meta);
         $this->terms = new TermRepository($this->em, $taxonomies);
         $this->relationships = new TermRelationshipRepository($this->em, $taxonomies);
 
@@ -62,7 +63,7 @@ class EntryControllerTest extends TestCase
             label: 'Press Releases',
             singularLabel: 'Press Release',
             urlPrefix: 'press-releases',
-            supports: ['editor', 'excerpt', 'featured_image'],
+            supports: ['editor', 'excerpt', 'featured_image', 'hero_image'],
         );
         $this->notice = new ContentTypeDefinition(
             name: 'notice',
@@ -193,6 +194,59 @@ class EntryControllerTest extends TestCase
 
         $entry = $this->entries->forType('press_release')->fetchBySlug('season-announced');
         $this->assertSame(ContentStatus::DRAFT, $entry->getStatus());
+    }
+
+    public function testStoreReportsSlugAllocationFailures(): void
+    {
+        $entries = $this->createMock(EntryRepository::class);
+        $entries->method('forType')->willReturnSelf();
+        $entries->method('create')->willThrowException(new SlugAllocationException('Try again.'));
+        $body = ['title' => 'Season announced'];
+
+        $result = $this->controller(entries: $entries)->store($this->request('POST', $body), new Response());
+        $this->assertSame(409, $result->getStatusCode());
+
+        $this->controller(entries: $entries)->store($this->request('POST', $body, htmx: true), new Response());
+        $this->assertSame('admin/partials/_alert.html.twig', $this->rendered['template']);
+        $this->assertSame('error', $this->rendered['data']['type']);
+    }
+
+    public function testHeroImageIsStoredShownAndCleared(): void
+    {
+        $image = $this->createTestMedia($this->em);
+
+        $this->controller()->store($this->request('POST', [
+            'title' => 'Season announced',
+            'heroImageId' => (string) $image->getId(),
+        ]), new Response());
+        $entry = $this->entries->forType('press_release')->fetchBySlug('season-announced');
+        $this->assertSame((string) $image->getId(), $this->meta->get('press_release', $entry->getId(), 'hero_image_id'));
+        $this->assertTrue($entry->hasHeroImage());
+
+        $this->controller()->edit($this->request('GET'), new Response(), ['id' => $entry->getId()]);
+        $this->assertSame((string) $image->getId(), $this->rendered['data']['heroImageId']);
+
+        $this->controller()->update($this->request('POST', [
+            'entryId' => (string) $entry->getId(),
+            'title' => 'Season announced',
+            'heroImageId' => '',
+        ]), new Response());
+        $this->assertNull($this->meta->get('press_release', $entry->getId(), 'hero_image_id'));
+    }
+
+    public function testHeroImageIsIgnoredForTypesWithoutIt(): void
+    {
+        $image = $this->createTestMedia($this->em);
+
+        $this->controller($this->notice)->store($this->request('POST', [
+            'title' => 'Box office closed',
+            'heroImageId' => (string) $image->getId(),
+        ]), new Response());
+        $entry = $this->entries->forType('notice')->fetchBySlug('box-office-closed');
+        $this->assertNull($this->meta->get('notice', $entry->getId(), 'hero_image_id'));
+
+        $this->controller($this->notice)->edit($this->request('GET'), new Response(), ['id' => $entry->getId()]);
+        $this->assertNull($this->rendered['data']['heroImageId']);
     }
 
     public function testStoreIgnoresFieldsTheTypeDoesNotSupport(): void
@@ -368,10 +422,10 @@ class EntryControllerTest extends TestCase
         return $this->entries->forType($type)->create(['title' => $title]);
     }
 
-    private function controller(?ContentTypeDefinition $type = null): EntryController
+    private function controller(?ContentTypeDefinition $type = null, ?EntryRepository $entries = null): EntryController
     {
         return new EntryController(
-            $this->entries,
+            $entries ?? $this->entries,
             $this->em,
             $this->recordingTwig(),
             $type ?? $this->pressRelease,

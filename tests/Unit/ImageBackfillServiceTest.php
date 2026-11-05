@@ -7,10 +7,9 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
-use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Models\MediaVariant;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Season;
 use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Services\ImageBackfillService;
 
@@ -18,7 +17,7 @@ use TheatreCMS\Services\ImageBackfillService;
  * @coversDefaultClass \TheatreCMS\Services\ImageBackfillService
  *
  * Simulates the real rollout scenario: the `featured_image_url` column still
- * physically exists on posts/productions/seasons (added back manually here,
+ * physically exists on productions/seasons (added back manually here,
  * since current entity mapping no longer declares it) while the app has
  * already moved to `featured_image_id`. See migrations/20260903_*.sql and
  * documentation/DEPLOYMENT.md for the actual rollout ordering this mirrors.
@@ -47,7 +46,7 @@ class ImageBackfillServiceTest extends TestCase
 
         // Simulate the post-migration, pre-drop rollout window: the legacy
         // column still exists on disk even though it's no longer mapped.
-        foreach (['posts', 'productions', 'seasons'] as $table) {
+        foreach (['productions', 'seasons'] as $table) {
             $this->em->getConnection()->executeStatement(
                 "ALTER TABLE {$table} ADD COLUMN featured_image_url VARCHAR(255) DEFAULT NULL"
             );
@@ -134,15 +133,16 @@ class ImageBackfillServiceTest extends TestCase
 
     public function testRepointAllMatchesLegacyUrlToImageAndSetsForeignKey(): void
     {
-        $post = new Post('A Post', ContentStatus::DRAFT, 'body');
-        $post->setSlug('a-post');
-        $this->em->persist($post);
+        $season = (new Season('2026', '2026 Season'))
+            ->setStartDate(new \DateTime('2026-09-01'))
+            ->setEndDate(new \DateTime('2027-06-30'));
+        $this->em->persist($season);
         $this->em->flush();
 
         $this->em->getConnection()->update(
-            'posts',
+            'seasons',
             ['featured_image_url' => '/uploads/legacy.jpg'],
-            ['id' => $post->getId()]
+            ['id' => $season->getId()]
         );
 
         $this->mediaRepository->create([
@@ -153,11 +153,11 @@ class ImageBackfillServiceTest extends TestCase
 
         $counts = $this->backfillService->repointAll();
 
-        $this->assertSame(1, $counts['posts']);
+        $this->assertSame(1, $counts['seasons']);
 
         $row = $this->em->getConnection()->fetchAssociative(
-            'SELECT featured_image_id FROM posts WHERE id = ?',
-            [$post->getId()]
+            'SELECT featured_image_id FROM seasons WHERE id = ?',
+            [$season->getId()]
         );
         $media = $this->mediaRepository->findByUrl('/uploads/legacy.jpg');
 
@@ -166,9 +166,10 @@ class ImageBackfillServiceTest extends TestCase
 
     public function testRepointAllSkipsRowsAlreadyRepointed(): void
     {
-        $post = new Post('A Post', ContentStatus::DRAFT, 'body');
-        $post->setSlug('a-post');
-        $this->em->persist($post);
+        $season = (new Season('2026', '2026 Season'))
+            ->setStartDate(new \DateTime('2026-09-01'))
+            ->setEndDate(new \DateTime('2027-06-30'));
+        $this->em->persist($season);
         $this->em->flush();
 
         $media = $this->mediaRepository->create([
@@ -176,13 +177,13 @@ class ImageBackfillServiceTest extends TestCase
             'filename' => 'legacy.jpg',
             'mediaType' => Media::TYPE_IMAGE,
         ]);
-        $this->em->getConnection()->update('posts', [
+        $this->em->getConnection()->update('seasons', [
             'featured_image_url' => '/uploads/legacy.jpg',
             'featured_image_id' => $media->getId(),
-        ], ['id' => $post->getId()]);
+        ], ['id' => $season->getId()]);
 
         $counts = $this->backfillService->repointAll();
 
-        $this->assertSame(0, $counts['posts']);
+        $this->assertSame(0, $counts['seasons']);
     }
 }

@@ -5,7 +5,6 @@ namespace TheatreCMS\Theme;
 use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Term;
@@ -43,7 +42,7 @@ class SeoDescriptionResolver
             $entity instanceof Work => $entity->getSynopsis() ?: $this->fromEditorJs($entity->getDescription()),
             $entity instanceof Season => $this->fromEditorJs($entity->getOverview()),
             $entity instanceof Page => $this->fromEditorJs($entity->getContent()),
-            $entity instanceof Post, $entity instanceof Entry => $this->excerptResolver->resolve($entity)
+            $entity instanceof Entry => $this->excerptResolver->resolve($entity)
                 ?: $this->fromEditorJs($entity->getContent() ?? ''),
             $entity instanceof Person => PlainText::fromHtml($entity->getBiography()),
             $entity instanceof Venue => (string) $entity->getDescription(),

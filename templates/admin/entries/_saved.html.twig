@@ -9,3 +9,15 @@
         oob: true
     } %}
 {% endif %}
+{% if content_type.supports('hero_image') %}
+    {% include 'admin/partials/_featured_image_field.html.twig' with {
+        entityType: content_type.name,
+        entityId: entry.id,
+        field: 'hero',
+        label: 'Hero Image',
+        deleteUrl: '/' ~ content_type.adminSlug() ~ '/' ~ entry.id ~ '/hero-image',
+        featuredImageUrl: entry.hasHeroImage ? entry.heroImageUrl : null,
+        featuredImageId: heroImageId|default(null),
+        oob: true
+    } %}
+{% endif %}

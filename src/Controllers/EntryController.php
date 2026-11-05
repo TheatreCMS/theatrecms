@@ -10,6 +10,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Models\Entry;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EntryRepository;
@@ -22,8 +23,8 @@ use TheatreCMS\Traits\RendersPublicContent;
 /**
  * Admin screens for the entries of one content type. Each instance is built for a single
  * `ContentTypeDefinition` (see `app/routes.php`), which scopes the repository, the URLs and
- * the labels; the form shows the editor, excerpt and featured image only when the type
- * supports them. Public pages come from RendersPublicContent.
+ * the labels; the form shows the editor, excerpt, featured image and hero image only when
+ * the type supports them. Public pages come from RendersPublicContent.
  *
  * @extends BaseController<EntryRepository>
  */
@@ -116,9 +117,10 @@ class EntryController extends BaseController implements PublicContentController
         }
 
         return $this->twig->render($response, 'admin/entries/edit.html.twig', $this->viewData([
-            'entry'    => $entry,
-            'statuses' => ContentStatus::labels(),
-            'parents'  => $this->possibleParents($entry),
+            'entry'       => $entry,
+            'statuses'    => ContentStatus::labels(),
+            'parents'     => $this->possibleParents($entry),
+            'heroImageId' => $this->heroImageId($entry),
         ]));
     }
 
@@ -142,8 +144,13 @@ class EntryController extends BaseController implements PublicContentController
             if ($this->definition->supports('featured_image')) {
                 $this->applyFeaturedImage($entry, $data['featuredImageId'] ?? null);
             }
+            if ($this->definition->supports('hero_image')) {
+                $this->applyHeroImage($entry->getId(), $data['heroImageId'] ?? null);
+            }
             $this->applyTerms($this->contentType(), $entry->getId(), $data);
             $this->entityManager->flush();
+        } catch (SlugAllocationException $e) {
+            return $this->slugAllocationResponse($request, $response, $e);
         } catch (InvalidArgumentException $e) {
             return $this->errorResponse($request, $response, 400, 'create');
         }
@@ -172,6 +179,7 @@ class EntryController extends BaseController implements PublicContentController
             'content'         => null,
             'excerpt'         => null,
             'featuredImageId' => null,
+            'heroImageId'     => null,
             'parentId'        => null,
         ]);
 
@@ -200,6 +208,9 @@ class EntryController extends BaseController implements PublicContentController
             if ($this->definition->supports('featured_image')) {
                 $this->applyFeaturedImage($entry, $data['featuredImageId']);
             }
+            if ($this->definition->supports('hero_image')) {
+                $this->applyHeroImage($entry->getId(), $data['heroImageId']);
+            }
             if ($this->definition->hierarchical) {
                 $this->repository->moveTo($entry, $this->repository->resolveParent($data['parentId']));
             }
@@ -220,7 +231,8 @@ class EntryController extends BaseController implements PublicContentController
 
         if ($request->getHeaderLine('HX-Request')) {
             return $this->twig->render($response, 'admin/entries/_saved.html.twig', $this->viewData([
-                'entry' => $entry,
+                'entry'       => $entry,
+                'heroImageId' => $this->heroImageId($entry),
             ]));
         }
 
@@ -290,6 +302,36 @@ class EntryController extends BaseController implements PublicContentController
         }
 
         return $response->withStatus($status);
+    }
+
+    /**
+     * A 409 for a slug that couldn't be allocated (see EntryRepository::create()); the message
+     * asks the user to retry.
+     */
+    private function slugAllocationResponse(Request $request, Response $response, SlugAllocationException $e): Response
+    {
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => $e->getMessage(),
+            ]);
+        }
+
+        $response->getBody()->write($e->getMessage());
+
+        return $response->withStatus(409);
+    }
+
+    /**
+     * The entry's hero image media id, or null when it has none or its type doesn't support one.
+     */
+    private function heroImageId(Entry $entry): ?string
+    {
+        if (!$this->definition->supports('hero_image')) {
+            return null;
+        }
+
+        return $this->contentMeta->get($this->contentType(), $entry->getId(), self::HERO_IMAGE_META_KEY);
     }
 
     /**

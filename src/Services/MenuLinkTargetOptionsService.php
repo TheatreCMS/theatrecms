@@ -2,8 +2,8 @@
 
 namespace TheatreCMS\Services;
 
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\PageRepository;
-use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 
@@ -17,7 +17,7 @@ class MenuLinkTargetOptionsService
 {
     public function __construct(
         private readonly PageRepository $pageRepository,
-        private readonly PostRepository $postRepository,
+        private readonly EntryRepository $entryRepository,
         private readonly ProductionRepository $productionRepository,
         private readonly SeasonRepository $seasonRepository,
     ) {
@@ -30,7 +30,7 @@ class MenuLinkTargetOptionsService
 
     public function getPosts(): array
     {
-        return $this->postRepository->fetchAll();
+        return $this->entryRepository->forType('post')->fetchAll();
     }
 
     public function getProductions(): array

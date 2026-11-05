@@ -106,6 +106,36 @@ class RouteRegistryTest extends TestCase
         $this->assertSame(['/{slug}/{productionSlug}', '/{slug}', ''], $paths);
     }
 
+    /**
+     * @return array<string, array{list<string>, list<string>}>
+     */
+    public static function imageRemovalRoutes(): array
+    {
+        return [
+            'neither image' => [[], []],
+            'featured image' => [['featured_image'], ['removeFeaturedImage']],
+            'hero image' => [['hero_image'], ['removeHeroImage']],
+            'both' => [['featured_image', 'hero_image'], ['removeFeaturedImage', 'removeHeroImage']],
+        ];
+    }
+
+    /**
+     * @param list<string> $supports
+     * @param list<string> $expected
+     */
+    #[DataProvider('imageRemovalRoutes')]
+    public function testImageRemovalRoutesFollowSupports(array $supports, array $expected): void
+    {
+        $registry = new RouteRegistry();
+        $registry->registerRoutesForContentType(
+            new ContentTypeDefinition('notice', 'Notices', 'Notice', 'notices', supports: $supports)
+        );
+
+        $actions = array_column($registry->all()['notice']['admin']['routes'], 2);
+
+        $this->assertSame($expected, array_values(array_intersect($actions, ['removeFeaturedImage', 'removeHeroImage'])));
+    }
+
     public function testAHierarchicalTypesSingleRouteMatchesAPath(): void
     {
         $registry = new RouteRegistry();

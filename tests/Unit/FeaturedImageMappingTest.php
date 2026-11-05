@@ -9,13 +9,13 @@ use Doctrine\ORM\Tools\SchemaTool;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Media;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Venue;
 
 /**
- * Regression guard for the featured_image_id FK migration: Production, Post,
+ * Regression guard for the featured_image_id FK migration: Production, Entry,
  * Season, and Venue all replaced a plain `featured_image_url` string column
  * with a ManyToOne relation to Media (see SupportsFeaturedImage removal).
  * Each must still resolve getFeaturedImageUrl() through the relation, and
@@ -75,7 +75,7 @@ class FeaturedImageMappingTest extends TestCase
 
     public function testPostResolvesFeaturedImageUrlThroughRelation(): void
     {
-        $post = new Post('A Post', ContentStatus::DRAFT, 'body');
+        $post = new Entry(['contentType' => 'post', 'title' => 'A Post', 'status' => ContentStatus::DRAFT, 'content' => 'body']);
         $post->setSlug('a-post');
         $this->em->persist($post);
         $this->em->flush();

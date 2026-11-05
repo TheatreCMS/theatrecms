@@ -6,7 +6,6 @@ use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -30,7 +29,6 @@ class TitleResolver
     {
         $title = match (true) {
             $entity instanceof Page => $entity->getTitle(),
-            $entity instanceof Post => $entity->getTitle(),
             $entity instanceof Entry => $entity->getTitle(),
             $entity instanceof Work => $entity->getTitle(),
             $entity instanceof Production => $entity->getName(),

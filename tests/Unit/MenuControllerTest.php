@@ -13,7 +13,7 @@ use TheatreCMS\Models\Menu;
 use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
-use TheatreCMS\Repositories\PostRepository;
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
@@ -34,7 +34,7 @@ class MenuControllerTest extends TestCase
     private EntityManager $em;
     private MenuRepository $menus;
     private PageRepository $pages;
-    private PostRepository $posts;
+    private EntryRepository $entries;
     private ProductionRepository $productions;
     private SeasonRepository $seasons;
     private MenuLocationRegistry $locations;
@@ -46,7 +46,7 @@ class MenuControllerTest extends TestCase
         $meta = new ContentMetaRepository($this->em);
         $this->menus = new MenuRepository($this->em);
         $this->pages = new PageRepository($this->em);
-        $this->posts = new PostRepository($this->em, $meta);
+        $this->entries = new EntryRepository($this->em, $meta);
         $this->productions = new ProductionRepository($this->em, $meta);
         $this->seasons = new SeasonRepository($this->em, $meta);
         $this->locations = new MenuLocationRegistry();
@@ -58,7 +58,7 @@ class MenuControllerTest extends TestCase
         $contentTypes->register('page', ['urlPrefix' => '', 'hasArchive' => false, 'hierarchical' => true]);
         $this->resolver = new MenuItemResolver(
             $this->pages,
-            $this->posts,
+            $this->entries,
             $this->productions,
             $this->seasons,
             new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
@@ -100,7 +100,7 @@ class MenuControllerTest extends TestCase
     {
         $menu = $this->menus->create(['name' => 'Main']);
         $page = $this->pages->create(['title' => 'About', 'content' => 'x']);
-        $post = $this->posts->create(['title' => 'News item', 'content' => 'x']);
+        $post = $this->entries->forType('post')->create(['title' => 'News item', 'content' => 'x']);
         $season = $this->seasons->create(['label' => '2025-26', 'startDate' => '2025-09-01', 'endDate' => '2026-06-01']);
         $production = $this->productions->create(['name' => 'Hamlet', 'seasonId' => $season->getId()]);
 
@@ -245,7 +245,7 @@ class MenuControllerTest extends TestCase
             $this->recordingTwig(),
             $this->locations,
             $this->resolver,
-            new MenuLinkTargetOptionsService($this->pages, $this->posts, $this->productions, $this->seasons),
+            new MenuLinkTargetOptionsService($this->pages, $this->entries, $this->productions, $this->seasons),
         );
     }
 }

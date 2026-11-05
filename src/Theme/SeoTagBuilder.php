@@ -2,9 +2,10 @@
 
 namespace TheatreCMS\Theme;
 
+use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\ContentType\HasContentType;
 use TheatreCMS\ContentType\PermalinkResolver;
 use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
 use TheatreCMS\Models\Sponsor;
 use TheatreCMS\Settings\SiteSettings;
 
@@ -25,6 +26,7 @@ class SeoTagBuilder
         private readonly TitleResolver $titleResolver,
         private readonly PermalinkResolver $permalinkResolver,
         private readonly SeoDescriptionResolver $descriptionResolver,
+        private readonly ContentTypeRegistry $contentTypes,
     ) {
     }
 
@@ -39,11 +41,24 @@ class SeoTagBuilder
             description: $description,
             canonicalUrl: $this->canonicalUrlFor($entity),
             ogImage: $ogImage,
-            ogType: $entity instanceof Post ? 'article' : 'website',
+            ogType: $this->ogTypeFor($entity),
             twitterCard: $ogImage !== '' ? 'summary_large_image' : 'summary',
         );
 
         return apply_filters('theatrecms/seo_meta', $seo, $entity, $type);
+    }
+
+    /**
+     * The `ogType` of the entity's content type (`article` for posts); `website` for anything
+     * that isn't an item of a registered type, such as a taxonomy term.
+     */
+    private function ogTypeFor(object $entity): string
+    {
+        if (!$entity instanceof HasContentType || !$this->contentTypes->has($entity->getContentType())) {
+            return 'website';
+        }
+
+        return $this->contentTypes->require($entity->getContentType())->ogType;
     }
 
     public function forArchive(string $type, string $label): SeoMeta

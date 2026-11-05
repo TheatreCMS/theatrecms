@@ -10,8 +10,10 @@ use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\TermRelationship;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 
@@ -28,7 +30,7 @@ class EntryRepositoryTest extends TestCase
     protected function setUp(): void
     {
         $this->em = $this->createSqliteEntityManager();
-        $this->entries = new EntryRepository($this->em);
+        $this->entries = new EntryRepository($this->em, new ContentMetaRepository($this->em));
     }
 
     public function testCreateStoresTheBoundType(): void
@@ -67,6 +69,29 @@ class EntryRepositoryTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $this->entries->forType('press_release')->create(['title' => 'Launch', 'status' => 'archived']);
+    }
+
+    public function testCreateAddsNumericSuffixesForSlugCollisions(): void
+    {
+        $posts = $this->entries->forType('post');
+
+        $this->assertSame('opening-night', $posts->create(['title' => 'Opening Night'])->getSlug());
+        $this->assertSame('opening-night-1', $posts->create(['title' => 'Opening Night'])->getSlug());
+    }
+
+    public function testCreateTranslatesResidualSlugCollisions(): void
+    {
+        $posts = (new class ($this->em, new ContentMetaRepository($this->em)) extends EntryRepository {
+            protected function slugExists(string $slug, array $scope = []): bool
+            {
+                return false;
+            }
+        })->forType('post');
+        $posts->create(['title' => 'Opening Night']);
+
+        $this->expectException(SlugAllocationException::class);
+
+        $posts->create(['title' => 'Opening Night']);
     }
 
     public function testForTypeLeavesTheOriginalUnbound(): void

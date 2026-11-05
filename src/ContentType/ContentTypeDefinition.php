@@ -25,11 +25,13 @@ final class ContentTypeDefinition
      * @param bool $hasArchive whether it gets a public archive (listing) page at `/{urlPrefix}`
      * @param string $capability capability required to manage its entries in the admin UI
      * @param bool $public whether its entries get frontend routes at all
-     * @param string[] $supports standard entry fields it uses: 'editor', 'excerpt', 'featured_image'
+     * @param string[] $supports standard fields it uses: 'editor', 'excerpt', 'featured_image' and
+     *        'hero_image' (a banner for its single page, stored in content_meta as `hero_image_id`)
      * @param bool $hierarchical whether its items can have a parent item of the same type, served at
      *        the parent's URL plus their own slug (`/about/board-of-directors`); the model must use `HasParent`
      * @param string|null $menuIcon Font Awesome Free classes for its admin sidebar link, e.g.
      *        `fa-solid fa-newspaper`; null for a generic icon
+     * @param string $ogType Open Graph `og:type` for its single pages, e.g. `article` for posts
      */
     public function __construct(
         public readonly string $name,
@@ -45,6 +47,7 @@ final class ContentTypeDefinition
         ],
         public readonly bool $hierarchical = false,
         public readonly ?string $menuIcon = null,
+        public readonly string $ogType = 'website',
     ) {
     }
 

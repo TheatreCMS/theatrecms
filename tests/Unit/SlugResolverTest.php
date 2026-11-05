@@ -6,7 +6,7 @@ namespace TheatreCMS\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Models\Page;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Theme\SlugResolver;
 use TheatreCMS\Twig\SlugExtension;
 
@@ -22,7 +22,7 @@ class SlugResolverTest extends TestCase
 
     public function testExtensionReturnsStringSlug(): void
     {
-        $post = new Post('A Post', \TheatreCMS\Enums\ContentStatus::PUBLISHED, 'body');
+        $post = new Entry(['contentType' => 'post', 'title' => 'A Post', 'status' => \TheatreCMS\Enums\ContentStatus::PUBLISHED, 'content' => 'body']);
         $post->setSlug('a-post');
 
         $result = (new SlugExtension(new SlugResolver()))->theSlug($post);

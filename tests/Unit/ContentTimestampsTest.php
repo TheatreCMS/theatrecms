@@ -26,8 +26,8 @@ class ContentTimestampsTest extends TestCase
     public static function timestampedModels(): array
     {
         $models = [
-            Models\ContentMeta::class, Models\Event::class, Models\Media::class, Models\Menu::class,
-            Models\MenuItem::class, Models\Page::class, Models\Person::class, Models\Post::class,
+            Models\ContentMeta::class, Models\Entry::class, Models\Event::class, Models\Media::class, Models\Menu::class,
+            Models\MenuItem::class, Models\Page::class, Models\Person::class,
             Models\Production::class, Models\Season::class, Models\Sponsor::class, Models\Term::class,
             Models\Venue::class, Models\Work::class,
         ];
@@ -103,19 +103,18 @@ class ContentTimestampsTest extends TestCase
     public function testRefreshesAModelThatAlsoSetsThemInItsConstructor(): void
     {
         $em = $this->createSqliteEntityManager();
-        $post = new Models\Post('Hello', ContentStatus::DRAFT, '');
-        $post->setSlug('hello');
+        $post = new Models\Entry(['contentType' => 'post', 'title' => 'Hello', 'slug' => 'hello']);
         $em->persist($post);
         $em->flush();
         $id = $post->getId();
-        $this->backdate($em, 'posts', $id);
+        $this->backdate($em, 'entries', $id);
         $em->clear();
 
-        $em->find(Models\Post::class, $id)->setTitle('Hello again');
+        $em->find(Models\Entry::class, $id)->setTitle('Hello again');
         $em->flush();
         $em->clear();
 
-        $reloaded = $em->find(Models\Post::class, $id);
+        $reloaded = $em->find(Models\Entry::class, $id);
         $this->assertSame('2000-01-01', $reloaded->getCreatedAt()->format('Y-m-d'));
         $this->assertGreaterThan(new DateTimeImmutable('2001-01-01'), $reloaded->getModifiedAt());
     }

@@ -105,6 +105,7 @@ class ProductionController extends BaseController implements PublicContentContro
         $activeTab = ($queryParams['tab'] ?? '') === 'performances' ? 'performances' : 'details';
 
         return $this->twig->render($response, 'admin/productions/edit.html.twig', [
+            'supportsHeroImage' => $this->supportsHeroImage($request),
             'production' => $production,
             'seasons'    => $this->formOptions->getSeasons(),
             'people'     => $this->formOptions->getPeople(),
@@ -165,7 +166,7 @@ class ProductionController extends BaseController implements PublicContentContro
 
         $production = $this->repository->create($data);
         $this->applyFeaturedImage($production, $data['featuredImageId']);
-        $this->applyHeroImage($production->getId(), $data['heroImageId']);
+        $this->applyHeroImageIfSupported($request, $production->getId(), $data['heroImageId']);
 
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -291,7 +292,7 @@ class ProductionController extends BaseController implements PublicContentContro
         $this->syncWorks($item, $data['works']);
 
         $this->applyFeaturedImage($item, $data['featuredImageId']);
-        $this->applyHeroImage($item->getId(), $data['heroImageId']);
+        $this->applyHeroImageIfSupported($request, $item->getId(), $data['heroImageId']);
 
         $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];

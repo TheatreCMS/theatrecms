@@ -2,11 +2,16 @@
 
 namespace TheatreCMS\Repositories;
 
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
 use LogicException;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Exceptions\SlugAllocationException;
 use TheatreCMS\Models\Entry;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
 use TheatreCMS\Traits\ManagesHierarchy;
 
 /**
@@ -19,14 +24,28 @@ use TheatreCMS\Traits\ManagesHierarchy;
  * An unbound repository throws instead of reading entries of every type, and slugs are
  * unique within a type, so two types can share one. That holds for hierarchical types too, so
  * moving an entry to another parent never renames it.
+ *
+ * Single-entry fetches carry the hero image (see EagerLoadsHeroImage); listings don't.
  */
 class EntryRepository extends BaseRepository
 {
-    use ManagesHierarchy;
+    // fetch() and fetchBySlug() are defined below, scoped to the type, and attach the hero
+    // image themselves; the trait still supplies fetchPublicBySlug().
+    use EagerLoadsHeroImage;
+    use ManagesHierarchy {
+        fetchPublicByPath as private fetchPublicByPathWithoutHeroImage;
+    }
+
+    private const SLUG_LOCK_TIMEOUT_SECONDS = 5;
 
     protected string $entityClass = Entry::class;
 
     private ?string $contentType = null;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
 
     /**
      * A copy of this repository whose queries only see entries of `$contentType`.
@@ -65,20 +84,31 @@ class EntryRepository extends BaseRepository
             throw new InvalidArgumentException('Invalid status.');
         }
 
-        $entry = new Entry([
-            'contentType' => $contentType,
-            'title' => $args['title'],
-            'slug' => $this->generateUniqueSlug($args['slug'] ?? $args['title']),
-            'status' => $status,
-        ]);
-        $entry->setContent($args['content'] ?? null);
-        $entry->setExcerpt($args['excerpt'] ?? null);
-        $entry->setParent($this->resolveParent($args['parentId'] ?? null));
+        $parent = $this->resolveParent($args['parentId'] ?? null);
 
-        $this->em->persist($entry);
-        $this->em->flush();
+        try {
+            return $this->withSlugAllocationLock(function () use ($args, $contentType, $status, $parent): Entry {
+                $entry = new Entry([
+                    'contentType' => $contentType,
+                    'title' => $args['title'],
+                    'slug' => $this->generateUniqueSlug($args['slug'] ?? $args['title']),
+                    'status' => $status,
+                ]);
+                $entry->setContent($args['content'] ?? null);
+                $entry->setExcerpt($args['excerpt'] ?? null);
+                $entry->setParent($parent);
 
-        return $entry;
+                $this->em->persist($entry);
+                $this->em->flush();
+
+                return $entry;
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            throw new SlugAllocationException(
+                sprintf('Unable to allocate a unique URL for the %s. Please try again.', $this->typeLabel()),
+                previous: $e
+            );
+        }
     }
 
     public function query(array $args = []): array
@@ -98,18 +128,23 @@ class EntryRepository extends BaseRepository
 
     public function fetch(int $id): ?Entry
     {
-        return $this->em->getRepository(Entry::class)->findOneBy([
+        return $this->attachHeroImage($this->em->getRepository(Entry::class)->findOneBy([
             'id' => $id,
             'contentType' => $this->requireType(),
-        ]);
+        ]));
     }
 
     public function fetchBySlug(string $slug): ?Entry
     {
-        return $this->em->getRepository(Entry::class)->findOneBy([
+        return $this->attachHeroImage($this->em->getRepository(Entry::class)->findOneBy([
             'slug' => $slug,
             'contentType' => $this->requireType(),
-        ]);
+        ]));
+    }
+
+    public function fetchPublicByPath(string $path): ?object
+    {
+        return $this->attachHeroImage($this->fetchPublicByPathWithoutHeroImage($path));
     }
 
     /**
@@ -192,6 +227,11 @@ class EntryRepository extends BaseRepository
         return $this->requireType();
     }
 
+    protected function heroImageContentType(): string
+    {
+        return $this->requireType();
+    }
+
     protected function applyCriteria(QueryBuilder $builder, string $alias, array $criteria): void
     {
         $builder->andWhere(sprintf('%s.contentType = :contentType', $alias))
@@ -240,6 +280,47 @@ class EntryRepository extends BaseRepository
     protected function slugExists(string $slug, array $scope = []): bool
     {
         return $this->fetchBySlug($slug) !== null;
+    }
+
+    /**
+     * MariaDB's connection-level advisory lock, one per content type, serializes slug selection
+     * and insertion, closing the gap between checking a candidate and enforcing the unique
+     * index. SQLite serializes writes itself and is used only for tests.
+     *
+     * @param callable(): Entry $callback
+     * @throws SlugAllocationException when the lock can't be acquired
+     * @throws UniqueConstraintViolationException when the callback's insert still hits the unique
+     *         index (create() translates it)
+     */
+    private function withSlugAllocationLock(callable $callback): Entry
+    {
+        $connection = $this->em->getConnection();
+        if (!$connection->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
+            return $callback();
+        }
+
+        $lockName = 'theatrecms:entry-slugs:' . $this->requireType();
+        $acquired = $connection->fetchOne('SELECT GET_LOCK(?, ?)', [$lockName, self::SLUG_LOCK_TIMEOUT_SECONDS]);
+
+        if ((int) $acquired !== 1) {
+            throw new SlugAllocationException(
+                sprintf('Unable to allocate a unique URL for the %s. Please try again.', $this->typeLabel())
+            );
+        }
+
+        try {
+            return $callback();
+        } finally {
+            $connection->fetchOne('SELECT RELEASE_LOCK(?)', [$lockName]);
+        }
+    }
+
+    /**
+     * The bound type's name in words, e.g. "press release", for error messages.
+     */
+    private function typeLabel(): string
+    {
+        return str_replace('_', ' ', $this->requireType());
     }
 
     /**

@@ -9,7 +9,7 @@ use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Event;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -36,7 +36,7 @@ class TitleResolverTest extends TestCase
 
     public function testResolvesPostTitle(): void
     {
-        $post = new Post('Breaking News', ContentStatus::PUBLISHED, 'body');
+        $post = new Entry(['contentType' => 'post', 'title' => 'Breaking News', 'status' => ContentStatus::PUBLISHED, 'content' => 'body']);
 
         $this->assertSame('Breaking News', $this->resolver->resolve($post));
     }

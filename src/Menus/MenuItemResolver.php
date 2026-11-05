@@ -4,8 +4,8 @@ namespace TheatreCMS\Menus;
 
 use TheatreCMS\Enums\MenuItemType;
 use TheatreCMS\Models\MenuItem;
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\PageRepository;
-use TheatreCMS\Repositories\PostRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\ContentType\ContentTypeRegistry;
@@ -20,7 +20,7 @@ class MenuItemResolver
 {
     public function __construct(
         private readonly PageRepository $pageRepository,
-        private readonly PostRepository $postRepository,
+        private readonly EntryRepository $entryRepository,
         private readonly ProductionRepository $productionRepository,
         private readonly SeasonRepository $seasonRepository,
         private readonly PermalinkResolver $permalinkResolver,
@@ -75,7 +75,7 @@ class MenuItemResolver
         return match ($item->getLinkType()) {
             MenuItemType::CUSTOM => null,
             MenuItemType::PAGE => $this->pageRepository->fetch($item->getTargetId())?->getTitle(),
-            MenuItemType::POST => $this->postRepository->fetch($item->getTargetId())?->getTitle(),
+            MenuItemType::POST => $this->posts()->fetch($item->getTargetId())?->getTitle(),
             MenuItemType::PRODUCTION => $this->productionRepository->fetch($item->getTargetId())?->getName(),
             MenuItemType::SEASON => $this->seasonRepository->fetch($item->getTargetId())?->getLabel(),
         };
@@ -98,7 +98,7 @@ class MenuItemResolver
             return null;
         }
 
-        $post = $this->postRepository->fetch($item->getTargetId());
+        $post = $this->posts()->fetch($item->getTargetId());
 
         return $post ? $this->permalinkResolver->resolve($post) : null;
     }
@@ -123,6 +123,14 @@ class MenuItemResolver
         $season = $this->seasonRepository->fetch($item->getTargetId());
 
         return $season ? $this->permalinkResolver->resolve($season) : null;
+    }
+
+    /**
+     * Posts are entries of the `post` content type.
+     */
+    private function posts(): EntryRepository
+    {
+        return $this->entryRepository->forType('post');
     }
 
     /**

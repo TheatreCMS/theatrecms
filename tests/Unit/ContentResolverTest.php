@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Work;
@@ -50,7 +50,7 @@ class ContentResolverTest extends TestCase
 
     public function testResolvesPostContentThroughEditorJsConverter(): void
     {
-        $post = new Post('A Post', ContentStatus::PUBLISHED, $this->editorJsPayload('Post body'));
+        $post = new Entry(['contentType' => 'post', 'title' => 'A Post', 'status' => ContentStatus::PUBLISHED, 'content' => $this->editorJsPayload('Post body')]);
 
         $this->assertSame('<p>Post body</p>', $this->resolver->resolve($post));
     }

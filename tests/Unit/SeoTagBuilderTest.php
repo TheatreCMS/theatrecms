@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Page;
 use TheatreCMS\Models\Person;
-use TheatreCMS\Models\Post;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Models\Production;
 use TheatreCMS\Models\Season;
 use TheatreCMS\Models\Sponsor;
@@ -78,7 +78,7 @@ class SeoTagBuilderTest extends TestCase
             'post' => 'posts',
         ];
         foreach ($prefixes as $type => $urlPrefix) {
-            $contentTypes->register($type, ['urlPrefix' => $urlPrefix]);
+            $contentTypes->register($type, ['urlPrefix' => $urlPrefix] + ($type === 'post' ? ['ogType' => 'article'] : []));
         }
         $contentTypes->register('page', ['urlPrefix' => '', 'hasArchive' => false, 'hierarchical' => true]);
 
@@ -86,7 +86,8 @@ class SeoTagBuilderTest extends TestCase
             $siteSettings,
             new TitleResolver(),
             new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
-            new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager), new ExcerptResolver())
+            new SeoDescriptionResolver(new EditorJsHtmlConverter($themeManager), new ExcerptResolver()),
+            $contentTypes
         );
     }
 
@@ -240,10 +241,10 @@ class SeoTagBuilderTest extends TestCase
         $this->assertSame('https://example.com/assets/share.jpg', $seo->ogImage);
     }
 
-    public function testOgTypeIsArticleForPosts(): void
+    public function testOgTypeComesFromTheContentType(): void
     {
         $builder = $this->makeBuilder($this->makeSiteSettings());
-        $post = new Post('Breaking News', ContentStatus::PUBLISHED, 'body');
+        $post = new Entry(['contentType' => 'post', 'title' => 'Breaking News', 'status' => ContentStatus::PUBLISHED, 'content' => 'body']);
         $post->setSlug('breaking-news');
 
         $seo = $builder->forEntity($post, 'post');
@@ -251,7 +252,7 @@ class SeoTagBuilderTest extends TestCase
         $this->assertSame('article', $seo->ogType);
     }
 
-    public function testOgTypeIsWebsiteForNonPosts(): void
+    public function testOgTypeDefaultsToWebsite(): void
     {
         $builder = $this->makeBuilder($this->makeSiteSettings());
         $page = new Page('About', ContentStatus::PUBLISHED, 'body');

@@ -116,6 +116,7 @@ class SeasonController extends BaseController implements PublicContentController
         $season = $this->repository()->fetch($args['id']);
 
         return $this->twig->render($response, 'admin/seasons/edit.html.twig', [
+            'supportsHeroImage' => $this->supportsHeroImage($request),
             'season'   => $season,
             'sponsors' => $this->sponsorRepo->fetchAll(),
             'heroImageId' => $this->contentMeta->get($this->contentType(), $season->getId(), self::HERO_IMAGE_META_KEY),
@@ -165,7 +166,7 @@ class SeasonController extends BaseController implements PublicContentController
 
         $season = $this->repository->create($data);
         $this->applyFeaturedImage($season, $data['featuredImageId'] ?? null);
-        $this->applyHeroImage($season->getId(), $data['heroImageId'] ?? null);
+        $this->applyHeroImageIfSupported($request, $season->getId(), $data['heroImageId'] ?? null);
         $this->syncSponsorships($season, $data['sponsorshipSponsorIds'] ?? []);
         $this->entityManager->flush();
 
@@ -215,7 +216,7 @@ class SeasonController extends BaseController implements PublicContentController
             $item->setEndDate($end);
             $item->setOverview($data['overview']);
             $this->applyFeaturedImage($item, $data['featuredImageId']);
-            $this->applyHeroImage($item->getId(), $data['heroImageId']);
+            $this->applyHeroImageIfSupported($request, $item->getId(), $data['heroImageId']);
             $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);
             $this->repository()->update($item);
 

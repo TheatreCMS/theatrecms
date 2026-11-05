@@ -78,7 +78,7 @@
     });
 </script>
 
-{% if content_type.supports('featured_image') %}
+{% if content_type.supports('featured_image') or content_type.supports('hero_image') %}
     <script type="module">
         import { initFeaturedImagePicker } from '/assets/js/featured-image-picker.js';
         initFeaturedImagePicker();
