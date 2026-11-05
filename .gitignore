@@ -47,6 +47,11 @@ Thumbs.db
 /www/uploads/*
 node_modules/
 
+# Playwright output and the saved admin session (tests/e2e/auth.setup.ts)
+/test-results/
+/playwright-report/
+/playwright/.auth/
+
 # Jetbrains IDE files
 /.idea/
 
