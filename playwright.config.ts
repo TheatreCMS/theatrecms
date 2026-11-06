@@ -35,12 +35,8 @@ export default defineConfig({
       name: 'chrome',
       dependencies: ['setup'],
       use: {
+        ...devices['Desktop Chrome'],
         storageState: ADMIN_STORAGE_STATE,
-        channel: 'chrome',
-        viewport: {
-          width: 1280,
-          height: 720,
-        },
       },
     },
     {
