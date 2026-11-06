@@ -494,10 +494,22 @@ class ServiceRegistrar
         );
 
         $container->set(TermArchiveQuery::class, static function (ContainerInterface $c): TermArchiveQuery {
-            return new TermArchiveQuery($c->get(TermRelationshipRepository::class), [
-                'work' => $c->get(WorkRepository::class),
-                'post' => $c->get(EntryRepository::class)->forType('post'),
-            ]);
+            // Entry types (posts and plugin types) resolve through EntryRepository; only the
+            // model-backed core types need mapping here.
+            return new TermArchiveQuery(
+                $c->get(TermRelationshipRepository::class),
+                $c->get(ContentTypeRegistry::class),
+                $c->get(EntryRepository::class),
+                [
+                    'season'     => $c->get(SeasonRepository::class),
+                    'production' => $c->get(ProductionRepository::class),
+                    'person'     => $c->get(PersonRepository::class),
+                    'work'       => $c->get(WorkRepository::class),
+                    'venue'      => $c->get(VenueRepository::class),
+                    'event'      => $c->get(EventRepository::class),
+                    'page'       => $c->get(PageRepository::class),
+                ],
+            );
         });
     }
 

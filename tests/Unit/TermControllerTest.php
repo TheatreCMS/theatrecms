@@ -13,7 +13,9 @@ use Slim\Psr7\Response;
 use Slim\Views\Twig;
 use TheatreCMS\Auth\AuthorizationService;
 use TheatreCMS\Auth\Capability;
+use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Controllers\TermController;
+use TheatreCMS\Repositories\EntryRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 use TheatreCMS\Repositories\TermRepository;
 use TheatreCMS\Taxonomy\TaxonomyRegistry;
@@ -221,7 +223,12 @@ class TermControllerTest extends TestCase
             $this->registry,
             $authorization,
             $resolver ?? $this->createStub(TemplateResolver::class),
-            $archiveQuery ?? new TermArchiveQuery($this->relationships, []),
+            $archiveQuery ?? new TermArchiveQuery(
+                $this->relationships,
+                new ContentTypeRegistry(),
+                $this->createStub(EntryRepository::class),
+                [],
+            ),
         );
     }
 
