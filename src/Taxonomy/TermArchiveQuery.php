@@ -2,24 +2,21 @@
 
 namespace TheatreCMS\Taxonomy;
 
+use TheatreCMS\ContentType\ContentRepositoryLocator;
 use TheatreCMS\Models\Term;
-use TheatreCMS\Repositories\BaseRepository;
 use TheatreCMS\Repositories\TermRelationshipRepository;
 
 /**
  * Collects the publicly visible content items carrying a term, for its frontend archive page.
  * Term assignments are soft references keyed by content type, so each type the taxonomy applies
- * to is loaded through its own repository; types with no repository mapped here are skipped.
+ * to is loaded through its own repository (see `ContentRepositoryLocator`). Types that aren't
+ * public, aren't registered, or have no repository are skipped.
  */
 class TermArchiveQuery
 {
-    /**
-     * @param array<string, BaseRepository> $repositories singular content type => repository,
-     *        e.g. `['work' => WorkRepository]`
-     */
     public function __construct(
         private readonly TermRelationshipRepository $relationships,
-        private readonly array $repositories,
+        private readonly ContentRepositoryLocator $repositories,
     ) {
     }
 
@@ -31,12 +28,14 @@ class TermArchiveQuery
         $items = [];
 
         foreach ($taxonomy->contentTypes as $contentType) {
-            if (!isset($this->repositories[$contentType])) {
+            $repository = $this->repositories->forType($contentType);
+
+            if ($repository === null) {
                 continue;
             }
 
             $ids = $this->relationships->contentIdsFor($term, $contentType);
-            $items[$contentType] = $this->repositories[$contentType]->fetchPublicByIds($ids);
+            $items[$contentType] = $repository->fetchPublicByIds($ids);
         }
 
         return $items;

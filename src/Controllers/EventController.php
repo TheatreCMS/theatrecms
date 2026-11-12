@@ -22,12 +22,19 @@ use TheatreCMS\Traits\RendersPublicContent;
 /**
  * @extends BaseController<EventRepository>
  */
-class EventController extends BaseController implements PublicContentController
+class EventController extends BaseController implements PublicContentController, HasAdditionalAdminRoutes
 {
     use RendersPublicContent;
 
     private ProductionRepository $productionRepo;
     private VenueRepository $venueRepo;
+
+    public static function additionalAdminRoutes(): array
+    {
+        return [
+            ['post', '/bulk-create', 'storeRecurring'],
+        ];
+    }
 
     public function __construct(
         EventRepository $repository,

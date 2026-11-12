@@ -6,6 +6,7 @@ use LogicException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Theme\TemplateResolver;
 
 /**
@@ -13,7 +14,8 @@ use TheatreCMS\Theme\TemplateResolver;
  * items from its repository, rendered through the theme's template hierarchy.
  *
  * Filters and context keys match the frontend routes these replace, so themes keep working:
- * a single page gets `{type}` (e.g. `season`) through the `theatrecms/{type}` filter, and an
+ * a single page gets `{type}` (e.g. `season`) through the `theatrecms/{type}` filter (an entry,
+ * of any entry type, then also through `theatrecms/entry`), and an
  * archive gets `{urlPrefix}` with hyphens as underscores (e.g. `seasons`) through
  * `theatrecms/{urlPrefix}`. Templates are looked up under the type's template directory
  * (`ContentTypeDefinition::templateDir()`). A hierarchical type's single page is found by its
@@ -67,6 +69,10 @@ trait RendersPublicContent
         }
 
         $item = apply_filters("theatrecms/{$definition->name}", $item, $request, $args);
+
+        if ($item instanceof Entry) {
+            $item = apply_filters('theatrecms/entry', $item, $request, $args);
+        }
 
         return $this->templateResolver()->renderSingle(
             $this->twig,

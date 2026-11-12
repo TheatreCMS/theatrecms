@@ -35,69 +35,36 @@
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 			<div class="md:col-span-1">
 				<div class="bg-white border border-gray-200 rounded-md">
-					<div class="border-b border-gray-200">
-						<ul class="flex flex-wrap text-sm font-medium text-center" role="tablist">
-							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-pages" role="tab">Pages</button></li>
-							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-posts" role="tab">Posts</button></li>
-							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-productions" role="tab">Productions</button></li>
-							<li class="mr-1"><button class="inline-block p-3" type="button" data-tabs-target="#tab-seasons" role="tab">Seasons</button></li>
-							<li><button class="inline-block p-3" type="button" data-tabs-target="#tab-custom" role="tab">Custom Link</button></li>
-						</ul>
+					<div class="p-3 border-b border-gray-200 space-y-2">
+						<label for="link-target-type" class="block text-xs font-medium text-gray-700">Add a link to</label>
+						<select id="link-target-type" class="w-full text-sm rounded-md border-gray-300 shadow-sm">
+							{% for group in linkTargets %}
+								<option value="{{ group.type }}">{{ group.label }}</option>
+							{% endfor %}
+							<option value="custom">Custom Link</option>
+						</select>
+						<input type="search" id="link-target-search" placeholder="Search…" aria-label="Search items" class="w-full text-sm rounded-md border-gray-300 shadow-sm">
 					</div>
 					<div>
-						<div id="tab-pages" role="tabpanel" class="p-3 max-h-96 overflow-y-auto space-y-1">
-							{% for page in pages %}
-								<div class="flex items-center justify-between text-sm py-1">
-									<span class="truncate">{{ page.title }}</span>
-									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="page" data-target-id="{{ page.id }}" data-label="{{ page.title }}">Add</button>
-								</div>
-							{% else %}
-								<p class="text-sm text-gray-500">No pages yet.</p>
-							{% endfor %}
-						</div>
-						<div id="tab-posts" role="tabpanel" class="hidden p-3 max-h-96 overflow-y-auto space-y-1">
-							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
-								<span class="truncate font-medium text-gray-700">Posts Archive</span>
-								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="post" data-label="All Posts">Add</button>
+						{% for group in linkTargets %}
+							<div id="link-targets-{{ group.type }}" data-link-target-panel="{{ group.type }}" class="{{ loop.first ? '' : 'hidden ' }}p-3 max-h-96 overflow-y-auto space-y-1">
+								{% if group.hasArchive %}
+									<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
+										<span class="truncate font-medium text-gray-700">{{ group.label }} Archive</span>
+										<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="{{ group.type }}" data-label="All {{ group.label }}">Add</button>
+									</div>
+								{% endif %}
+								{% for item in group.items %}
+									<div class="flex items-center justify-between text-sm py-1" data-link-target-item data-search-text="{{ item.title|lower }}">
+										<span class="truncate">{{ item.title ?: '(untitled)' }}</span>
+										<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="{{ group.type }}" data-target-id="{{ item.id }}" data-label="{{ item.title }}">Add</button>
+									</div>
+								{% else %}
+									<p class="text-sm text-gray-500">No {{ group.label|lower }} yet.</p>
+								{% endfor %}
 							</div>
-							{% for post in posts %}
-								<div class="flex items-center justify-between text-sm py-1">
-									<span class="truncate">{{ post.title }}</span>
-									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="post" data-target-id="{{ post.id }}" data-label="{{ post.title }}">Add</button>
-								</div>
-							{% else %}
-								<p class="text-sm text-gray-500">No posts yet.</p>
-							{% endfor %}
-						</div>
-						<div id="tab-productions" role="tabpanel" class="hidden p-3 max-h-96 overflow-y-auto space-y-1">
-							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
-								<span class="truncate font-medium text-gray-700">Productions Archive</span>
-								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="production" data-label="All Productions">Add</button>
-							</div>
-							{% for production in productions %}
-								<div class="flex items-center justify-between text-sm py-1">
-									<span class="truncate">{{ production.name }}</span>
-									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="production" data-target-id="{{ production.id }}" data-label="{{ production.name }}">Add</button>
-								</div>
-							{% else %}
-								<p class="text-sm text-gray-500">No productions yet.</p>
-							{% endfor %}
-						</div>
-						<div id="tab-seasons" role="tabpanel" class="hidden p-3 max-h-96 overflow-y-auto space-y-1">
-							<div class="flex items-center justify-between text-sm py-1 mb-1 border-b border-gray-200">
-								<span class="truncate font-medium text-gray-700">Seasons Archive</span>
-								<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="season" data-label="All Seasons">Add</button>
-							</div>
-							{% for season in seasons %}
-								<div class="flex items-center justify-between text-sm py-1">
-									<span class="truncate">{{ season.label }}</span>
-									<button type="button" class="text-blue-600 hover:text-blue-900 text-xs" data-add-item data-link-type="season" data-target-id="{{ season.id }}" data-label="{{ season.label }}">Add</button>
-								</div>
-							{% else %}
-								<p class="text-sm text-gray-500">No seasons yet.</p>
-							{% endfor %}
-						</div>
-						<div id="tab-custom" role="tabpanel" class="hidden p-3 space-y-3">
+						{% endfor %}
+						<div id="link-targets-custom" data-link-target-panel="custom" class="{{ linkTargets is empty ? '' : 'hidden ' }}p-3 space-y-3">
 							<div>
 								<label for="custom-url" class="block text-xs font-medium text-gray-700 mb-1">URL</label>
 								<input type="text" id="custom-url" placeholder="https://example.com" class="w-full text-sm rounded-md border-gray-300 shadow-sm">
@@ -136,7 +103,7 @@
 			const initialItems = {{ menuItemsJson|raw }};
 			const tree = document.getElementById('menu-item-tree');
 			const emptyState = document.getElementById('menu-item-tree-empty');
-			const typeLabels = { page: 'Page', post: 'Post', production: 'Production', season: 'Season', custom: 'Custom Link' };
+			const typeLabels = {{ typeLabelsJson|raw }};
 			let clientIdCounter = 0;
 
 			function nextClientId() {
@@ -296,21 +263,33 @@
 				labelField.value = '';
 			});
 
-			// Simple tab switching (Flowbite's own JS also supports data-tabs-target,
-			// but we drive it manually here to avoid depending on tab group init timing).
-			document.querySelectorAll('[data-tabs-target]').forEach(function (btn) {
-				btn.addEventListener('click', function () {
-					document.querySelectorAll('[role="tabpanel"]').forEach(function (panel) {
-						panel.classList.add('hidden');
-					});
-					document.querySelectorAll('[data-tabs-target]').forEach(function (tabBtn) {
-						tabBtn.classList.remove('text-blue-600', 'border-b-2', 'border-blue-600');
-					});
-					document.querySelector(btn.dataset.tabsTarget).classList.remove('hidden');
-					btn.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+			// Show the chosen type's panel; the search box filters its items by title.
+			const typeSelect = document.getElementById('link-target-type');
+			const searchField = document.getElementById('link-target-search');
+
+			function applySearch() {
+				const query = searchField.value.trim().toLowerCase();
+				const panel = document.querySelector('[data-link-target-panel="' + typeSelect.value + '"]');
+				panel?.querySelectorAll('[data-link-target-item]').forEach(function (row) {
+					row.classList.toggle('hidden', query !== '' && !row.dataset.searchText.includes(query));
 				});
+			}
+
+			function showSelectedPanel() {
+				document.querySelectorAll('[data-link-target-panel]').forEach(function (panel) {
+					panel.classList.toggle('hidden', panel.dataset.linkTargetPanel !== typeSelect.value);
+				});
+				searchField.classList.toggle('hidden', typeSelect.value === 'custom');
+				applySearch();
+			}
+
+			typeSelect.addEventListener('change', function () {
+				searchField.value = '';
+				showSelectedPanel();
 			});
-			document.querySelector('[data-tabs-target]')?.classList.add('text-blue-600', 'border-b-2', 'border-blue-600');
+			searchField.addEventListener('input', applySearch);
+			// Browsers restore form values on reload, so the select may not be on its first option.
+			showSelectedPanel();
 
 			function serializeTree() {
 				const rows = [];

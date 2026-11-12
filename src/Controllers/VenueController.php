@@ -15,10 +15,18 @@ use TheatreCMS\Traits\RendersPublicContent;
 /**
  * @extends BaseController<VenueRepository>
  */
-class VenueController extends BaseController implements PublicContentController
+class VenueController extends BaseController implements PublicContentController, HasAdditionalAdminRoutes
 {
     use RendersPublicContent;
     use HandlesContentImages;
+
+    public static function additionalAdminRoutes(): array
+    {
+        return [
+            ['get', '/quick-create', 'quickCreate'],
+            ['post', '/quick-create', 'quickStore'],
+        ];
+    }
 
     public function __construct(
         VenueRepository $repository,

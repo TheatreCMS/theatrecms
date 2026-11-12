@@ -6,6 +6,7 @@ use InvalidArgumentException;
 use RuntimeException;
 use TheatreCMS\Controllers\EntryController;
 use TheatreCMS\Helpers\Args;
+use TheatreCMS\Models\MenuItem;
 use TheatreCMS\Routing\NamingRules;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 
@@ -53,6 +54,16 @@ class ContentTypeRegistry
         'menuIcon',
         'ogType',
     ];
+
+    /**
+     * Names no content type may take, because core already gives them another meaning:
+     * `custom` is a menu item's link type for a custom URL (`MenuItem::CUSTOM`), and `entry`
+     * would make a type's `theatrecms/{type}` filter the `theatrecms/entry` filter every entry
+     * single page also runs (see `RendersPublicContent`).
+     *
+     * @var list<string>
+     */
+    private const RESERVED_NAMES = [MenuItem::CUSTOM, 'entry'];
 
     /**
      * @var array<string, ContentTypeDefinition>
@@ -168,8 +179,8 @@ class ContentTypeRegistry
      * each and are ignored.
      *
      * @param array<string, mixed> $params ContentTypeDefinition constructor arguments other than `name`
-     * @throws InvalidArgumentException for an invalid or already registered name, or an invalid or
-     *        already claimed URL prefix
+     * @throws InvalidArgumentException for an invalid, reserved (see RESERVED_NAMES) or already
+     *        registered name, or an invalid or already claimed URL prefix
      */
     public function register(string $type, array $params = []): ContentTypeDefinition
     {
@@ -290,6 +301,10 @@ class ContentTypeRegistry
      */
     private function assertRegistrationArgs(string $type, array $args): void
     {
+        if (in_array($type, self::RESERVED_NAMES, true)) {
+            throw new InvalidArgumentException("Content type name {$type} is reserved");
+        }
+
         if ($this->get($type)) {
             throw new InvalidArgumentException("Content type {$type} is already registered");
         }

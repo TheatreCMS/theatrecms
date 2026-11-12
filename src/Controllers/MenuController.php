@@ -6,8 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
-use TheatreCMS\Enums\MenuItemType;
 use TheatreCMS\Menus\MenuItemResolver;
+use TheatreCMS\Models\MenuItem;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Theme\MenuLocationRegistry;
@@ -79,10 +79,11 @@ class MenuController extends BaseController
                 JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
             ),
             'locations' => $this->locationRegistry->all(),
-            'pages' => $this->linkTargets->getPages(),
-            'posts' => $this->linkTargets->getPosts(),
-            'productions' => $this->linkTargets->getProductions(),
-            'seasons' => $this->linkTargets->getSeasons(),
+            'linkTargets' => $this->linkTargets->groups(),
+            'typeLabelsJson' => json_encode(
+                $this->linkTargets->typeLabels(),
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+            ),
         ]);
     }
 
@@ -155,14 +156,15 @@ class MenuController extends BaseController
     private function buildTreeForEditor(array $items): array
     {
         $tree = [];
+        $typeLabels = $this->linkTargets->typeLabels();
 
         foreach ($items as $item) {
             $tree[] = [
                 'id' => $item->getId(),
                 'label' => $this->resolver->resolveLabel($item),
                 'sourceTitle' => $this->resolver->resolveSourceTitle($item),
-                'linkType' => $item->getLinkType()->value,
-                'linkTypeLabel' => $item->getLinkType()->label(),
+                'linkType' => $item->getLinkType(),
+                'linkTypeLabel' => $typeLabels[$item->getLinkType()] ?? $item->getLinkType(),
                 'targetId' => $item->getTargetId(),
                 'customUrl' => $item->getCustomUrl(),
                 'orphaned' => $this->resolver->resolveUrl($item) === null,
@@ -191,17 +193,17 @@ class MenuController extends BaseController
                 throw new \InvalidArgumentException('Malformed menu item data.');
             }
 
-            $linkTypeValue = (string) ($row['linkType'] ?? '');
-            $linkType = MenuItemType::tryFrom($linkTypeValue);
+            $linkType = (string) ($row['linkType'] ?? '');
+            $contentType = $linkType === MenuItem::CUSTOM ? null : $this->linkTargets->linkableType($linkType);
 
-            if (!$linkType) {
+            if ($linkType !== MenuItem::CUSTOM && $contentType === null) {
                 throw new \InvalidArgumentException('Invalid menu item link type.');
             }
 
             $customUrl = !empty($row['customUrl']) ? trim((string) $row['customUrl']) : null;
             $targetId = isset($row['targetId']) && $row['targetId'] !== '' ? (int) $row['targetId'] : null;
 
-            if ($linkType === MenuItemType::CUSTOM) {
+            if ($linkType === MenuItem::CUSTOM) {
                 if ($customUrl === null || $customUrl === '') {
                     throw new \InvalidArgumentException('Custom links require a URL.');
                 }
@@ -228,11 +230,14 @@ class MenuController extends BaseController
                 }
             }
 
-            // Pages have no archive/listing page, so they must always link to a
-            // specific page. Post/Production/Season items with no targetId are
-            // valid — that's how they link to their type's archive instead.
-            if ($linkType === MenuItemType::PAGE && !$targetId) {
-                throw new \InvalidArgumentException('Pages must link to a specific page.');
+            // An item with no targetId links to its type's archive, so a type without one
+            // (e.g. pages) must always link to a specific item.
+            if ($contentType !== null && !$contentType->hasArchive && !$targetId) {
+                throw new \InvalidArgumentException(sprintf(
+                    '%s must link to a specific %s.',
+                    $contentType->label,
+                    strtolower($contentType->singularLabel)
+                ));
             }
 
             $normalized[] = [
@@ -241,7 +246,7 @@ class MenuController extends BaseController
                 'parentClientId' => !empty($row['parentClientId']) ? (string) $row['parentClientId'] : null,
                 'position' => (int) ($row['position'] ?? 0),
                 'label' => !empty($row['label']) ? (string) $row['label'] : null,
-                'linkType' => $linkType->value,
+                'linkType' => $linkType,
                 'targetId' => $targetId,
                 'customUrl' => $customUrl,
             ];

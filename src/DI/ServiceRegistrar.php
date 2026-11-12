@@ -81,6 +81,7 @@ use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
 use TheatreCMS\Theme\AddressResolver;
 use TheatreCMS\Theme\ContentResolver;
+use TheatreCMS\ContentType\ContentRepositoryLocator;
 use TheatreCMS\ContentType\ContentTypeRegistry;
 use TheatreCMS\Routing\UrlPrefixRegistry;
 use TheatreCMS\Theme\DateResolver;
@@ -335,10 +336,8 @@ class ServiceRegistrar
             ContainerInterface $c
         ): MenuLinkTargetOptionsService {
             return new MenuLinkTargetOptionsService(
-                $c->get(PageRepository::class),
-                $c->get(EntryRepository::class),
-                $c->get(ProductionRepository::class),
-                $c->get(SeasonRepository::class),
+                $c->get(ContentRepositoryLocator::class),
+                $c->get(TitleResolver::class),
             );
         });
 
@@ -350,12 +349,10 @@ class ServiceRegistrar
 
         $container->set(MenuItemResolver::class, static function (ContainerInterface $c): MenuItemResolver {
             return new MenuItemResolver(
-                $c->get(PageRepository::class),
-                $c->get(EntryRepository::class),
-                $c->get(ProductionRepository::class),
-                $c->get(SeasonRepository::class),
-                $c->get(PermalinkResolver::class),
+                $c->get(ContentRepositoryLocator::class),
                 $c->get(ContentTypeRegistry::class),
+                $c->get(PermalinkResolver::class),
+                $c->get(TitleResolver::class),
             );
         });
 
@@ -494,10 +491,32 @@ class ServiceRegistrar
         );
 
         $container->set(TermArchiveQuery::class, static function (ContainerInterface $c): TermArchiveQuery {
-            return new TermArchiveQuery($c->get(TermRelationshipRepository::class), [
-                'work' => $c->get(WorkRepository::class),
-                'post' => $c->get(EntryRepository::class)->forType('post'),
-            ]);
+            return new TermArchiveQuery(
+                $c->get(TermRelationshipRepository::class),
+                $c->get(ContentRepositoryLocator::class),
+            );
+        });
+
+        $container->set(ContentRepositoryLocator::class, static function (
+            ContainerInterface $c
+        ): ContentRepositoryLocator {
+            // Entry types (posts and plugin types) resolve through EntryRepository; only the
+            // model-backed core types need mapping here.
+            return new ContentRepositoryLocator(
+                $c->get(ContentTypeRegistry::class),
+                $c->get(EntryRepository::class),
+                [
+                    'season'     => $c->get(SeasonRepository::class),
+                    'production' => $c->get(ProductionRepository::class),
+                    'person'     => $c->get(PersonRepository::class),
+                    'work'       => $c->get(WorkRepository::class),
+                    'venue'      => $c->get(VenueRepository::class),
+                    'event'      => $c->get(EventRepository::class),
+                    'page'       => $c->get(PageRepository::class),
+                    // Not public by default (the locator skips it), but a site can make it public.
+                    'sponsor'    => $c->get(SponsorRepository::class),
+                ],
+            );
         });
     }
 

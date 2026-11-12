@@ -11,6 +11,9 @@ use Slim\Psr7\Response;
 use Slim\Views\Twig;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Controllers\BaseController;
+use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Hooks\HookManager;
+use TheatreCMS\Models\Entry;
 use TheatreCMS\Repositories\PaginatedRepositoryInterface;
 use TheatreCMS\Theme\TemplateResolver;
 use TheatreCMS\Traits\RendersPublicContent;
@@ -24,6 +27,7 @@ class RendersPublicContentTest extends TestCase
 
     protected function setUp(): void
     {
+        HookManager::setInstance(new HookManager());
         $this->definition = new ContentTypeDefinition('press_release', 'Press Releases', 'Press Release', 'press-releases');
     }
 
@@ -63,6 +67,18 @@ class RendersPublicContentTest extends TestCase
             ->willReturn(new Response());
 
         $this->controller($repository, $resolver)->single($this->request(), new Response(), ['slug' => 'one']);
+    }
+
+    public function testSingleAppliesTheEntryFilterToAnEntry(): void
+    {
+        $entry = new Entry(['contentType' => 'press_release', 'title' => 'One', 'status' => ContentStatus::PUBLISHED]);
+
+        $this->assertSame(1, $this->entryFilterCallsForSingle($entry));
+    }
+
+    public function testSingleDoesNotApplyTheEntryFilterToOtherItems(): void
+    {
+        $this->assertSame(0, $this->entryFilterCallsForSingle((object) ['slug' => 'one']));
     }
 
     public function testSingleIs404WhenNoPublicItemHasTheSlug(): void
@@ -105,6 +121,28 @@ class RendersPublicContentTest extends TestCase
 
         $this->expectException(LogicException::class);
         $controller->archive((new ServerRequestFactory())->createServerRequest('GET', '/press-releases'), new Response());
+    }
+
+    /**
+     * Renders `$item` as a single page and counts the calls to the `theatrecms/entry` filter.
+     */
+    private function entryFilterCallsForSingle(object $item): int
+    {
+        $calls = 0;
+        HookManager::getInstance()->addFilter('theatrecms/entry', function (object $filtered) use (&$calls): object {
+            $calls++;
+
+            return $filtered;
+        });
+
+        $repository = $this->createStub(PublicRepository::class);
+        $repository->method('fetchPublicBySlug')->willReturn($item);
+        $resolver = $this->createStub(TemplateResolver::class);
+        $resolver->method('renderSingle')->willReturn(new Response());
+
+        $this->controller($repository, $resolver)->single($this->request(), new Response(), ['slug' => 'one']);
+
+        return $calls;
     }
 
     private function request(): \Psr\Http\Message\ServerRequestInterface
