@@ -252,6 +252,25 @@ class ContentTypeRegistryTest extends TestCase
         (new ContentTypeRegistry())->register($name);
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function reservedTypeNames(): array
+    {
+        return [
+            'custom' => ['custom'],
+            'entry' => ['entry'],
+        ];
+    }
+
+    #[DataProvider('reservedTypeNames')]
+    public function testRegisterRejectsAReservedName(string $name): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new ContentTypeRegistry())->register($name);
+    }
+
     public function testRegisterRejectsANameRegisteredTwice(): void
     {
         $registry = new ContentTypeRegistry();

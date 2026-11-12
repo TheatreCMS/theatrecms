@@ -513,6 +513,8 @@ class ServiceRegistrar
                     'venue'      => $c->get(VenueRepository::class),
                     'event'      => $c->get(EventRepository::class),
                     'page'       => $c->get(PageRepository::class),
+                    // Not public by default (the locator skips it), but a site can make it public.
+                    'sponsor'    => $c->get(SponsorRepository::class),
                 ],
             );
         });
