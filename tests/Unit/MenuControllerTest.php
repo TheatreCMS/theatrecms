@@ -14,12 +14,20 @@ use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\MenuRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Repositories\EntryRepository;
+use TheatreCMS\Repositories\PersonRepository;
 use TheatreCMS\Repositories\ProductionRepository;
 use TheatreCMS\Repositories\SeasonRepository;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Tests\Includes\RendersControllerViews;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
+use TheatreCMS\ContentType\ContentRepositoryLocator;
 use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\Controllers\PageController;
+use TheatreCMS\Controllers\PersonController;
+use TheatreCMS\Controllers\ProductionController;
+use TheatreCMS\Controllers\SeasonController;
+use TheatreCMS\Controllers\SponsorController;
+use TheatreCMS\Theme\TitleResolver;
 use TheatreCMS\Theme\MenuLocationRegistry;
 use TheatreCMS\ContentType\PermalinkResolver;
 use TheatreCMS\Tests\Includes\BuildsTaxonomyRegistries;
@@ -37,8 +45,10 @@ class MenuControllerTest extends TestCase
     private EntryRepository $entries;
     private ProductionRepository $productions;
     private SeasonRepository $seasons;
+    private PersonRepository $people;
     private MenuLocationRegistry $locations;
     private MenuItemResolver $resolver;
+    private MenuLinkTargetOptionsService $linkTargets;
 
     protected function setUp(): void
     {
@@ -49,21 +59,46 @@ class MenuControllerTest extends TestCase
         $this->entries = new EntryRepository($this->em, $meta);
         $this->productions = new ProductionRepository($this->em, $meta);
         $this->seasons = new SeasonRepository($this->em, $meta);
+        $this->people = new PersonRepository($this->em, $meta);
         $this->locations = new MenuLocationRegistry();
         $this->locations->register('primary', 'Primary');
         $contentTypes = new ContentTypeRegistry();
-        $contentTypes->register('season', ['urlPrefix' => 'seasons', 'label' => 'Seasons']);
-        $contentTypes->register('production', ['urlPrefix' => 'productions', 'label' => 'Productions']);
+        $contentTypes->register('season', ['urlPrefix' => 'seasons', 'label' => 'Seasons', 'controller' => SeasonController::class]);
+        $contentTypes->register('production', [
+            'urlPrefix' => 'productions',
+            'label' => 'Productions',
+            'controller' => ProductionController::class,
+        ]);
+        $contentTypes->register('person', ['urlPrefix' => 'people', 'label' => 'People', 'controller' => PersonController::class]);
+        $contentTypes->register('sponsor', ['controller' => SponsorController::class, 'public' => false]);
         $contentTypes->register('post', ['urlPrefix' => 'posts', 'label' => 'Posts']);
-        $contentTypes->register('page', ['urlPrefix' => '', 'hasArchive' => false, 'hierarchical' => true]);
+        $contentTypes->register('press_release', [
+            'urlPrefix' => 'press',
+            'label' => 'Press Releases',
+            'singularLabel' => 'Press Release',
+            'hasArchive' => false,
+        ]);
+        $contentTypes->register('page', [
+            'urlPrefix' => '',
+            'label' => 'Pages',
+            'singularLabel' => 'Page',
+            'hasArchive' => false,
+            'hierarchical' => true,
+            'controller' => PageController::class,
+        ]);
+        $locator = new ContentRepositoryLocator($contentTypes, $this->entries, [
+            'season' => $this->seasons,
+            'production' => $this->productions,
+            'person' => $this->people,
+            'page' => $this->pages,
+        ]);
         $this->resolver = new MenuItemResolver(
-            $this->pages,
-            $this->entries,
-            $this->productions,
-            $this->seasons,
-            new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
+            $locator,
             $contentTypes,
+            new PermalinkResolver($contentTypes, self::taxonomyRegistry()),
+            new TitleResolver(),
         );
+        $this->linkTargets = new MenuLinkTargetOptionsService($locator, new TitleResolver());
     }
 
     public function testIndexAndCreateRenderMenusAndLocations(): void
@@ -129,8 +164,10 @@ class MenuControllerTest extends TestCase
         $this->em->clear();
         $this->controller()->edit($this->request('GET'), new Response(), ['id' => $menu->getId()]);
         $this->assertSame('admin/menus/edit.html.twig', $this->rendered['template']);
-        $this->assertCount(1, $this->rendered['data']['pages']);
-        $this->assertCount(1, $this->rendered['data']['productions']);
+        $groups = array_column($this->rendered['data']['linkTargets'], null, 'type');
+        $this->assertSame(['season', 'production', 'person', 'post', 'press_release', 'page'], array_keys($groups));
+        $this->assertSame([['id' => $page->getId(), 'title' => 'About']], $groups['page']['items']);
+        $this->assertSame([['id' => $production->getId(), 'title' => 'Hamlet']], $groups['production']['items']);
 
         $tree = json_decode($this->rendered['data']['menuItemsJson'], true);
         $this->assertSame(
@@ -140,6 +177,49 @@ class MenuControllerTest extends TestCase
         $this->assertSame('Ext', $tree[0]['children'][0]['label']);
         $this->assertNull($tree[0]['children'][0]['sourceTitle']);
         $this->assertSame([false, false, false, false, false, true], array_column($tree, 'orphaned'));
+    }
+
+    public function testLinksToPeopleAndPluginEntryTypes(): void
+    {
+        $menu = $this->menus->create(['name' => 'Main']);
+        $person = $this->people->create(['firstName' => 'Ada', 'lastName' => 'Lovelace']);
+        $release = $this->entries->forType('press_release')->create(['title' => 'Season announced', 'content' => 'x']);
+
+        $this->controller()->saveTree($this->request('POST', [
+            'name' => 'Main',
+            'items' => json_encode([
+                ['clientId' => 'a', 'linkType' => 'person', 'targetId' => (string) $person->getId(), 'position' => 0],
+                ['clientId' => 'b', 'linkType' => 'press_release', 'targetId' => (string) $release->getId(), 'position' => 1],
+                ['clientId' => 'c', 'linkType' => 'person', 'targetId' => '', 'position' => 2],
+            ]),
+        ]), new Response(), ['id' => $menu->getId()]);
+
+        $this->em->clear();
+        $items = $this->menus->fetch($menu->getId())->getTopLevelItems()->toArray();
+
+        $this->assertSame(
+            ['/people/' . $person->getSlug(), '/press/' . $release->getSlug(), '/people'],
+            array_map(fn($item) => $this->resolver->resolveUrl($item), $items)
+        );
+        $this->assertSame(
+            ['Ada Lovelace', 'Season announced', 'All People'],
+            array_map(fn($item) => $this->resolver->resolveLabel($item), $items)
+        );
+    }
+
+    public function testItemsOfTypesThatCanNoLongerBeLinkedResolveToNoUrl(): void
+    {
+        $menu = $this->menus->create(['name' => 'Main']);
+        $this->menus->saveTree($menu, 'Main', null, [
+            ['clientId' => 'a', 'parentClientId' => null, 'position' => 0, 'label' => null, 'linkType' => 'concert', 'targetId' => null, 'customUrl' => null],
+            ['clientId' => 'b', 'parentClientId' => null, 'position' => 1, 'label' => null, 'linkType' => 'sponsor', 'targetId' => 1, 'customUrl' => null],
+            ['clientId' => 'c', 'parentClientId' => null, 'position' => 2, 'label' => null, 'linkType' => 'page', 'targetId' => null, 'customUrl' => null],
+        ]);
+
+        foreach ($menu->getItems() as $item) {
+            $this->assertNull($this->resolver->resolveUrl($item));
+            $this->assertSame('(untitled)', $this->resolver->resolveLabel($item));
+        }
     }
 
     public function testSaveTreeWithoutHtmxRedirects(): void
@@ -175,6 +255,7 @@ class MenuControllerTest extends TestCase
             'non-array items' => [['items' => '"x"'], 'Malformed menu item data.'],
             'row without client id' => [['items' => '[{"linkType":"custom"}]'], 'Malformed menu item data.'],
             'unknown link type' => [['items' => $row(['linkType' => 'nope'])], 'Invalid menu item link type.'],
+            'non-public link type' => [['items' => $row(['linkType' => 'sponsor', 'targetId' => 1])], 'Invalid menu item link type.'],
             'custom without url' => [['items' => $row(['linkType' => 'custom'])], 'Custom links require a URL.'],
             'unparseable url' => [['items' => $row(['linkType' => 'custom', 'customUrl' => 'http://:80'])], 'Custom link URL is invalid.'],
             'ftp url' => [
@@ -190,6 +271,10 @@ class MenuControllerTest extends TestCase
                 'Custom link URL scheme is not allowed.',
             ],
             'page without target' => [['items' => $row(['linkType' => 'page'])], 'Pages must link to a specific page.'],
+            'archive-less type without target' => [
+                ['items' => $row(['linkType' => 'press_release'])],
+                'Press Releases must link to a specific press release.',
+            ],
             'unknown parent' => [
                 ['items' => $row(['linkType' => 'post', 'parentClientId' => 'zzz'])],
                 'Menu item references an unknown parent.',
@@ -245,7 +330,7 @@ class MenuControllerTest extends TestCase
             $this->recordingTwig(),
             $this->locations,
             $this->resolver,
-            new MenuLinkTargetOptionsService($this->pages, $this->entries, $this->productions, $this->seasons),
+            $this->linkTargets,
         );
     }
 }

@@ -16,12 +16,21 @@ use TheatreCMS\Traits\RendersPublicContent;
 /**
  * @extends BaseController<SponsorRepository>
  */
-class SponsorController extends BaseController implements PublicContentController
+class SponsorController extends BaseController implements PublicContentController, HasAdditionalAdminRoutes
 {
     use RendersPublicContent;
 
     protected SponsorRepository $sponsorRepository;
     private MediaUploadService $imageUploadService;
+
+    public static function additionalAdminRoutes(): array
+    {
+        return [
+            ['get', '/quick-create', 'quickCreate'],
+            ['post', '/quick-create', 'quickStore'],
+            ['delete', '/{id}/logo', 'removeLogo'],
+        ];
+    }
 
     public function __construct(
         SponsorRepository $repository,

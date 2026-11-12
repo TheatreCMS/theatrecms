@@ -16,7 +16,7 @@ use TheatreCMS\Traits\RendersPublicContent;
 /**
  * @extends BaseController<WorkRepository>
  */
-class WorksController extends BaseController implements PublicContentController
+class WorksController extends BaseController implements PublicContentController, HasAdditionalAdminRoutes
 {
     use RendersPublicContent;
     use AssignsTaxonomyTerms;
@@ -24,6 +24,14 @@ class WorksController extends BaseController implements PublicContentController
     private const SORTABLE_COLUMNS = ['title', 'author'];
 
     private PersonRepository $personRepo;
+
+    public static function additionalAdminRoutes(): array
+    {
+        return [
+            ['get', '/quick-create', 'quickCreate'],
+            ['post', '/quick-create', 'quickStore'],
+        ];
+    }
 
     public function __construct(
         WorkRepository $repository,

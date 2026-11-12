@@ -5,6 +5,7 @@ namespace TheatreCMS\Routing;
 use RuntimeException;
 use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Controllers\HasAdditionalAdminRoutes;
 use TheatreCMS\Controllers\PublicContentController;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
 
@@ -197,6 +198,13 @@ class RouteRegistry
 
         if ($definition->supports('hero_image')) {
             $routes[] = ['delete', '/{id}/hero-image', 'removeHeroImage'];
+        }
+
+        // After the static paths above: FastRoute rejects a static route registered after a
+        // variable one that matches it (e.g. a season's `GET /{id}` before `GET /create`).
+        $controller = $definition->controller;
+        if (is_subclass_of($controller, HasAdditionalAdminRoutes::class)) {
+            array_push($routes, ...$controller::additionalAdminRoutes());
         }
 
         array_push(

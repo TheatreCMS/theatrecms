@@ -3,7 +3,6 @@
 namespace TheatreCMS\Repositories;
 
 use Doctrine\ORM\QueryBuilder;
-use TheatreCMS\Enums\MenuItemType;
 use TheatreCMS\Models\Menu;
 use TheatreCMS\Models\MenuItem;
 
@@ -97,7 +96,7 @@ class MenuRepository extends BaseRepository
             $itemsByClientId = [];
 
             foreach ($itemsPayload as $row) {
-                $item = new MenuItem($menu, MenuItemType::from($row['linkType']));
+                $item = new MenuItem($menu, (string) $row['linkType']);
                 $item->setLabel($row['label'] ?: null);
                 $item->setTargetId($row['targetId'] !== null ? (int) $row['targetId'] : null);
                 $item->setCustomUrl($row['customUrl'] ?: null);

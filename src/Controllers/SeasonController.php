@@ -26,13 +26,20 @@ use TheatreCMS\Traits\RendersPublicContent;
  *
  * @extends BaseController<SeasonRepository>
  */
-class SeasonController extends BaseController implements PublicContentController
+class SeasonController extends BaseController implements PublicContentController, HasAdditionalAdminRoutes
 {
     use RendersPublicContent;
     use RendersProductionPage;
     use HandlesContentImages;
 
     private SponsorRepository $sponsorRepo;
+
+    public static function additionalAdminRoutes(): array
+    {
+        return [
+            ['get', '/{id}', 'show'],
+        ];
+    }
 
     public function __construct(
         SeasonRepository $repository,

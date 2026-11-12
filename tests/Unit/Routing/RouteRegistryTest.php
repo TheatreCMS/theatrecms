@@ -10,9 +10,11 @@ use RuntimeException;
 use Slim\Factory\AppFactory;
 use Slim\Interfaces\RouteInterface;
 use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Controllers\EventController;
 use TheatreCMS\Controllers\PageController;
 use TheatreCMS\Controllers\ProductionController;
 use TheatreCMS\Controllers\SeasonController;
+use TheatreCMS\Controllers\SponsorController;
 use TheatreCMS\Routing\RouteRegistry;
 use TheatreCMS\Taxonomy\TaxonomyDefinition;
 
@@ -104,6 +106,52 @@ class RouteRegistryTest extends TestCase
         $paths = array_column($registry->all()['season']['public']['routes'], 1);
 
         $this->assertSame(['/{slug}/{productionSlug}', '/{slug}', ''], $paths);
+    }
+
+    /**
+     * @return array<string, array{string, class-string, string, string, string}>
+     */
+    public static function additionalAdminRoutes(): array
+    {
+        return [
+            'season show' => ['season', SeasonController::class, 'GET', '/admin/seasons/7', 'show'],
+            'season create beside show' => ['season', SeasonController::class, 'GET', '/admin/seasons/create', 'create'],
+            'sponsor quick create' => ['sponsor', SponsorController::class, 'POST', '/admin/sponsors/quick-create', 'quickStore'],
+            'sponsor logo' => ['sponsor', SponsorController::class, 'DELETE', '/admin/sponsors/7/logo', 'removeLogo'],
+            'event bulk create' => ['event', EventController::class, 'POST', '/admin/events/bulk-create', 'storeRecurring'],
+        ];
+    }
+
+    /**
+     * Builds the type's admin routes in a real Slim app, so FastRoute's ordering rules apply.
+     *
+     * @param class-string $controller
+     */
+    #[DataProvider('additionalAdminRoutes')]
+    public function testAControllersAdditionalAdminRoutesAreRouted(
+        string $type,
+        string $controller,
+        string $method,
+        string $path,
+        string $action,
+    ): void {
+        $registry = new RouteRegistry();
+        $definition = new ContentTypeDefinition($type, 'Items', 'Item', $type . 's', controller: $controller);
+        $registry->registerRoutesForContentType($definition);
+        $admin = $registry->all()[$type]['admin'];
+
+        $app = AppFactory::create();
+        $app->group($admin['prefix'], function ($group) use ($admin, $type): void {
+            foreach ($admin['routes'] as [$routeMethod, $routePath, $routeAction]) {
+                $group->{$routeMethod}($routePath, fn() => null)
+                    ->setName(RouteRegistry::routeName($type, 'admin', $routeAction));
+            }
+        });
+
+        $result = $app->getRouteResolver()->computeRoutingResults($path, $method);
+        $route = $app->getRouteResolver()->resolveRoute($result->getRouteIdentifier() ?? '');
+
+        $this->assertSame(RouteRegistry::routeName($type, 'admin', $action), $route->getName());
     }
 
     /**

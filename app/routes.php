@@ -4,10 +4,19 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Interfaces\RouteCollectorProxyInterface;
 use TheatreCMS\Auth\AuthorizationService;
+use TheatreCMS\Auth\Capability;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\ContentType\ContentTypeRegistry;
+use TheatreCMS\Controllers\ImageUploadController;
+use TheatreCMS\Controllers\LinkPreviewController;
+use TheatreCMS\Controllers\MediaController;
+use TheatreCMS\Controllers\MenuController;
+use TheatreCMS\Controllers\ProfileController;
 use TheatreCMS\Controllers\PublicContentController;
+use TheatreCMS\Controllers\SettingsController;
 use TheatreCMS\Controllers\TermController;
+use TheatreCMS\Controllers\ThemesController;
+use TheatreCMS\Controllers\UsersController;
 use TheatreCMS\Middleware\AuthMiddleware;
 use TheatreCMS\Middleware\RequireCapabilityMiddleware;
 use TheatreCMS\Middleware\RequireTwigMiddleware;
@@ -122,4 +131,75 @@ foreach ($routeRegistry->allTaxonomies() as ['definition' => $taxonomy, 'admin' 
             $addTaxonomyRoutes($group, $taxonomy, 'public', $public['routes']);
         })->add(new RequireTwigMiddleware($container));
     }
+}
+
+/**
+ * Admin screens that aren't a content type or taxonomy, so the registries above don't build
+ * them: prefix => [controller, capability (null: any logged-in user), routes]. Within a group,
+ * list a static path before any variable path matching it (`/picker` before `/{id}`): FastRoute
+ * refuses the other order.
+ *
+ * @var array<string, array{0: class-string, 1: string|null, 2: list<array{0: string, 1: string, 2: string}>}> $adminScreens
+ */
+$adminScreens = [
+    '/admin/menus' => [MenuController::class, Capability::MANAGE_MENUS, [
+        ['get', '', 'index'],
+        ['get', '/create', 'create'],
+        ['post', '/create', 'store'],
+        ['get', '/edit/{id}', 'edit'],
+        ['post', '/{id}/items', 'saveTree'],
+        ['delete', '/{id}', 'destroy'],
+    ]],
+    // Browse, upload and delete alike need UPLOAD_FILES: a group takes one capability.
+    '/admin/media' => [MediaController::class, Capability::UPLOAD_FILES, [
+        ['get', '', 'index'],
+        ['get', '/picker', 'picker'],
+        ['post', '/library-upload', 'upload'],
+        ['get', '/{id}/select', 'select'],
+        ['get', '/{id}', 'show'],
+        ['patch', '/{id}', 'update'],
+        ['delete', '/{id}', 'destroy'],
+    ]],
+    // Frozen: the EditorJS image, gallery and carousel tools depend on this upload endpoint's
+    // JSON contract. Everything else about media lives under /admin/media.
+    '/admin/images' => [ImageUploadController::class, Capability::UPLOAD_FILES, [
+        ['post', '/upload', 'upload'],
+    ]],
+    '/admin/link-preview' => [LinkPreviewController::class, Capability::UPLOAD_FILES, [
+        ['get', '/fetch', 'fetch'],
+    ]],
+    '/admin/settings' => [SettingsController::class, Capability::MANAGE_OPTIONS, [
+        ['get', '', 'index'],
+        ['post', '', 'update'],
+    ]],
+    '/admin/themes' => [ThemesController::class, Capability::SWITCH_THEMES, [
+        ['get', '', 'index'],
+        ['post', '/activate', 'activate'],
+    ]],
+    '/admin/users' => [UsersController::class, Capability::MANAGE_USERS, [
+        ['get', '', 'index'],
+        ['get', '/create', 'create'],
+        ['post', '/create', 'store'],
+        ['get', '/edit/{id}', 'edit'],
+        ['post', '/edit', 'update'],
+        ['delete', '/{id}', 'destroy'],
+    ]],
+    '/admin/profile' => [ProfileController::class, null, [
+        ['get', '', 'edit'],
+        ['post', '', 'update'],
+    ]],
+];
+
+foreach ($adminScreens as $prefix => [$controller, $capability, $routes]) {
+    $routeGroup = $app->group($prefix, function (RouteCollectorProxyInterface $group) use ($controller, $routes) {
+        foreach ($routes as [$method, $path, $action]) {
+            $group->{$method}($path, [$controller, $action]);
+        }
+    })->add(new RequireTwigMiddleware($container));
+
+    if ($capability !== null) {
+        $routeGroup->add(new RequireCapabilityMiddleware($container->get(AuthorizationService::class), $capability));
+    }
+
+    $routeGroup->add($container->get(AuthMiddleware::class));
 }

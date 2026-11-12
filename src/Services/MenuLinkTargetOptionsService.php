@@ -2,44 +2,72 @@
 
 namespace TheatreCMS\Services;
 
-use TheatreCMS\Repositories\EntryRepository;
-use TheatreCMS\Repositories\PageRepository;
-use TheatreCMS\Repositories\ProductionRepository;
-use TheatreCMS\Repositories\SeasonRepository;
+use TheatreCMS\ContentType\ContentRepositoryLocator;
+use TheatreCMS\ContentType\ContentTypeDefinition;
+use TheatreCMS\Models\MenuItem;
+use TheatreCMS\Theme\TitleResolver;
 
 /**
- * Supplies the pages/posts/productions/seasons option lists the menu-item
- * tree editor uses to let an editor pick a link target, so MenuController
- * doesn't need each content repository injected individually just to call
- * fetchAll().
+ * Supplies the menu-item tree editor with what an editor can link to: every public content
+ * type (core and plugin-registered) with its items, so MenuController needs no content
+ * repositories of its own.
  */
 class MenuLinkTargetOptionsService
 {
     public function __construct(
-        private readonly PageRepository $pageRepository,
-        private readonly EntryRepository $entryRepository,
-        private readonly ProductionRepository $productionRepository,
-        private readonly SeasonRepository $seasonRepository,
+        private readonly ContentRepositoryLocator $repositories,
+        private readonly TitleResolver $titleResolver,
     ) {
     }
 
-    public function getPages(): array
+    /**
+     * @return list<array{type: string, label: string, singularLabel: string, hasArchive: bool,
+     *         items: list<array{id: int, title: string}>}>
+     */
+    public function groups(): array
     {
-        return $this->pageRepository->fetchAll();
+        $groups = [];
+
+        foreach ($this->repositories->publicTypes() as $type => $definition) {
+            $items = [];
+
+            foreach ($this->repositories->forType($type)?->fetchAll() ?? [] as $entity) {
+                $items[] = ['id' => $entity->getId(), 'title' => $this->titleResolver->resolve($entity)];
+            }
+
+            $groups[] = [
+                'type' => $type,
+                'label' => $definition->label,
+                'singularLabel' => $definition->singularLabel,
+                'hasArchive' => $definition->hasArchive,
+                'items' => $items,
+            ];
+        }
+
+        return $groups;
     }
 
-    public function getPosts(): array
+    /**
+     * The content type a menu item may link to under this key, or null if it can't be linked to.
+     */
+    public function linkableType(string $type): ?ContentTypeDefinition
     {
-        return $this->entryRepository->forType('post')->fetchAll();
+        return $this->repositories->publicTypes()[$type] ?? null;
     }
 
-    public function getProductions(): array
+    /**
+     * Badge labels for the editor, link type => singular label, including custom links.
+     *
+     * @return array<string, string>
+     */
+    public function typeLabels(): array
     {
-        return $this->productionRepository->fetchAll();
-    }
+        $labels = [];
 
-    public function getSeasons(): array
-    {
-        return $this->seasonRepository->fetchAll();
+        foreach ($this->repositories->publicTypes() as $type => $definition) {
+            $labels[$type] = $definition->singularLabel;
+        }
+
+        return $labels + [MenuItem::CUSTOM => 'Custom Link'];
     }
 }

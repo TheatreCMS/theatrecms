@@ -14,7 +14,6 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OrderBy;
 use Doctrine\ORM\Mapping\Table;
-use TheatreCMS\Enums\MenuItemType;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use TheatreCMS\Traits\HasCreatedTimestamp;
 use TheatreCMS\Traits\HasModifiedTimestamp;
@@ -25,6 +24,11 @@ class MenuItem
 {
     use HasCreatedTimestamp;
     use HasModifiedTimestamp;
+
+    /**
+     * The link type of an item pointing at a URL rather than content.
+     */
+    public const CUSTOM = 'custom';
 
     #[Id, Column(type: 'integer'), GeneratedValue(strategy: 'AUTO')]
     private int $id;
@@ -51,11 +55,15 @@ class MenuItem
     #[Column(name: 'label_override', type: 'string', length: 255, nullable: true)]
     private ?string $label = null;
 
-    #[Column(name: 'link_type', type: 'string', length: 32, nullable: false, enumType: MenuItemType::class)]
-    private MenuItemType $linkType;
+    /**
+     * `custom`, or the content-type key (e.g. `page`, `press_release`) of the content it links to.
+     * Same length as the other `content_type` columns.
+     */
+    #[Column(name: 'link_type', type: 'string', length: 32, nullable: false)]
+    private string $linkType;
 
     /**
-     * Soft reference to a Page/Post/Production id, depending on $linkType.
+     * Soft reference to an item of the $linkType content type; null links to the type's archive.
      * Not a Doctrine association: Doctrine has no first-class polymorphic
      * association without an extra package, so this is a plain integer
      * resolved manually by MenuItemResolver.
@@ -66,7 +74,7 @@ class MenuItem
     #[Column(name: 'custom_url', type: 'string', length: 2048, nullable: true)]
     private ?string $customUrl = null;
 
-    public function __construct(Menu $menu, MenuItemType $linkType)
+    public function __construct(Menu $menu, string $linkType)
     {
         $this->menu = $menu;
         $this->linkType = $linkType;
@@ -136,12 +144,17 @@ class MenuItem
         return $this;
     }
 
-    public function getLinkType(): MenuItemType
+    public function getLinkType(): string
     {
         return $this->linkType;
     }
 
-    public function setLinkType(MenuItemType $linkType): self
+    public function isCustom(): bool
+    {
+        return $this->linkType === self::CUSTOM;
+    }
+
+    public function setLinkType(string $linkType): self
     {
         $this->linkType = $linkType;
 
