@@ -15,5 +15,4 @@ interface FieldType
      * @return list<string>
      */
     public function validate(mixed $value): array;
-
 }

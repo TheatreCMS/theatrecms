@@ -1,5 +1,7 @@
 <?php
+
 namespace TheatreCMS\Fields\Types;
+
 use TheatreCMS\Fields\FieldType;
 
 /**
