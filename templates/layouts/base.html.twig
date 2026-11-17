@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{% block title %}{{ name|default('TheatreCMS') }}{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/site.css">
-    <link rel="stylesheet" href="/assets/css/menu.css">
-    <link rel="stylesheet" href="/assets/css/carousel.css">
+    <link rel="stylesheet" href="{{ asset('/assets/css/site.css') }}">
+    <link rel="stylesheet" href="{{ asset('/assets/css/menu.css') }}">
+    <link rel="stylesheet" href="{{ asset('/assets/css/carousel.css') }}">
     {{ theme_head()|raw }}
     {% block head %}{% endblock %}
   </head>
@@ -22,7 +22,7 @@
     {% include 'partials/footer.html.twig' %}
 
     {% block scripts %}{% endblock %}
-    <script src="/assets/js/menu.js" defer></script>
-    <script src="/assets/js/carousel-frontend.js" defer></script>
+    <script src="{{ asset('/assets/js/menu.js') }}" defer></script>
+    <script src="{{ asset('/assets/js/carousel-frontend.js') }}" defer></script>
   </body>
 </html>

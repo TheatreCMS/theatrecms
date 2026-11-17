@@ -103,6 +103,7 @@ use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
 use TheatreCMS\Twig\AddressExtension;
 use TheatreCMS\Twig\AdminMenuExtension;
+use TheatreCMS\Twig\AssetExtension;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ConditionalTagsExtension;
 use TheatreCMS\Twig\ContentExtension;
@@ -392,6 +393,7 @@ class ServiceRegistrar
             $twig->addExtension(new MediaTypeIconExtension());
             $twig->addExtension(new SponsorsExtension($c->get(SponsorsResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
+            $twig->addExtension(new AssetExtension(APP_ROOT . '/www'));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new EndDateExtension($c->get(EndDateResolver::class)));

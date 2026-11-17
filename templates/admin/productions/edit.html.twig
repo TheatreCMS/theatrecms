@@ -867,7 +867,7 @@ byUrl: '/admin/productions/images/fetch'
 		sponsor: {type: 'rowset', namespace: 'sponsorship', selectName: 'sponsorshipSponsorIds[]', buildFallback: buildSponsorshipTableFallback},
 	});
 </script>
-<script src="/assets/js/works-picker.js"></script>
+<script src="{{ asset('/assets/js/works-picker.js') }}"></script>
 <script type="module">
 	import {initFeaturedImagePicker} from '/assets/js/featured-image-picker.js';
 	initFeaturedImagePicker();

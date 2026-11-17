@@ -24,39 +24,37 @@
         <script>window.THEATRECMS_COLOR_PALETTE = {{ theme_color_palette|json_encode(constant('JSON_HEX_TAG'))|raw }};</script>
 
         {# EditorJS for block editing (local copies) #}
-        <script src="/assets/js/editorjs/editor.js"></script>
-        <script src="/assets/js/editorjs/header.js"></script>
-        <script src="/assets/js/editorjs/list.js"></script>
-        <script src="/assets/js/editorjs/underline.js"></script>
-        <script src="/assets/js/editorjs/cite.js"></script>
-        <script src="/assets/js/editorjs/quote.js"></script>
-        <script src="/assets/js/editorjs/quote-color-scheme.js"></script>
-        <script src="/assets/js/editorjs/image.js"></script>
-        <script src="/assets/js/editorjs/link.js"></script>
-        <script src="/assets/js/editorjs/columns.js"></script>
-        <script src="/assets/js/editorjs/table.js"></script>
-        <script src="/assets/js/editorjs/callout.js"></script>
-        <script src="/assets/js/editorjs/sponsor-block.js"></script>
-        <script src="/assets/js/editorjs/sponsor.js"></script>
-        <script src="/assets/js/editorjs/cta-card.js"></script>
-        <script src="/assets/js/editorjs/schedule.js"></script>
-        <script src="/assets/js/editorjs/gallery.js"></script>
-        <script src="/assets/js/editorjs/carousel.js"></script>
-        <script src="/assets/js/editorjs/text-variant-tune.js"></script>
-        <link rel="stylesheet" href="/assets/css/editorjs-editor.css">
+        <script src="{{ asset('/assets/js/editorjs/editor.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/header.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/list.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/underline.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/cite.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/quote.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/quote-color-scheme.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/image.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/link.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/columns.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/table.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/callout.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/sponsor-block.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/sponsor.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/cta-card.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/schedule.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/gallery.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/carousel.js') }}"></script>
+        <script src="{{ asset('/assets/js/editorjs/text-variant-tune.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('/assets/css/editorjs-editor.css') }}">
 
         {# HTMX for progressive enhancement #}
         <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 
-        <link rel="stylesheet" href="/assets/js/ckeditor5/ckeditor5.css">
-        <script type="importmap">
-            {
-                        "imports": {
-                            "ckeditor5": "/assets/js/ckeditor5/ckeditor5.js",
-                            "ckeditor5/": "/assets/js/ckeditor5/"
-                        }
-                    }
-        </script>
+        <link rel="stylesheet" href="{{ asset('/assets/js/ckeditor5/ckeditor5.css') }}">
+        {# Also versions every module in /assets/js, so `import ... from '/assets/js/...'` picks up
+           new deploys (see AssetExtension). #}
+        {{ asset_import_map({
+            'ckeditor5': '/assets/js/ckeditor5/ckeditor5.js',
+            'ckeditor5/': '/assets/js/ckeditor5/'
+        }) }}
         <style>
             .admin-nav-group > summary { list-style: none; }
             .admin-nav-group > summary::-webkit-details-marker { display: none; }
@@ -244,7 +242,7 @@
                     }
                 });
             </script>
-            <script src="/assets/js/searchable-select.js"></script>
+            <script src="{{ asset('/assets/js/searchable-select.js') }}"></script>
 
             {% block scripts %}{% endblock %}
 
