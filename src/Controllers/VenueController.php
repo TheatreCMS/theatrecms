@@ -118,11 +118,13 @@ class VenueController extends BaseController implements PublicContentController,
             'mapUrl' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         $venue = $this->repository->create($data);
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $venue->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $venue->getId(), $data['heroText']);
         $this->entityManager->flush();
         $editUrl = '/admin/venues/edit/' . $venue->getId();
 
@@ -203,6 +205,7 @@ class VenueController extends BaseController implements PublicContentController,
             'mapUrl' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         $venue = $this->repository->fetch(intval($data['venueId']));
@@ -230,6 +233,7 @@ class VenueController extends BaseController implements PublicContentController,
 
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $venue->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $venue->getId(), $data['heroText']);
 
         $this->repository->update($venue);
 

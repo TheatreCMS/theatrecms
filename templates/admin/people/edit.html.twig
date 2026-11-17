@@ -54,6 +54,7 @@
                 deleteUrl: '/admin/people/' ~ person.id ~ '/hero-image',
                 featuredImageUrl: person.heroImageUrl, featuredImageId: heroImageId
             } %}
+            {% include 'admin/partials/_hero_text_field.html.twig' with { heroText: person.heroText } %}
             {% endif %}
         </div>
 

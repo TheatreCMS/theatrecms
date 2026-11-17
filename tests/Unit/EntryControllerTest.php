@@ -234,6 +234,24 @@ class EntryControllerTest extends TestCase
         $this->assertNull($this->meta->get('press_release', $entry->getId(), 'hero_image_id'));
     }
 
+    public function testHeroTextIsStoredLoadedAndClearedWhenBlank(): void
+    {
+        $this->controller()->store($this->request('POST', [
+            'title' => 'Season announced',
+            'heroText' => '  Our biggest season yet  ',
+        ]), new Response());
+        $entry = $this->entries->forType('press_release')->fetchBySlug('season-announced');
+        $this->assertSame('Our biggest season yet', $this->meta->get('press_release', $entry->getId(), 'hero_text'));
+        $this->assertSame('Our biggest season yet', $entry->getHeroText());
+
+        $this->controller()->update($this->request('POST', [
+            'entryId' => (string) $entry->getId(),
+            'title' => 'Season announced',
+            'heroText' => ' ',
+        ]), new Response());
+        $this->assertNull($this->meta->get('press_release', $entry->getId(), 'hero_text'));
+    }
+
     public function testHeroImageIsIgnoredForTypesWithoutIt(): void
     {
         $image = $this->createTestMedia($this->em);
@@ -241,9 +259,11 @@ class EntryControllerTest extends TestCase
         $this->controller($this->notice)->store($this->request('POST', [
             'title' => 'Box office closed',
             'heroImageId' => (string) $image->getId(),
+            'heroText' => 'Closed today',
         ]), new Response());
         $entry = $this->entries->forType('notice')->fetchBySlug('box-office-closed');
         $this->assertNull($this->meta->get('notice', $entry->getId(), 'hero_image_id'));
+        $this->assertNull($this->meta->get('notice', $entry->getId(), 'hero_text'));
 
         $this->controller($this->notice)->edit($this->request('GET'), new Response(), ['id' => $entry->getId()]);
         $this->assertNull($this->rendered['data']['heroImageId']);

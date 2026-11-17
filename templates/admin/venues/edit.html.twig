@@ -76,6 +76,7 @@
                 deleteUrl: '/admin/venues/' ~ venue.id ~ '/hero-image',
                 featuredImageUrl: venue.heroImageUrl, featuredImageId: heroImageId
             } %}
+            {% include 'admin/partials/_hero_text_field.html.twig' with { heroText: venue.heroText } %}
             {% endif %}
         </div>
 

@@ -8,8 +8,10 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Views\Twig;
 use TheatreCMS\ContentType\ContentTypeDefinition;
 use TheatreCMS\Enums\ContentStatus;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Theme\TemplateResolver;
+use TheatreCMS\Traits\HandlesContentImages;
 use TheatreCMS\Traits\RendersPublicContent;
 
 /**
@@ -18,14 +20,21 @@ use TheatreCMS\Traits\RendersPublicContent;
 class PageController extends BaseController implements PublicContentController
 {
     use RendersPublicContent;
+    use HandlesContentImages;
 
     public function __construct(
         PageRepository $repository,
         EntityManagerInterface $em,
         Twig $twig,
         private readonly TemplateResolver $templateResolver,
+        private readonly ContentMetaRepository $contentMeta,
     ) {
         parent::__construct($repository, $twig, $em);
+    }
+
+    protected function contentType(): string
+    {
+        return 'page';
     }
 
     protected function templateResolver(): TemplateResolver
@@ -61,6 +70,7 @@ class PageController extends BaseController implements PublicContentController
         return $this->twig->render($response, 'admin/pages/create.html.twig', [
             'statuses' => ContentStatus::labels(),
             'parents'  => $this->repository->fetchPossibleParents(null),
+            'supportsHeroImage' => $this->supportsHeroImage($request),
         ]);
     }
 
@@ -76,6 +86,8 @@ class PageController extends BaseController implements PublicContentController
             'page'     => $page,
             'statuses' => ContentStatus::labels(),
             'parents'  => $this->repository->fetchPossibleParents($page),
+            'supportsHeroImage' => $this->supportsHeroImage($request),
+            'heroImageId' => $this->contentMeta->get($this->contentType(), $page->getId(), self::HERO_IMAGE_META_KEY),
         ]);
     }
 
@@ -126,6 +138,8 @@ class PageController extends BaseController implements PublicContentController
                 'content' => $data['content'] ?? null,
                 'parentId' => $data['parentId'] ?? null,
             ]);
+            $this->applyHeroImageIfSupported($request, $page->getId(), $data['heroImageId'] ?? null);
+            $this->applyHeroTextIfSupported($request, $page->getId(), $data['heroText'] ?? null);
         } catch (\InvalidArgumentException $e) {
             if ($isHtmx) {
                 return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
@@ -163,7 +177,7 @@ class PageController extends BaseController implements PublicContentController
 
         $data = $this->parseArgs($data, [
             'pageId' => 0, 'title' => null, 'status' => ContentStatus::DRAFT->value, 'content' => null, 'slug' => null,
-            'parentId' => null,
+            'parentId' => null, 'heroImageId' => null, 'heroText' => null,
         ]);
 
         $page = $this->repository->fetch((int) $data['pageId']);
@@ -217,6 +231,8 @@ class PageController extends BaseController implements PublicContentController
         }
 
         $this->repository->update($page);
+        $this->applyHeroImageIfSupported($request, $page->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $page->getId(), $data['heroText']);
 
         if ($isHtmx) {
             return $this->twig->render($response, 'admin/partials/_alert.html.twig', [

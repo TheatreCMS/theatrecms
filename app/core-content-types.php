@@ -87,6 +87,7 @@ $coreContentTypes = [
         'hierarchical'  => true,
         'controller'    => \TheatreCMS\Controllers\PageController::class,
         'capability'    => Capability::MANAGE_PAGES,
+        'supports'      => ['editor', 'hero_image'],
         'menuIcon'      => 'fa-solid fa-file-lines',
     ],
 ];

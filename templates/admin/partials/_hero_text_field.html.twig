@@ -1,0 +1,8 @@
+{# Text shown with the hero image (e.g. a banner headline), for content types that support hero images.
+   Rendered next to the hero image field. Params: heroText (string|null). #}
+<div class="md:col-span-2">
+    <label for="heroText" class="block text-sm font-medium text-gray-700 mb-1">Hero Text</label>
+    <p class="text-xs text-gray-500 mb-2">Shown with the hero image on this item's own single page. Leave blank for none.</p>
+    <textarea name="heroText" id="heroText" rows="2"
+              class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">{{ heroText }}</textarea>
+</div>

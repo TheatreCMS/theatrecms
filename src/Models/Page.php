@@ -13,6 +13,7 @@ use TheatreCMS\ContentType\HasContentType;
 use TheatreCMS\ContentType\IsHierarchical;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Traits\HasContentStatus;
+use TheatreCMS\Traits\HasHeroImage;
 use TheatreCMS\Traits\HasModifiedTimestamp;
 use TheatreCMS\Traits\HasParent;
 use TheatreCMS\Traits\HasTimestamps;
@@ -31,6 +32,7 @@ use Doctrine\ORM\Mapping\PreUpdate;
 class Page implements HasContentType, IsHierarchical
 {
     use HasContentStatus;
+    use HasHeroImage;
     use HasParent;
     use HasTimestamps;
     use HasModifiedTimestamp;

@@ -55,7 +55,7 @@ class MenuControllerTest extends TestCase
         $this->em = $this->createSqliteEntityManager();
         $meta = new ContentMetaRepository($this->em);
         $this->menus = new MenuRepository($this->em);
-        $this->pages = new PageRepository($this->em);
+        $this->pages = new PageRepository($this->em, new ContentMetaRepository($this->em));
         $this->entries = new EntryRepository($this->em, $meta);
         $this->productions = new ProductionRepository($this->em, $meta);
         $this->seasons = new SeasonRepository($this->em, $meta);

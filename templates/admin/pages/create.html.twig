@@ -40,6 +40,14 @@
 				</select>
 			</div>
 
+			{% if supportsHeroImage|default(true) %}
+				{% include 'admin/partials/_featured_image_field.html.twig' with {
+					entityType: 'page', entityId: null, field: 'hero', label: 'Hero Image',
+					featuredImageUrl: null, featuredImageId: null
+				} %}
+				{% include 'admin/partials/_hero_text_field.html.twig' with { heroText: null } %}
+			{% endif %}
+
 			<div class="md:col-span-2 space-y-3">
 				<label for="content" class="block text-sm font-medium text-gray-700">Content</label>
 				<div id="editorjs" class="rounded-md border border-gray-200 bg-white shadow-sm"></div>
@@ -107,4 +115,11 @@
 			});
 		});
 	</script>
+	{% if supportsHeroImage|default(true) %}
+		<script type="module">
+			import { initFeaturedImagePicker } from '/assets/js/featured-image-picker.js';
+			initFeaturedImagePicker();
+		</script>
+		{% include 'admin/partials/_image_picker_modal.html.twig' %}
+	{% endif %}
 {% endblock %}

@@ -476,6 +476,10 @@ class ServiceRegistrar
             return new VenueRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
         });
 
+        $container->set(PageRepository::class, static function (ContainerInterface $c): PageRepository {
+            return new PageRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
+
         $container->set(TermRepository::class, static function (ContainerInterface $c): TermRepository {
             return new TermRepository($c->get(EntityManager::class), $c->get(TaxonomyRegistry::class));
         });
@@ -597,6 +601,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(TemplateResolver::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             MenuController::class => static function (ContainerInterface $c): MenuController {

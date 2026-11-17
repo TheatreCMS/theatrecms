@@ -199,6 +199,7 @@
 						deleteUrl: '/admin/productions/' ~ production.id ~ '/hero-image',
 						featuredImageUrl: heroImageUrl, featuredImageId: heroImageId
 					} %}
+					{% include 'admin/partials/_hero_text_field.html.twig' with { heroText: production.heroText } %}
 					{% endif %}
 
 				</div>

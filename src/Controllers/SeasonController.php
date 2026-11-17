@@ -174,6 +174,7 @@ class SeasonController extends BaseController implements PublicContentController
         $season = $this->repository->create($data);
         $this->applyFeaturedImage($season, $data['featuredImageId'] ?? null);
         $this->applyHeroImageIfSupported($request, $season->getId(), $data['heroImageId'] ?? null);
+        $this->applyHeroTextIfSupported($request, $season->getId(), $data['heroText'] ?? null);
         $this->syncSponsorships($season, $data['sponsorshipSponsorIds'] ?? []);
         $this->entityManager->flush();
 
@@ -197,6 +198,7 @@ class SeasonController extends BaseController implements PublicContentController
             'overview' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
             'sponsorshipSponsorIds' => [],
         ], $data);
 
@@ -224,6 +226,7 @@ class SeasonController extends BaseController implements PublicContentController
             $item->setOverview($data['overview']);
             $this->applyFeaturedImage($item, $data['featuredImageId']);
             $this->applyHeroImageIfSupported($request, $item->getId(), $data['heroImageId']);
+            $this->applyHeroTextIfSupported($request, $item->getId(), $data['heroText']);
             $this->syncSponsorships($item, $data['sponsorshipSponsorIds']);
             $this->repository()->update($item);
 

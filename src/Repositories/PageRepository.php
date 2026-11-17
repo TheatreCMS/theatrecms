@@ -2,16 +2,40 @@
 
 namespace TheatreCMS\Repositories;
 
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Page;
+use TheatreCMS\Traits\EagerLoadsHeroImage;
 use TheatreCMS\Traits\ManagesHierarchy;
 
+/**
+ * Single-page fetches carry the hero image (see EagerLoadsHeroImage), including the public
+ * fetch by path; listings don't.
+ */
 class PageRepository extends BaseRepository
 {
-    use ManagesHierarchy;
+    use EagerLoadsHeroImage;
+    use ManagesHierarchy {
+        fetchPublicByPath as private fetchPublicByPathWithoutHeroImage;
+    }
 
     protected string $entityClass = Page::class;
+
+    public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
+    {
+        parent::__construct($em);
+    }
+
+    protected function heroImageContentType(): string
+    {
+        return 'page';
+    }
+
+    public function fetchPublicByPath(string $path): ?object
+    {
+        return $this->attachHeroImage($this->fetchPublicByPathWithoutHeroImage($path));
+    }
 
     /**
      * @throws \InvalidArgumentException for a missing title or content, an invalid status, or an

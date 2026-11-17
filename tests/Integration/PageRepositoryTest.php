@@ -10,6 +10,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use TheatreCMS\Enums\ContentStatus;
 use TheatreCMS\Models\Page;
+use TheatreCMS\Repositories\ContentMetaRepository;
 use TheatreCMS\Repositories\PageRepository;
 use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 
@@ -29,7 +30,7 @@ class PageRepositoryTest extends TestCase
     protected function setUp(): void
     {
         $this->em = $this->createSqliteEntityManager();
-        $this->pages = new PageRepository($this->em);
+        $this->pages = new PageRepository($this->em, new ContentMetaRepository($this->em));
     }
 
     public function testFetchPublicByPathFindsANestedPage(): void

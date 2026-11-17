@@ -125,11 +125,13 @@ class PersonController extends BaseController implements PublicContentController
             'headshotUrl' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         $person = $this->repository->create($data);
         $this->applyFeaturedImage($person, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $person->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $person->getId(), $data['heroText']);
         $this->entityManager->flush();
         $editUrl = '/admin/people/edit/' . $person->getId();
 
@@ -201,6 +203,7 @@ class PersonController extends BaseController implements PublicContentController
             'headshotUrl' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         $person = $this->repository->fetch(intval($data['personId']));
@@ -222,6 +225,7 @@ class PersonController extends BaseController implements PublicContentController
 
         $this->applyFeaturedImage($person, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $person->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $person->getId(), $data['heroText']);
 
         $this->repository->update($person);
 

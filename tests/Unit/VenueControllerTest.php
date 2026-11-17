@@ -68,12 +68,18 @@ class VenueControllerTest extends TestCase
 
         $image = $this->createTestMedia($this->em);
         $result = $this->controller()->store(
-            $this->request('POST', ['name' => 'Main Stage', 'heroImageId' => (string) $image->getId()] + self::ADDRESS, htmx: true),
+            $this->request('POST', [
+                'name' => 'Main Stage',
+                'heroImageId' => (string) $image->getId(),
+                'heroText' => 'At the oceanfront',
+            ] + self::ADDRESS, htmx: true),
             new Response()
         );
         $venue = $this->venues->fetchBySlug('main-stage');
         $this->assertSame('/admin/venues/edit/' . $venue->getId(), $result->getHeaderLine('HX-Redirect'));
         $this->assertSame((string) $image->getId(), $this->meta->get('venue', $venue->getId(), 'hero_image_id'));
+        $this->assertSame('At the oceanfront', $this->meta->get('venue', $venue->getId(), 'hero_text'));
+        $this->assertSame('At the oceanfront', $venue->getHeroText());
 
         $result = $this->controller()->store($this->request('POST', ['name' => 'Studio'] + self::ADDRESS), new Response());
         $this->assertStringStartsWith('/admin/venues/edit/', $result->getHeaderLine('Location'));

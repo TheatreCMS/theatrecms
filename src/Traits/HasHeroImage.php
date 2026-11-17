@@ -15,6 +15,23 @@ trait HasHeroImage
 
     private bool $hasHeroImage = false;
 
+    /**
+     * Text shown with the hero image (e.g. a banner headline), from the `hero_text` meta value.
+     */
+    private ?string $heroText = null;
+
+    public function getHeroText(): ?string
+    {
+        return $this->heroText;
+    }
+
+    public function setHeroText(?string $heroText): self
+    {
+        $this->heroText = $heroText;
+
+        return $this;
+    }
+
     public function getHeroImageUrl(): ?string
     {
         return $this->heroImageUrl;
