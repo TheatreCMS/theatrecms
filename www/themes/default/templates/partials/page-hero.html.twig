@@ -1,0 +1,33 @@
+{#
+    Page banner: the item's hero image with its hero text over it.
+
+    The default theme's copy of core's templates/partials/page-hero.html.twig. A theme
+    overrides it by shipping its own templates/partials/page-hero.html.twig; a theme without
+    one falls back to core's.
+
+    Everything comes from the Twig context, so a single template can simply
+    `{% include 'partials/page-hero.html.twig' %}`. Pass any of these with `with { ... }`
+    to override them:
+      item          the content being shown; defaults to `posts|first`, which every
+                    single view's context has
+      heroImageUrl  defaults to item.heroImageUrl (the hero image, else the featured image)
+      heroText      defaults to item.heroText (the "Hero Text" field in the admin)
+
+    Renders nothing when there's neither an image nor text.
+#}
+{% set item = item ?? (posts ?? [])|first %}
+{% set heroImageUrl = heroImageUrl ?? item.heroImageUrl ?? null %}
+{% set heroText = heroText ?? item.heroText ?? null %}
+
+{% if heroImageUrl or heroText %}
+    <section class="page-hero relative overflow-hidden rounded-lg bg-gray-900 text-white shadow-lg mb-8"
+             {% if heroImageUrl %}
+                 style="background-image: linear-gradient(to top, rgba(17,24,39,0.8), rgba(17,24,39,0.3)), url('{{ heroImageUrl|e('css') }}'); background-size: cover; background-position: center;"
+             {% endif %}>
+        <div class="max-w-4xl mx-auto px-6 py-20 sm:py-28 text-center">
+            {% if heroText %}
+                <h2 class="text-3xl sm:text-4xl font-bold">{{ heroText|nl2br }}</h2>
+            {% endif %}
+        </div>
+    </section>
+{% endif %}
