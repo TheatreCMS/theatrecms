@@ -101,4 +101,13 @@ class PageRepository extends BaseRepository
         $builder->andWhere(sprintf('%s.status = :publicStatus', $alias))
             ->setParameter('publicStatus', ContentStatus::PUBLISHED);
     }
+
+    /**
+     * Pages list alphabetically by title, so admins can find one without searching.
+     */
+    protected function applyListOrder(QueryBuilder $builder, string $alias): void
+    {
+        $builder->orderBy(sprintf('%s.title', $alias), 'ASC')
+            ->addOrderBy(sprintf('%s.id', $alias), 'ASC');
+    }
 }

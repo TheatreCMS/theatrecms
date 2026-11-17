@@ -154,6 +154,15 @@ class PageRepositoryTest extends TestCase
         $this->assertSame([$contact], $this->pages->fetchPossibleParents($about));
     }
 
+    public function testListsAreOrderedByTitle(): void
+    {
+        $contact = $this->page('Contact');
+        $about = $this->page('About');
+        $faq = $this->page('FAQ');
+
+        $this->assertSame([$about, $contact, $faq], $this->pages->fetchPage()['items']);
+    }
+
     private function page(string $title, ?Page $parent = null, string $status = 'published'): Page
     {
         return $this->pages->create([
