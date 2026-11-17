@@ -12,10 +12,17 @@
 {% endblock %}
 
 {% block content %}
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold text-gray-800">Create New Production</h1>
-		<p class="text-gray-600">Enter the details for the new production.</p>
-	</div>
+	{% include 'admin/partials/_edit_header.html.twig' with {
+		formId: 'production-form',
+		title: 'Create New Production',
+		subtitle: 'Enter the details for the new production.',
+		backUrl: '/' ~ base_path|default('') ~ 'admin/productions',
+		backLabel: 'Productions',
+		submitLabel: 'Create Production',
+		create: true,
+		submitDisabled: seasons is empty,
+		submitTitle: seasons is empty ? 'Create a season first before you can create a production.' : null
+	} %}
 	{# Show a flash/warning for empty collections #}
 	{% if seasons is empty %}
 		<div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
@@ -38,7 +45,7 @@
 		</div>
 	{% endif %}
 
-	<form action="/{{ base_path|default('') }}admin/productions/create" method="POST" class="space-y-6" hx-post="/{{ base_path|default('') }}admin/productions/create" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
+	<form id="production-form" action="/{{ base_path|default('') }}admin/productions/create" method="POST" class="space-y-6" hx-post="/{{ base_path|default('') }}admin/productions/create" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 			<div class="md:col-span-2">
 				<label for="name" class="block text-sm font-medium text-gray-700 mb-1">Production Name
@@ -408,14 +415,6 @@
 			</div>
 		</div>
 
-		<div class="flex items-center justify-end space-x-3 pt-4 border-t">
-			<a href="/{{ base_path|default('') }}admin/productions" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-				Cancel
-			</a>
-			<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 {% if seasons is empty %}opacity-50 cursor-not-allowed{% endif %}" {% if seasons is empty %} disabled title="Create a season first before you can create a production." {% endif %}>
-				Create Production
-			</button>
-		</div>
 	</form>
 
 {% endblock %}
@@ -424,7 +423,7 @@
 		import {buildEditorJsConfig} from '/assets/js/editorjs-config.js';
 
 document.addEventListener('DOMContentLoaded', function () {
-const form = document.querySelector('form');
+const form = document.getElementById('production-form');
 const nameInput = document.getElementById('name');
 const seasonInput = document.getElementById('seasonId');
 const descriptionField = document.getElementById('description');
@@ -570,6 +569,7 @@ form.dispatchEvent(new Event('htmxSubmit'));
 }).catch(function (error) {
 console.error('EditorJS save failed:', error);
 document.getElementById('flash-messages').innerHTML = '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' + '<p class="text-sm font-medium">Unable to save description. Please try again.</p></div>';
+form.dispatchEvent(new Event('edit-form:error'));
 isSaving = false;
 });
 });
@@ -577,13 +577,12 @@ isSaving = false;
 form.addEventListener('htmx:afterRequest', function (event) {
 // This listener is attached to the form to catch its own hx-post submission,
 // but htmx:afterRequest bubbles from any descendant — including the "+ New …"
-// quick-create buttons nested inside this form. Ignore those so quick-create
-// clicks don't yank the page down to #flash-messages.
+// quick-create buttons nested inside this form. Ignore those. (The sticky edit
+// header reports the save result, so the page no longer scrolls to #flash-messages.)
 if (event.detail && event.detail.elt !== form) {
 return;
 }
 isSaving = false;
-document.getElementById('flash-messages') ?. scrollIntoView({behavior: 'smooth', block: 'nearest'});
 });
 
 const editor = new EditorJS(buildEditorJsConfig({

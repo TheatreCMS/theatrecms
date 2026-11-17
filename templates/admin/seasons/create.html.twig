@@ -4,12 +4,17 @@
 
 {% block content %}
     {% set sponsorsList = sponsors|default([]) %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Create New Season</h1>
-        <p class="text-gray-600">Enter the details for the new theatrical season.</p>
-    </div>
+    {% include 'admin/partials/_edit_header.html.twig' with {
+        formId: 'season-form',
+        title: 'Create New Season',
+        subtitle: 'Enter the details for the new theatrical season.',
+        backUrl: '/' ~ base_path|default('') ~ 'admin/seasons',
+        backLabel: 'Seasons',
+        submitLabel: 'Create Season',
+        create: true
+    } %}
 
-    <form action="/{{ base_path|default('') }}admin/seasons/create" method="POST" class="space-y-6"
+    <form id="season-form" action="/{{ base_path|default('') }}admin/seasons/create" method="POST" class="space-y-6"
           hx-post="/{{ base_path|default('') }}admin/seasons/create" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
@@ -108,16 +113,6 @@
             {% endif %}
         </div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/{{ base_path|default('') }}admin/seasons"
-               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                Cancel
-            </a>
-            <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Create Season
-            </button>
-        </div>
     </form>
 {% endblock %}
 
@@ -126,7 +121,7 @@
         import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
 
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
+            const form = document.getElementById('season-form');
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
             const overviewField = document.getElementById('overview');
@@ -169,13 +164,15 @@
                     console.error('EditorJS save failed:', error);
                     document.getElementById('flash-messages').innerHTML = '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
                         '<p class="text-sm font-medium">Unable to save overview. Please try again.</p></div>';
+                    form.dispatchEvent(new Event('edit-form:error'));
                     isSaving = false;
                 });
             });
 
-            form.addEventListener('htmx:afterRequest', function() {
-                isSaving = false;
-                document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            form.addEventListener('htmx:afterRequest', function (event) {
+                if (event.detail.elt === form) {
+                    isSaving = false;
+                }
             });
 
             const setupDynamicRows = (namespace) => {

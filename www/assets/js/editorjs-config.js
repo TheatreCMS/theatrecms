@@ -109,9 +109,22 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         },
     };
 
+    // Tell the form holding this editor that its content changed, for the sticky edit
+    // header's unsaved-changes tracking (edit-header.js). The editor's content only reaches
+    // a form field on save, so the form can't see these edits itself. Changes made while the
+    // editor renders its initial data are ignored.
+    let ready = false;
     const config = {
         holder,
         tools,
+        onReady: () => {
+            ready = true;
+        },
+        onChange: () => {
+            if (ready) {
+                document.getElementById(holder)?.closest('form')?.dispatchEvent(new Event('edit-form:dirty'));
+            }
+        },
     };
 
     if (data !== undefined && data !== null) {

@@ -3,16 +3,18 @@
 {% block title %}Edit {{ sponsor.name }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="flex items-start justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Edit Sponsor</h1>
-        </div>
-        <div class="shrink-0">
-            <a href="/admin/sponsors/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add New Sponsor</a>
-        </div>
-    </div>
+    {% include 'admin/partials/_edit_header.html.twig' with {
+        formId: 'sponsor-form',
+        title: 'Edit Sponsor',
+        backUrl: '/admin/sponsors',
+        backLabel: 'Sponsors',
+        addNewUrl: '/admin/sponsors/create',
+        addNewLabel: 'Add New Sponsor',
+        deleteUrl: '/admin/sponsors/' ~ sponsor.id,
+        deleteConfirm: 'Delete this sponsor? This cannot be undone.'
+    } %}
 
-        <form action="/admin/sponsors/edit" method="POST" enctype="multipart/form-data" class="space-y-6"
+        <form id="sponsor-form" action="/admin/sponsors/edit" method="POST" enctype="multipart/form-data" class="space-y-6"
             hx-post="/admin/sponsors/edit" hx-encoding="multipart/form-data" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="sponsorId" value="{{ sponsor.id }}">
         {% include 'admin/sponsors/_logo_url_field.html.twig' %}
@@ -36,10 +38,6 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/admin/sponsors" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Changes</button>
-        </div>
     </form>
 
     <script>

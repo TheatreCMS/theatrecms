@@ -1,0 +1,106 @@
+{# Sticky header for admin create/edit pages: back link, title, save state and the form's
+   actions, kept in view while the form scrolls (replaces the old Cancel/Save row at the
+   bottom of the form). Behaviour lives in /assets/js/edit-header.js: unsaved-changes
+   tracking, a leave-page warning, Ctrl/Cmd+S, and redirecting after Delete.
+
+   Use with `embed` (or `include` when no block needs overriding). Params:
+     formId        (string, required) id of the <form> the Save button submits
+     title         (string) heading text; override the `heading` block for markup
+     subtitle      (string, optional)
+     backUrl       (string, required) list page the back link returns to
+     backLabel     (string, required) e.g. 'Pages'
+     submitLabel   (string, optional, default 'Save')
+     atTop         (bool, optional, default true) false when something (e.g. content tabs) sits
+                   above the header, so it doesn't pull itself up into the card's padding
+     submitId      (string, optional) id for the Save button, for page scripts that control it
+     submitDisabled (bool, optional) render Save disabled, e.g. when a prerequisite is missing
+     submitTitle   (string, optional) tooltip for Save, e.g. why it is disabled
+     hideSave      (bool, optional) start with Save hidden; a page that toggles it (e.g. per tab)
+                   shows it again by removing the `hidden` class from [data-edit-save]
+     create        (bool, optional) a create form: Save stays primary even before any input,
+                   rather than looking idle until something changes
+     addNewUrl     (string, optional) shows an "Add New" button beside the title
+     addNewLabel   (string, optional, default 'Add New')
+     viewUrl       (string, optional) "View" item in the overflow menu
+     deleteUrl     (string, optional) "Delete" item in the overflow menu, sent as hx-delete
+     deleteConfirm (string, optional) confirmation prompt for Delete
+   Blocks: `heading` (title markup), `menu_items` (extra overflow-menu entries; style them
+   with the `edit-header-menu-item` class so they match). The overflow menu only renders
+   when it has something in it. #}
+{% set submitLabel = submitLabel|default('Save') %}
+{% set addNewLabel = addNewLabel|default('Add New') %}
+{% set menuItemClass = 'edit-header-menu-item flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50' %}
+{% set extraMenuItems %}{% block menu_items %}{% endblock %}{% endset %}
+{% set hasMenu = viewUrl|default(false) or deleteUrl|default(false) or extraMenuItems|trim is not empty %}
+
+<style>
+	.edit-header [data-edit-menu] > summary::-webkit-details-marker { display: none; }
+	.edit-header [data-edit-save]:disabled { opacity: .6; cursor: not-allowed; }
+	.edit-header [data-edit-save][aria-busy="true"] { cursor: wait; }
+	.edit-header [data-edit-save].is-clean { color: #374151; background: #fff; border-color: #d1d5db; }
+	.edit-header [data-edit-save].is-clean:hover { background: #f9fafb; }
+	.edit-header .edit-header-menu-danger { color: #b91c1c; }
+	.edit-header .edit-header-menu-danger:hover { background: #fef2f2; }
+	.edit-header.is-stuck { box-shadow: 0 4px 6px -4px rgba(0, 0, 0, .12); }
+</style>
+<div class="edit-header sticky top-0 z-30 -mx-6 mb-6 px-6 py-4 bg-white border-b{{ atTop ?? true ? ' -mt-6 rounded-t' }}"
+	data-edit-header
+	data-form-id="{{ formId }}"
+	data-back-url="{{ backUrl }}"{% if create|default(false) %}
+	data-create{% endif %}>
+	<a href="{{ backUrl }}" class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800">
+		<i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i>
+		{{ backLabel }}
+	</a>
+
+	<div class="mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+		<div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+			<h1 class="truncate text-2xl font-bold text-gray-800">{% block heading %}{{ title }}{% endblock %}</h1>
+			{% if addNewUrl|default(false) %}
+				<a href="{{ addNewUrl }}" class="px-2.5 py-1 text-sm font-medium text-blue-700 border border-blue-200 rounded-md hover:bg-blue-50">{{ addNewLabel }}</a>
+			{% endif %}
+			{% if subtitle|default(false) %}
+				<p class="w-full text-sm text-gray-600">{{ subtitle }}</p>
+			{% endif %}
+		</div>
+
+		<div class="ml-auto flex items-center gap-3">
+			<span class="text-sm text-gray-500" data-edit-status aria-live="polite"></span>
+
+			<button type="submit" form="{{ formId }}" data-edit-save{% if submitId|default(false) %} id="{{ submitId }}"{% endif %}{% if submitDisabled|default(false) %} disabled{% endif %}
+				class="{{ hideSave|default(false) ? 'hidden ' }}px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+				title="{{ submitTitle|default(submitLabel ~ ' (Ctrl+S)') }}">
+				{{ submitLabel }}
+			</button>
+
+			{% if hasMenu %}
+				<details class="relative" data-edit-menu>
+					<summary class="list-none cursor-pointer rounded-md border border-gray-300 bg-white px-2.5 py-2 text-gray-600 hover:bg-gray-50" aria-label="More actions" title="More actions">
+						<i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
+					</summary>
+					<div class="absolute right-0 z-40 mt-1 w-48 overflow-hidden rounded-md border bg-white py-1 shadow-lg">
+						{% if viewUrl|default(false) %}
+							<a href="{{ viewUrl }}" target="_blank" rel="noopener" class="{{ menuItemClass }}">
+								<i class="fa-solid fa-arrow-up-right-from-square w-4 text-gray-400" aria-hidden="true"></i>
+								View on site
+							</a>
+						{% endif %}
+						{{ extraMenuItems }}
+						{% if deleteUrl|default(false) %}
+							<button type="button"
+								class="edit-header-menu-item edit-header-menu-danger flex w-full items-center gap-2 px-3 py-2 text-left text-sm border-t"
+								data-edit-delete
+								hx-delete="{{ deleteUrl }}"
+								hx-swap="none"
+								hx-confirm="{{ deleteConfirm|default('Delete this item? This cannot be undone.') }}">
+								<i class="fa-solid fa-trash-can w-4" aria-hidden="true"></i>
+								Delete
+							</button>
+						{% endif %}
+					</div>
+				</details>
+			{% endif %}
+		</div>
+	</div>
+</div>
+<script type="module" src="/assets/js/edit-header.js"></script>

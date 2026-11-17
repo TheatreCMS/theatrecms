@@ -3,14 +3,16 @@
 {% block title %}My Profile - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold">My Profile</h1>
-            <p class="text-gray-600">Update your account details.</p>
-        </div>
-    </div>
+    {% include 'admin/partials/_edit_header.html.twig' with {
+        formId: 'profile-form',
+        title: 'My Profile',
+        subtitle: 'Update your account details.',
+        backUrl: '/admin',
+        backLabel: 'Dashboard',
+        submitId: 'save-profile-submit'
+    } %}
 
-    <form action="/admin/profile" method="post" class="bg-white shadow-sm rounded p-6 space-y-6" novalidate
+    <form id="profile-form" action="/admin/profile" method="post" class="space-y-6" novalidate
           hx-post="/admin/profile" hx-target="#flash-messages" hx-swap="innerHTML">
         {% if csrf_token is defined %}
             <input type="hidden" name="_csrf" value="{{ csrf_token }}">
@@ -115,15 +117,12 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-end space-x-3">
-            <button id="save-profile-submit" type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save Changes</button>
-        </div>
     </form>
 
     {% block scripts %}
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form');
+                const form = document.getElementById('profile-form');
                 const pwd = document.getElementById('password');
                 const confirm = document.getElementById('password_confirmation');
                 const matchError = document.getElementById('password-match-error');
