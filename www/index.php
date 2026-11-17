@@ -53,6 +53,15 @@ $contentTypes = $container->get(ContentTypeRegistry::class);
 $app->addErrorMiddleware(true, true, true);
 $app->addBodyParsingMiddleware();
 
+// Expose the request path to every template, frontend included (render_menu() uses it to mark
+// the current item). Added before the trailing-slash middleware below, so it runs after it and
+// sees the normalized path.
+$app->add(function (Request $request, RequestHandlerInterface $handler) use ($container) {
+    $container->get(Twig::class)['current_path'] = $request->getUri()->getPath();
+
+    return $handler->handle($request);
+});
+
 // Slim doesn't treat "/admin" and "/admin/" as the same route by default, so a
 // trailing slash 404s even though the non-trailing-slash route exists. Normalize
 // it here: redirect GET requests to the canonical (no trailing slash) URL, and
