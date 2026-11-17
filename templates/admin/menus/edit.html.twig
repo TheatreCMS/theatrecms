@@ -198,6 +198,29 @@
 
 				li.appendChild(row);
 
+				if (data.linkType === 'custom') {
+					const urlRow = document.createElement('div');
+					urlRow.className = 'flex items-center gap-2 px-3 pb-2 pl-9';
+
+					const urlLabel = document.createElement('span');
+					urlLabel.className = 'text-xs text-gray-500';
+					urlLabel.textContent = 'URL';
+					urlRow.appendChild(urlLabel);
+
+					const url = document.createElement('input');
+					url.type = 'text';
+					url.className = 'flex-1 min-w-0 text-xs text-gray-700 bg-transparent border-b border-dashed border-gray-300 focus:outline-none focus:border-blue-500';
+					url.placeholder = 'https://example.com';
+					url.setAttribute('aria-label', 'Link URL');
+					url.value = data.customUrl || '';
+					url.addEventListener('input', function () {
+						li.dataset.customUrl = url.value.trim();
+					});
+					urlRow.appendChild(url);
+
+					li.appendChild(urlRow);
+				}
+
 				const childrenUl = document.createElement('ul');
 				childrenUl.className = 'menu-item-children pl-6 pt-1';
 				li.appendChild(childrenUl);
