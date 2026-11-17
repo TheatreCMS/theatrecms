@@ -3,8 +3,13 @@
 {% block title %}Edit {{ sponsor.name }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Sponsor</h1>
+    <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Edit Sponsor</h1>
+        </div>
+        <div class="shrink-0">
+            <a href="/admin/sponsors/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add New Sponsor</a>
+        </div>
     </div>
 
         <form action="/admin/sponsors/edit" method="POST" enctype="multipart/form-data" class="space-y-6"

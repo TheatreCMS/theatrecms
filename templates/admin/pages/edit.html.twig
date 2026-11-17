@@ -5,9 +5,14 @@
 {% endblock %}
 
 {% block content %}
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold text-gray-800">Edit Page</h1>
-		<p class="text-gray-600">Update title, slug, and content for this page.</p>
+	<div class="flex items-start justify-between gap-4 mb-6">
+		<div>
+			<h1 class="text-2xl font-bold text-gray-800">Edit Page</h1>
+			<p class="text-gray-600">Update title, slug, and content for this page.</p>
+		</div>
+		<div class="shrink-0">
+			<a href="/admin/pages/create" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700">Add New Page</a>
+		</div>
 	</div>
 
 	<form action="/admin/pages/edit" method="POST" class="space-y-6"

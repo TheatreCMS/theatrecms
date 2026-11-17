@@ -21,8 +21,13 @@
 {% endblock %}
 
 {% block content %}
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold text-gray-800">Edit Production: <em>{{ production.name }}</em></h1>
+	<div class="flex items-start justify-between gap-4 mb-6">
+		<div>
+			<h1 class="text-2xl font-bold text-gray-800">Edit Production: <em>{{ production.name }}</em></h1>
+		</div>
+		<div class="shrink-0">
+			<a href="/admin/productions/create" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Production</a>
+		</div>
 	</div>
 
 	{# ── Tab navigation ─────────────────────────────────────────────────────── #}

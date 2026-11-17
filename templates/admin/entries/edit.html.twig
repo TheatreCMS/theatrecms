@@ -6,8 +6,13 @@
 {% block title %}Edit {{ content_type.singularLabel }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit {{ content_type.singularLabel }}</h1>
+    <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Edit {{ content_type.singularLabel }}</h1>
+        </div>
+        <div class="shrink-0">
+            <a href="{{ base_url }}/create" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700">Add New {{ content_type.singularLabel }}</a>
+        </div>
     </div>
 
     <form action="{{ form_action }}" method="POST" class="space-y-6"
