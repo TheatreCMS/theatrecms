@@ -140,6 +140,55 @@ class VenueControllerTest extends TestCase
         $this->assertNull($venue->getCapacity());
     }
 
+    public function testStoreRejectsMissingOrBlankRequiredFields(): void
+    {
+        $body = ['name' => 'Studio', 'address' => '1 Stage Rd', 'city' => '  ', 'state' => 'TS'];
+
+        $this->controller()->store($this->request('POST', $body, htmx: true), new Response());
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame('Please fill in: City, Postcode.', $this->rendered['data']['message']);
+
+        $result = $this->controller()->store($this->request('POST', $body), new Response());
+        $this->assertSame(400, $result->getStatusCode());
+
+        $this->assertSame([], $this->venues->fetchAll());
+    }
+
+    public function testStoreLeavesABlankCapacityEmpty(): void
+    {
+        $this->controller()->store(
+            $this->request('POST', ['name' => 'Studio', 'capacity' => ''] + self::ADDRESS, htmx: true),
+            new Response()
+        );
+
+        $this->assertNull($this->venues->fetchBySlug('studio')->getCapacity());
+    }
+
+    public function testQuickStoreRejectsMissingRequiredFields(): void
+    {
+        $this->controller()->quickStore($this->request('POST', ['name' => 'Studio']), new Response());
+
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame('Please fill in: Address, City, State, Postcode.', $this->rendered['data']['message']);
+        $this->assertSame([], $this->venues->fetchAll());
+    }
+
+    public function testUpdateRejectsMissingRequiredFieldsWithoutChangingTheVenue(): void
+    {
+        $venue = $this->venue('Main Stage');
+        $body = ['venueId' => (string) $venue->getId(), 'name' => 'Grand Hall', 'postcode' => ''] + self::ADDRESS;
+
+        $this->controller()->update($this->request('POST', $body, htmx: true), new Response());
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame('Please fill in: Postcode.', $this->rendered['data']['message']);
+
+        $result = $this->controller()->update($this->request('POST', $body), new Response());
+        $this->assertSame(400, $result->getStatusCode());
+
+        $this->assertSame('Main Stage', $venue->getName());
+        $this->assertSame('00000', $venue->getPostcode());
+    }
+
     public function testDestroyDeletesAndRendersListOrRedirects(): void
     {
         $a = $this->venue('A');

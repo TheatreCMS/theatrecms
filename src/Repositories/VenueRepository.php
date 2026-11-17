@@ -17,6 +17,9 @@ final class VenueRepository extends BaseRepository
 
     protected string $entityClass = Venue::class;
 
+    /** Fields every venue needs: its name and full address. */
+    public const REQUIRED_FIELDS = ['name', 'address', 'city', 'state', 'postcode'];
+
     public function __construct(EntityManagerInterface $em, private readonly ContentMetaRepository $contentMeta)
     {
         parent::__construct($em);
@@ -32,6 +35,9 @@ final class VenueRepository extends BaseRepository
         return $this->em->getRepository(Venue::class)->findAll();
     }
 
+    /**
+     * @throws \InvalidArgumentException when a required field (REQUIRED_FIELDS) is missing or blank
+     */
     public function create(array $args): Venue
     {
         $args = array_merge([
@@ -47,6 +53,14 @@ final class VenueRepository extends BaseRepository
             'mapUrl' => null,
         ], $args);
 
+        $missing = array_filter(
+            self::REQUIRED_FIELDS,
+            static fn (string $field): bool => !is_string($args[$field]) || trim($args[$field]) === ''
+        );
+        if ($missing !== []) {
+            throw new \InvalidArgumentException('A venue requires: ' . implode(', ', $missing) . '.');
+        }
+
         $venue = new Venue(
             $args['name'],
             $args['address'],
@@ -55,7 +69,7 @@ final class VenueRepository extends BaseRepository
             $args['postcode']
         );
 
-        $venue->setCapacity(intval($args['capacity']))
+        $venue->setCapacity(is_numeric($args['capacity']) ? intval($args['capacity']) : null)
             ->setDescription($args['description'])
             ->setAccessibilityInfo($args['accessibilityInfo'])
             ->setWebsiteUrl($args['websiteUrl'])

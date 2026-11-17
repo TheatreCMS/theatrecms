@@ -9,29 +9,29 @@ use PHPUnit\Framework\TestCase;
 
 class VenueRepositoryInvalidInputTest extends TestCase
 {
-    public function testCreateWithMissingRequiredFieldsThrowsTypeError(): void
+    public function testCreateWithMissingRequiredFieldsThrows(): void
     {
         $em = $this->createStub(EntityManagerInterface::class);
 
         $repo = new VenueRepository($em, $this->createStub(ContentMetaRepository::class));
 
-        $this->expectException(\TypeError::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('A venue requires: name, address, city, state, postcode.');
 
-        // Missing required constructor params (name, address, etc.) -> TypeError from Venue constructor
         $repo->create([]);
     }
 
-    public function testCreateWithNullNameThrowsTypeError(): void
+    public function testCreateWithNullOrBlankNameThrows(): void
     {
         $em = $this->createStub(EntityManagerInterface::class);
 
         $repo = new VenueRepository($em, $this->createStub(ContentMetaRepository::class));
 
-        $this->expectException(\TypeError::class);
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('A venue requires: name.');
 
-        // Explicitly pass null for a required field
         $repo->create([
-            'name' => null,
+            'name' => '   ',
             'address' => 'Some Address',
             'city' => 'City',
             'state' => 'ST',
