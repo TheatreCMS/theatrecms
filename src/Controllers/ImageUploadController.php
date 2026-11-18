@@ -5,11 +5,13 @@ namespace TheatreCMS\Controllers;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
-use TheatreCMS\Services\MediaUploadService;
+use TheatreCMS\Models\Media;
+use TheatreCMS\Services\MediaImporter;
 use TheatreCMS\Services\RemoteImageFetcher;
 
 /**
  * Handles EditorJS-compatible image uploads for the image, gallery and carousel blocks.
+ * Uploads are added to the media library (MediaImporter), like any other upload.
  *
  * POST /admin/images/upload
  *   Content-Type: multipart/form-data
@@ -31,7 +33,7 @@ class ImageUploadController
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
     public function __construct(
-        private readonly MediaUploadService $mediaUploadService,
+        private readonly MediaImporter $mediaImporter,
         private readonly RemoteImageFetcher $remoteImageFetcher
     ) {
     }
@@ -74,7 +76,7 @@ class ImageUploadController
     private function storeFile(Response $response, UploadedFileInterface $file): Response
     {
         try {
-            $url = $this->mediaUploadService->store($file);
+            $url = $this->mediaImporter->import($file, Media::TYPE_IMAGE)->getUrl();
         } catch (\RuntimeException | \InvalidArgumentException $e) {
             return $this->jsonError($response, 'Failed to save the uploaded file.', 500);
         }

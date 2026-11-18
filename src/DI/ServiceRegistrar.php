@@ -77,6 +77,7 @@ use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
 use TheatreCMS\Services\RemoteImageFetcher;
+use TheatreCMS\Services\MediaImporter;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -296,6 +297,14 @@ class ServiceRegistrar
                 $c->get(MediaUploadService::class),
                 $c->get(EntityManager::class),
                 $c->get(ImageSizeRegistry::class),
+            );
+        });
+
+        $container->set(MediaImporter::class, static function (ContainerInterface $c): MediaImporter {
+            return new MediaImporter(
+                $c->get(MediaUploadService::class),
+                $c->get(MediaRepository::class),
+                $c->get(ImageVariantGenerator::class),
             );
         });
 
@@ -669,7 +678,7 @@ class ServiceRegistrar
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
                 return new ImageUploadController(
-                    $c->get(MediaUploadService::class),
+                    $c->get(MediaImporter::class),
                     $c->get(RemoteImageFetcher::class)
                 );
             },
@@ -679,6 +688,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(MediaUploadService::class),
                     $c->get(ImageVariantGenerator::class),
+                    $c->get(MediaImporter::class),
                 );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {

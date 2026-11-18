@@ -11,6 +11,7 @@ use TheatreCMS\Controllers\MediaController;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Services\ImageVariantGenerator;
+use TheatreCMS\Services\MediaImporter;
 use TheatreCMS\Services\MediaUploadService;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -116,7 +117,8 @@ class MediaControllerTest extends TestCase
             $repository,
             $twig,
             $this->createMock(MediaUploadService::class),
-            $this->createMock(ImageVariantGenerator::class)
+            $this->createMock(ImageVariantGenerator::class),
+            $this->createMock(MediaImporter::class)
         );
     }
 }
