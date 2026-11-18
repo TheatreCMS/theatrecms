@@ -32,14 +32,18 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         colorPalette: window.THEATRECMS_COLOR_PALETTE || [],
     };
 
-    // Text color inline tool (text-color-tool.js), offering the theme's palette.
-    const textColorTool = {
-        class: TextColorTool,
-        config: colorPaletteConfig,
-    };
-
-    const tools = {
+    // The text blocks and their inline tools, shared by the editor and every column inside a
+    // columns block so both offer the same formatting.
+    const textTools = {
         paragraph: paragraphConfig,
+        header: {
+            class: Header,
+            inlineToolbar: true,
+        },
+        list: {
+            class: EditorjsList,
+            inlineToolbar: true,
+        },
         quote: {
             class: QuoteColorScheme,
             inlineToolbar: true,
@@ -51,31 +55,23 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         cite: {
             class: Cite,
         },
-        textColor: textColorTool,
-        header: {
-            class: Header,
-            inlineToolbar: true,
+        // Text color inline tool (text-color-tool.js), offering the theme's palette.
+        textColor: {
+            class: TextColorTool,
+            config: colorPaletteConfig,
         },
-        list: {
-            class: EditorjsList,
-            inlineToolbar: true,
-        },
+    };
+
+    const tools = {
+        ...textTools,
         columns: {
             class: editorjsColumns,
             config: {
                 // Each column is its own EditorJS instance with only these tools. Every
                 // inline tool named in an inlineToolbar (paragraphConfig's INLINE_TOOLBAR_ITEMS)
-                // must be registered here too: a missing one makes the column's save() fail,
-                // and the column is stored as null with its content lost.
-                tools: {
-                    underline: Underline,
-                    cite: Cite,
-                    textColor: textColorTool,
-                    header: Header,
-                    list: EditorjsList,
-                    quote: { class: QuoteColorScheme, config: colorPaletteConfig },
-                    paragraph: paragraphConfig,
-                },
+                // must be among them: a missing one makes the column's save() fail, and the
+                // column is stored as null with its content lost.
+                tools: textTools,
                 EditorJsLibrary: EditorJS //ref EditorJS - This means only one global thing
             }
         },
