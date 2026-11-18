@@ -21,6 +21,7 @@
  * - carousel (sliding carousel of images, arrows/dots/autoplay)
  * - linkTool (bookmark-style link/card preview, @editorjs/link's block type)
  * - ctaCard (call-to-action card: text + button on a colored background)
+ * - columns (2-3 side-by-side columns, each holding its own blocks)
  * - delimiter (renders an <hr />)
  * - checklist
  * - code
@@ -218,6 +219,7 @@ class EditorJsHtmlConverter
             'carousel'      => $this->renderCarousel($data),
             'linkTool'      => $this->renderBookmark($data),
             'ctaCard'       => $this->renderCtaCard($data),
+            'columns'       => $this->renderColumns($data),
             'delimiter'     => '<hr />',
             'sponsorBlock'  => '<div class="editorjs-sponsor-block"></div>',
             'scheduleBlock' => '<div class="editorjs-schedule-block"></div>',
@@ -225,6 +227,56 @@ class EditorJsHtmlConverter
             'code'          => $this->renderCode($data),
             default         => $this->renderParagraph($data),
         };
+    }
+
+    /**
+     * Render a columns block (@calumk/editorjs-columns): side-by-side columns, each an
+     * Editor.js document whose blocks render like top-level ones. Empty columns are kept
+     * so the others stay in place. A columns block inside a column is skipped: the editor
+     * can't create one, and skipping it bounds the recursion on hand-made payloads.
+     * Layout comes from www/assets/css/columns.css.
+     *
+     * @param array $data Expecting ['cols' => [['blocks' => array], ...]]
+     * @return string HTML columns wrapper, or empty string when no column has content
+     */
+    private function renderColumns(array $data): string
+    {
+        $cols = $data['cols'] ?? [];
+        if (!is_array($cols)) {
+            return '';
+        }
+
+        $columns = [];
+        $hasContent = false;
+
+        foreach ($cols as $col) {
+            $blocks = is_array($col) && is_array($col['blocks'] ?? null) ? $col['blocks'] : [];
+
+            $html = [];
+            foreach ($blocks as $block) {
+                if (!is_array($block) || ($block['type'] ?? null) === 'columns' || !is_array($block['data'] ?? [])) {
+                    continue;
+                }
+
+                $rendered = $this->renderBlock($block);
+                if ($rendered !== '') {
+                    $html[] = $rendered;
+                }
+            }
+
+            $hasContent = $hasContent || $html !== [];
+            $columns[] = '<div class="editorjs-columns__column">' . implode("\n", $html) . '</div>';
+        }
+
+        if (!$hasContent) {
+            return '';
+        }
+
+        return sprintf(
+            '<div class="editorjs-columns" data-columns="%d">%s</div>',
+            count($columns),
+            implode('', $columns)
+        );
     }
 
     /**

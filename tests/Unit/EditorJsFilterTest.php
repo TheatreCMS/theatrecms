@@ -804,4 +804,98 @@ class EditorJsFilterTest extends TestCase
 
         $this->assertStringContainsString('<cite>A Brave New World</cite>', $html);
     }
+
+    /**
+     * @param list<list<array<string, mixed>>> $columns each column's blocks
+     */
+    private function columnsPayload(array $columns): string
+    {
+        return json_encode(['blocks' => [[
+            'type' => 'columns',
+            'data' => ['cols' => array_map(
+                static fn(array $blocks): array => ['time' => 1, 'blocks' => $blocks, 'version' => '2.31.0'],
+                $columns
+            )],
+        ]]]);
+    }
+
+    public function testConverterRendersColumnsWithTheirBlocks(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [
+                ['type' => 'header', 'data' => ['text' => 'Left', 'level' => 3]],
+                ['type' => 'paragraph', 'data' => ['text' => 'Left <b>text</b>']],
+            ],
+            [
+                ['type' => 'list', 'data' => ['style' => 'unordered', 'items' => ['One', 'Two']]],
+            ],
+        ]));
+
+        $this->assertSame(
+            '<div class="editorjs-columns" data-columns="2">'
+                . '<div class="editorjs-columns__column"><h3>Left</h3>' . "\n" . '<p>Left <b>text</b></p></div>'
+                . '<div class="editorjs-columns__column"><ul><li>One</li><li>Two</li></ul></div>'
+                . '</div>',
+            $html
+        );
+    }
+
+    public function testConverterKeepsEmptyColumnsSoTheOthersStayInPlace(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [],
+            [['type' => 'paragraph', 'data' => ['text' => 'Middle']]],
+            [['type' => 'paragraph', 'data' => ['text' => '']]],
+        ]));
+
+        $this->assertSame(
+            '<div class="editorjs-columns" data-columns="3">'
+                . '<div class="editorjs-columns__column"></div>'
+                . '<div class="editorjs-columns__column"><p>Middle</p></div>'
+                . '<div class="editorjs-columns__column"></div>'
+                . '</div>',
+            $html
+        );
+    }
+
+    public function testConverterDropsColumnsWithNoContent(): void
+    {
+        $this->assertSame('', $this->converter->toHtml($this->columnsPayload([[], []])));
+        $this->assertSame('', $this->converter->toHtml(json_encode(['blocks' => [
+            ['type' => 'columns', 'data' => ['cols' => 'not-an-array']],
+        ]])));
+    }
+
+    public function testConverterSanitizesBlocksInsideColumns(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [['type' => 'paragraph', 'data' => ['text' => '<script>alert(1)</script><a href="javascript:alert(1)">x</a>']]],
+        ]));
+
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
+
+    public function testConverterSkipsNestedColumnsAndMalformedBlocksInsideColumns(): void
+    {
+        $nested = ['type' => 'columns', 'data' => ['cols' => [
+            ['blocks' => [['type' => 'paragraph', 'data' => ['text' => 'Nested']]]],
+        ]]];
+
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [
+                $nested,
+                'not-a-block',
+                ['type' => 'paragraph', 'data' => 'not-an-array'],
+                ['type' => 'paragraph', 'data' => ['text' => 'Kept']],
+            ],
+        ]));
+
+        $this->assertSame(
+            '<div class="editorjs-columns" data-columns="1">'
+                . '<div class="editorjs-columns__column"><p>Kept</p></div>'
+                . '</div>',
+            $html
+        );
+    }
 }
