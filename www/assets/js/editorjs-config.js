@@ -1,21 +1,18 @@
 const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite'];
 
-const createImageTool = (imageEndpoints) => {
-    const tool = {
-        class: ImageTool,
-    };
+// The core upload route (ImageUploadController), shared by the image, gallery and carousel
+// tools. Every editor gets it unless the caller passes its own imageEndpoints.
+const IMAGE_UPLOAD_ENDPOINT = '/admin/images/upload';
 
-    if (imageEndpoints && (imageEndpoints.byFile || imageEndpoints.byUrl)) {
-        tool.config = {
-            endpoints: {
-                byFile: imageEndpoints.byFile,
-                byUrl: imageEndpoints.byUrl,
-            },
-        };
-    }
-
-    return tool;
-};
+const createImageTool = (imageEndpoints) => ({
+    class: ImageTool,
+    config: {
+        endpoints: {
+            byFile: imageEndpoints?.byFile ?? IMAGE_UPLOAD_ENDPOINT,
+            byUrl: imageEndpoints?.byUrl,
+        },
+    },
+});
 
 export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints } = {}) {
     if (!holder) {
@@ -95,13 +92,13 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         imageGallery: {
             class: ImageGallery,
             config: {
-                uploadEndpoint: '/admin/images/upload',
+                uploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
             },
         },
         carousel: {
             class: Carousel,
             config: {
-                uploadEndpoint: '/admin/images/upload',
+                uploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
             },
         },
         textVariant: {

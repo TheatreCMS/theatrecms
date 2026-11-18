@@ -112,10 +112,6 @@
 			const editor = new EditorJS(buildEditorJsConfig({
 				holder: 'editorjs',
 				data: editorData,
-				imageEndpoints: {
-					byFile: '/admin/pages/images/upload',
-					byUrl: '/admin/pages/images/fetch'
-				}
 			}));
 
 			form.addEventListener('submit', function (event) {
