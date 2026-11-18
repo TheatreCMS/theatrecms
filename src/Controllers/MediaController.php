@@ -9,6 +9,7 @@ use Slim\Views\Twig;
 use TheatreCMS\Models\Media;
 use TheatreCMS\Repositories\MediaRepository;
 use TheatreCMS\Services\ImageVariantGenerator;
+use TheatreCMS\Services\MediaImporter;
 use TheatreCMS\Services\MediaTypeClassifier;
 use TheatreCMS\Services\MediaUploadService;
 
@@ -17,9 +18,9 @@ use TheatreCMS\Services\MediaUploadService;
  * video files for use as content attachments (currently: the Post/Production/
  * Season/Venue featured-image flow, images-only).
  *
- * Distinct from ImageUploadController, which serves the EditorJS in-body
- * "Image Gallery" block at POST /admin/images/upload and must keep its
- * existing JSON contract untouched.
+ * Distinct from ImageUploadController, which serves the EditorJS image,
+ * gallery and carousel blocks at /admin/images/* and must keep their JSON
+ * contract untouched. Both add uploads to the library through MediaImporter.
  *
  * @extends BaseController<MediaRepository>
  */
@@ -34,15 +35,19 @@ class MediaController extends BaseController
 
     private ImageVariantGenerator $imageVariantGenerator;
 
+    private MediaImporter $mediaImporter;
+
     public function __construct(
         MediaRepository $repository,
         Twig $twig,
         MediaUploadService $mediaUploadService,
-        ImageVariantGenerator $imageVariantGenerator
+        ImageVariantGenerator $imageVariantGenerator,
+        MediaImporter $mediaImporter
     ) {
         parent::__construct($repository, $twig);
         $this->mediaUploadService = $mediaUploadService;
         $this->imageVariantGenerator = $imageVariantGenerator;
+        $this->mediaImporter = $mediaImporter;
     }
 
     public function index(Request $request, Response $response, array $args = []): Response
@@ -115,18 +120,7 @@ class MediaController extends BaseController
             ]);
         }
 
-        $url = $this->mediaUploadService->store($file);
-
-        $media = $this->repository->create([
-            'url'              => $url,
-            'filename'         => basename($url),
-            'originalFilename' => $file->getClientFilename(),
-            'mimeType'         => $file->getClientMediaType(),
-            'sizeBytes'        => $file->getSize(),
-            'mediaType'        => $mediaType,
-        ]);
-
-        $this->imageVariantGenerator->generate($media);
+        $media = $this->mediaImporter->import($file, $mediaType);
 
         // Uploaded directly from the library page (not the featured-image
         // picker modal): refresh the grid out-of-band instead of rendering

@@ -12,6 +12,7 @@ use TheatreCMS\Tests\Includes\UsesSqliteEntityManager;
 use TheatreCMS\Twig\MenuExtension;
 use Twig\Environment;
 use Twig\Loader\ArrayLoader;
+use Twig\Loader\FilesystemLoader;
 
 #[AllowMockObjectsWithoutExpectations]
 class MenuExtensionTest extends TestCase
@@ -52,10 +53,58 @@ class MenuExtensionTest extends TestCase
         $this->menuWithItems();
 
         $this->assertSame([
-            ['label' => 'Home', 'url' => '/', 'children' => [
-                ['label' => 'Child', 'url' => '/child', 'children' => []],
+            ['label' => 'Home', 'url' => '/', 'current' => false, 'currentAncestor' => false, 'children' => [
+                ['label' => 'Child', 'url' => '/child', 'current' => false, 'currentAncestor' => false, 'children' => []],
             ]],
         ], $this->extension->getMenuTree('primary'));
+    }
+
+    public function testGetMenuTreeMarksTheCurrentItemAndItsAncestors(): void
+    {
+        $this->menuWithItems();
+
+        $tree = $this->extension->getMenuTree('primary', '/child/');
+
+        $this->assertFalse($tree[0]['current']);
+        $this->assertTrue($tree[0]['currentAncestor']);
+        $this->assertTrue($tree[0]['children'][0]['current']);
+        $this->assertFalse($tree[0]['children'][0]['currentAncestor']);
+
+        $tree = $this->extension->getMenuTree('primary', '/');
+
+        $this->assertTrue($tree[0]['current']);
+        $this->assertFalse($tree[0]['currentAncestor']);
+        $this->assertFalse($tree[0]['children'][0]['current']);
+    }
+
+    public function testOnlySiteRelativeUrlsCanBeCurrent(): void
+    {
+        $menu = $this->menus->create(['name' => 'Main', 'location' => 'primary']);
+        $this->menus->saveTree($menu, 'Main', 'primary', [
+            ['clientId' => 'a', 'parentClientId' => null, 'position' => 0, 'label' => 'Tickets', 'linkType' => 'custom', 'targetId' => null, 'customUrl' => 'https://tickets.example.com/'],
+            ['clientId' => 'b', 'parentClientId' => null, 'position' => 1, 'label' => 'Faq', 'linkType' => 'custom', 'targetId' => null, 'customUrl' => '/faq?tab=1#top'],
+        ]);
+        $this->em->clear();
+
+        $tree = $this->extension->getMenuTree('primary', '/');
+        $this->assertFalse($tree[0]['current']);
+
+        $tree = $this->extension->getMenuTree('primary', '/faq');
+        $this->assertTrue($tree[1]['current']);
+    }
+
+    public function testRenderMenuReadsTheCurrentPathFromTheTemplateContext(): void
+    {
+        $this->menuWithItems();
+
+        $twig = new Environment(new FilesystemLoader(dirname(__DIR__, 2) . '/templates'));
+        $twig->addExtension($this->extension);
+        $html = $twig->createTemplate("{{ render_menu('primary') }}")->render(['current_path' => '/child']);
+
+        $this->assertMatchesRegularExpression('/class="menu-item menu-item--has-children menu-item--current-ancestor"/', $html);
+        $this->assertStringContainsString('<li class="menu-item menu-item--current">', $html);
+        $this->assertStringContainsString('<a href="/child" aria-current="page">Child</a>', $html);
+        $this->assertSame(1, substr_count($html, 'aria-current'));
     }
 
     public function testRenderMenuRendersPartialWithTreeAndOptions(): void

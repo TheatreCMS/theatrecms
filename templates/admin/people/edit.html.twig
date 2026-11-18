@@ -3,11 +3,19 @@
 {% block title %}Edit {{ person.name }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Person</h1>
-    </div>
+    {% include 'admin/partials/_edit_header.html.twig' with {
+        formId: 'person-form',
+        title: 'Edit Person',
+        backUrl: '/admin/people',
+        backLabel: 'People',
+        addNewUrl: '/admin/people/create',
+        addNewLabel: 'Add New Person',
+        viewUrl: the_permalink(person),
+        deleteUrl: '/admin/people/' ~ person.id,
+        deleteConfirm: 'Delete this person? This cannot be undone.'
+    } %}
 
-    <form action="/admin/people/edit" method="POST" class="space-y-6"
+    <form id="person-form" action="/admin/people/edit" method="POST" class="space-y-6"
           hx-post="/admin/people/edit" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="personId" value="{{ person.id }}">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -49,13 +57,10 @@
                 deleteUrl: '/admin/people/' ~ person.id ~ '/hero-image',
                 featuredImageUrl: person.heroImageUrl, featuredImageId: heroImageId
             } %}
+            {% include 'admin/partials/_hero_text_field.html.twig' with { heroText: person.heroText } %}
             {% endif %}
         </div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/admin/people" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Changes</button>
-        </div>
     </form>
 
     <script type="module">

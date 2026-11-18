@@ -1,7 +1,10 @@
 {#
     Renders the <li> items for a resolved menu tree (see MenuExtension::renderMenu()).
-    `items` is a list of {label, url, children} nodes; `options` is passed through
-    from render_menu() for themes/future use but isn't consumed here.
+    `items` is a list of {label, url, current, currentAncestor, children} nodes; `options`
+    is passed through from render_menu() for themes/future use but isn't consumed here.
+
+    The item for the page being viewed gets `menu-item--current` and `aria-current="page"`;
+    the items above it get `menu-item--current-ancestor`.
 
     Intentionally renders only the <li> items, not an outer <ul> — themes provide
     their own wrapping <ul> (with whatever classes/markup they need) around
@@ -9,8 +12,12 @@
 #}
 {% macro items(nodes) %}
     {% for item in nodes %}
-        <li class="menu-item{{ item.children is not empty ? ' menu-item--has-children' : '' }}">
-            <a href="{{ item.url }}">{{ item.label }}</a>
+        {% set classes = ['menu-item']
+            |merge(item.children is not empty ? ['menu-item--has-children'] : [])
+            |merge(item.current ? ['menu-item--current'] : [])
+            |merge(item.currentAncestor ? ['menu-item--current-ancestor'] : []) %}
+        <li class="{{ classes|join(' ') }}">
+            <a href="{{ item.url }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.label }}</a>
             {% if item.children is not empty %}
                 <ul class="sub-menu">
                     {{ _self.items(item.children) }}

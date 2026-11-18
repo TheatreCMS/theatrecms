@@ -72,6 +72,7 @@
             featuredImageUrl: entry and entry.hasHeroImage ? entry.heroImageUrl : null,
             featuredImageId: heroImageId|default(null)
         } %}
+        {% include 'admin/partials/_hero_text_field.html.twig' with { heroText: entry.heroText|default(null) } %}
     {% endif %}
 
     {% if content_type.supports('excerpt') %}

@@ -3,10 +3,18 @@
 {% block title %}Edit Menu - {{ parent() }}{% endblock %}
 
 {% block content %}
-	<div class="mb-6">
-		<h1 class="text-2xl font-bold text-gray-800">Edit Menu</h1>
-		<p class="text-gray-600">Add items from the left, then drag to reorder or nest them into sub-menus.</p>
-	</div>
+	{% include 'admin/partials/_edit_header.html.twig' with {
+		formId: 'menu-tree-form',
+		title: 'Edit Menu',
+		subtitle: 'Add items from the left, then drag to reorder or nest them into sub-menus.',
+		backUrl: '/admin/menus',
+		backLabel: 'Menus',
+		addNewUrl: '/admin/menus/create',
+		addNewLabel: 'Add New Menu',
+		submitLabel: 'Save Menu',
+		deleteUrl: '/admin/menus/' ~ menu.id,
+		deleteConfirm: 'Delete this menu? This cannot be undone.'
+	} %}
 
 	<form id="menu-tree-form" action="/admin/menus/{{ menu.id }}/items" method="POST"
 		hx-post="/admin/menus/{{ menu.id }}/items"
@@ -83,10 +91,6 @@
 				<div class="bg-white border border-gray-200 rounded-md p-4">
 					<ul id="menu-item-tree" class="menu-item-tree min-h-[3rem]"></ul>
 					<p id="menu-item-tree-empty" class="text-sm text-gray-500">No items yet — add some from the left.</p>
-				</div>
-				<div class="flex items-center justify-end space-x-3 pt-4">
-					<a href="/admin/menus" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Back to Menus</a>
-					<button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Save Menu</button>
 				</div>
 			</div>
 		</div>
@@ -193,6 +197,29 @@
 
 				li.appendChild(row);
 
+				if (data.linkType === 'custom') {
+					const urlRow = document.createElement('div');
+					urlRow.className = 'flex items-center gap-2 px-3 pb-2 pl-9';
+
+					const urlLabel = document.createElement('span');
+					urlLabel.className = 'text-xs text-gray-500';
+					urlLabel.textContent = 'URL';
+					urlRow.appendChild(urlLabel);
+
+					const url = document.createElement('input');
+					url.type = 'text';
+					url.className = 'flex-1 min-w-0 text-xs text-gray-700 bg-transparent border-b border-dashed border-gray-300 focus:outline-none focus:border-blue-500';
+					url.placeholder = 'https://example.com';
+					url.setAttribute('aria-label', 'Link URL');
+					url.value = data.customUrl || '';
+					url.addEventListener('input', function () {
+						li.dataset.customUrl = url.value.trim();
+					});
+					urlRow.appendChild(url);
+
+					li.appendChild(urlRow);
+				}
+
 				const childrenUl = document.createElement('ul');
 				childrenUl.className = 'menu-item-children pl-6 pt-1';
 				li.appendChild(childrenUl);
@@ -224,6 +251,14 @@
 			renderNodes(initialItems, tree);
 			makeSortable(tree);
 			updateEmptyState();
+
+			// The tree only reaches a form field on save, so report adds, removals, moves and
+			// label/URL edits to the sticky edit header's unsaved-changes tracking.
+			const reportTreeChange = function () {
+				document.getElementById('menu-tree-form').dispatchEvent(new Event('edit-form:dirty'));
+			};
+			new MutationObserver(reportTreeChange).observe(tree, { childList: true, subtree: true });
+			tree.addEventListener('input', reportTreeChange);
 
 			function addItem(data) {
 				data.clientId = nextClientId();
@@ -326,9 +361,6 @@
 				form.dispatchEvent(new Event('menuTreeSubmit'));
 			});
 
-			form.addEventListener('htmx:afterRequest', function () {
-				document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-			});
 		});
 	</script>
 {% endblock %}

@@ -18,7 +18,8 @@ It deliberately follows WordPress's core/plugin/theme architecture (a theme's `f
   - Single test method: add `--filter <TestMethodName>`
 - Static analysis: `composer stan` (or `./vendor/bin/phpstan analyse -c phpstan.neon.dist --memory-limit=1G`) — level 4, analyzes `src` only.
 - Coding standard: `./vendor/bin/phpcs` — uses `phpcs.xml` (PSR-12 + `Generic.Arrays.DisallowLongArraySyntax`), targets `src`. Point at a specific file when needed.
-- Robo shortcuts (optional): `./vendor/bin/robo tests`, `./vendor/bin/robo phpstan`.
+- Robo shortcuts (optional): `./vendor/bin/robo tests`, `./vendor/bin/robo phpstan`, `./vendor/bin/robo lint`.
+- Releases: `./vendor/bin/robo release [X.Y.Z|major|minor|patch|pre] [--dry-run] [--draft] [--no-checks] [--no-edit]` — run from a clean `main` that matches `origin/main`; runs tests/phpstan/phpcs, drafts notes from commit subjects since the last tag in `$EDITOR`, then pushes an annotated `vX.Y.Z` tag and creates the GitHub release with `gh` (versions with a `-suffix` are marked prerelease). Git tags are the only version record; don't add a version to `composer.json`/`package.json`.
 - Playwright e2e: start a local server first (`php -S 127.0.0.1:8080 -t www`), then `npm run test:e2e`.
   - Single browser/spec: `npx playwright test --project=chrome tests/e2e/home.spec.ts` (or `--project=firefox`).
 - `./doctrine` — Doctrine ORM console (schema tools etc.), wired to the app's `EntityManager` via `app/bootstrap.php`. Use `orm:schema-tool:update --dump-sql` to check entities against the database, not to change the schema.

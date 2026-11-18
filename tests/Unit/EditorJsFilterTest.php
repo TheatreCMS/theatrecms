@@ -804,4 +804,247 @@ class EditorJsFilterTest extends TestCase
 
         $this->assertStringContainsString('<cite>A Brave New World</cite>', $html);
     }
+
+    /**
+     * @param list<list<array<string, mixed>>> $columns each column's blocks
+     */
+    private function columnsPayload(array $columns): string
+    {
+        return json_encode(['blocks' => [[
+            'type' => 'columns',
+            'data' => ['cols' => array_map(
+                static fn(array $blocks): array => ['time' => 1, 'blocks' => $blocks, 'version' => '2.31.0'],
+                $columns
+            )],
+        ]]]);
+    }
+
+    public function testConverterRendersColumnsWithTheirBlocks(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [
+                ['type' => 'header', 'data' => ['text' => 'Left', 'level' => 3]],
+                ['type' => 'paragraph', 'data' => ['text' => 'Left <b>text</b>']],
+            ],
+            [
+                ['type' => 'list', 'data' => ['style' => 'unordered', 'items' => ['One', 'Two']]],
+            ],
+        ]));
+
+        $this->assertSame(
+            '<div class="editorjs-columns" data-columns="2">'
+                . '<div class="editorjs-columns__column"><h3>Left</h3>' . "\n" . '<p>Left <b>text</b></p></div>'
+                . '<div class="editorjs-columns__column"><ul><li>One</li><li>Two</li></ul></div>'
+                . '</div>',
+            $html
+        );
+    }
+
+    public function testConverterKeepsEmptyColumnsSoTheOthersStayInPlace(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [],
+            [['type' => 'paragraph', 'data' => ['text' => 'Middle']]],
+            [['type' => 'paragraph', 'data' => ['text' => '']]],
+        ]));
+
+        $this->assertSame(
+            '<div class="editorjs-columns" data-columns="3">'
+                . '<div class="editorjs-columns__column"></div>'
+                . '<div class="editorjs-columns__column"><p>Middle</p></div>'
+                . '<div class="editorjs-columns__column"></div>'
+                . '</div>',
+            $html
+        );
+    }
+
+    public function testConverterDropsColumnsWithNoContent(): void
+    {
+        $this->assertSame('', $this->converter->toHtml($this->columnsPayload([[], []])));
+        $this->assertSame('', $this->converter->toHtml(json_encode(['blocks' => [
+            ['type' => 'columns', 'data' => ['cols' => 'not-an-array']],
+        ]])));
+    }
+
+    public function testConverterSanitizesBlocksInsideColumns(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [['type' => 'paragraph', 'data' => ['text' => '<script>alert(1)</script><a href="javascript:alert(1)">x</a>']]],
+        ]));
+
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+    }
+
+    public function testConverterSkipsNestedColumnsAndMalformedBlocksInsideColumns(): void
+    {
+        $nested = ['type' => 'columns', 'data' => ['cols' => [
+            ['blocks' => [['type' => 'paragraph', 'data' => ['text' => 'Nested']]]],
+        ]]];
+
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [
+                $nested,
+                'not-a-block',
+                ['type' => 'paragraph', 'data' => 'not-an-array'],
+                ['type' => 'paragraph', 'data' => ['text' => 'Kept']],
+            ],
+        ]));
+
+        $this->assertSame(
+            '<div class="editorjs-columns" data-columns="1">'
+                . '<div class="editorjs-columns__column"><p>Kept</p></div>'
+                . '</div>',
+            $html
+        );
+    }
+
+    private function paragraphHtml(string $text): string
+    {
+        return $this->converter->toHtml(json_encode(['blocks' => [
+            ['type' => 'paragraph', 'data' => ['text' => $text]],
+        ]]));
+    }
+
+    public function testConverterKeepsTextColorSpan(): void
+    {
+        $this->assertSame(
+            '<p>A <span style="color: rgb(236, 120, 120)">red</span> word</p>',
+            $this->paragraphHtml('A <span style="color: rgb(236, 120, 120);">red</span> word')
+        );
+    }
+
+    public function testConverterDropsFontTags(): void
+    {
+        $this->assertSame('<p>Color</p>', $this->paragraphHtml('<font color="#00bcd4">Color</font>'));
+    }
+
+    public function testConverterDropsBackgroundColor(): void
+    {
+        $this->assertSame(
+            '<p><span style="color: red">x</span> y</p>',
+            $this->paragraphHtml(
+                '<span style="background-color: yellow; color: red">x</span> <span style="background-color: yellow">y</span>'
+            )
+        );
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function unsafeColorStyleProvider(): array
+    {
+        return [
+            'url()' => ['<span style="color: url(https://evil.example/x)">x</span>'],
+            'expression' => ['<span style="color: expression(alert(1))">x</span>'],
+            'breaks out of the value' => ['<span style="color: red; position: fixed; top: 0">x</span>'],
+            'quote injection' => ['<span style=\'color: red" onmouseover="alert(1)\'>x</span>'],
+            'other properties only' => ['<span style="position: fixed">x</span>'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('unsafeColorStyleProvider')]
+    public function testConverterDropsUnsafeColorStyles(string $text): void
+    {
+        $html = $this->paragraphHtml($text);
+
+        $this->assertStringNotContainsString('url(', $html);
+        $this->assertStringNotContainsString('expression', $html);
+        $this->assertStringNotContainsString('position', $html);
+        $this->assertStringNotContainsString('onmouseover', $html);
+    }
+
+    public function testConverterKeepsTheValidColorWhenOtherDeclarationsAreDropped(): void
+    {
+        $this->assertSame(
+            '<p><span style="color: red">x</span></p>',
+            $this->paragraphHtml('<span style="color: red; position: fixed; top: 0">x</span>')
+        );
+    }
+
+    public function testConverterDropsClosingTagsOfDroppedColorSpans(): void
+    {
+        $this->assertSame(
+            '<p><span style="color: red">a b</span> c</p>',
+            $this->paragraphHtml('<span style="color: red">a <span class="x">b</span></span> c</span>')
+        );
+    }
+
+    public function testConverterKeepsTextColorInsideColumns(): void
+    {
+        $html = $this->converter->toHtml($this->columnsPayload([
+            [['type' => 'paragraph', 'data' => ['text' => '<span style="color: #ff0000;">Red</span>']]],
+        ]));
+
+        $this->assertStringContainsString('<p><span style="color: #ff0000">Red</span></p>', $html);
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function allowedLinkProvider(): array
+    {
+        return [
+            'mailto' => ['mailto:giving@ffxshow.org', '<a href="mailto:giving@ffxshow.org">x</a>'],
+            'mailto with query' => [
+                'mailto:giving@ffxshow.org?subject=Gift%20inquiry&amp;body=Hi',
+                '<a href="mailto:giving@ffxshow.org?subject=Gift%20inquiry&amp;body=Hi">x</a>',
+            ],
+            'mailto with two addresses' => ['mailto:a@example.com,b@example.com', '<a href="mailto:a@example.com,b@example.com">x</a>'],
+            'tel' => ['tel:+1-757-555-0100', '<a href="tel:+1-757-555-0100">x</a>'],
+            'tel with spaces' => ['tel:+1 (757) 555 0100', '<a href="tel:+1(757)5550100">x</a>'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('allowedLinkProvider')]
+    public function testConverterKeepsMailtoAndTelLinks(string $href, string $expected): void
+    {
+        $this->assertSame('<p>' . $expected . '</p>', $this->paragraphHtml('<a href="' . $href . '" target="_blank">x</a>'));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function rejectedLinkProvider(): array
+    {
+        return [
+            'mailto without an address' => ['mailto:'],
+            'mailto with an invalid address' => ['mailto:not-an-email'],
+            'mailto with one invalid address' => ['mailto:a@example.com,nope'],
+            'mailto breaking out of the attribute' => ['mailto:a@example.com&quot; onclick=&quot;alert(1)'],
+            'tel with letters' => ['tel:call-me'],
+            'tel too short' => ['tel:12'],
+            'tel with script' => ['tel:javascript:alert(1)'],
+            'sms' => ['sms:+17575550100'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('rejectedLinkProvider')]
+    public function testConverterDropsInvalidMailtoAndTelLinks(string $href): void
+    {
+        $html = $this->paragraphHtml('<a href="' . $href . '">x</a>');
+
+        $this->assertStringNotContainsString('<a ', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+    }
+
+    public function testConverterKeepsMailtoCtaButton(): void
+    {
+        $html = $this->converter->toHtml(json_encode(['blocks' => [[
+            'type' => 'ctaCard',
+            'data' => ['text' => 'Questions?', 'buttonText' => 'Email us', 'buttonUrl' => 'mailto:giving@ffxshow.org'],
+        ]]]));
+
+        $this->assertStringContainsString('href="mailto:giving@ffxshow.org"', $html);
+    }
+
+    public function testConverterKeepsBookmarkLinksHttpOnly(): void
+    {
+        $html = $this->converter->toHtml(json_encode(['blocks' => [[
+            'type' => 'linkTool',
+            'data' => ['link' => 'mailto:giving@ffxshow.org', 'meta' => ['title' => 'x']],
+        ]]]));
+
+        $this->assertStringNotContainsString('mailto:', $html);
+    }
 }

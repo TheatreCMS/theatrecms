@@ -160,10 +160,12 @@ $adminScreens = [
         ['patch', '/{id}', 'update'],
         ['delete', '/{id}', 'destroy'],
     ]],
-    // Frozen: the EditorJS image, gallery and carousel tools depend on this upload endpoint's
-    // JSON contract. Everything else about media lives under /admin/media.
+    // Frozen: the EditorJS image, gallery and carousel tools depend on these endpoints' JSON
+    // contract (/fetch is the image tool's byUrl). Everything else about media lives under
+    // /admin/media.
     '/admin/images' => [ImageUploadController::class, Capability::UPLOAD_FILES, [
         ['post', '/upload', 'upload'],
+        ['post', '/fetch', 'fetch'],
     ]],
     '/admin/link-preview' => [LinkPreviewController::class, Capability::UPLOAD_FILES, [
         ['get', '/fetch', 'fetch'],

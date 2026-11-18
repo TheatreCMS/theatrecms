@@ -21,6 +21,8 @@ trait HandlesContentImages
 {
     private const HERO_IMAGE_META_KEY = 'hero_image_id';
 
+    private const HERO_TEXT_META_KEY = 'hero_text';
+
     abstract protected function contentType(): string;
 
     protected function routePrefix(): string
@@ -86,6 +88,31 @@ trait HandlesContentImages
         }
 
         $this->contentMeta->set($this->contentType(), $entityId, self::HERO_IMAGE_META_KEY, (string) $image->getId());
+    }
+
+    /**
+     * applyHeroText(), skipped for a type that doesn't support hero images, like applyHeroImageIfSupported().
+     */
+    protected function applyHeroTextIfSupported(Request $request, int $entityId, mixed $heroText): void
+    {
+        if ($this->supportsHeroImage($request)) {
+            $this->applyHeroText($entityId, $heroText);
+        }
+    }
+
+    /**
+     * Stores the text shown with the hero image; blank text removes it.
+     */
+    protected function applyHeroText(int $entityId, mixed $heroText): void
+    {
+        $heroText = trim((string) ($heroText ?? ''));
+
+        if ($heroText === '') {
+            $this->contentMeta->delete($this->contentType(), $entityId, self::HERO_TEXT_META_KEY);
+            return;
+        }
+
+        $this->contentMeta->set($this->contentType(), $entityId, self::HERO_TEXT_META_KEY, $heroText);
     }
 
     public function removeFeaturedImage(Request $request, Response $response, array $args = []): Response

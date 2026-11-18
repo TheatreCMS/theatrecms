@@ -25,7 +25,13 @@ export function initRichTextEditor(holderId, textareaId) {
         const sync = () => {
             textarea.value = editor.getData();
         };
-        editor.model.document.on('change:data', sync);
+        // CKEditor normalises the HTML on load, so the textarea is left out of the sticky
+        // edit header's change tracking (edit-header.js) and edits are reported instead.
+        textarea.setAttribute('data-edit-ignore', '');
+        editor.model.document.on('change:data', () => {
+            sync();
+            textarea.closest('form')?.dispatchEvent(new Event('edit-form:dirty'));
+        });
         sync();
         return editor;
     });

@@ -3,12 +3,16 @@
 {% block title %}Settings - {{ parent() }}{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Site Settings</h1>
-    <p class="text-gray-600">Manage your theatre's global configuration.</p>
-</div>
+{% include 'admin/partials/_edit_header.html.twig' with {
+    formId: 'settings-form',
+    title: 'Site Settings',
+    subtitle: "Manage your theatre's global configuration.",
+    backUrl: '/admin',
+    backLabel: 'Dashboard',
+    submitLabel: 'Save Settings'
+} %}
 
-<form action="/admin/settings" method="POST" class="space-y-8"
+<form id="settings-form" action="/admin/settings" method="POST" class="space-y-8"
       hx-post="/admin/settings" hx-target="#flash-messages" hx-swap="innerHTML">
 
     <fieldset class="space-y-4">
@@ -120,13 +124,6 @@
             </div>
         </div>
     </fieldset>
-
-    <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-        <button type="submit"
-                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
-            Save Settings
-        </button>
-    </div>
 
 </form>
 {% endblock %}

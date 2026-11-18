@@ -5,7 +5,7 @@ namespace TheatreCMS\Traits;
 use TheatreCMS\Models\Media;
 
 /**
- * Eager-loads hero image data from content_meta onto single-record fetches, mirroring
+ * Eager-loads hero image data (the image and its hero text) from content_meta onto single-record fetches, mirroring
  * how a real Doctrine relation like featuredImage is always populated. Not applied to
  * fetchAll()/fetchPage() (listings) to avoid an extra content_meta query per row — hero
  * image is only ever used for single-item display.
@@ -48,6 +48,7 @@ trait EagerLoadsHeroImage
         };
 
         $entity->setHeroImageUrl($image instanceof Media ? $image->getUrl() : null);
+        $entity->setHeroText($this->contentMeta->get($this->heroImageContentType(), $entity->getId(), 'hero_text'));
 
         return $entity;
     }

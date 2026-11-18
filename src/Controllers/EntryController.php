@@ -146,6 +146,7 @@ class EntryController extends BaseController implements PublicContentController
             }
             if ($this->definition->supports('hero_image')) {
                 $this->applyHeroImage($entry->getId(), $data['heroImageId'] ?? null);
+                $this->applyHeroText($entry->getId(), $data['heroText'] ?? null);
             }
             $this->applyTerms($this->contentType(), $entry->getId(), $data);
             $this->entityManager->flush();
@@ -180,6 +181,7 @@ class EntryController extends BaseController implements PublicContentController
             'excerpt'         => null,
             'featuredImageId' => null,
             'heroImageId'     => null,
+            'heroText'        => null,
             'parentId'        => null,
         ]);
 
@@ -210,6 +212,7 @@ class EntryController extends BaseController implements PublicContentController
             }
             if ($this->definition->supports('hero_image')) {
                 $this->applyHeroImage($entry->getId(), $data['heroImageId']);
+                $this->applyHeroText($entry->getId(), $data['heroText']);
             }
             if ($this->definition->hierarchical) {
                 $this->repository->moveTo($entry, $this->repository->resolveParent($data['parentId']));

@@ -76,6 +76,8 @@ use TheatreCMS\Services\MediaFilenameBackfillService;
 use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
+use TheatreCMS\Services\RemoteImageFetcher;
+use TheatreCMS\Services\MediaImporter;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -103,6 +105,7 @@ use TheatreCMS\Theme\ThemeManager;
 use TheatreCMS\Theme\TitleResolver;
 use TheatreCMS\Twig\AddressExtension;
 use TheatreCMS\Twig\AdminMenuExtension;
+use TheatreCMS\Twig\AssetExtension;
 use TheatreCMS\Twig\CapabilityExtension;
 use TheatreCMS\Twig\ConditionalTagsExtension;
 use TheatreCMS\Twig\ContentExtension;
@@ -297,6 +300,14 @@ class ServiceRegistrar
             );
         });
 
+        $container->set(MediaImporter::class, static function (ContainerInterface $c): MediaImporter {
+            return new MediaImporter(
+                $c->get(MediaUploadService::class),
+                $c->get(MediaRepository::class),
+                $c->get(ImageVariantGenerator::class),
+            );
+        });
+
         $container->set(MediaVariantBackfillService::class, static function (
             ContainerInterface $c
         ): MediaVariantBackfillService {
@@ -318,6 +329,10 @@ class ServiceRegistrar
         });
 
         $container->set(LinkPreviewService::class, static fn(): LinkPreviewService => new LinkPreviewService(new \GuzzleHttp\Client()));
+        $container->set(
+            RemoteImageFetcher::class,
+            static fn(): RemoteImageFetcher => new RemoteImageFetcher(new \GuzzleHttp\Client())
+        );
 
         $container->set(ProductionFormOptionsService::class, static function (
             ContainerInterface $c
@@ -392,6 +407,7 @@ class ServiceRegistrar
             $twig->addExtension(new MediaTypeIconExtension());
             $twig->addExtension(new SponsorsExtension($c->get(SponsorsResolver::class)));
             $twig->addExtension(new PermalinkExtension($c->get(PermalinkResolver::class)));
+            $twig->addExtension(new AssetExtension(APP_ROOT . '/www'));
             $twig->addExtension(new DateExtension($c->get(DateResolver::class)));
             $twig->addExtension(new StartDateExtension($c->get(StartDateResolver::class)));
             $twig->addExtension(new EndDateExtension($c->get(EndDateResolver::class)));
@@ -474,6 +490,10 @@ class ServiceRegistrar
 
         $container->set(VenueRepository::class, static function (ContainerInterface $c): VenueRepository {
             return new VenueRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
+        });
+
+        $container->set(PageRepository::class, static function (ContainerInterface $c): PageRepository {
+            return new PageRepository($c->get(EntityManager::class), $c->get(ContentMetaRepository::class));
         });
 
         $container->set(TermRepository::class, static function (ContainerInterface $c): TermRepository {
@@ -597,6 +617,7 @@ class ServiceRegistrar
                     $c->get(EntityManager::class),
                     $c->get(Twig::class),
                     $c->get(TemplateResolver::class),
+                    $c->get(ContentMetaRepository::class),
                 );
             },
             MenuController::class => static function (ContainerInterface $c): MenuController {
@@ -656,7 +677,10 @@ class ServiceRegistrar
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
-                return new ImageUploadController($c->get(MediaUploadService::class));
+                return new ImageUploadController(
+                    $c->get(MediaImporter::class),
+                    $c->get(RemoteImageFetcher::class)
+                );
             },
             MediaController::class => static function (ContainerInterface $c): MediaController {
                 return new MediaController(
@@ -664,6 +688,7 @@ class ServiceRegistrar
                     $c->get(Twig::class),
                     $c->get(MediaUploadService::class),
                     $c->get(ImageVariantGenerator::class),
+                    $c->get(MediaImporter::class),
                 );
             },
             LinkPreviewController::class => static function (ContainerInterface $c): LinkPreviewController {

@@ -20,6 +20,15 @@ class VenueController extends BaseController implements PublicContentController,
     use RendersPublicContent;
     use HandlesContentImages;
 
+    /** Form labels for VenueRepository::REQUIRED_FIELDS, as the venue forms show them. */
+    private const REQUIRED_FIELD_LABELS = [
+        'name'     => 'Name',
+        'address'  => 'Address',
+        'city'     => 'City',
+        'state'    => 'State',
+        'postcode' => 'Postcode',
+    ];
+
     public static function additionalAdminRoutes(): array
     {
         return [
@@ -118,11 +127,18 @@ class VenueController extends BaseController implements PublicContentController,
             'mapUrl' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
+
+        $missing = $this->missingRequiredFields($data);
+        if ($missing !== []) {
+            return $this->missingFieldsResponse($request, $response, $missing);
+        }
 
         $venue = $this->repository->create($data);
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $venue->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $venue->getId(), $data['heroText']);
         $this->entityManager->flush();
         $editUrl = '/admin/venues/edit/' . $venue->getId();
 
@@ -156,6 +172,14 @@ class VenueController extends BaseController implements PublicContentController,
             'state'    => null,
             'postcode' => null,
         ]);
+
+        $missing = $this->missingRequiredFields($data);
+        if ($missing !== []) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => $this->missingFieldsMessage($missing),
+            ]);
+        }
 
         $venue = $this->repository->create($data);
 
@@ -203,6 +227,7 @@ class VenueController extends BaseController implements PublicContentController,
             'mapUrl' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         $venue = $this->repository->fetch(intval($data['venueId']));
@@ -215,6 +240,11 @@ class VenueController extends BaseController implements PublicContentController,
                 ]);
             }
             return $response->withStatus(404);
+        }
+
+        $missing = $this->missingRequiredFields($data);
+        if ($missing !== []) {
+            return $this->missingFieldsResponse($request, $response, $missing);
         }
 
         $venue->setName($data['name'])
@@ -230,6 +260,7 @@ class VenueController extends BaseController implements PublicContentController,
 
         $this->applyFeaturedImage($venue, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $venue->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $venue->getId(), $data['heroText']);
 
         $this->repository->update($venue);
 
@@ -241,5 +272,54 @@ class VenueController extends BaseController implements PublicContentController,
         }
 
         return $response->withHeader('Location', '/admin/venues');
+    }
+
+    /**
+     * Labels of the required fields that are missing or blank. The forms mark these
+     * `required`, but a request can still arrive without them, and the Venue model can't
+     * be built without them.
+     *
+     * @param array<string, mixed> $data
+     * @return string[]
+     */
+    private function missingRequiredFields(array $data): array
+    {
+        $missing = [];
+        foreach (VenueRepository::REQUIRED_FIELDS as $field) {
+            if (!is_string($data[$field] ?? null) || trim($data[$field]) === '') {
+                $missing[] = self::REQUIRED_FIELD_LABELS[$field];
+            }
+        }
+
+        return $missing;
+    }
+
+    /**
+     * @param string[] $missing labels from missingRequiredFields()
+     */
+    private function missingFieldsMessage(array $missing): string
+    {
+        return 'Please fill in: ' . implode(', ', $missing) . '.';
+    }
+
+    /**
+     * An error alert for an HTMX request, otherwise a 400 with the message as its body.
+     *
+     * @param string[] $missing labels from missingRequiredFields()
+     */
+    private function missingFieldsResponse(Request $request, Response $response, array $missing): Response
+    {
+        $message = $this->missingFieldsMessage($missing);
+
+        if ($request->getHeaderLine('HX-Request')) {
+            return $this->twig->render($response, 'admin/partials/_alert.html.twig', [
+                'type'    => 'error',
+                'message' => $message,
+            ]);
+        }
+
+        $response->getBody()->write($message);
+
+        return $response->withStatus(400);
     }
 }

@@ -68,12 +68,18 @@ class VenueControllerTest extends TestCase
 
         $image = $this->createTestMedia($this->em);
         $result = $this->controller()->store(
-            $this->request('POST', ['name' => 'Main Stage', 'heroImageId' => (string) $image->getId()] + self::ADDRESS, htmx: true),
+            $this->request('POST', [
+                'name' => 'Main Stage',
+                'heroImageId' => (string) $image->getId(),
+                'heroText' => 'At the oceanfront',
+            ] + self::ADDRESS, htmx: true),
             new Response()
         );
         $venue = $this->venues->fetchBySlug('main-stage');
         $this->assertSame('/admin/venues/edit/' . $venue->getId(), $result->getHeaderLine('HX-Redirect'));
         $this->assertSame((string) $image->getId(), $this->meta->get('venue', $venue->getId(), 'hero_image_id'));
+        $this->assertSame('At the oceanfront', $this->meta->get('venue', $venue->getId(), 'hero_text'));
+        $this->assertSame('At the oceanfront', $venue->getHeroText());
 
         $result = $this->controller()->store($this->request('POST', ['name' => 'Studio'] + self::ADDRESS), new Response());
         $this->assertStringStartsWith('/admin/venues/edit/', $result->getHeaderLine('Location'));
@@ -132,6 +138,55 @@ class VenueControllerTest extends TestCase
         );
         $this->assertSame('/admin/venues', $result->getHeaderLine('Location'));
         $this->assertNull($venue->getCapacity());
+    }
+
+    public function testStoreRejectsMissingOrBlankRequiredFields(): void
+    {
+        $body = ['name' => 'Studio', 'address' => '1 Stage Rd', 'city' => '  ', 'state' => 'TS'];
+
+        $this->controller()->store($this->request('POST', $body, htmx: true), new Response());
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame('Please fill in: City, Postcode.', $this->rendered['data']['message']);
+
+        $result = $this->controller()->store($this->request('POST', $body), new Response());
+        $this->assertSame(400, $result->getStatusCode());
+
+        $this->assertSame([], $this->venues->fetchAll());
+    }
+
+    public function testStoreLeavesABlankCapacityEmpty(): void
+    {
+        $this->controller()->store(
+            $this->request('POST', ['name' => 'Studio', 'capacity' => ''] + self::ADDRESS, htmx: true),
+            new Response()
+        );
+
+        $this->assertNull($this->venues->fetchBySlug('studio')->getCapacity());
+    }
+
+    public function testQuickStoreRejectsMissingRequiredFields(): void
+    {
+        $this->controller()->quickStore($this->request('POST', ['name' => 'Studio']), new Response());
+
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame('Please fill in: Address, City, State, Postcode.', $this->rendered['data']['message']);
+        $this->assertSame([], $this->venues->fetchAll());
+    }
+
+    public function testUpdateRejectsMissingRequiredFieldsWithoutChangingTheVenue(): void
+    {
+        $venue = $this->venue('Main Stage');
+        $body = ['venueId' => (string) $venue->getId(), 'name' => 'Grand Hall', 'postcode' => ''] + self::ADDRESS;
+
+        $this->controller()->update($this->request('POST', $body, htmx: true), new Response());
+        $this->assertSame('error', $this->rendered['data']['type']);
+        $this->assertSame('Please fill in: Postcode.', $this->rendered['data']['message']);
+
+        $result = $this->controller()->update($this->request('POST', $body), new Response());
+        $this->assertSame(400, $result->getStatusCode());
+
+        $this->assertSame('Main Stage', $venue->getName());
+        $this->assertSame('00000', $venue->getPostcode());
     }
 
     public function testDestroyDeletesAndRendersListOrRedirects(): void

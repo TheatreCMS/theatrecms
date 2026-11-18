@@ -1,21 +1,20 @@
-const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite'];
+const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite', 'textColor'];
 
-const createImageTool = (imageEndpoints) => {
-    const tool = {
-        class: ImageTool,
-    };
+// The core upload routes (ImageUploadController). The file endpoint is shared by the image,
+// gallery and carousel tools; the URL endpoint downloads a pasted image URL. Every editor gets
+// them unless the caller passes its own imageEndpoints.
+const IMAGE_UPLOAD_ENDPOINT = '/admin/images/upload';
+const IMAGE_FETCH_ENDPOINT = '/admin/images/fetch';
 
-    if (imageEndpoints && (imageEndpoints.byFile || imageEndpoints.byUrl)) {
-        tool.config = {
-            endpoints: {
-                byFile: imageEndpoints.byFile,
-                byUrl: imageEndpoints.byUrl,
-            },
-        };
-    }
-
-    return tool;
-};
+const createImageTool = (imageEndpoints) => ({
+    class: ImageTool,
+    config: {
+        endpoints: {
+            byFile: imageEndpoints?.byFile ?? IMAGE_UPLOAD_ENDPOINT,
+            byUrl: imageEndpoints?.byUrl ?? IMAGE_FETCH_ENDPOINT,
+        },
+    },
+});
 
 export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints } = {}) {
     if (!holder) {
@@ -33,8 +32,18 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         colorPalette: window.THEATRECMS_COLOR_PALETTE || [],
     };
 
-    const tools = {
+    // The text blocks and their inline tools, shared by the editor and every column inside a
+    // columns block so both offer the same formatting.
+    const textTools = {
         paragraph: paragraphConfig,
+        header: {
+            class: Header,
+            inlineToolbar: true,
+        },
+        list: {
+            class: EditorjsList,
+            inlineToolbar: true,
+        },
         quote: {
             class: QuoteColorScheme,
             inlineToolbar: true,
@@ -46,23 +55,23 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         cite: {
             class: Cite,
         },
-        header: {
-            class: Header,
-            inlineToolbar: true,
+        // Text color inline tool (text-color-tool.js), offering the theme's palette.
+        textColor: {
+            class: TextColorTool,
+            config: colorPaletteConfig,
         },
-        list: {
-            class: EditorjsList,
-            inlineToolbar: true,
-        },
+    };
+
+    const tools = {
+        ...textTools,
         columns: {
             class: editorjsColumns,
             config: {
-                tools: {
-                    header: Header,
-                    list: EditorjsList,
-                    quote: { class: QuoteColorScheme, config: colorPaletteConfig },
-                    paragraph: paragraphConfig,
-                },
+                // Each column is its own EditorJS instance with only these tools. Every
+                // inline tool named in an inlineToolbar (paragraphConfig's INLINE_TOOLBAR_ITEMS)
+                // must be among them: a missing one makes the column's save() fail, and the
+                // column is stored as null with its content lost.
+                tools: textTools,
                 EditorJsLibrary: EditorJS //ref EditorJS - This means only one global thing
             }
         },
@@ -95,13 +104,13 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         imageGallery: {
             class: ImageGallery,
             config: {
-                uploadEndpoint: '/admin/images/upload',
+                uploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
             },
         },
         carousel: {
             class: Carousel,
             config: {
-                uploadEndpoint: '/admin/images/upload',
+                uploadEndpoint: IMAGE_UPLOAD_ENDPOINT,
             },
         },
         textVariant: {
@@ -109,9 +118,22 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         },
     };
 
+    // Tell the form holding this editor that its content changed, for the sticky edit
+    // header's unsaved-changes tracking (edit-header.js). The editor's content only reaches
+    // a form field on save, so the form can't see these edits itself. Changes made while the
+    // editor renders its initial data are ignored.
+    let ready = false;
     const config = {
         holder,
         tools,
+        onReady: () => {
+            ready = true;
+        },
+        onChange: () => {
+            if (ready) {
+                document.getElementById(holder)?.closest('form')?.dispatchEvent(new Event('edit-form:dirty'));
+            }
+        },
     };
 
     if (data !== undefined && data !== null) {

@@ -8,9 +8,17 @@
 {% block title %}Edit {{ work.title|default('Work') }} - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Work</h1>
-    </div>
+    {% include 'admin/partials/_edit_header.html.twig' with {
+        formId: 'work-form',
+        title: 'Edit Work',
+        backUrl: '/' ~ base_path|default('') ~ 'admin/works',
+        backLabel: 'Works',
+        addNewUrl: '/admin/works/create',
+        addNewLabel: 'Add New Work',
+        viewUrl: the_permalink(work),
+        deleteUrl: '/admin/works/' ~ work.id,
+        deleteConfirm: 'Delete this work? This cannot be undone.'
+    } %}
 
     {% if people is empty %}
         <div class="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
@@ -32,7 +40,7 @@
         </div>
     {% endif %}
 
-    <form action="/{{ base_path|default('') }}admin/works/edit" method="POST" class="space-y-6"
+    <form id="work-form" action="/{{ base_path|default('') }}admin/works/edit" method="POST" class="space-y-6"
           hx-post="/{{ base_path|default('') }}admin/works/edit" hx-target="#flash-messages" hx-swap="innerHTML" hx-trigger="htmxSubmit">
         <input type="hidden" name="id" value="{{ work.id }}">
 
@@ -170,16 +178,6 @@
             {% include 'admin/partials/_taxonomy_fields.html.twig' with {'content_type': 'work', 'content_id': work.id} %}
         </div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/{{ base_path|default('') }}admin/works"
-               class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                Cancel
-            </a>
-            <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Save Changes
-            </button>
-        </div>
     </form>
 
 {% endblock %}
@@ -189,7 +187,7 @@
             import { buildEditorJsConfig } from '/assets/js/editorjs-config.js';
 
             document.addEventListener('DOMContentLoaded', function () {
-                const form = document.querySelector('form');
+                const form = document.getElementById('work-form');
                 const titleInput = document.getElementById('title');
                 const descriptionField = document.getElementById('description');
 
@@ -350,13 +348,15 @@
                             document.getElementById('flash-messages').innerHTML =
                                 '<div id="form-alert" role="alert" class="flex items-center gap-3 p-4 mb-4 rounded-lg border bg-red-50 border-red-200 text-red-800">' +
                                 '<p class="text-sm font-medium">Unable to save content. Please try again.</p></div>';
+                            form.dispatchEvent(new Event('edit-form:error'));
                             isSaving = false;
                         });
                 });
 
-                form.addEventListener('htmx:afterRequest', function () {
-                    isSaving = false;
-                    document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                form.addEventListener('htmx:afterRequest', function (event) {
+                    if (event.detail.elt === form) {
+                        isSaving = false;
+                    }
                 });
 
                 const editorDescription = new EditorJS(buildEditorJsConfig({

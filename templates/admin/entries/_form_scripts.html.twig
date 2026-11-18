@@ -21,9 +21,10 @@
 
         let isSaving = false;
 
-        form.addEventListener('htmx:afterRequest', () => {
-            isSaving = false;
-            document.getElementById('flash-messages')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        form.addEventListener('htmx:afterRequest', (event) => {
+            if (event.detail.elt === form) {
+                isSaving = false;
+            }
         });
 
         {% if content_type.supports('editor') %}
@@ -69,6 +70,7 @@
             }).catch((error) => {
                 console.error('EditorJS save failed:', error);
                 showEditorSaveError();
+                form.dispatchEvent(new Event('edit-form:error'));
                 isSaving = false;
             });
             {% else %}

@@ -21,6 +21,7 @@
  * - carousel (sliding carousel of images, arrows/dots/autoplay)
  * - linkTool (bookmark-style link/card preview, @editorjs/link's block type)
  * - ctaCard (call-to-action card: text + button on a colored background)
+ * - columns (2-3 side-by-side columns, each holding its own blocks)
  * - delimiter (renders an <hr />)
  * - checklist
  * - code
@@ -28,7 +29,11 @@
  * Sanitization and safety:
  * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br, a, cite
  * - For <a> tags only the href attribute is kept; the href value is validated
- *   to be http(s) — all other attributes are dropped.
+ *   to be http(s), mailto: (valid addresses) or tel: (a phone number) — all
+ *   other attributes are dropped.
+ * - Text colors from the text color tool (text-color-tool.js) are kept as
+ *   <span style="color: ..."> with a validated color value; every other
+ *   attribute and declaration is dropped, as are spans without a color.
  * - All other HTML is stripped. URLs are validated to be http(s) using PHP's
  *   FILTER_VALIDATE_URL and parsed scheme checks.
  * - Text content is escaped using htmlspecialchars after restoring the allowed
@@ -53,6 +58,14 @@ class EditorJsHtmlConverter
     private const INLINE_TAGS = [
         'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br', 'a', 'cite',
     ];
+
+    /**
+     * A CSS color value the text color tool can store: hex, rgb()/rgba()/hsl()/hsla() (how
+     * browsers serialize colors), a CSS custom property, or a named color. The character set
+     * keeps it from escaping the style attribute or adding declarations.
+     */
+    private const CSS_COLOR_PATTERN = '/^(?:#[0-9a-f]{3,8}|(?:rgba?|hsla?)\(\s*[0-9.%,\s\/+-]+\)'
+        . '|var\(--[a-z0-9_-]+\)|[a-z]{3,30})$/i';
 
     /**
      * Ghost's kg-cta-bg-* background presets (see cards.min.css). Whitelisted
@@ -218,6 +231,7 @@ class EditorJsHtmlConverter
             'carousel'      => $this->renderCarousel($data),
             'linkTool'      => $this->renderBookmark($data),
             'ctaCard'       => $this->renderCtaCard($data),
+            'columns'       => $this->renderColumns($data),
             'delimiter'     => '<hr />',
             'sponsorBlock'  => '<div class="editorjs-sponsor-block"></div>',
             'scheduleBlock' => '<div class="editorjs-schedule-block"></div>',
@@ -225,6 +239,56 @@ class EditorJsHtmlConverter
             'code'          => $this->renderCode($data),
             default         => $this->renderParagraph($data),
         };
+    }
+
+    /**
+     * Render a columns block (@calumk/editorjs-columns): side-by-side columns, each an
+     * Editor.js document whose blocks render like top-level ones. Empty columns are kept
+     * so the others stay in place. A columns block inside a column is skipped: the editor
+     * can't create one, and skipping it bounds the recursion on hand-made payloads.
+     * Layout comes from www/assets/css/columns.css.
+     *
+     * @param array $data Expecting ['cols' => [['blocks' => array], ...]]
+     * @return string HTML columns wrapper, or empty string when no column has content
+     */
+    private function renderColumns(array $data): string
+    {
+        $cols = $data['cols'] ?? [];
+        if (!is_array($cols)) {
+            return '';
+        }
+
+        $columns = [];
+        $hasContent = false;
+
+        foreach ($cols as $col) {
+            $blocks = is_array($col) && is_array($col['blocks'] ?? null) ? $col['blocks'] : [];
+
+            $html = [];
+            foreach ($blocks as $block) {
+                if (!is_array($block) || ($block['type'] ?? null) === 'columns' || !is_array($block['data'] ?? [])) {
+                    continue;
+                }
+
+                $rendered = $this->renderBlock($block);
+                if ($rendered !== '') {
+                    $html[] = $rendered;
+                }
+            }
+
+            $hasContent = $hasContent || $html !== [];
+            $columns[] = '<div class="editorjs-columns__column">' . implode("\n", $html) . '</div>';
+        }
+
+        if (!$hasContent) {
+            return '';
+        }
+
+        return sprintf(
+            '<div class="editorjs-columns" data-columns="%d">%s</div>',
+            count($columns),
+            implode('', $columns)
+        );
     }
 
     /**
@@ -696,7 +760,7 @@ class EditorJsHtmlConverter
     private function renderCtaCard(array $data): string
     {
         $text = $this->sanitizeText((string) ($data['text'] ?? ''));
-        $buttonUrl = $this->sanitizeUrl((string) ($data['buttonUrl'] ?? ''));
+        $buttonUrl = $this->sanitizeLinkHref((string) ($data['buttonUrl'] ?? ''));
 
         if ($text === '' || $buttonUrl === '') {
             return '';
@@ -782,11 +846,16 @@ class EditorJsHtmlConverter
     private function sanitizeText(string $value): string
     {
         $stripped = strip_tags($value, $this->allowedTags());
+        // Whether each open <span> was kept, so its closing tag is kept or dropped to match.
+        $spanStack = [];
         $cleaned = preg_replace_callback(
             '/<\/?([a-z]+)[^>]*>/i',
-            function (array $matches): string {
+            function (array $matches) use (&$spanStack): string {
                 $tag = strtolower($matches[1]);
                 $closing = str_starts_with($matches[0], '</');
+                if ($tag === 'span') {
+                    return $this->sanitizeColorSpan($closing, $matches[0], $spanStack);
+                }
                 if (!in_array($tag, self::INLINE_TAGS, true)) {
                     return '';
                 }
@@ -799,7 +868,7 @@ class EditorJsHtmlConverter
                         preg_match("/\\bhref\\s*=\\s*'([^']*)'/", $matches[0], $hrefMatch)
                     ) {
                         $href = html_entity_decode($hrefMatch[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                        $safeHref = $this->sanitizeUrl($href);
+                        $safeHref = $this->sanitizeLinkHref($href);
                         if ($safeHref !== '') {
                             return sprintf('<a href="%s">', $safeHref);
                         }
@@ -820,6 +889,50 @@ class EditorJsHtmlConverter
     }
 
     /**
+     * Sanitize one opening or closing <span>.
+     *
+     * An opening span with a valid text color becomes <span style="color: ...">, one without is
+     * dropped. A closing span follows what happened to its opening span via $stack.
+     *
+     * @param list<bool> $stack whether each open span was kept
+     */
+    private function sanitizeColorSpan(bool $closing, string $html, array &$stack): string
+    {
+        if ($closing) {
+            // A stray closing tag (no open one) pops null and is dropped.
+            return array_pop($stack) === true ? '</span>' : '';
+        }
+
+        $style = $this->colorStyle($html);
+        $stack[] = $style !== '';
+
+        return $style === '' ? '' : sprintf('<span style="%s">', $style);
+    }
+
+    /**
+     * A tag's text color as "color: <value>", or '' when it has no valid one. Reads the `color`
+     * declaration of the `style` attribute; every other declaration is dropped.
+     */
+    private function colorStyle(string $html): string
+    {
+        $color = null;
+
+        if (preg_match('/\bstyle\s*=\s*(?:"([^"]*)"|\'([^\']*)\')/i', $html, $attr)) {
+            $style = html_entity_decode($attr[1] . ($attr[2] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            foreach (explode(';', $style) as $declaration) {
+                [$property, $propertyValue] = array_pad(explode(':', $declaration, 2), 2, '');
+                if (strtolower(trim($property)) === 'color') {
+                    $color = $propertyValue;
+                }
+            }
+        }
+
+        $color = trim(html_entity_decode((string) $color, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        return preg_match(self::CSS_COLOR_PATTERN, $color) ? 'color: ' . $color : '';
+    }
+
+    /**
      * Restore allowed inline tags that were escaped by htmlspecialchars.
      *
      * @param string $value
@@ -827,6 +940,15 @@ class EditorJsHtmlConverter
      */
     private function restoreAllowedTags(string $value): string
     {
+        // Color spans from sanitizeColorTag(); the color's character set survives
+        // htmlspecialchars unchanged, so this can only restore a validated color style.
+        $value = (string) preg_replace(
+            '/&lt;span style=&quot;(color: [a-z0-9#(),.%\/\s_+-]+)&quot;&gt;/i',
+            '<span style="$1">',
+            $value
+        );
+        $value = str_replace('&lt;/span&gt;', '</span>', $value);
+
         foreach (self::INLINE_TAGS as $tag) {
             if ($tag === 'br') {
                 $value = str_replace(['&lt;br&gt;', '&lt;br/&gt;'], '<br>', $value);
@@ -856,7 +978,7 @@ class EditorJsHtmlConverter
      */
     private function allowedTags(): string
     {
-        return '<' . implode('><', self::INLINE_TAGS) . '>';
+        return '<' . implode('><', [...self::INLINE_TAGS, 'span']) . '>';
     }
 
     /**
@@ -884,6 +1006,36 @@ class EditorJsHtmlConverter
             && !str_starts_with($value, '/\\')
         ) {
             return preg_match('/[\s\x00-\x1F<>"\']/', $value) ? '' : $value;
+        }
+
+        return $this->sanitizeUrl($value);
+    }
+
+    /**
+     * Validate a clickable link's href (inline <a> tags, CTA buttons): an http(s) URL as
+     * sanitizeUrl() allows, a mailto: link whose addresses are all valid, or a tel: link holding
+     * a phone number. Image and preview URLs use sanitizeUrl(), which stays http(s)-only.
+     *
+     * @return string The href (tel: numbers without spaces), or empty string when invalid
+     */
+    private function sanitizeLinkHref(string $value): string
+    {
+        $value = trim($value);
+
+        if (preg_match('/^mailto:([^?\s"\'<>]+)(\?[^\s"\'<>]*)?$/i', $value, $mailto)) {
+            foreach (explode(',', rawurldecode($mailto[1])) as $address) {
+                if (filter_var(trim($address), FILTER_VALIDATE_EMAIL) === false) {
+                    return '';
+                }
+            }
+
+            return 'mailto:' . $mailto[1] . ($mailto[2] ?? '');
+        }
+
+        if (preg_match('/^tel:(\+?[0-9().\- ]{3,32})$/i', $value, $tel)) {
+            $number = str_replace(' ', '', $tel[1]);
+
+            return preg_match('/[0-9]{3}/', preg_replace('/[^0-9]/', '', $number) ?? '') ? 'tel:' . $number : '';
         }
 
         return $this->sanitizeUrl($value);

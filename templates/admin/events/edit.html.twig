@@ -6,17 +6,19 @@
 {% block title %}Edit Event - {{ parent() }}{% endblock %}
 
 {% block content %}
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Edit Event</h1>
-        <p class="text-gray-600">Update the details for the event.</p>
-        {% if backToProductionUrl %}
-            <div class="mt-3">
-                <a href="{{ backToProductionUrl }}" class="text-sm font-medium text-blue-600 hover:underline">Back to Production</a>
-            </div>
-        {% endif %}
-    </div>
+    {% include 'admin/partials/_edit_header.html.twig' with {
+        formId: 'event-form',
+        title: 'Edit Event',
+        backUrl: backToProductionUrl ?: '/admin/events',
+        backLabel: backToProductionUrl ? 'Production' : 'Events',
+        addNewUrl: '/admin/events/create',
+        addNewLabel: 'Add New Event',
+        viewUrl: the_permalink(event),
+        deleteUrl: '/admin/events/' ~ event.id,
+        deleteConfirm: 'Delete this event? This cannot be undone.'
+    } %}
 
-    <form action="/admin/events/edit" method="POST" class="space-y-6"
+    <form id="event-form" action="/admin/events/edit" method="POST" class="space-y-6"
           hx-post="/admin/events/edit" hx-target="#flash-messages" hx-swap="innerHTML">
         <input type="hidden" name="eventId" value="{{ event.id }}" />
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -90,10 +92,6 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-end space-x-3 pt-4 border-t">
-            <a href="/admin/events" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancel</a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">Update Event</button>
-        </div>
     </form>
 
 {% endblock %}

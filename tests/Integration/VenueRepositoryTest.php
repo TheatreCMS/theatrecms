@@ -76,6 +76,17 @@ class VenueRepositoryTest extends TestCase
         $this->assertEquals($data['mapUrl'], $fetched->getMapUrl());
     }
 
+    public function testCreateLeavesAMissingCapacityEmpty(): void
+    {
+        $repo = new VenueRepository($this->em, new ContentMetaRepository($this->em));
+
+        $venue = $repo->create([
+            'name' => 'No Capacity', 'address' => '1 Way', 'city' => 'Town', 'state' => 'TS', 'postcode' => '00000',
+        ]);
+
+        $this->assertNull($venue->getCapacity());
+    }
+
     public function testUpdateVenue(): void
     {
         $repo = new VenueRepository($this->em, new ContentMetaRepository($this->em));

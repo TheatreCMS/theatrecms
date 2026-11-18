@@ -162,11 +162,13 @@ class ProductionController extends BaseController implements PublicContentContro
             'performerRoles' => [],
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         $production = $this->repository->create($data);
         $this->applyFeaturedImage($production, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $production->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $production->getId(), $data['heroText']);
 
         $personRepository = $this->entityManager->getRepository(Person::class);
 
@@ -245,6 +247,7 @@ class ProductionController extends BaseController implements PublicContentContro
             'venueId' => null,
             'featuredImageId' => null,
             'heroImageId' => null,
+            'heroText'    => null,
         ]);
 
         /**
@@ -293,6 +296,7 @@ class ProductionController extends BaseController implements PublicContentContro
 
         $this->applyFeaturedImage($item, $data['featuredImageId']);
         $this->applyHeroImageIfSupported($request, $item->getId(), $data['heroImageId']);
+        $this->applyHeroTextIfSupported($request, $item->getId(), $data['heroText']);
 
         $creativeIds = is_array($data['creativeIds']) ? $data['creativeIds'] : [];
         $creativeRoles = is_array($data['creativeRoles']) ? $data['creativeRoles'] : [];
