@@ -978,4 +978,73 @@ class EditorJsFilterTest extends TestCase
 
         $this->assertStringContainsString('<p><span style="color: #ff0000">Red</span></p>', $html);
     }
+
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public static function allowedLinkProvider(): array
+    {
+        return [
+            'mailto' => ['mailto:giving@ffxshow.org', '<a href="mailto:giving@ffxshow.org">x</a>'],
+            'mailto with query' => [
+                'mailto:giving@ffxshow.org?subject=Gift%20inquiry&amp;body=Hi',
+                '<a href="mailto:giving@ffxshow.org?subject=Gift%20inquiry&amp;body=Hi">x</a>',
+            ],
+            'mailto with two addresses' => ['mailto:a@example.com,b@example.com', '<a href="mailto:a@example.com,b@example.com">x</a>'],
+            'tel' => ['tel:+1-757-555-0100', '<a href="tel:+1-757-555-0100">x</a>'],
+            'tel with spaces' => ['tel:+1 (757) 555 0100', '<a href="tel:+1(757)5550100">x</a>'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('allowedLinkProvider')]
+    public function testConverterKeepsMailtoAndTelLinks(string $href, string $expected): void
+    {
+        $this->assertSame('<p>' . $expected . '</p>', $this->paragraphHtml('<a href="' . $href . '" target="_blank">x</a>'));
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function rejectedLinkProvider(): array
+    {
+        return [
+            'mailto without an address' => ['mailto:'],
+            'mailto with an invalid address' => ['mailto:not-an-email'],
+            'mailto with one invalid address' => ['mailto:a@example.com,nope'],
+            'mailto breaking out of the attribute' => ['mailto:a@example.com&quot; onclick=&quot;alert(1)'],
+            'tel with letters' => ['tel:call-me'],
+            'tel too short' => ['tel:12'],
+            'tel with script' => ['tel:javascript:alert(1)'],
+            'sms' => ['sms:+17575550100'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('rejectedLinkProvider')]
+    public function testConverterDropsInvalidMailtoAndTelLinks(string $href): void
+    {
+        $html = $this->paragraphHtml('<a href="' . $href . '">x</a>');
+
+        $this->assertStringNotContainsString('<a ', $html);
+        $this->assertStringNotContainsString('onclick', $html);
+    }
+
+    public function testConverterKeepsMailtoCtaButton(): void
+    {
+        $html = $this->converter->toHtml(json_encode(['blocks' => [[
+            'type' => 'ctaCard',
+            'data' => ['text' => 'Questions?', 'buttonText' => 'Email us', 'buttonUrl' => 'mailto:giving@ffxshow.org'],
+        ]]]));
+
+        $this->assertStringContainsString('href="mailto:giving@ffxshow.org"', $html);
+    }
+
+    public function testConverterKeepsBookmarkLinksHttpOnly(): void
+    {
+        $html = $this->converter->toHtml(json_encode(['blocks' => [[
+            'type' => 'linkTool',
+            'data' => ['link' => 'mailto:giving@ffxshow.org', 'meta' => ['title' => 'x']],
+        ]]]));
+
+        $this->assertStringNotContainsString('mailto:', $html);
+    }
 }

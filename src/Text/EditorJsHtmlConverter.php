@@ -29,7 +29,8 @@
  * Sanitization and safety:
  * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br, a, cite
  * - For <a> tags only the href attribute is kept; the href value is validated
- *   to be http(s) — all other attributes are dropped.
+ *   to be http(s), mailto: (valid addresses) or tel: (a phone number) — all
+ *   other attributes are dropped.
  * - Text colors from the text color tool (text-color-tool.js) are kept as
  *   <span style="color: ..."> with a validated color value; every other
  *   attribute and declaration is dropped, as are spans without a color.
@@ -759,7 +760,7 @@ class EditorJsHtmlConverter
     private function renderCtaCard(array $data): string
     {
         $text = $this->sanitizeText((string) ($data['text'] ?? ''));
-        $buttonUrl = $this->sanitizeUrl((string) ($data['buttonUrl'] ?? ''));
+        $buttonUrl = $this->sanitizeLinkHref((string) ($data['buttonUrl'] ?? ''));
 
         if ($text === '' || $buttonUrl === '') {
             return '';
@@ -867,7 +868,7 @@ class EditorJsHtmlConverter
                         preg_match("/\\bhref\\s*=\\s*'([^']*)'/", $matches[0], $hrefMatch)
                     ) {
                         $href = html_entity_decode($hrefMatch[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
-                        $safeHref = $this->sanitizeUrl($href);
+                        $safeHref = $this->sanitizeLinkHref($href);
                         if ($safeHref !== '') {
                             return sprintf('<a href="%s">', $safeHref);
                         }
@@ -1005,6 +1006,36 @@ class EditorJsHtmlConverter
             && !str_starts_with($value, '/\\')
         ) {
             return preg_match('/[\s\x00-\x1F<>"\']/', $value) ? '' : $value;
+        }
+
+        return $this->sanitizeUrl($value);
+    }
+
+    /**
+     * Validate a clickable link's href (inline <a> tags, CTA buttons): an http(s) URL as
+     * sanitizeUrl() allows, a mailto: link whose addresses are all valid, or a tel: link holding
+     * a phone number. Image and preview URLs use sanitizeUrl(), which stays http(s)-only.
+     *
+     * @return string The href (tel: numbers without spaces), or empty string when invalid
+     */
+    private function sanitizeLinkHref(string $value): string
+    {
+        $value = trim($value);
+
+        if (preg_match('/^mailto:([^?\s"\'<>]+)(\?[^\s"\'<>]*)?$/i', $value, $mailto)) {
+            foreach (explode(',', rawurldecode($mailto[1])) as $address) {
+                if (filter_var(trim($address), FILTER_VALIDATE_EMAIL) === false) {
+                    return '';
+                }
+            }
+
+            return 'mailto:' . $mailto[1] . ($mailto[2] ?? '');
+        }
+
+        if (preg_match('/^tel:(\+?[0-9().\- ]{3,32})$/i', $value, $tel)) {
+            $number = str_replace(' ', '', $tel[1]);
+
+            return preg_match('/[0-9]{3}/', preg_replace('/[^0-9]/', '', $number) ?? '') ? 'tel:' . $number : '';
         }
 
         return $this->sanitizeUrl($value);
