@@ -85,16 +85,38 @@ class ImageBackfillService
     }
 
     /**
+     * Repoints each table that still has its legacy `featured_image_url` column. Tables
+     * without it (dropped by the migration, or never created on databases built from the
+     * baseline schema) have nothing to repoint and are left out of the result.
+     *
      * @return array<string, int> repointed row count per table
      */
     public function repointAll(bool $dryRun = false): array
     {
         $counts = [];
         foreach (self::BACKFILLABLE_TABLES as $table) {
-            $counts[$table] = $this->repointColumn($table, $dryRun);
+            if ($this->hasLegacyColumn($table)) {
+                $counts[$table] = $this->repointColumn($table, $dryRun);
+            }
         }
 
         return $counts;
+    }
+
+    private function hasLegacyColumn(string $table): bool
+    {
+        $schemaManager = $this->connection->createSchemaManager();
+        if (!$schemaManager->tablesExist([$table])) {
+            return false;
+        }
+
+        foreach ($schemaManager->listTableColumns($table) as $column) {
+            if (strtolower($column->getName()) === 'featured_image_url') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function repointColumn(string $table, bool $dryRun): int

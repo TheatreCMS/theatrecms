@@ -186,4 +186,15 @@ class ImageBackfillServiceTest extends TestCase
 
         $this->assertSame(0, $counts['seasons']);
     }
+
+    public function testRepointAllSkipsTablesWithoutTheLegacyColumn(): void
+    {
+        // The current schema: the migration dropped the column from seasons and
+        // the baseline never created it.
+        $this->em->getConnection()->executeStatement('ALTER TABLE seasons DROP COLUMN featured_image_url');
+
+        $counts = $this->backfillService->repointAll();
+
+        $this->assertSame(['productions' => 0], $counts);
+    }
 }
