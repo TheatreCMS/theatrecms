@@ -1,15 +1,17 @@
 const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite'];
 
-// The core upload route (ImageUploadController), shared by the image, gallery and carousel
-// tools. Every editor gets it unless the caller passes its own imageEndpoints.
+// The core upload routes (ImageUploadController). The file endpoint is shared by the image,
+// gallery and carousel tools; the URL endpoint downloads a pasted image URL. Every editor gets
+// them unless the caller passes its own imageEndpoints.
 const IMAGE_UPLOAD_ENDPOINT = '/admin/images/upload';
+const IMAGE_FETCH_ENDPOINT = '/admin/images/fetch';
 
 const createImageTool = (imageEndpoints) => ({
     class: ImageTool,
     config: {
         endpoints: {
             byFile: imageEndpoints?.byFile ?? IMAGE_UPLOAD_ENDPOINT,
-            byUrl: imageEndpoints?.byUrl,
+            byUrl: imageEndpoints?.byUrl ?? IMAGE_FETCH_ENDPOINT,
         },
     },
 });

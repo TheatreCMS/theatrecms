@@ -76,6 +76,7 @@ use TheatreCMS\Services\MediaFilenameBackfillService;
 use TheatreCMS\Services\MediaUploadService;
 use TheatreCMS\Services\MediaVariantBackfillService;
 use TheatreCMS\Services\LinkPreviewService;
+use TheatreCMS\Services\RemoteImageFetcher;
 use TheatreCMS\Services\MenuLinkTargetOptionsService;
 use TheatreCMS\Services\ProductionFormOptionsService;
 use TheatreCMS\Text\EditorJsHtmlConverter;
@@ -319,6 +320,10 @@ class ServiceRegistrar
         });
 
         $container->set(LinkPreviewService::class, static fn(): LinkPreviewService => new LinkPreviewService(new \GuzzleHttp\Client()));
+        $container->set(
+            RemoteImageFetcher::class,
+            static fn(): RemoteImageFetcher => new RemoteImageFetcher(new \GuzzleHttp\Client())
+        );
 
         $container->set(ProductionFormOptionsService::class, static function (
             ContainerInterface $c
@@ -663,7 +668,10 @@ class ServiceRegistrar
                 );
             },
             ImageUploadController::class => static function (ContainerInterface $c): ImageUploadController {
-                return new ImageUploadController($c->get(MediaUploadService::class));
+                return new ImageUploadController(
+                    $c->get(MediaUploadService::class),
+                    $c->get(RemoteImageFetcher::class)
+                );
             },
             MediaController::class => static function (ContainerInterface $c): MediaController {
                 return new MediaController(

@@ -13,10 +13,9 @@ use GuzzleHttp\RequestOptions;
  * a bookmark-style link card (the "linkTool" EditorJS block, matching
  * @editorjs/link's client-side tool).
  *
- * Guards against SSRF: only http(s) URLs that resolve to public, non-reserved
- * IP addresses are fetched, redirects are not followed (a redirect could
- * otherwise reach an address that failed the initial check), and the
- * response body is capped.
+ * Guards against SSRF: only URLs passing PublicUrlGuard are fetched,
+ * redirects are not followed (a redirect could otherwise reach an address
+ * that failed the initial check), and the response body is capped.
  */
 class LinkPreviewService
 {
@@ -35,7 +34,7 @@ class LinkPreviewService
     {
         $url = trim($url);
 
-        if (!$this->isSafeUrl($url)) {
+        if (!PublicUrlGuard::isPublicHttpUrl($url)) {
             return $this->error('That URL could not be reached.');
         }
 
@@ -70,41 +69,6 @@ class LinkPreviewService
             'link' => $url,
             'meta' => $this->extractMeta($body, $url),
         ];
-    }
-
-    /**
-     * Validates that a URL is http(s) and resolves to a public, non-reserved
-     * IP address (rejecting loopback/private/link-local targets).
-     */
-    private function isSafeUrl(string $url): bool
-    {
-        $normalized = filter_var($url, FILTER_VALIDATE_URL);
-        if ($normalized === false) {
-            return false;
-        }
-
-        $scheme = parse_url($normalized, PHP_URL_SCHEME);
-        if (!in_array($scheme, ['http', 'https'], true)) {
-            return false;
-        }
-
-        $host = parse_url($normalized, PHP_URL_HOST);
-        if (!is_string($host) || $host === '') {
-            return false;
-        }
-
-        $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : (gethostbynamel($host) ?: []);
-        if (empty($ips)) {
-            return false;
-        }
-
-        foreach ($ips as $ip) {
-            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
