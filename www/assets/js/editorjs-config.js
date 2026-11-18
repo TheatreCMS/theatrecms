@@ -1,4 +1,4 @@
-const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite'];
+const INLINE_TOOLBAR_ITEMS = ['bold', 'italic', 'underline', 'link', 'cite', 'textColor'];
 
 // The core upload routes (ImageUploadController). The file endpoint is shared by the image,
 // gallery and carousel tools; the URL endpoint downloads a pasted image URL. Every editor gets
@@ -32,6 +32,12 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         colorPalette: window.THEATRECMS_COLOR_PALETTE || [],
     };
 
+    // Text color inline tool (text-color-tool.js), offering the theme's palette.
+    const textColorTool = {
+        class: TextColorTool,
+        config: colorPaletteConfig,
+    };
+
     const tools = {
         paragraph: paragraphConfig,
         quote: {
@@ -45,6 +51,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         cite: {
             class: Cite,
         },
+        textColor: textColorTool,
         header: {
             class: Header,
             inlineToolbar: true,
@@ -63,6 +70,7 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
                 tools: {
                     underline: Underline,
                     cite: Cite,
+                    textColor: textColorTool,
                     header: Header,
                     list: EditorjsList,
                     quote: { class: QuoteColorScheme, config: colorPaletteConfig },

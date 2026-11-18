@@ -30,6 +30,9 @@
  * - Inline tags allowed: b, strong, i, em, u, mark, code, del, s, br, a, cite
  * - For <a> tags only the href attribute is kept; the href value is validated
  *   to be http(s) — all other attributes are dropped.
+ * - Text colors from the text color tool (text-color-tool.js) are kept as
+ *   <span style="color: ..."> with a validated color value; every other
+ *   attribute and declaration is dropped, as are spans without a color.
  * - All other HTML is stripped. URLs are validated to be http(s) using PHP's
  *   FILTER_VALIDATE_URL and parsed scheme checks.
  * - Text content is escaped using htmlspecialchars after restoring the allowed
@@ -54,6 +57,14 @@ class EditorJsHtmlConverter
     private const INLINE_TAGS = [
         'b', 'strong', 'i', 'em', 'u', 'mark', 'code', 'del', 's', 'br', 'a', 'cite',
     ];
+
+    /**
+     * A CSS color value the text color tool can store: hex, rgb()/rgba()/hsl()/hsla() (how
+     * browsers serialize colors), a CSS custom property, or a named color. The character set
+     * keeps it from escaping the style attribute or adding declarations.
+     */
+    private const CSS_COLOR_PATTERN = '/^(?:#[0-9a-f]{3,8}|(?:rgba?|hsla?)\(\s*[0-9.%,\s\/+-]+\)'
+        . '|var\(--[a-z0-9_-]+\)|[a-z]{3,30})$/i';
 
     /**
      * Ghost's kg-cta-bg-* background presets (see cards.min.css). Whitelisted
@@ -834,11 +845,16 @@ class EditorJsHtmlConverter
     private function sanitizeText(string $value): string
     {
         $stripped = strip_tags($value, $this->allowedTags());
+        // Whether each open <span> was kept, so its closing tag is kept or dropped to match.
+        $spanStack = [];
         $cleaned = preg_replace_callback(
             '/<\/?([a-z]+)[^>]*>/i',
-            function (array $matches): string {
+            function (array $matches) use (&$spanStack): string {
                 $tag = strtolower($matches[1]);
                 $closing = str_starts_with($matches[0], '</');
+                if ($tag === 'span') {
+                    return $this->sanitizeColorSpan($closing, $matches[0], $spanStack);
+                }
                 if (!in_array($tag, self::INLINE_TAGS, true)) {
                     return '';
                 }
@@ -872,6 +888,50 @@ class EditorJsHtmlConverter
     }
 
     /**
+     * Sanitize one opening or closing <span>.
+     *
+     * An opening span with a valid text color becomes <span style="color: ...">, one without is
+     * dropped. A closing span follows what happened to its opening span via $stack.
+     *
+     * @param list<bool> $stack whether each open span was kept
+     */
+    private function sanitizeColorSpan(bool $closing, string $html, array &$stack): string
+    {
+        if ($closing) {
+            // A stray closing tag (no open one) pops null and is dropped.
+            return array_pop($stack) === true ? '</span>' : '';
+        }
+
+        $style = $this->colorStyle($html);
+        $stack[] = $style !== '';
+
+        return $style === '' ? '' : sprintf('<span style="%s">', $style);
+    }
+
+    /**
+     * A tag's text color as "color: <value>", or '' when it has no valid one. Reads the `color`
+     * declaration of the `style` attribute; every other declaration is dropped.
+     */
+    private function colorStyle(string $html): string
+    {
+        $color = null;
+
+        if (preg_match('/\bstyle\s*=\s*(?:"([^"]*)"|\'([^\']*)\')/i', $html, $attr)) {
+            $style = html_entity_decode($attr[1] . ($attr[2] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            foreach (explode(';', $style) as $declaration) {
+                [$property, $propertyValue] = array_pad(explode(':', $declaration, 2), 2, '');
+                if (strtolower(trim($property)) === 'color') {
+                    $color = $propertyValue;
+                }
+            }
+        }
+
+        $color = trim(html_entity_decode((string) $color, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        return preg_match(self::CSS_COLOR_PATTERN, $color) ? 'color: ' . $color : '';
+    }
+
+    /**
      * Restore allowed inline tags that were escaped by htmlspecialchars.
      *
      * @param string $value
@@ -879,6 +939,15 @@ class EditorJsHtmlConverter
      */
     private function restoreAllowedTags(string $value): string
     {
+        // Color spans from sanitizeColorTag(); the color's character set survives
+        // htmlspecialchars unchanged, so this can only restore a validated color style.
+        $value = (string) preg_replace(
+            '/&lt;span style=&quot;(color: [a-z0-9#(),.%\/\s_+-]+)&quot;&gt;/i',
+            '<span style="$1">',
+            $value
+        );
+        $value = str_replace('&lt;/span&gt;', '</span>', $value);
+
         foreach (self::INLINE_TAGS as $tag) {
             if ($tag === 'br') {
                 $value = str_replace(['&lt;br&gt;', '&lt;br/&gt;'], '<br>', $value);
@@ -908,7 +977,7 @@ class EditorJsHtmlConverter
      */
     private function allowedTags(): string
     {
-        return '<' . implode('><', self::INLINE_TAGS) . '>';
+        return '<' . implode('><', [...self::INLINE_TAGS, 'span']) . '>';
     }
 
     /**
