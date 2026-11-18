@@ -56,7 +56,13 @@ export function buildEditorJsConfig({ holder, data, placeholder, imageEndpoints 
         columns: {
             class: editorjsColumns,
             config: {
+                // Each column is its own EditorJS instance with only these tools. Every
+                // inline tool named in an inlineToolbar (paragraphConfig's INLINE_TOOLBAR_ITEMS)
+                // must be registered here too: a missing one makes the column's save() fail,
+                // and the column is stored as null with its content lost.
                 tools: {
+                    underline: Underline,
+                    cite: Cite,
                     header: Header,
                     list: EditorjsList,
                     quote: { class: QuoteColorScheme, config: colorPaletteConfig },
